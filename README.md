@@ -3,7 +3,7 @@
 MLStyle.jl
 =========================
 
-P.S: this project is still in an early development stage.
+P.S: this project is still in an early development stage.     
 
 ```julia
 
@@ -47,4 +47,25 @@ Incoming Features
 ======================
 
 - Compatible to `Match.jl`.
+  all `{ ... }` could be replaced by `begin ... end`.
+
+- Pattern matching for functions.
+  ```julia
+  @def f { 
+     ((a, b), true)   => <body1>
+     (nothing, false) => <body2>
+     
+     _                => <body3>
+  }
+  ```
 - Numeric dependent types.
+
+- Range pattern.
+ 
+  ```julia
+  @match num {
+     1 .. 10 => #do stuff
+  }
+  ```
+ 
+- Various monad utilities.
