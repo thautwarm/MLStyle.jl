@@ -15,7 +15,6 @@ function (..)(predicate, start :: T, _end :: T) where T
     false
 end
 
-
 pattern_match(num :: Number, guard, tag, mod :: Module) =
     if guard === nothing
         :($tag === $num)
@@ -64,6 +63,36 @@ PatternDef.Meta((expr :: Expr) -> expr.head == :&) do expr, guard, tag, mod
         :($tag === $value && $guard)
     end
 end
+
+# """
+# tuple pattern 
+# """
+PatternDef.Meta(expr :: Expr -> expr.head == :tuple) do expr, guard, tag, mod 
+    args = expr.args
+    len = length(args)
+    
+    if len !== 0
+        check_len = :($length($tag) === $len)
+        matching = map(zip(1:len, args)) do (idx, arg)
+            pattern_match(arg, nothing, :($tag[$idx]), mod)
+        end |>
+        function (last)
+            reduce((a, b) -> Expr(:&&, a, b), last)
+        end |>
+        function(last)
+            :($check_len && $last)
+        end 
+    else
+        :($isempty($tag))
+    end |>
+    function (last)
+        if guard !== nothing
+            :($last && $guard)
+        else 
+            last 
+        end 
+    end 
+end 
 
 # """
 # @match expr {

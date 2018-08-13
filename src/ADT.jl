@@ -58,7 +58,10 @@ macro case(cons)
                     $(tail...)
                 end
             end
-        end |> ast -> @eval __module__ $ast
+        end |>
+        function (ast)
+            @eval __module__ $(ast)
+        end
 
 
         most_union_all = get_most_union_all(head, __module__)
@@ -75,7 +78,7 @@ macro case(cons)
                 pattern_match(arg, nothing, :($tag.$field), mod)
             end |>
             function (last)
-                reduce((a, b) -> Expr(:&&, a, b), last, init=:($isa($tag, $head)))
+                reduce((a, b) -> Expr(:&&, a, b), last, init=:($isa($tag, $most_union_all)))
             end |>
             function (last)
                 if guard === nothing

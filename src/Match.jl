@@ -43,7 +43,7 @@ global app_dispatchers = Dict{Any, Function}()
 global _count = 0
 function mangling(apply, repr_ast)
     global _count = _count + 1
-    let symbol = Symbol(repr(repr_ast)[2:end], ".", _count)
+    let symbol = Symbol("<", repr(repr_ast), ".", _count, ">")
         ret = apply(symbol)
         global _count = _count - 1
         ret
@@ -250,26 +250,58 @@ register_app_pattern(Dict) do args, guard, tag, mod
                 SyntaxError("Dictionary destruct must take patterns like Dict(<expr> => <pattern>)") |> throw
             end
             let (k, v) = kv.args[2:end]
-                pattern_match(v, nothing, :($tag[$k]), mod)
+                mangling(tag) do tag! 
+                    let tag! = Symbol(tag!, "[", k, "]"),
+                        action = pattern_match(v, nothing, tag!, mod)
+
+                        quote 
+                            $tag! = $get($tag, $k) do 
+                                    $failed 
+                            end
+                            if $failed !== $tag!
+                                $action 
+                            else 
+                                false 
+                            end 
+                        end 
+                    end 
+                end 
             end
         end |>
         function (last)
-            reduce((a, b) -> Expr(:&&, a, b), last, init=:(isa($tag, $Dict)))
+            reduce((a, b) -> Expr(:&&, a, b), last, init=:($isa($tag, $Dict)))
         end
 
     check_ty = :($isa($tag, $Dict))
 
-    check_keys =
-           map(it -> it.args[2], args) |>
-           keys -> :($map(it -> $in(it, $tag.keys), [$(keys...)]) |> all)
-
     if guard === nothing
         quote
-            $check_ty && $check_keys && $matching
+            $check_ty && $matching
         end
     else
         quote
-            $check_ty && $check_keys && $matching && guard
+            $check_ty && $matching && $guard
+        end
+    end
+end
+
+register_app_pattern(in) do args, guard, tag, mod
+
+    pattern, name = args
+
+    let pat1 = pattern_match(pattern, nothing, tag, mod),
+        pat2 = quote
+                  $name = $tag
+                  true
+              end
+
+        :($pat1 && $pat2) |>
+        function (last)
+            if guard === nothing
+                last
+            else
+                :($last && $guard)
+            end
         end
     end
 end
