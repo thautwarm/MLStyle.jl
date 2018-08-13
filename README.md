@@ -17,55 +17,58 @@ abstract type C{T} end
 @match C1(2) begin
     C1(3)         => nothing
     C1(a){a > 2}  =>  nothing
-    C1(a){a <= 2} => a 
+    C1(a){a <= 2} => a
 end
 
 => 2
 
 
-fn(c:: C) = 
-    
+fn(c:: C) =
+
     @match c begin
-    
+
       C2(2, 3){false} => nothing
 
-      C1(a)    | 
+      C1(a)    |
       C2(a, 3) |
-      C2(2, a)        => a 
-      
+      C2(2, a)        => a
+
       _               => @error ""
-   end 
+   end
 
 fn(C1(2)) # => 2
 fn(C2(2, 5)) # => 5
 fn(C2(7, 3)) # => 7
 fn(C2(7, 5)) # => error
 
+@match 2 begin
+  1 .. 10 => 1
+  _       => 2
+end # => 1
+
+
 ```
 
 Incoming Features
 ======================
 
-- Compatible to `Match.jl`.
-  all `{ ... }` could be replaced by `begin ... end`.
-
 - Pattern matching for functions.
   ```julia
-  @def f { 
+  @def f {
      ((a, b), true)   => <body1>
      (nothing, false) => <body2>
-     
+
      _                => <body3>
   }
   ```
 - Numeric dependent types.
 
-- Range pattern.
- 
+- Range pattern(Done).
+
   ```julia
   @match num begin
      1 .. 10 => #do stuff
   end
   ```
- 
+
 - Various monad utilities.
