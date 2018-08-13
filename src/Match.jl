@@ -1,27 +1,13 @@
 module Match
-
-export @match, Pattern, Case, Failed, failed, register_meta_pattern, pattern_matching
-
 using MLStyle.Err
+using MLStyle.Private
+
+export @match, Pattern, Case, Failed, failed, PatternDef, pattern_match, app_pattern_match, register_app_pattern, register_meta_pattern
+
+
 
 struct Failed end
-
 failed = Failed()
-
-global meta_dispatchers = Vector{Tuple{Function, Function}}()
-global app_dispatchers = Dict{Any, Function}()
-
-global _count = 0
-
-
-function mangling(apply, repr_ast)
-    global _count = _count + 1
-    let symbol = Symbol(repr(repr_ast)[2:end], ".", _count)
-        ret = apply(symbol)
-        global _count = _count - 1
-        ret
-    end
-end
 
 struct Pattern
     shape
@@ -32,6 +18,39 @@ struct Case
     patterns :: Vector{Pattern}
     body
 end
+
+
+# """
+# e.g:
+# register_meta_pattern((expr :: Expr) -> <conditional>) do  expr, guard, tag, mod
+#   <return quote>
+# end
+# """
+global meta_dispatchers = Vector{Tuple{Function, Function}}()
+
+# """
+# e.g
+#
+# register_app_pattern(ty) do args, guard, tag, mod
+#     <return quote>
+# end
+# where `ty` is constructor or any other custom pattern(see @pattern)
+# """
+global app_dispatchers = Dict{Any, Function}()
+
+
+
+global _count = 0
+function mangling(apply, repr_ast)
+    global _count = _count + 1
+    let symbol = Symbol(repr(repr_ast)[2:end], ".", _count)
+        ret = apply(symbol)
+        global _count = _count - 1
+        ret
+    end
+end
+
+
 
 @inline function collect_guard(arg)
     if isa(arg, Expr) && arg.head == :curly
@@ -85,14 +104,16 @@ function merge_cases(cases :: Vector{Case})
 end
 
 
-pattern_matching_maker(tag :: Symbol, case :: Case, mod :: Module) =
+pattern_match_maker(tag :: Symbol, case :: Case, mod :: Module) =
     if isempty(case.patterns)
         InternalException("Internal Error 0") |> throw
     else let body = case.body,
              cond = map(case.patterns) do pattern
-                    pattern_matching(pattern.shape, pattern.guard, tag, mod)
-                   end |>
-                   last -> reduce((a, b) -> Expr(:||, a, b), last)
+                    pattern_match(pattern.shape, pattern.guard, tag, mod)
+                    end |>
+                    function (last)
+                        reduce((a, b) -> Expr(:||, a, b), last)
+                    end
         quote
             if $cond
                 $(case.body)
@@ -114,12 +135,10 @@ function make_dispatch(tag, cases, mod :: Module)
                     Case(append!([], collect_fallthrough(pattern)), body)
                 end
         end
-    let cases = merge_cases(cases)
-        map(it -> pattern_matching_maker(tag, it, mod), cases)
-    end
+
+    map(it -> pattern_match_maker(tag, it, mod), cases)
     end
 end
-
 
 macro match(target, pattern_def)
 
@@ -134,13 +153,13 @@ macro match(target, pattern_def)
             end
 
         mangled = Symbol("case", ".", "test")
-        
-        args = 
-            if pattern_def.head === :block 
+
+        args =
+            if pattern_def.head === :block
                 filter(it -> !isa(it, LineNumberNode), pattern_def.args)
-            else 
-                pattern_def.args 
-            end 
+            else
+                pattern_def.args
+            end
         for dispatched in make_dispatch(tag_sym, args[end:-1:1], __module__)
             final =
                 quote
@@ -165,7 +184,7 @@ macro match(target, pattern_def)
         end
 end
 
-function meta_pattern_match(expr :: Expr, guard, tag, mod :: Module)
+function pattern_match(expr :: Expr, guard, tag, mod :: Module)
 
     for (dispatcher_test, dispatch) in meta_dispatchers
         if dispatcher_test(expr)
@@ -178,13 +197,18 @@ end
 
 function app_pattern_match(destructor, args, guard, tag, mod :: Module)
     global app_dispatchers
-    fn = get(app_dispatchers, destructor, nothing)
-    if fn === nothing 
-        PatternUnsolvedException(:($destructor($(args...)))) |> throw 
-    else 
+    fn =
+        let destructor = get_most_union_all(destructor, mod)
+                get(app_dispatchers, destructor, nothing)
+        end
+
+    if fn === nothing
+        PatternUnsolvedException(:($destructor($(args...)))) |> throw
+    else
         fn(args, guard, tag, mod)
-    end 
-end 
+    end
+
+end
 
 function register_meta_pattern(dispatch :: Function, dispatcher_test :: Function)
     global meta_dispatchers
@@ -194,27 +218,67 @@ end
 function register_app_pattern(dispatch :: Function, destructor :: Any)
     global app_dispatchers
     push!(app_dispatchers, (destructor => dispatch))
-end 
+end
 
-function register_app_pattern(args, tag, mod)
-    matches = 
-        map(args) do kv 
-            if !(isa(kv, Expr) && kv.head === :call && kv.args[1] == :=>)
-                SyntaxError("Dictionary destruct must take patterns like Dict(<expr> => <pattern>)") |> throw 
+
+# """
+# builtin meta pattern(for application pattern)
+# """
+register_meta_pattern((expr) -> expr.head === :call) do expr, guard, tag, mod
+    destructor = expr.args[1]
+    app_pattern_match(destructor, expr.args[2:end], guard, tag, mod)
+end
+
+# """
+# builtin application pattern(for dictionaries)
+#
+# x = "9"
+# dict = Dict(1 => Dict(x => 3), 2 => 3)
+#
+# @match dict begin
+#     Dict(1 => Dict(&x => a), 2 =>b) => a == b
+# end
+#
+# # => true
+#
+# """
+register_app_pattern(Dict) do args, guard, tag, mod
+
+    matching =
+        map(args) do kv
+            if !(isa(kv, Expr) && kv.head === :call && (@eval mod $(kv.args[1])) === Pair)
+                SyntaxError("Dictionary destruct must take patterns like Dict(<expr> => <pattern>)") |> throw
             end
             let (k, v) = kv.args[2:end]
-                pattern_matching(v, nothing, :($tag[$k]), mod)
+                pattern_match(v, nothing, :($tag[$k]), mod)
             end
+        end |>
+        function (last)
+            reduce((a, b) -> Expr(:&&, a, b), last, init=:(isa($tag, $Dict)))
         end
 
     check_ty = :($isa($tag, $Dict))
 
-    check_keys =  
-           map(it -> it[2], kv.args) |> 
-           keys -> :($map(it -> it in $tag.keys, [$(keys...)]) |> all)
+    check_keys =
+           map(it -> it.args[2], args) |>
+           keys -> :($map(it -> $in(it, $tag.keys), [$(keys...)]) |> all)
 
+    if guard === nothing
+        quote
+            $check_ty && $check_keys && $matching
+        end
+    else
+        quote
+            $check_ty && $check_keys && $matching && guard
+        end
+    end
+end
 
+module PatternDef
+    import MLStyle.Match: register_app_pattern, register_meta_pattern
+
+    App  = register_app_pattern
+    Meta = register_meta_pattern
 end
 
 end # module
-

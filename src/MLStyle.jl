@@ -1,14 +1,19 @@
 module MLStyle
 
-export @match, Pattern, Case, Failed, failed, register_meta_pattern, pattern_matching, @case
+export @case, @match, Pattern, Case, Failed, failed, PatternDef, pattern_match, app_pattern_match
+
+include("utils.jl")
 
 include("Err.jl")
-include("ADT.jl")
-include("Match.jl")
-include("MatchExt.jl")
 using MLStyle.Err
-using MLStyle.ADT
+
+include("Match.jl")
 using MLStyle.Match
+
+include("ADT.jl")
+using MLStyle.ADT
+
+include("MatchExt.jl")
 using MLStyle.MatchExt
 
 end # module
