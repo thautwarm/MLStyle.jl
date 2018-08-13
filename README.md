@@ -14,27 +14,27 @@ abstract type C{T} end
 @case C1{T}(a :: T) <: C{T}
 @case C2{T}(a :: T, b :: Int) <: C{T}
 
-@match C1(2) {
+@match C1(2) begin
     C1(3)         => nothing
     C1(a){a > 2}  =>  nothing
     C1(a){a <= 2} => a 
-}
+end
 
 => 2
 
 
 fn(c:: C) = 
     
-    @match c {
+    @match c begin
     
-    C2(2, 3){false} => nothing
+      C2(2, 3){false} => nothing
 
-    C1(a)    | 
-    C2(a, 3) |
-    C2(2, a)        => a 
-    
-    _               => @error ""
-   }
+      C1(a)    | 
+      C2(a, 3) |
+      C2(2, a)        => a 
+      
+      _               => @error ""
+   end 
 
 fn(C1(2)) # => 2
 fn(C2(2, 5)) # => 5
@@ -63,9 +63,9 @@ Incoming Features
 - Range pattern.
  
   ```julia
-  @match num {
+  @match num begin
      1 .. 10 => #do stuff
-  }
+  end
   ```
  
 - Various monad utilities.

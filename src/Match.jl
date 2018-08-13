@@ -9,6 +9,7 @@ struct Failed end
 failed = Failed()
 
 global meta_dispatchers = Vector{Tuple{Function, Function}}()
+global app_dispatchers = Dict{Any, Function}()
 
 global _count = 0
 
@@ -76,53 +77,11 @@ function merge_cases(cases :: Vector{Case})
 
     global _warned
     if !_warned
-        @warn "Pattern optimaztion notImplemented yet."
+        @warn "Pattern optimization not implemented yet."
         _warned = true
     end
 
     cases
-end
-
-
-
-pattern_matching(num :: Number, guard, tag, mod :: Module) =
-    if guard == nothing
-        :($tag === $num)
-    else
-        :($tag === $num && $guard)
-    end
-
-pattern_matching(sym :: Symbol, guard, tag, mod :: Module) =
-    
-        if sym === :_ 
-            if nothing === guard 
-                quote true end 
-            else 
-                guard 
-            end 
-        else 
-            let ret = 
-                quote
-                        $sym = $tag
-                        true
-                end
-                if guard === nothing 
-                    ret 
-                else 
-                    :(ret && guard)
-                end
-            end 
-        end 
-
-function pattern_matching(expr :: Expr, guard, tag, mod :: Module)
-
-    for (dispatcher_test, dispatch) in meta_dispatchers
-        if dispatcher_test(expr)
-            return dispatch(expr, guard, tag, mod)
-        end
-    end
-    PatternUnsolvedException(expr) |> throw
-
 end
 
 
@@ -144,8 +103,6 @@ pattern_matching_maker(tag :: Symbol, case :: Case, mod :: Module) =
         end
     end
 
-
-
 function make_dispatch(tag, cases, mod :: Module)
     let cases =
         map(cases) do case
@@ -166,6 +123,10 @@ end
 
 macro match(target, pattern_def)
 
+    if !isa(pattern_def, Expr) || !(pattern_def.head in (:braces, :bracescat, :block))
+        SyntaxError("Invalid leading marker of match body.") |> throw
+    end
+
     mangling(target) do tag_sym
         final =
             quote
@@ -173,8 +134,14 @@ macro match(target, pattern_def)
             end
 
         mangled = Symbol("case", ".", "test")
-
-        for dispatched in make_dispatch(tag_sym, pattern_def.args[end:-1:1], __module__)
+        
+        args = 
+            if pattern_def.head === :block 
+                filter(it -> !isa(it, LineNumberNode), pattern_def.args)
+            else 
+                pattern_def.args 
+            end 
+        for dispatched in make_dispatch(tag_sym, args[end:-1:1], __module__)
             final =
                 quote
                     let $mangled =
@@ -198,55 +165,56 @@ macro match(target, pattern_def)
         end
 end
 
+function meta_pattern_match(expr :: Expr, guard, tag, mod :: Module)
+
+    for (dispatcher_test, dispatch) in meta_dispatchers
+        if dispatcher_test(expr)
+            return dispatch(expr, guard, tag, mod)
+        end
+    end
+    PatternUnsolvedException(expr) |> throw
+
+end
+
+function app_pattern_match(destructor, args, guard, tag, mod :: Module)
+    global app_dispatchers
+    fn = get(app_dispatchers, destructor, nothing)
+    if fn === nothing 
+        PatternUnsolvedException(:($destructor($(args...)))) |> throw 
+    else 
+        fn(args, guard, tag, mod)
+    end 
+end 
+
 function register_meta_pattern(dispatch :: Function, dispatcher_test :: Function)
     global meta_dispatchers
     push!(meta_dispatchers, (dispatcher_test, dispatch));
 end
 
-# """
-# like ^ in Erlang/Elixir
-# """
-register_meta_pattern((expr :: Expr) -> expr.head == :&) do expr, guard, tag, mod
-    value = expr.args[1]
-    if guard === nothing
-        :($tag === $value)
-    else
-        :($tag === $value && $guard)
-    end
-end
+function register_app_pattern(dispatch :: Function, destructor :: Any)
+    global app_dispatchers
+    push!(app_dispatchers, (destructor => dispatch))
+end 
 
-# """
-# ADT destruction
-#
-# @assert 2 == @match S(1, 2) {
-#     S(1, b) => b
-#     _       => @error
-# }
-#
-# """
-register_meta_pattern((expr :: Expr) -> expr.head == :call) do expr, guard, tag, mod
+function register_app_pattern(args, tag, mod)
+    matches = 
+        map(args) do kv 
+            if !(isa(kv, Expr) && kv.head === :call && kv.args[1] == :=>)
+                SyntaxError("Dictionary destruct must take patterns like Dict(<expr> => <pattern>)") |> throw 
+            end
+            let (k, v) = kv.args[2:end]
+                pattern_matching(v, nothing, :($tag[$k]), mod)
+            end
+        end
 
-    destructor = @eval mod $(expr.args[1])
+    check_ty = :($isa($tag, $Dict))
 
-    fields = fieldnames(destructor)
-
-    args = expr.args[2:end]
-
-    if length(args) != length(fields)
-        DataTypeUsageError("Got patterns `$(repr(args))`, expected: `$fields`") |> throw
-    end
+    check_keys =  
+           map(it -> it[2], kv.args) |> 
+           keys -> :($map(it -> it in $tag.keys, [$(keys...)]) |> all)
 
 
-    ret =
-        map(zip(fields, args)) do (field, arg)
-            pattern_matching(arg, nothing, :($tag.$field), mod)
-        end |> last -> reduce((a, b) -> Expr(:&&, a, b), last, init=:(isa($tag, $destructor)))
-
-    if guard !== nothing
-        ret = :($ret && $guard)
-    end
-
-    ret
 end
 
 end # module
+
