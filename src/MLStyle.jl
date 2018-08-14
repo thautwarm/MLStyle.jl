@@ -16,4 +16,7 @@ using MLStyle.ADT
 include("MatchExt.jl")
 using MLStyle.MatchExt
 
+include("Data/Data.jl")
+using MLStyle.Data
+
 end # module

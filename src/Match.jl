@@ -175,7 +175,6 @@ macro match(target, pattern_def)
                     end
                 end
         end
-        @info final
         quote
               let $tag_sym = $target
                 $final
@@ -224,7 +223,7 @@ end
 # """
 # builtin meta pattern(for application pattern)
 # """
-register_meta_pattern((expr) -> expr.head === :call) do expr, guard, tag, mod
+register_meta_pattern(expr :: Expr -> expr.head === :call) do expr, guard, tag, mod
     destructor = expr.args[1]
     app_pattern_match(destructor, expr.args[2:end], guard, tag, mod)
 end
