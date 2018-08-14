@@ -3,6 +3,14 @@
 MLStyle.jl
 =========================
 
+## Install
+
+This package is not registered yet. Please use the following command in **v0.7+**:
+
+```julia
+pkg> add https://github.com/Roger-luo/MLStyle.jl.git#master
+```
+
 
 Preview
 -------------------
@@ -142,13 +150,13 @@ Available Features
 
 - Range Pattern, Tuple Pattern and so on
 
-  ```julia 
+  ```julia
 
-  @match 1 begin 
+  @match 1 begin
       0..10 => true
   end # => true
 
-  @match ((1, 2), (3, (5, 6))) begin 
+  @match ((1, 2), (3, (5, 6))) begin
       ((a, b), (3, (c, d))) => a + b + c + d
   end # => 14
 
@@ -182,7 +190,7 @@ Available Features
 
   The documentary for this pattern is necessary, for lack of time I cannot finish it immediately. See builtin examples at [Match Extensions](https://github.com/thautwarm/MLStyle.jl/blob/master/src/MatchExt.jl).
 
-  Using custom pattern you can implement active patterns like F#, but remember active pattern is far from the bound. Give me a `SML` solver, you might be able to write codes like 
+  Using custom pattern you can implement active patterns like F#, but remember active pattern is far from the bound. Give me a `SML` solver, you might be able to write codes like
   ```julia
   @match rvalue begin
     x^2 + 2x + 9 => x
@@ -192,7 +200,7 @@ Available Features
 **The Reason Why I didn't implement List Pattern**:
 
 ```julia
-  @match [1, 2, 3] begin 
+  @match [1, 2, 3] begin
       [1 | tail] => sum(tail)
   end
 ```
