@@ -7,7 +7,6 @@ function get_most_union_all(expr, mod :: Module)
     else
         @eval mod $expr
     end
-    
 end
 
 end

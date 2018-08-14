@@ -1,6 +1,4 @@
-authors = ["thautwarm <twshere@outlook.com>"]
 name = "MLStyle"
 uuid = "816b5f4a-9e2c-11e8-0bf8-3d61c8eadc99"
+authors = ["thautwarm <twshere@outlook.com>"]
 version = "0.1.0"
-
-[deps]

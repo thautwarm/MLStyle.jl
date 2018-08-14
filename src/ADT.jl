@@ -4,7 +4,7 @@ using MLStyle.Err
 using MLStyle.Private
 import MLStyle.Match: PatternDef, pattern_match
 
-export @case
+export @case, @type
 
 function _check_components(arg)
     if !(isa(arg, Expr) && arg.head == :(::) ||
@@ -15,21 +15,17 @@ function _check_components(arg)
 end
 
 macro case(cons)
+
     ty = nothing
 
-    if !(cons.head in (:call, :macrocall, :<:))
-        SyntaxError("Invalid Syntax `$(repr(cons))`") |> throw
-    end
-
-
-    if cons.head == :<:
-        cons, ty = cons.args
-
+    if isa(cons, Expr)
+        if cons.head == :<:
+            cons, ty = cons.args
+        end
     end
 
     let cons =
-        if cons.head == :macrocall
-
+        if isa(cons, Expr) && cons.head == :macrocall
                 macroexpand(
                     __module__,
                     cons,
@@ -38,7 +34,12 @@ macro case(cons)
             cons
         end
 
-    let args = cons.args
+    let args =
+        if isa(cons, Expr) && cons.head == :call
+            cons.args
+        else
+            [cons]
+        end
 
     foreach(_check_components, args)
 
@@ -62,7 +63,6 @@ macro case(cons)
         function (ast)
             @eval __module__ $(ast)
         end
-
 
         most_union_all = get_most_union_all(head, __module__)
 
@@ -94,4 +94,28 @@ macro case(cons)
     end
     end
 end
+
+macro type(abs_ty, cases)
+
+    if !isa(cases, Expr) || !(cases.head in (:block, :bracescat, :braces))
+        SyntaxError("$(repr(cases)).") |> throw
+    end
+
+    @eval __module__ abstract type $abs_ty end
+
+    map(cases.args) do case
+        if isa(case, LineNumberNode)
+            case
+        else
+            :(@case $case <: $abs_ty)
+        end
+    end |>
+    function (last)
+        quote
+            $(last...)
+        end |> esc
+    end
+
+end
+
 end
