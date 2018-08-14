@@ -1,0 +1,7 @@
+using MLStyle
+
+@type List{T} begin
+    Nil{T}
+    Cons{T}(head :: T, tail :: List{T})
+end
+

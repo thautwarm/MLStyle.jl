@@ -175,7 +175,7 @@ macro match(target, pattern_def)
                     end
                 end
         end
-
+        @info final
         quote
               let $tag_sym = $target
                 $final
@@ -250,22 +250,22 @@ register_app_pattern(Dict) do args, guard, tag, mod
                 SyntaxError("Dictionary destruct must take patterns like Dict(<expr> => <pattern>)") |> throw
             end
             let (k, v) = kv.args[2:end]
-                mangling(tag) do tag! 
+                mangling(tag) do tag!
                     let tag! = Symbol(tag!, "[", k, "]"),
                         action = pattern_match(v, nothing, tag!, mod)
 
-                        quote 
-                            $tag! = $get($tag, $k) do 
-                                    $failed 
+                        quote
+                            $tag! = $get($tag, $k) do
+                                    $failed
                             end
                             if $failed !== $tag!
-                                $action 
-                            else 
-                                false 
-                            end 
-                        end 
-                    end 
-                end 
+                                $action
+                            else
+                                false
+                            end
+                        end
+                    end
+                end
             end
         end |>
         function (last)

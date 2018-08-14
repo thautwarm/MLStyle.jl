@@ -65,12 +65,12 @@ PatternDef.Meta((expr :: Expr) -> expr.head == :&) do expr, guard, tag, mod
 end
 
 # """
-# tuple pattern 
+# tuple pattern
 # """
-PatternDef.Meta(expr :: Expr -> expr.head == :tuple) do expr, guard, tag, mod 
+PatternDef.Meta(expr :: Expr -> expr.head == :tuple) do expr, guard, tag, mod
     args = expr.args
     len = length(args)
-    
+
     if len !== 0
         check_len = :($length($tag) === $len)
         matching = map(zip(1:len, args)) do (idx, arg)
@@ -81,18 +81,18 @@ PatternDef.Meta(expr :: Expr -> expr.head == :tuple) do expr, guard, tag, mod
         end |>
         function(last)
             :($check_len && $last)
-        end 
+        end
     else
         :($isempty($tag))
     end |>
     function (last)
         if guard !== nothing
             :($last && $guard)
-        else 
-            last 
-        end 
-    end 
-end 
+        else
+            last
+        end
+    end
+end
 
 # """
 # @match expr {
@@ -106,17 +106,25 @@ PatternDef.Meta((expr :: Expr -> expr.head == :(::))) do expr, guard, tag, mod
     len = length(args)
     check_ty =
         if len === 1
-            :(isa($tag, $args[1]))
+            :(isa($tag, $(args[1])))
         else
             @assert len === 2
             pat, ty = args
-            guard = pattern_match(pat, guard, tag, mod)
-            :(isa($tag, $ty))
+            let guard = pattern_match(pat, nothing, tag, mod)
+                :($isa($tag, $ty)) |>
+                function (last)
+                    if guard === nothing
+                        last
+                    else
+                        :($last && $guard)
+                    end
+                end
+            end
         end
-    if guard == nothing
-        :(check_ty && guard)
-    else
+    if guard === nothing
         check_ty
+    else
+        :($check_ty && $guard)
     end
 end
 
