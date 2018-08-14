@@ -8,7 +8,7 @@ MLStyle.jl
 This package is not registered yet. Please use the following command in **v0.7+**:
 
 ```julia
-pkg> add https://github.com/Roger-luo/MLStyle.jl.git#master
+pkg> add https://github.com/thautwarm/MLStyle.jl.git#master
 ```
 
 
