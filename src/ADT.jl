@@ -4,7 +4,7 @@ using MLStyle.Err
 using MLStyle.Private
 import MLStyle.Match: PatternDef, pattern_match
 
-export @case, @type
+export @case, @data
 
 function _check_components(arg)
     if !(isa(arg, Expr) && arg.head == :(::) ||
@@ -95,7 +95,7 @@ macro case(cons)
     end
 end
 
-macro type(abs_ty, cases)
+macro data(abs_ty, cases)
 
     if !isa(cases, Expr) || !(cases.head in (:block, :bracescat, :braces))
         SyntaxError("$(repr(cases)).") |> throw

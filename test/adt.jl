@@ -2,7 +2,7 @@ using MLStyle
 
 @testset "adt-type" begin
 
-@type List{T} begin
+@data List{T} begin
     Nil{T}
     Cons{T}(head :: T, tail :: List{T})
 end

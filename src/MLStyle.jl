@@ -1,6 +1,6 @@
 module MLStyle
 
-export @case, @type, @match, Pattern, Case, Failed, failed, PatternDef, pattern_match, app_pattern_match, (..), enum_next
+export @case, @data, @match, Pattern, Case, Failed, failed, PatternDef, pattern_match, app_pattern_match, (..), enum_next
 
 include("utils.jl")
 
