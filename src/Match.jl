@@ -2,9 +2,7 @@ module Match
 using MLStyle.Err
 using MLStyle.Private
 
-export @match, Pattern, Case, Failed, failed, PatternDef, pattern_match, app_pattern_match, register_app_pattern, register_meta_pattern
-
-
+export @match, @def, Pattern, Case, Failed, failed, PatternDef, pattern_match, app_pattern_match, register_app_pattern, register_meta_pattern
 
 struct Failed end
 failed = Failed()
@@ -39,7 +37,6 @@ global meta_dispatchers = Vector{Tuple{Function, Function}}()
 global app_dispatchers = Dict{Any, Function}()
 
 
-
 global _count = 0
 function mangling(apply, repr_ast)
     global _count = _count + 1
@@ -49,8 +46,6 @@ function mangling(apply, repr_ast)
         ret
     end
 end
-
-
 
 @inline function collect_guard(arg)
     if isa(arg, Expr) && arg.head == :curly
@@ -124,63 +119,144 @@ pattern_match_maker(tag :: Symbol, case :: Case, mod :: Module) =
         end
     end
 
-function make_dispatch(tag, cases, mod :: Module)
-    let cases =
-        map(cases) do case
-                if !(case.head == :call && case.args[1] == :(=>))
-                    SyntaxError("A case should be something like <pattern> => <body>") |> throw
-                end
+function make_case(arg)
+    if !(arg.head == :call && arg.args[1] == :(=>))
+            SyntaxError("A case should be something like <pattern> => <body>") |> throw
+    end
 
-                let args = case.args, pattern = args[2], body = args[3]
-                    Case(append!([], collect_fallthrough(pattern)), body)
-                end
-        end
-
-    map(it -> pattern_match_maker(tag, it, mod), cases)
+    let args = arg.args, pattern = args[2], body = args[3]
+        Case(append!([], collect_fallthrough(pattern)), body)
     end
 end
 
-macro match(target, pattern_def)
+function make_cases(args)
+    map(args) do arg
+        if isa(arg, LineNumberNode)
+            arg
+        else
+            make_case(arg)
+        end
+    end
+end
 
+function make_match_body(
+                tag,
+                tag_sym,
+                mod :: Module,
+                cases)
+
+    final = quote
+                throw(($InternalException)("Non-exhaustive pattern found!"))
+            end
+    mangled = Symbol("case", ".", "test")
+
+    foldr(cases, init=final) do case, last
+        if isa(case, LineNumberNode)
+            Expr(:block, case, last)
+        else
+        pattern_match_maker(tag_sym, case, mod) |>
+        function (expr)
+            quote
+                let $mangled =
+                    let
+                        $expr
+                    end
+                if $mangled === $failed
+                    $last
+                else
+                    $mangled
+                end
+                end
+            end
+        end
+        end
+
+    end |>
+
+    function (quoted)
+        quote
+          let $tag_sym = $tag
+            $quoted
+          end
+        end
+    end
+
+end
+
+
+
+macro def(fn_name, pattern_def)
+    if !isa(pattern_def, Expr) || !(pattern_def.head in (:braces, :bracescat, :block))
+        SyntaxError("Invalid leading marker of match body.") |> throw
+    end
+
+    mangling(fn_name) do arg_prefix
+
+        erl_dispatcher = Dict()
+        cases = make_cases(filter(it -> !isa(it, LineNumberNode), pattern_def.args))
+        new_cases = []
+
+        foreach(cases) do case
+            if length(case.patterns) == 1
+                append!(new_cases, map(pat -> Case([pat], case.body), case.patterns))
+            else
+                push!(new_cases, case)
+            end
+        end
+
+        foreach(new_cases) do case
+            dispatch_key =
+                begin
+                    pattern = case.patterns[1]
+                    if !(isa(pattern.shape, Expr) && pattern.shape.head == :tuple)
+                        1
+                    else
+                        length(pattern.shape.args)
+                    end
+                end
+
+            dispatch_value = get(erl_dispatcher, dispatch_key) do
+                erl_dispatcher[dispatch_key] = []
+            end
+
+            push!(dispatch_value, case)
+
+        end
+
+        map(collect(erl_dispatcher)) do (argnum, cases)
+            map(1:argnum) do arg_idx
+                Symbol(arg_prefix, "[", arg_idx, "]")
+            end |>
+            function (args)
+                body =
+                    if length(args) > 1
+                        make_match_body(Expr(:tuple, args...), arg_prefix, __module__, cases)
+                    elseif length(args) === 1
+                        make_match_body(args[1], arg_prefix, __module__, cases)
+                    else
+                        cases[1].body
+                    end
+
+                :($fn_name($(args...)) = $body)
+            end
+        end |>
+        function (fns)
+            Expr(:block, fns..., fn_name) |> esc
+        end
+    end
+
+end
+
+
+macro match(target, pattern_def)
     if !isa(pattern_def, Expr) || !(pattern_def.head in (:braces, :bracescat, :block))
         SyntaxError("Invalid leading marker of match body.") |> throw
     end
 
     mangling(target) do tag_sym
-        final =
-            quote
-                throw(($InternalException)("Non-exhaustive pattern found!"))
-            end
-
-        mangled = Symbol("case", ".", "test")
-
-        args =
-            if pattern_def.head === :block
-                filter(it -> !isa(it, LineNumberNode), pattern_def.args)
-            else
-                pattern_def.args
-            end
-        for dispatched in make_dispatch(tag_sym, args[end:-1:1], __module__)
-            final =
-                quote
-                    let $mangled =
-                        let
-                            $dispatched
-                        end
-                    if $mangled === $failed
-                        $final
-                    else
-                        $mangled
-                    end
-                    end
-                end
-        end
-        quote
-              let $tag_sym = $target
-                $final
-              end
-        end |> esc
-        end
+        cases = make_cases(pattern_def.args)
+        make_match_body(target, tag_sym, __module__, cases) |> esc
+    end
 end
 
 function pattern_match(expr :: Expr, guard, tag, mod :: Module)

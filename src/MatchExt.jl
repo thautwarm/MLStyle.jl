@@ -111,7 +111,7 @@ PatternDef.Meta((expr :: Expr -> expr.head == :(::))) do expr, guard, tag, mod
             @assert len === 2
             pat, ty = args
             let guard = pattern_match(pat, nothing, tag, mod)
-                :($isa($tag, $ty)) |>
+                pattern_match(ty, nothing, :($typeof($tag)), mod) |>
                 function (last)
                     if guard === nothing
                         last

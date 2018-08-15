@@ -9,7 +9,7 @@ import Base: ^, map, foreach, iterate, isempty
     Cons{T}(head :: T, tail :: List!{T})
 end
 
-# not to overload convert,
+# NO SFINAE in Julia...
 
 Base.convert(::Type{List!{G}}, it :: Nil{T}) where {G, T <: G} = Nil{G}()
 
@@ -91,24 +91,20 @@ function _flatten_cons_marker(ast)
     end
 end
 
-PatternDef.App(^) do args, guard, tag, mod
-
-    check_ty = :($isa($tag, $Cons))
-
+function _match(args, guard, tag, mod)
     l, r = args
 
-    rs = _flatten_cons_marker(r)
+    let l    = pattern_match(l, nothing, :($tag.head), mod),
+        tail = :($tag.tail),
+        r    = if isa(r, Expr) && r.head == :call && r.args[1] === :^
+                   _match(r.args[2:end], nothing, tail, mod)
+               else
+                   pattern_match(r, nothing, tail, mod)
+               end
 
-    let l = pattern_match(l, nothing, :($tag.head), mod),
-        r = map(rs) do r
-                pattern_match(r, nothing, :($tag.tail), mod)
-            end |>
-            function (last)
-                reduce((a, b) -> Expr(:&&, a, b), last)
-            end
-        :($check_ty && $l && $r)
+        :($l && $r)
+
     end |>
-
     function (last)
         if guard === nothing
             last
@@ -116,7 +112,18 @@ PatternDef.App(^) do args, guard, tag, mod
             :($last && $guard)
         end
     end
+end
 
+PatternDef.App(^) do args, guard, tag, mod
+    check_ty = :($isa($tag, $Cons))
+    _match(args, nothing, tag, mod) |>
+    function (last)
+        if guard === nothing
+            last
+        else
+            :($last && $guard)
+        end
+    end
 end
 
 
@@ -130,6 +137,38 @@ end
 
 function isempty(lst :: Nil{T}) where T
     true
+end
+
+function head(lst :: Cons{T}) :: T where T
+    lst.head
+end
+
+function head(lst :: Nil{T}) where T
+    ArgumentError("Cannot get head from zero sized list.") |> throw
+end
+
+function try_head(lst :: Cons{T}) where T
+    Some{T}(lst.head)
+end
+
+function try_head(lst :: Nil{T}) where T
+    nothing
+end
+
+function tail(lst :: Cons{T}) where T
+    lst.tail
+end
+
+function tail(lst :: Nil{T}) where T
+    ArgumentError("Cannot get tail from zero sized list.") |> throw
+end
+
+function try_tail(lst :: Cons{T}) where T
+    Some{T}(lst.tail)
+end
+
+function try_tail(lst :: Nil{T}) where T
+    nothing
 end
 
 end
