@@ -1,4 +1,5 @@
 module MatchExt
+import MLStyle: Feature
 import MLStyle.Match: pattern_match, PatternDef
 export (..), enum_next
 function enum_next(x :: Number)
@@ -104,14 +105,21 @@ end
 PatternDef.Meta((expr :: Expr -> expr.head == :(::))) do expr, guard, tag, mod
     args = expr.args
     len = length(args)
+    annotation_processing(arg) =
+        if Feature.TypeLevel.activate
+            pattern_match(arg, nothing, :($typeof($tag)), mod)
+        else
+            :($isa($tag, $(arg)))
+        end
+
     check_ty =
         if len === 1
-            :(isa($tag, $(args[1])))
+            annotation_processing(args[1])
         else
             @assert len === 2
             pat, ty = args
             let guard = pattern_match(pat, nothing, tag, mod)
-                pattern_match(ty, nothing, :($typeof($tag)), mod) |>
+                annotation_processing(ty) |>
                 function (last)
                     if guard === nothing
                         last

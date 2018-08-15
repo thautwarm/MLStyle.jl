@@ -12,7 +12,7 @@ function convert(::Type{Fun{A, B}}, fn :: Function) where {A, B}
     Func{A, B}(fn)
 end
 
-function convert(::Type{Fun{A, B}}, fn :: Fun{C, D}) where{C, D, A >: C, B >: D}
+function convert(::Type{Fun{A, B}}, fn :: Fun{C, D}) where{A, B, C <: A, D <: B}
     Fun{A, B}(fn.fn)
 end
 end
