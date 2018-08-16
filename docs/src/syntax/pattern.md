@@ -197,7 +197,7 @@ end
 
 ```julia                                                                                                      
 julia> it = @match [1, 2, 3, 4] begin                     
-         [1, unpack..., a] => (unpack, a)                 
+         [1, pack..., a] => (pack, a)                 
        end                                                
 ([2, 3], 4)                                               
                                                           
