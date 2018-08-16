@@ -1,5 +1,8 @@
 using Test
+using MLStyle
 
-@testset "adt" begin
+include("match.jl")
+include("pattern.jl")
 include("adt.jl")
-end
+# TODO: 
+# include("data.jl")

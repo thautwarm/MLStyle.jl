@@ -201,18 +201,18 @@ end
 
 - Array pattern(as efficient as linked list pattern for the usage of array view)
 
-```julia                                                                                                      
-julia> it = @match [1, 2, 3, 4] begin                     
-         [1, pack..., a] => (pack, a)                 
-       end                                                
-([2, 3], 4)                                               
-                                                          
-julia> first(it)                                          
+```julia
+julia> it = @match [1, 2, 3, 4] begin
+         [1, pack..., a] => (pack, a)
+       end
+([2, 3], 4)
+
+julia> first(it)
 2-element view(::Array{Int64,1}, 2:3) with eltype Int64:  
- 2                                                        
- 3                                                             
-julia> it[2]                                              
-4                                                                                                            
+ 2
+ 3
+julia> it[2]
+4
 ```
 
 - Linked list pattern
@@ -260,7 +260,7 @@ By default, type level feature wouldn't be activated.
     ::String => String
     ::Int => Int    
 end
-# => Int
+# => Int64
 ```
 
 ```julia

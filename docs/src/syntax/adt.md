@@ -34,8 +34,8 @@ eval_arith(arith :: Arith) =
         @match arith begin
             Number(v)       => v
             Minus(fst, snd) => fst - snd
-            Mult(fst, snd   => fst * snd
-            Divide(fst, snd => fst / snd
+            Mult(fst, snd)   => fst * snd
+            Divide(fst, snd) => fst / snd
         end
     end
 
@@ -54,7 +54,7 @@ Case Class
 Just like the similar one in Scala
 ```julia
 abstract type A end
-@case C{T}(a :: Int, b){T}
+@case C{T}(a :: Int, b)
 @case D(a, b)
 @case E <: A
 ```
