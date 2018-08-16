@@ -2,7 +2,7 @@ module List
 export List!, Cons, Nil
 using MLStyle
 using MLStyle.Data
-import Base: ^, map, foreach, iterate, isempty
+import Base: ^, map, foreach, iterate, isempty, getindex
 
 @data List!{T} begin
     Nil{T}
@@ -25,6 +25,40 @@ function (^)(head :: T, tail :: List!{G}) where {G, T}
     Cons{typejoin(T, G)}(head, tail)
 end
 
+
+function List!(args :: Vararg{T, N}) where {T, N}
+    ret = Nil{T}()
+    for i = 0:N-1
+        ret = Cons{T}(args[end - i], ret)
+    end
+    ret
+end
+
+function (::Type{List!{T1}})(args :: Vararg{T2, N}) where {T1, T2, N}
+    T =
+        if T1 === Any && T2 !== Any
+            T2
+        else
+            T1
+        end
+
+    ret = Nil{T}()
+
+    for i = 0:N-1
+        ret = Cons{T}(args[end - i], ret)
+    end
+    ret
+end
+
+List!(args...) =
+    begin
+        ret = Nil{Any}()
+        for i = 0:length(args)-1
+            ret = Cons{Any}(args[end - i], ret)
+        end
+        ret
+    end
+
 Nil() = Nil{Any}()
 
 Base.iterate(lst :: List!{T}) where T =
@@ -36,6 +70,7 @@ function Base.iterate(::List!{T}, lst :: List!{T})::Union{Nothing, Tuple{T, List
         Cons{T}(a, b) => (a, b)
     end
 end
+
 
 function Base.map(fn :: Fun{T, R}, lst :: List!{T}) :: List!{R} where {T, R}
     ret = Nil{R}()
