@@ -19,24 +19,30 @@ ADT destructing
 ---------------
 ```julia
 
-@case Natural(dimension :: Float32,  longitude :: Float32, climate :: String, altitude :: Int32)
-@case Cutural(area :: String,  kind :: String, country :: String, nature :: Natural)
+
+@case Natural(dimension :: Float32, climate :: String, altitude :: Int32)
+@case Cutural(region :: String,  kind :: String, country :: String, nature :: Natural)
 
 
-神农架 = Cutural("湖北", "林区", "中国", Natural(31.744, 110.68, "北亚热带季风气候", 3106))
+神农架 = Cutural("湖北", "林区", "中国", Natural(31.744, "北亚热带季风气候", 3106))
+Yellostone = Cutural("Yellowstone National Park", "Natural", "United States", Natural(44.36, "subarctic", 2357))
 
 function my_data_query(data_lst :: Vector{Cutural})
     filter(data_lst) do data
         @match data begin
-            Cutural(_, "林区", "中国", Natural(dim, _, _, altitude)){
+            Cutural(_, "林区", "中国", Natural(dim, _, altitude)){
                     dim > 30.0, altitude > 1000
             } => true
+
+            Cutural(_, _, "United States", Natural(_, _, altitude)){altitude > 2000
+            } => true
+
             _ => false
+
         end
     end
 end
-
-my_data_query([神农架])
+my_data_query([神农架, Yellostone])
 ...
 ```
 

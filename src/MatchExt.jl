@@ -151,10 +151,4 @@ PatternDef.App(..) do args, guard, tag, mod
 
 end
 
-"""
-x = 10
-@match x begin
-    1..100 =>
-"""
-
 end
