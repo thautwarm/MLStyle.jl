@@ -82,13 +82,13 @@
     end
     @testset "array match" begin
         @test ([2, 3], 4) == @match [1, 2, 3, 4] begin
-            [1, unpack..., a] => (unpack, a)
+            [1, pack..., a] => (pack, a)
             end
         @test ([3, 2], 4) == @match [1 2; 3 4] begin
-            [1, unpack..., a] => (unpack, a)
+            [1, pack..., a] => (pack, a)
             end
         @test ([2, 3], 4) == @match [1, 2, 3, 4] begin
-            (1, unpack..., a) => (unpack, a)
+            (1, pack..., a) => (pack, a)
             end
     end
 end
