@@ -1,6 +1,18 @@
 Pattern
 =======================
 
+- [ADT destructing](https://github.com/thautwarm/MLStyle.jl/blob/master/docs/src/syntax/pattern.md#adt-destructing)
+- [As-Pattern](https://github.com/thautwarm/MLStyle.jl/blob/master/docs/src/syntax/pattern.md#as-pattern)
+- [Literal pattern](https://github.com/thautwarm/MLStyle.jl/blob/master/docs/src/syntax/pattern.md#literal-pattern)
+- [Capture pattern](https://github.com/thautwarm/MLStyle.jl/blob/master/docs/src/syntax/pattern.md#capture-pattern)
+- [Type pattern](https://github.com/thautwarm/MLStyle.jl/blob/master/docs/src/syntax/pattern.md#type-pattern)
+- [Guard](https://github.com/thautwarm/MLStyle.jl/blob/master/docs/src/syntax/pattern.md#guard)
+- [Custom pattern & dictionary, tuple, array, linked list pattern](https://github.com/thautwarm/MLStyle.jl/blob/master/docs/src/syntax/pattern.md#custom-pattern)
+- [Range Pattern](https://github.com/thautwarm/MLStyle.jl/blob/master/docs/src/syntax/pattern.md#range-pattern)
+- [Reference Pattern](https://github.com/thautwarm/MLStyle.jl/blob/master/docs/src/syntax/pattern.md#reference-pattern)
+- [Fall through cases](https://github.com/thautwarm/MLStyle.jl/blob/master/docs/src/syntax/pattern.md#fall-through-cases)
+- [Type level feature](https://github.com/thautwarm/MLStyle.jl/blob/master/docs/src/syntax/pattern.md#type-level-feature)
+
 Patterns provide convenient ways to manipulate data,
 
 ADT destructing
@@ -68,7 +80,7 @@ end
 # => 1
 ```
 
-However, when you use `TypeLevel Feature`, the behavious could change slightly. See [TypeLevel Feature](#type-pattern).
+However, when you use `TypeLevel Feature`, the behavious could change slightly. See [TypeLevel Feature](https://github.com/thautwarm/MLStyle.jl/blob/master/docs/src/syntax/pattern.md#type-level-feature).
 
 As-Pattern
 ----------
@@ -210,6 +222,28 @@ end
 # => (2, MLStyle.Data.List.Cons{Int64}(3, MLStyle.Data.List.Nil{Int64}()))
 ```
 
+Fall through cases
+-------------------
+
+```julia
+test(num) = 
+    @match num begin
+       ::Float64 |
+        0        |
+        1        |
+        2        => true
+
+        _        => false
+    end
+
+test(0)   # true
+test(1)   # true
+test(2)   # true
+test(1.0) # true
+test(3)   # false
+test("")  # false
+```
+
 Type level feature
 ----------------
 
@@ -244,3 +278,4 @@ do as the following snippet
     ::&Int    => Int
 end
 ```
+
