@@ -1,21 +1,34 @@
 using MLStyle
+using MLStyle.Data
 
 @testset "adt-type" begin
 
-@data List{T} begin
-    Nil{T}
-    Cons{T}(head :: T, tail :: List{T})
-end
+lst = List.Cons(1, List.Nil{Int}())
 
-
-lst = Cons(1, Nil{Int}())
 
 let test =
     @match lst begin
-    	   Cons(1, ::Cons) => nothing
-           Cons(head, ::Nil{Int}) => head
+    	   List.Cons(1, ::List.Cons)        => nothing
+           List.Cons(head, ::List.Nil{Int}) => head
 	end
     @test test === 1
+end
+
+let test = 
+    @match 1 ^ 2 ^ List.List!{Int32}() begin 
+        1 ^ 2 ^ [] => true
+    end 
+    @test test === true
+end    
+
+let _ = 
+    @match [1, 2, 3, 4] begin 
+        [1, pack..., last] => 
+            @test pack == [2, 3]  && last == 4
+        _ =>
+            @test false
+    end
+
 end
 
 end
