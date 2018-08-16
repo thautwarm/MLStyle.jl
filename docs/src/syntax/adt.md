@@ -1,6 +1,8 @@
 Algebraic Data Types
 ==============================
 
+What's the so-called ADT?
+
 - An efficient way to represent data.
 - An elegant way to composite data.
 - An effective way to manipulate data.
@@ -45,6 +47,43 @@ eval_arith(
                     Number(5)))))
 # => 0
 ```
+
+Case Class
+----------
+
+Just like the similar one in Scala
+```julia
+abstract type A end
+@case C{T}(a :: Int, b){T}
+@case D(a, b)
+@case E <: A
+```
+
+In terms of data structure definition, following codes could be expanded to
+```julia
+abstract type A end
+struct C{T}
+    a :: Int
+    b
+end
+
+struct D
+    a
+    b
+end
+
+struct E <: A
+end
+
+<additional codes>
+```
+
+Take care that any instance of `E` is a **singleton** thanks to Julia's language design pattern.
+
+However the two snippet above are not equivalent, for there are other hidden details to support
+**pattern matching** on these data structures.
+
+See [pattern.md](https://github.com/thautwarm/MLStyle.jl/blob/master/docs/src/syntax/pattern.md).
 
 
 

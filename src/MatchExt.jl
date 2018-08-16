@@ -103,10 +103,12 @@ end
 # """
 
 PatternDef.Meta((expr :: Expr -> expr.head == :(::))) do expr, guard, tag, mod
+
     args = expr.args
     len = length(args)
+
     annotation_processing(arg) =
-        if Feature.TypeLevel.activate
+        if Feature.is_activated(:TypeLevel, mod)
             pattern_match(arg, nothing, :($typeof($tag)), mod)
         else
             :($isa($tag, $(arg)))
