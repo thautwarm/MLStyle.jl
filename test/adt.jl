@@ -42,14 +42,21 @@
                             Mult(Number(2),
                                 Number(5)))))) == 1
     end
-    @testset "@case" begin
-        abstract type A end
-        @case C{T}(a :: Int, b::T)
-        @case D(a, b)
-        @case E <: A
 
-        @test E <: A
-        @test fieldnames(D) == (:a, :b)
-        @test_throws MethodError C(3.0, :abc)
-    end
+end
+
+# for type definition not allowed in the local scope, define it at top level.
+abstract type A end
+
+@testset "@case" begin
+    @case C{T}(a :: Int, b::T)
+    @case D(a, b)
+
+
+    @case E <: A
+
+    @test E <: A
+    @test fieldnames(D) == (:a, :b)
+    @test_throws MethodError C(3.0, :abc)
+
 end
