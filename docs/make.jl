@@ -18,7 +18,6 @@ makedocs(
         "Syntax" => Any[
             "syntaxl/adt.md",
             "syntax/pattern.md",
-            "syntax/matching.md",
             "syntax/pattern-function.md",
         ],
         "Data" => Any[
