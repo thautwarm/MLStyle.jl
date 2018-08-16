@@ -88,7 +88,7 @@
             [1, pack..., a] => (pack, a)
             end
         @test ([2, 3], 4) == @match [1, 2, 3, 4] begin
-            (1, pack..., a) => (pack, a)
+            [1, pack..., a] => (pack, a)
             end
     end
 end
