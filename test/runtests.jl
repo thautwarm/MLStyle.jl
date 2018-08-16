@@ -1,5 +1,4 @@
 using Test
+using MLStyle
 
-@testset "adt" begin
 include("adt.jl")
-end 
