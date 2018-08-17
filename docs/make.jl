@@ -16,17 +16,23 @@ makedocs(
     pages = [
         "Home" => "index.md",
         "Syntax" => Any[
-            "syntaxl/adt.md",
-            "syntax/pattern.md",
+            "syntax/adt.md",
+            # "syntax/pattern.md",
             "syntax/pattern-function.md",
         ],
         "Data" => Any[
-            "data/list.md",
-            "data/typed-function.md",
+            # "data/list.md",
+            # "data/typed-function.md",
         ],
         "Feature" => Any[
-            "feature/type-level.md"
+            # "feature/type-level.md"
         ],
     ],
     html_prettyurls = !("local" in ARGS),
 )
+
+deploydocs(repo="github.com/thautwarm/MLStyle.jl",
+    target="build",
+    julia="1.0",
+    deps=nothing,
+    make=nothing)
