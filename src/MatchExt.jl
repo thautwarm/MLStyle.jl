@@ -28,7 +28,7 @@ pattern_match(str :: AbstractString, guard, tag, mod :: Module) =
     if guard === nothing
         :($tag === $str)
     else
-        :($tag === $str && guard)
+        :($tag === $str && $guard)
     end
 
 pattern_match(sym :: Symbol, guard, tag, mod :: Module) =
@@ -48,7 +48,7 @@ pattern_match(sym :: Symbol, guard, tag, mod :: Module) =
                 if guard === nothing
                     ret
                 else
-                    :(ret && guard)
+                    :($ret && $guard)
                 end
             end
         end
