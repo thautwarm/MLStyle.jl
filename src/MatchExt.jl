@@ -208,7 +208,7 @@ PatternDef.Meta(expr :: Expr -> expr.head == :curly) do expr, guard, tag, mod
             begin
                 len = length(tail)
 
-                pat1 = pattern_match(head, nothing, tag, mod)
+                pat1 = pattern_match(head, nothing, :($tag.name.wrapper), mod)
 
                 patn = map(enumerate(tail)) do (idx, each)
                     pattern_match(each, nothing, :($tag.parameters[$idx]), mod)

@@ -19,7 +19,7 @@
         @case S{A, B}(a :: A, b :: B)
         s = S(1, "2")
         @test @match s begin
-            ::S{A, B} => A === Int && B === String
+            ::Kind{A, B} => Kind === S && A === Int && B === String
         end
     end
 end
