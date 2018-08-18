@@ -2,7 +2,7 @@ using Documenter
 using MLStyle, MLStyle.Data
 
 
-DataModule = [MLStyle.Data.List, MLStyle.Data.TypedFn]
+DataModule = [MLStyle.Data.List]
 makedocs(
     modules = [MLStyle.ADT, MLStyle.Match, MLStyle.Feature, MLStyle.Err,
                DataModule...],
