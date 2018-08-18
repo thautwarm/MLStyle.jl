@@ -1,17 +1,17 @@
 Pattern
 =======================
 
-- [ADT destructing](#adt-destructing)
-- [As-Pattern](#as-pattern)
-- [Literal pattern](#literal-pattern)
-- [Capture pattern](#capture-pattern)
-- [Type pattern](#type-pattern)
-- [Guard](#guard)
-- [Custom pattern & dictionary, tuple, array, linked list pattern](#custom-pattern)
-- [Range Pattern](#range-pattern)
-- [Reference Pattern](#reference-pattern)
-- [Fall through cases](#fall-through-cases)
-- [Type level feature](#type-level-feature)
+- [ADT destructing](#ADT-destructing-1)
+- [As-Pattern](#As-Pattern-1)
+- [Literal pattern](#Literal-pattern-1)
+- [Capture pattern](#Capture-pattern-1)
+- [Type pattern](#Type-pattern-1)
+- [Guard](#Guard-1)
+- [Custom pattern & dictionary, tuple, array, linked list pattern](#Custom-pattern-1)
+- [Range Pattern](#Range-pattern-1)
+- [Reference Pattern](#Reference-pattern-1)
+- [Fall through cases](#Fall-through-cases-1)
+- [Type level feature](#Type-level-feature-1)
 
 Patterns provide convenient ways to manipulate data,
 
