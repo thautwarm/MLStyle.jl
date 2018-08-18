@@ -1,7 +1,6 @@
 Pattern
 =======================
 
-- [ADT destructing](#ADT-destructing-1)
 - [As-Pattern](#As-Pattern-1)
 - [Literal pattern](#Literal-pattern-1)
 - [Capture pattern](#Capture-pattern-1)
@@ -12,51 +11,22 @@ Pattern
 - [Reference Pattern](#Reference-pattern-1)
 - [Fall through cases](#Fall-through-cases-1)
 - [Type level feature](#Type-level-feature-1)
+- [ADT destructing](#ADT-destructing-1)
 
 Patterns provide convenient ways to manipulate data,
-
-ADT destructing
----------------
-```julia
-
-@case Natural(dimension :: Float32, climate :: String, altitude :: Int32)
-@case Cutural(region :: String,  kind :: String, country :: String, nature :: Natural)
-
-
-神农架 = Cutural("湖北", "林区", "中国", Natural(31.744, "北亚热带季风气候", 3106))
-Yellostone = Cutural("Yellowstone National Park", "Natural", "United States", Natural(44.36, "subarctic", 2357))
-
-function my_data_query(data_lst :: Vector{Cutural})
-    filter(data_lst) do data
-        @match data begin
-            Cutural(_, "林区", "中国", Natural(dim, _, altitude)){
-                dim > 30.0, altitude > 1000
-            } => true
-
-            Cutural(_, _, "United States", Natural(_, _, altitude)){
-                altitude > 2000
-            } => true
-
-            _ => false
-
-        end
-    end
-end
-my_data_query([神农架, Yellostone])
-...
-```
-
 
 Literal pattern
 ------------------------
 
 ```julia
 
+
 @match 10 {
     1  => "wrong!"
     2  => "wrong!"
     10 => "right!"
 }
+
 # => "right"
 ```
 Default supported literal patterns are `Number`and `AbstractString`.
@@ -248,6 +218,37 @@ test(2)   # true
 test(1.0) # true
 test(3)   # false
 test("")  # false
+```
+
+ADT destructing
+---------------
+```julia
+
+@case Natural(dimension :: Float32, climate :: String, altitude :: Int32)
+@case Cutural(region :: String,  kind :: String, country :: String, nature :: Natural)
+
+
+神农架 = Cutural("湖北", "林区", "中国", Natural(31.744, "北亚热带季风气候", 3106))
+Yellostone = Cutural("Yellowstone National Park", "Natural", "United States", Natural(44.36, "subarctic", 2357))
+
+function my_data_query(data_lst :: Vector{Cutural})
+    filter(data_lst) do data
+        @match data begin
+            Cutural(_, "林区", "中国", Natural(dim, _, altitude)){
+                dim > 30.0, altitude > 1000
+            } => true
+
+            Cutural(_, _, "United States", Natural(_, _, altitude)){
+                altitude > 2000
+            } => true
+
+            _ => false
+
+        end
+    end
+end
+my_data_query([神农架, Yellostone])
+...
 ```
 
 Type level feature
