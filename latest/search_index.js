@@ -25,6 +25,14 @@ var documenterSearchIndex = {"docs": [
 },
 
 {
+    "location": "#Why-ADT-and-pattern-matching-1",
+    "page": "Home",
+    "title": "Why ADT and pattern matching",
+    "category": "section",
+    "text": "ClarityLet\'s start from a simple case.function switch_task(status :: Int)\r\n    @match status begin\r\n        1 => \"finish your homework:)\"\r\n        2 => \"reading\"\r\n        3 => \"put down your mobilephone and get outside for a one-hour exercise.\"\r\n        4 => \"go to some website and watch some live.\"\r\n        _ => \"sleep\"\r\n    end\r\nendFor there is no switch-case in Julia syntax, sometimes there might be enormous single cases to hard-code, if-else-end does hurt for its verbosity.Another example is getting specific data from different schemas. Assume that you have many deserialized JSON data, and they\'re in 3 schemas. Each of them represents some information of a person.struct D1\r\n  name : String\r\n  age  : Int\r\n  sex  : Int\r\nend\r\n\r\nstruct D2\r\n  nickname : String\r\n  lifetime : Int\r\n  gender   : Int\r\nend\r\n\r\nstruct D3\r\n  sex   : Int\r\n  lifetime : Int\r\nend\r\ndata :: Vector{Union{D1, D2, D3}}Now your boss told you to extract age and gender from those people. How would you do?Yes it\'s so easy:extracted = map data do record\r\n  if isa(record, D1)\r\n    (data.age, data.sex)\r\n  else if isa(data, D2)\r\n    (data.lifetime, data.gender)\r\n  else\r\n    (data.lifetime, data.sex)\r\n  end\r\nendHowever, in real word, data from different places could have so many schemas and you code will just swell both your editor and time. Think that your friends told you in the morning to take part in their party when knock off, but you have a series of these stupid tasks to finish...Let\'s try something else that might make you more pleasant.extracted = map data do record\r\n  @match record\r\n    D1(_, age, gender) |\r\n    D2(_, age, gender) |\r\n    D3(gender, age) => (age, gender)\r\n    _               => @error \"unknown schema\"\r\n  end\r\nendWhat do you think about this? I admit that writing codes like the above may not guarantee your attending to the party, but something is different, I think."
+},
+
+{
     "location": "syntax/adt/#",
     "page": "Algebraic Data Types",
     "title": "Algebraic Data Types",
@@ -69,15 +77,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Pattern",
     "title": "Pattern",
     "category": "section",
-    "text": "ADT destructing\nAs-Pattern\nLiteral pattern\nCapture pattern\nType pattern\nGuard\nCustom pattern & dictionary, tuple, array, linked list pattern\nRange Pattern\nReference Pattern\nFall through cases\nType level featurePatterns provide convenient ways to manipulate data,"
-},
-
-{
-    "location": "syntax/pattern/#ADT-destructing-1",
-    "page": "Pattern",
-    "title": "ADT destructing",
-    "category": "section",
-    "text": "\n@case Natural(dimension :: Float32, climate :: String, altitude :: Int32)\n@case Cutural(region :: String,  kind :: String, country :: String, nature :: Natural)\n\n\n神农架 = Cutural(\"湖北\", \"林区\", \"中国\", Natural(31.744, \"北亚热带季风气候\", 3106))\nYellostone = Cutural(\"Yellowstone National Park\", \"Natural\", \"United States\", Natural(44.36, \"subarctic\", 2357))\n\nfunction my_data_query(data_lst :: Vector{Cutural})\n    filter(data_lst) do data\n        @match data begin\n            Cutural(_, \"林区\", \"中国\", Natural(dim, _, altitude)){\n                dim > 30.0, altitude > 1000\n            } => true\n\n            Cutural(_, _, \"United States\", Natural(_, _, altitude)){\n                altitude > 2000\n            } => true\n\n            _ => false\n\n        end\n    end\nend\nmy_data_query([神农架, Yellostone])\n..."
+    "text": "As-Pattern\nLiteral pattern\nCapture pattern\nType pattern\nGuard\nCustom pattern & dictionary, tuple, array, linked list pattern\nRange Pattern\nReference Pattern\nFall through cases\nType level feature\nADT destructingPatterns provide convenient ways to manipulate data,"
 },
 
 {
@@ -85,7 +85,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Pattern",
     "title": "Literal pattern",
     "category": "section",
-    "text": "\n@match 10 {\n    1  => \"wrong!\"\n    2  => \"wrong!\"\n    10 => \"right!\"\n}\n# => \"right\"Default supported literal patterns are Numberand AbstractString."
+    "text": "\n\n@match 10 {\n    1  => \"wrong!\"\n    2  => \"wrong!\"\n    10 => \"right!\"\n}\n\n# => \"right\"Default supported literal patterns are Numberand AbstractString."
 },
 
 {
@@ -150,6 +150,14 @@ var documenterSearchIndex = {"docs": [
     "title": "Fall through cases",
     "category": "section",
     "text": "test(num) =\n    @match num begin\n       ::Float64 |\n        0        |\n        1        |\n        2        => true\n\n        _        => false\n    end\n\ntest(0)   # true\ntest(1)   # true\ntest(2)   # true\ntest(1.0) # true\ntest(3)   # false\ntest(\"\")  # false"
+},
+
+{
+    "location": "syntax/pattern/#ADT-destructing-1",
+    "page": "Pattern",
+    "title": "ADT destructing",
+    "category": "section",
+    "text": "\n@case Natural(dimension :: Float32, climate :: String, altitude :: Int32)\n@case Cutural(region :: String,  kind :: String, country :: String, nature :: Natural)\n\n\n神农架 = Cutural(\"湖北\", \"林区\", \"中国\", Natural(31.744, \"北亚热带季风气候\", 3106))\nYellostone = Cutural(\"Yellowstone National Park\", \"Natural\", \"United States\", Natural(44.36, \"subarctic\", 2357))\n\nfunction my_data_query(data_lst :: Vector{Cutural})\n    filter(data_lst) do data\n        @match data begin\n            Cutural(_, \"林区\", \"中国\", Natural(dim, _, altitude)){\n                dim > 30.0, altitude > 1000\n            } => true\n\n            Cutural(_, _, \"United States\", Natural(_, _, altitude)){\n                altitude > 2000\n            } => true\n\n            _ => false\n\n        end\n    end\nend\nmy_data_query([神农架, Yellostone])\n..."
 },
 
 {
