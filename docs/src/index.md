@@ -4,9 +4,9 @@
 
 Check out documents here:
 
-- [ADT]()
-- [Patterns for matching]()
-- [Pattern function]()
+- [ADT](https://thautwarm.github.io/MLStyle.jl/latest/syntax/adt/)
+- [Patterns for matching](https://thautwarm.github.io/MLStyle.jl/latest/syntax/pattern/)
+- [Pattern function](https://thautwarm.github.io/MLStyle.jl/latest/syntax/pattern-function/)
 
 Or you want some [examples](https://github.com/thautwarm/MLStyle.jl/tree/master/test).
 

@@ -19,7 +19,6 @@ ADT destructing
 ---------------
 ```julia
 
-
 @case Natural(dimension :: Float32, climate :: String, altitude :: Int32)
 @case Cutural(region :: String,  kind :: String, country :: String, nature :: Natural)
 
@@ -31,10 +30,11 @@ function my_data_query(data_lst :: Vector{Cutural})
     filter(data_lst) do data
         @match data begin
             Cutural(_, "林区", "中国", Natural(dim, _, altitude)){
-                    dim > 30.0, altitude > 1000
+                dim > 30.0, altitude > 1000
             } => true
 
-            Cutural(_, _, "United States", Natural(_, _, altitude)){altitude > 2000
+            Cutural(_, _, "United States", Natural(_, _, altitude)){
+                altitude > 2000
             } => true
 
             _ => false
@@ -181,13 +181,13 @@ Dictionary pattern, tuple pattern, array pattern and linked list destructing are
 ```julia
 dict = Dict(1 => 2, "3" => 4, 5 => Dict(6 => 7))
 @match dict begin
-    Dict("3" => four::Int, 
+    Dict("3" => four::Int,
           5  => Dict(6 => sev)){four < sev} => sev
 end
 # => 7
 ```
 
-- Tuple pattern 
+- Tuple pattern
 
 ```julia
 
@@ -221,7 +221,7 @@ julia> it[2]
 
 lst = List.List!(1, 2, 3)
 
-@match lst begin 
+@match lst begin
     1 ^ a ^ tail => a
 end
 
@@ -232,7 +232,7 @@ Fall through cases
 -------------------
 
 ```julia
-test(num) = 
+test(num) =
     @match num begin
        ::Float64 |
         0        |
@@ -266,7 +266,7 @@ end
 ```julia
 Feature.@activate TypeLevel
 
-@match 1 begin 
+@match 1 begin
     ::String => String
     ::Int    => Int
 end
@@ -284,4 +284,3 @@ do as the following snippet
     ::&Int    => Int
 end
 ```
-
