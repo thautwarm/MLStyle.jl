@@ -1,6 +1,11 @@
 module MatchExt
-import MLStyle: Feature
+import MLStyle: Feature, (⇒), Fun
 import MLStyle.Match: pattern_match, PatternDef
+
+using MLStyle.Private
+using MLStyle.Err
+using MLStyle
+
 export (..), enum_next
 function enum_next(x :: Number)
     x + 1
@@ -101,7 +106,6 @@ end
 #     x :: Ty => # do something if isa(expr, Ty) and perform capturing.
 # }
 # """
-
 PatternDef.Meta((expr :: Expr -> expr.head == :(::))) do expr, guard, tag, mod
 
     args = expr.args
@@ -138,6 +142,91 @@ PatternDef.Meta((expr :: Expr -> expr.head == :(::))) do expr, guard, tag, mod
     end
 end
 
+# """
+#  [a, b, c, d..., e, f, g] => ...
+# """
+PatternDef.Meta(expr::Expr -> expr.head == :vect) do expr, guard, tag, mod
+    args = expr.args
+    if length(args) == 0
+        return :($isempty($tag)) |>
+                last ->
+                if guard === nothing
+                    last
+                else
+                    :($last && $guard)
+                end
+    end
+
+    atleast_element_count = 0
+    unpack_begin = nothing
+    unpack_end = 0
+    unpack = []
+    foreach(args) do arg
+        if isa(arg, Expr) && arg.head === :...
+            if unpack_begin === nothing
+                unpack_begin = atleast_element_count + 1
+             else
+                SyntaxError("Vector unpack can only perform sequential unpack at most once.") |> throw
+            end
+            push!(unpack, arg.args[1])
+        else
+            atleast_element_count = atleast_element_count + 1
+            if unpack_begin !== nothing
+                push!(unpack, pattern_match(arg, nothing, :($tag[end-$unpack_end]), mod))
+                unpack_end = unpack_end + 1
+            else
+                push!(unpack, pattern_match(arg, nothing, :($tag[$atleast_element_count]), mod))
+            end
+        end
+    end
+
+    if unpack_begin !== nothing
+        arg = unpack[unpack_begin]
+        unpack[unpack_begin] = pattern_match(arg, nothing, :($view($tag, $unpack_begin:($length($tag) - $unpack_end))), mod)
+        reduce(unpack, init=:($length($tag) >= $atleast_element_count)) do last, each
+            :($last && $each)
+        end
+    else
+        reduce(unpack, init=:($length($tag) == $atleast_element_count)) do last, each
+            :($last && $each)
+        end
+    end
+end
+# """
+# Feature.@activate TypeLevel
+# @match Int ⇒ Int begin
+#     ::(T ⇒ G) => (T, G)
+# end # => (Int, Int)
+# """
+PatternDef.Meta(expr :: Expr -> expr.head == :curly) do expr, guard, tag, mod
+
+    if !Feature.is_activated(:TypeLevel, mod)
+        :($tag isa $expr)
+    else
+        @match expr.args begin
+            [head, tail...] =>
+            begin
+                len = length(tail)
+
+                pat1 = pattern_match(head, nothing, tag, mod)
+
+                patn = map(enumerate(tail)) do (idx, each)
+                    pattern_match(each, nothing, :($tag.parameters[$idx]), mod)
+                end |> last -> reduce(ast_and, last, init = :($length($tag.parameters) == $len))
+
+                :($pat1 && $patn)
+            end
+            _ => SyntaxError("$(string(expr))") |> throw
+        end
+    end
+end
+
+# """
+# @match 1 {
+#     1..10   in x => x
+#     11..20  in x => x * 10
+# }
+# """
 PatternDef.App(..) do args, guard, tag, mod
 
     start, _end = args
@@ -148,7 +237,15 @@ PatternDef.App(..) do args, guard, tag, mod
         end
         end
     end
-
 end
+
+PatternDef.App(⇒) do args, guard, tag, mod
+    from, to = args
+    pat1 = pattern_match(from, nothing, :($tag.parameters[1]), mod)
+    pat2 = pattern_match(to,   nothing, :($tag.parameters[2]), mod)
+    :($tag <: $Fun && $pat1 && $pat2)
+end
+
+
 
 end

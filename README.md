@@ -9,14 +9,30 @@ MLStyle.jl
 [![Docs](https://img.shields.io/badge/docs-latest-orange.svg)](https://thautwarm.github.io/MLStyle.jl/latest/)
 
 ## Install
-This package is not registered yet. Please use the following command to install.
 
 ```julia
-pkg> add https://github.com/thautwarm/MLStyle.jl.git#master
+pkg> add MLStyle
+```
+
+## Preview
+
+```julia
+using MLStyle
+Feature.@activate TypeLevel
+
+@data 𝑀{𝑻} begin
+    ϵ{𝑻}
+    𝑪{𝑻}(𝒕 :: 𝑻)
+end
+
+@def (▷) begin
+  ( ::ϵ{𝑻},   :: (𝑻 ⇒ 𝑀{𝑹})) => ϵ{𝑹}()
+  (𝑪(𝒕::𝑻), 𝝀 :: (𝑻 ⇒ 𝑀{𝑹})) => 𝜆{𝑅}(𝒕)
+end
+
 ```
 
 ## Extension
-
 - About extending patterns for matching : [Examples to extend patterns](https://github.com/thautwarm/MLStyle.jl/blob/master/src/MatchExt.jl).
 
 ## Unfinished Features
