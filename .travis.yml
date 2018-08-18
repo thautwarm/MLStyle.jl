@@ -27,4 +27,4 @@ after_success:
   # add Documenter
   - julia -e 'using Pkg; Pkg.add("Documenter")'
   # push documents to gh-pages
-  - julia -e 'using Pkg; Pkg.add("MLStyle"); include(joinpath("docs", "make.jl"))'
+  - julia -e 'using Pkg; cd(Pkg.dir("MLStyle")); include(joinpath("docs", "make.jl"))'
