@@ -14,24 +14,25 @@ makedocs(
     linkcheck = !("skiplinks" in ARGS),
     analytics = "UA-89508993-1",
     pages = [
-        "Home" => "index.md",
+        "Home"   => "index.md",
         "Syntax" => Any[
             "syntax/adt.md",
-            # "syntax/pattern.md",
-            "syntax/pattern-function.md",
+            "syntax/pattern.md",
+            "Syntax/pattern-function.md",
         ],
-        "Data" => Any[
-            # "data/list.md",
-            # "data/typed-function.md",
-        ],
-        "Feature" => Any[
-            # "feature/type-level.md"
-        ],
+        # "Data" => Any[
+        #     # "data/list.md",
+        #     # "data/typed-function.md",
+        # ],
+        # "Feature" => Any[
+        #     # "feature/type-level.md"
+        # ],
     ],
     html_prettyurls = !("local" in ARGS),
 )
 
-deploydocs(repo="github.com/thautwarm/MLStyle.jl",
+deploydocs(
+    repo="github.com/thautwarm/MLStyle.jl",
     target="build",
     julia="1.0",
     deps=nothing,

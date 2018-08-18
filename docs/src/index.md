@@ -1,9 +1,17 @@
 # MLStyle.jl
 
+*ML language pattern provider for Julia*
+
+Check out documents here:
+
+- [ADT]()
+- [Patterns for matching]()
+- [Pattern function]()
+
+Or you want some [examples](https://github.com/thautwarm/MLStyle.jl/tree/master/test).
+
 ## Install
 
-This package is not registered yet. Please use the following command to install.
-
 ```julia
-pkg> add https://github.com/thautwarm/MLStyle.jl.git#master
+pkg> add MLStyle
 ```
