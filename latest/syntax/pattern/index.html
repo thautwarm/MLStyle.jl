@@ -7,7 +7,6 @@ m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
 ga('create', 'UA-89508993-1', 'auto');
 ga('send', 'pageview');
 </script><link href="https://cdnjs.cloudflare.com/ajax/libs/normalize/4.2.0/normalize.min.css" rel="stylesheet" type="text/css"/><link href="https://fonts.googleapis.com/css?family=Lato|Roboto+Mono" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.2.0/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link href="../../assets/documenter.css" rel="stylesheet" type="text/css"/></head><body><nav class="toc"><h1>MLStyle.jl</h1><select id="version-selector" onChange="window.location.href=this.value" style="visibility: hidden"></select><form class="search" id="search-form" action="../../search/"><input id="search-query" name="q" type="text" placeholder="Search docs"/></form><ul><li><a class="toctext" href="../../">Home</a></li><li><span class="toctext">Syntax</span><ul><li><a class="toctext" href="../adt/">Algebraic Data Types</a></li><li class="current"><a class="toctext" href>Pattern</a><ul class="internal"><li><a class="toctext" href="#ADT-destructing-1">ADT destructing</a></li><li><a class="toctext" href="#Literal-pattern-1">Literal pattern</a></li><li><a class="toctext" href="#Capture-pattern-1">Capture pattern</a></li><li><a class="toctext" href="#Type-pattern-1">Type pattern</a></li><li><a class="toctext" href="#As-Pattern-1">As-Pattern</a></li><li><a class="toctext" href="#Guard-1">Guard</a></li><li><a class="toctext" href="#Range-pattern-1">Range pattern</a></li><li><a class="toctext" href="#Reference-pattern-1">Reference pattern</a></li><li><a class="toctext" href="#Custom-pattern-1">Custom pattern</a></li><li><a class="toctext" href="#Fall-through-cases-1">Fall through cases</a></li><li><a class="toctext" href="#Type-level-feature-1">Type level feature</a></li></ul></li><li><a class="toctext" href="../pattern-function/">Pattern function</a></li></ul></li></ul></nav><article id="docs"><header><nav><ul><li>Syntax</li><li><a href>Pattern</a></li></ul><a class="edit-page" href="https://github.com/thautwarm/MLStyle.jl/blob/master/docs/src/syntax/pattern.md"><span class="fa"></span> Edit on GitHub</a></nav><hr/><div id="topbar"><span>Pattern</span><a class="fa fa-bars" href="#"></a></div></header><h1><a class="nav-anchor" id="Pattern-1" href="#Pattern-1">Pattern</a></h1><ul><li><a href="https://github.com/thautwarm/MLStyle.jl/blob/master/docs/src/syntax/pattern.md#adt-destructing">ADT destructing</a></li><li><a href="https://github.com/thautwarm/MLStyle.jl/blob/master/docs/src/syntax/pattern.md#as-pattern">As-Pattern</a></li><li><a href="https://github.com/thautwarm/MLStyle.jl/blob/master/docs/src/syntax/pattern.md#literal-pattern">Literal pattern</a></li><li><a href="https://github.com/thautwarm/MLStyle.jl/blob/master/docs/src/syntax/pattern.md#capture-pattern">Capture pattern</a></li><li><a href="https://github.com/thautwarm/MLStyle.jl/blob/master/docs/src/syntax/pattern.md#type-pattern">Type pattern</a></li><li><a href="https://github.com/thautwarm/MLStyle.jl/blob/master/docs/src/syntax/pattern.md#guard">Guard</a></li><li><a href="https://github.com/thautwarm/MLStyle.jl/blob/master/docs/src/syntax/pattern.md#custom-pattern">Custom pattern &amp; dictionary, tuple, array, linked list pattern</a></li><li><a href="https://github.com/thautwarm/MLStyle.jl/blob/master/docs/src/syntax/pattern.md#range-pattern">Range Pattern</a></li><li><a href="https://github.com/thautwarm/MLStyle.jl/blob/master/docs/src/syntax/pattern.md#reference-pattern">Reference Pattern</a></li><li><a href="https://github.com/thautwarm/MLStyle.jl/blob/master/docs/src/syntax/pattern.md#fall-through-cases">Fall through cases</a></li><li><a href="https://github.com/thautwarm/MLStyle.jl/blob/master/docs/src/syntax/pattern.md#type-level-feature">Type level feature</a></li></ul><p>Patterns provide convenient ways to manipulate data,</p><h2><a class="nav-anchor" id="ADT-destructing-1" href="#ADT-destructing-1">ADT destructing</a></h2><pre><code class="language-julia">
-
 @case Natural(dimension :: Float32, climate :: String, altitude :: Int32)
 @case Cutural(region :: String,  kind :: String, country :: String, nature :: Natural)
 
@@ -19,10 +18,11 @@ function my_data_query(data_lst :: Vector{Cutural})
     filter(data_lst) do data
         @match data begin
             Cutural(_, &quot;林区&quot;, &quot;中国&quot;, Natural(dim, _, altitude)){
-                    dim &gt; 30.0, altitude &gt; 1000
+                dim &gt; 30.0, altitude &gt; 1000
             } =&gt; true
 
-            Cutural(_, _, &quot;United States&quot;, Natural(_, _, altitude)){altitude &gt; 2000
+            Cutural(_, _, &quot;United States&quot;, Natural(_, _, altitude)){
+                altitude &gt; 2000
             } =&gt; true
 
             _ =&gt; false
@@ -85,10 +85,10 @@ end
 end
 # =&gt; 2.0</code></pre><p>Dictionary pattern, tuple pattern, array pattern and linked list destructing are both implemented by <strong>Custom pattern</strong>.</p><ul><li>Dict pattern(like <code>Elixir</code>&#39;s dictionary matching or ML record matching)</li></ul><pre><code class="language-julia">dict = Dict(1 =&gt; 2, &quot;3&quot; =&gt; 4, 5 =&gt; Dict(6 =&gt; 7))
 @match dict begin
-    Dict(&quot;3&quot; =&gt; four::Int, 
+    Dict(&quot;3&quot; =&gt; four::Int,
           5  =&gt; Dict(6 =&gt; sev)){four &lt; sev} =&gt; sev
 end
-# =&gt; 7</code></pre><ul><li>Tuple pattern </li></ul><pre><code class="language-julia">
+# =&gt; 7</code></pre><ul><li>Tuple pattern</li></ul><pre><code class="language-julia">
 @match (1, 2, (3, 4, (5, )))
 
     (a, b, (c, d, (5, ))) =&gt; (a, b, c, d)
@@ -107,11 +107,11 @@ julia&gt; it[2]
 4</code></pre><ul><li>Linked list pattern</li></ul><pre><code class="language-julia">
 lst = List.List!(1, 2, 3)
 
-@match lst begin 
+@match lst begin
     1 ^ a ^ tail =&gt; a
 end
 
-# =&gt; (2, MLStyle.Data.List.Cons{Int64}(3, MLStyle.Data.List.Nil{Int64}()))</code></pre><h2><a class="nav-anchor" id="Fall-through-cases-1" href="#Fall-through-cases-1">Fall through cases</a></h2><pre><code class="language-julia">test(num) = 
+# =&gt; (2, MLStyle.Data.List.Cons{Int64}(3, MLStyle.Data.List.Nil{Int64}()))</code></pre><h2><a class="nav-anchor" id="Fall-through-cases-1" href="#Fall-through-cases-1">Fall through cases</a></h2><pre><code class="language-julia">test(num) =
     @match num begin
        ::Float64 |
         0        |
@@ -132,7 +132,7 @@ test(&quot;&quot;)  # false</code></pre><h2><a class="nav-anchor" id="Type-level
 end
 # =&gt; Int64</code></pre><pre><code class="language-julia">Feature.@activate TypeLevel
 
-@match 1 begin 
+@match 1 begin
     ::String =&gt; String
     ::Int    =&gt; Int
 end
