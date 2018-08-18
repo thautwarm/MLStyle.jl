@@ -1,17 +1,17 @@
 Pattern
 =======================
 
-- [ADT destructing](https://github.com/thautwarm/MLStyle.jl/blob/master/docs/src/syntax/pattern.md#adt-destructing)
-- [As-Pattern](https://github.com/thautwarm/MLStyle.jl/blob/master/docs/src/syntax/pattern.md#as-pattern)
-- [Literal pattern](https://github.com/thautwarm/MLStyle.jl/blob/master/docs/src/syntax/pattern.md#literal-pattern)
-- [Capture pattern](https://github.com/thautwarm/MLStyle.jl/blob/master/docs/src/syntax/pattern.md#capture-pattern)
-- [Type pattern](https://github.com/thautwarm/MLStyle.jl/blob/master/docs/src/syntax/pattern.md#type-pattern)
-- [Guard](https://github.com/thautwarm/MLStyle.jl/blob/master/docs/src/syntax/pattern.md#guard)
-- [Custom pattern & dictionary, tuple, array, linked list pattern](https://github.com/thautwarm/MLStyle.jl/blob/master/docs/src/syntax/pattern.md#custom-pattern)
-- [Range Pattern](https://github.com/thautwarm/MLStyle.jl/blob/master/docs/src/syntax/pattern.md#range-pattern)
-- [Reference Pattern](https://github.com/thautwarm/MLStyle.jl/blob/master/docs/src/syntax/pattern.md#reference-pattern)
-- [Fall through cases](https://github.com/thautwarm/MLStyle.jl/blob/master/docs/src/syntax/pattern.md#fall-through-cases)
-- [Type level feature](https://github.com/thautwarm/MLStyle.jl/blob/master/docs/src/syntax/pattern.md#type-level-feature)
+- [ADT destructing](#adt-destructing)
+- [As-Pattern](#as-pattern)
+- [Literal pattern](#literal-pattern)
+- [Capture pattern](#capture-pattern)
+- [Type pattern](#type-pattern)
+- [Guard](#guard)
+- [Custom pattern & dictionary, tuple, array, linked list pattern](#custom-pattern)
+- [Range Pattern](#range-pattern)
+- [Reference Pattern](#reference-pattern)
+- [Fall through cases](#fall-through-cases)
+- [Type level feature](#type-level-feature)
 
 Patterns provide convenient ways to manipulate data,
 
@@ -86,7 +86,7 @@ end
 # => 1
 ```
 
-However, when you use `TypeLevel Feature`, the behavious could change slightly. See [TypeLevel Feature](https://github.com/thautwarm/MLStyle.jl/blob/master/docs/src/syntax/pattern.md#type-level-feature).
+However, when you use `TypeLevel Feature`, the behavious could change slightly. See [TypeLevel Feature](#type-level-feature).
 
 As-Pattern
 ----------

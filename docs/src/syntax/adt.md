@@ -83,7 +83,7 @@ Take care that any instance of `E` is a **singleton** thanks to Julia's language
 However the two snippet above are not equivalent, for there are other hidden details to support
 **pattern matching** on these data structures.
 
-See [pattern.md](https://github.com/thautwarm/MLStyle.jl/blob/master/docs/src/syntax/pattern.md).
+See [pattern.md](https://thautwarm.github.io/MLStyle.jl/latest/syntax/pattern/).
 
 
 
