@@ -1,0 +1,48 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Home · MLStyle.jl</title><script>(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-89508993-1', 'auto');
+ga('send', 'pageview');
+</script><link href="https://cdnjs.cloudflare.com/ajax/libs/normalize/4.2.0/normalize.min.css" rel="stylesheet" type="text/css"/><link href="https://fonts.googleapis.com/css?family=Lato|Roboto+Mono" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.2.0/require.min.js" data-main="assets/documenter.js"></script><script src="siteinfo.js"></script><script src="../versions.js"></script><link href="assets/documenter.css" rel="stylesheet" type="text/css"/></head><body><nav class="toc"><h1>MLStyle.jl</h1><select id="version-selector" onChange="window.location.href=this.value" style="visibility: hidden"></select><form class="search" id="search-form" action="search/"><input id="search-query" name="q" type="text" placeholder="Search docs"/></form><ul><li class="current"><a class="toctext" href>Home</a><ul class="internal"><li><a class="toctext" href="#Install-1">Install</a></li><li><a class="toctext" href="#Why-ADT-and-pattern-matching-1">Why ADT and pattern matching</a></li></ul></li><li><span class="toctext">Syntax</span><ul><li><a class="toctext" href="syntax/adt/">Algebraic Data Types</a></li><li><a class="toctext" href="syntax/pattern/">Pattern</a></li><li><a class="toctext" href="syntax/pattern-function/">Pattern function</a></li></ul></li></ul></nav><article id="docs"><header><nav><ul><li><a href>Home</a></li></ul><a class="edit-page" href="https://github.com/thautwarm/MLStyle.jl/blob/master/docs/src/index.md"><span class="fa"></span> Edit on GitHub</a></nav><hr/><div id="topbar"><span>Home</span><a class="fa fa-bars" href="#"></a></div></header><h1><a class="nav-anchor" id="MLStyle.jl-1" href="#MLStyle.jl-1">MLStyle.jl</a></h1><p><em>ML language pattern provider for Julia</em></p><p>Check out documents here:</p><ul><li><a href="https://thautwarm.github.io/MLStyle.jl/latest/syntax/adt/">ADT</a></li><li><a href="https://thautwarm.github.io/MLStyle.jl/latest/syntax/pattern/">Patterns for matching</a></li><li><a href="https://thautwarm.github.io/MLStyle.jl/latest/syntax/pattern-function/">Pattern function</a></li></ul><p>Or you want some <a href="https://github.com/thautwarm/MLStyle.jl/tree/master/test">examples</a>.</p><h2><a class="nav-anchor" id="Install-1" href="#Install-1">Install</a></h2><pre><code class="language-julia">pkg&gt; add MLStyle</code></pre><h2><a class="nav-anchor" id="Why-ADT-and-pattern-matching-1" href="#Why-ADT-and-pattern-matching-1">Why ADT and pattern matching</a></h2><ul><li>Clarity</li></ul><p>Let&#39;s start from a simple case.</p><pre><code class="language-Julia">function switch_task(status :: Int)
+    @match status begin
+        1 =&gt; &quot;finish your homework:)&quot;
+        2 =&gt; &quot;reading&quot;
+        3 =&gt; &quot;put down your mobilephone and get outside for a one-hour exercise.&quot;
+        4 =&gt; &quot;go to some website and watch some live.&quot;
+        _ =&gt; &quot;sleep&quot;
+    end
+end</code></pre><p>For there is no <code>switch-case</code> in Julia syntax, sometimes there might be enormous single cases to hard-code, <code>if-else-end</code> does hurt for its verbosity.</p><p>Another example is getting specific data from different schemas. Assume that you have many deserialized JSON data, and they&#39;re in 3 schemas. Each of them represents some information of a person.</p><pre><code class="language-Julia">struct D1
+  name : String
+  age  : Int
+  sex  : Int
+end
+
+struct D2
+  nickname : String
+  lifetime : Int
+  gender   : Int
+end
+
+struct D3
+  sex   : Int
+  lifetime : Int
+end
+data :: Vector{Union{D1, D2, D3}}</code></pre><p>Now your boss told you to extract <code>age</code> and <code>gender</code> from those people. How would you do?</p><p>Yes it&#39;s so easy:</p><pre><code class="language-julia">extracted = map data do record
+  if isa(record, D1)
+    (data.age, data.sex)
+  else if isa(data, D2)
+    (data.lifetime, data.gender)
+  else
+    (data.lifetime, data.sex)
+  end
+end</code></pre><p>However, in real word, data from different places could have so many schemas and you code will just swell both your editor and time. Think that your friends told you in the morning to take part in their party when knock off, but you have a series of these stupid tasks to finish...</p><p>Let&#39;s try something else that might make you more pleasant.</p><pre><code class="language-julia">extracted = map data do record
+  @match record
+    D1(_, age, gender) |
+    D2(_, age, gender) |
+    D3(gender, age) =&gt; (age, gender)
+    _               =&gt; @error &quot;unknown schema&quot;
+  end
+end</code></pre><p>What do you think about this? I admit that writing codes like the above may not guarantee your attending to the party, but something is different, I think.</p><footer><hr/><a class="next" href="syntax/adt/"><span class="direction">Next</span><span class="title">Algebraic Data Types</span></a></footer></article></body></html>

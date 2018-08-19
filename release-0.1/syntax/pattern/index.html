@@ -1,0 +1,144 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Pattern · MLStyle.jl</title><script>(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-89508993-1', 'auto');
+ga('send', 'pageview');
+</script><link href="https://cdnjs.cloudflare.com/ajax/libs/normalize/4.2.0/normalize.min.css" rel="stylesheet" type="text/css"/><link href="https://fonts.googleapis.com/css?family=Lato|Roboto+Mono" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.2.0/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link href="../../assets/documenter.css" rel="stylesheet" type="text/css"/></head><body><nav class="toc"><h1>MLStyle.jl</h1><select id="version-selector" onChange="window.location.href=this.value" style="visibility: hidden"></select><form class="search" id="search-form" action="../../search/"><input id="search-query" name="q" type="text" placeholder="Search docs"/></form><ul><li><a class="toctext" href="../../">Home</a></li><li><span class="toctext">Syntax</span><ul><li><a class="toctext" href="../adt/">Algebraic Data Types</a></li><li class="current"><a class="toctext" href>Pattern</a><ul class="internal"><li><a class="toctext" href="#Literal-pattern-1">Literal pattern</a></li><li><a class="toctext" href="#Capture-pattern-1">Capture pattern</a></li><li><a class="toctext" href="#Type-pattern-1">Type pattern</a></li><li><a class="toctext" href="#As-Pattern-1">As-Pattern</a></li><li><a class="toctext" href="#Guard-1">Guard</a></li><li><a class="toctext" href="#Range-pattern-1">Range pattern</a></li><li><a class="toctext" href="#Reference-pattern-1">Reference pattern</a></li><li><a class="toctext" href="#Custom-pattern-1">Custom pattern</a></li><li><a class="toctext" href="#Fall-through-cases-1">Fall through cases</a></li><li><a class="toctext" href="#ADT-destructing-1">ADT destructing</a></li><li><a class="toctext" href="#Type-level-feature-1">Type level feature</a></li></ul></li><li><a class="toctext" href="../pattern-function/">Pattern function</a></li></ul></li></ul></nav><article id="docs"><header><nav><ul><li>Syntax</li><li><a href>Pattern</a></li></ul><a class="edit-page" href="https://github.com/thautwarm/MLStyle.jl/blob/master/docs/src/syntax/pattern.md"><span class="fa"></span> Edit on GitHub</a></nav><hr/><div id="topbar"><span>Pattern</span><a class="fa fa-bars" href="#"></a></div></header><h1><a class="nav-anchor" id="Pattern-1" href="#Pattern-1">Pattern</a></h1><ul><li><a href="#As-Pattern-1">As-Pattern</a></li><li><a href="#Literal-pattern-1">Literal pattern</a></li><li><a href="#Capture-pattern-1">Capture pattern</a></li><li><a href="#Type-pattern-1">Type pattern</a></li><li><a href="#Guard-1">Guard</a></li><li><a href="#Custom-pattern-1">Custom pattern &amp; dictionary, tuple, array, linked list pattern</a></li><li><a href="#Range-pattern-1">Range Pattern</a></li><li><a href="#Reference-pattern-1">Reference Pattern</a></li><li><a href="#Fall-through-cases-1">Fall through cases</a></li><li><a href="#Type-level-feature-1">Type level feature</a></li><li><a href="#ADT-destructing-1">ADT destructing</a></li></ul><p>Patterns provide convenient ways to manipulate data,</p><h2><a class="nav-anchor" id="Literal-pattern-1" href="#Literal-pattern-1">Literal pattern</a></h2><pre><code class="language-julia">
+
+@match 10 {
+    1  =&gt; &quot;wrong!&quot;
+    2  =&gt; &quot;wrong!&quot;
+    10 =&gt; &quot;right!&quot;
+}
+
+# =&gt; &quot;right&quot;</code></pre><p>Default supported literal patterns are <code>Number</code>and <code>AbstractString</code>.</p><h2><a class="nav-anchor" id="Capture-pattern-1" href="#Capture-pattern-1">Capture pattern</a></h2><pre><code class="language-julia">
+@match 1 begin
+    x =&gt; x + 1
+end
+# =&gt; 2</code></pre><h2><a class="nav-anchor" id="Type-pattern-1" href="#Type-pattern-1">Type pattern</a></h2><pre><code class="language-julia">
+@match 1 begin
+    ::Float  =&gt; nothing
+    b :: Int =&gt; b
+    _        =&gt; nothing
+end
+# =&gt; 1</code></pre><p>However, when you use <code>TypeLevel Feature</code>, the behavious could change slightly. See <a href="#type-level-feature">TypeLevel Feature</a>.</p><h2><a class="nav-anchor" id="As-Pattern-1" href="#As-Pattern-1">As-Pattern</a></h2><p>For julia don&#39;t have an <code>as</code>  keyword and operator <code>@</code>(adopted by Haskell and Rust) is invalid for the conflicts against <em>macro</em>, we use <code>in</code> keyword to do such stuffs.</p><p>The feature is unstable for there might be perspective usage on <code>in</code> keyword about making patterns.</p><pre><code class="language-julia">@match (1, 2) begin
+    (a, b) in c =&gt; c[1] == a &amp;&amp; c[2] == b
+end</code></pre><h2><a class="nav-anchor" id="Guard-1" href="#Guard-1">Guard</a></h2><pre><code class="language-julia">
+@match x begin
+    x{x &gt; 5} =&gt; 5 - x # only succeed when x &gt; 5
+    _        =&gt; 1
+end</code></pre><h2><a class="nav-anchor" id="Range-pattern-1" href="#Range-pattern-1">Range pattern</a></h2><pre><code class="language-julia">
+@match num begin
+    1..10  in x =&gt; &quot;$x in [1, 10]&quot;
+    11..20 in x =&gt; &quot;$x in [11, 20]&quot;
+    21..30 in x =&gt; &quot;$x in [21, 30]&quot;
+end</code></pre><h2><a class="nav-anchor" id="Reference-pattern-1" href="#Reference-pattern-1">Reference pattern</a></h2><p>This feature is from <code>Elixir</code> which could slightly extends ML pattern matching.</p><pre><code class="language-julia">c = ...
+@match (x, y) begin
+    (&amp;c, _)  =&gt; &quot;x equals to c!&quot;
+    (_,  &amp;c) =&gt; &quot;y equals to c!&quot;
+    _        =&gt; &quot;none of x and y equal to c&quot;
+end</code></pre><h2><a class="nav-anchor" id="Custom-pattern-1" href="#Custom-pattern-1">Custom pattern</a></h2><p>The reason why Julia is a new &quot;best language&quot; might be that you can implement your own static pattern matching with this feature:-).</p><p>Here is a example although it&#39;s not robust at all. You can use it to solve multiplication equations.</p><pre><code class="language-julia">uisng MLStyle
+
+# define pattern for application
+PatternDef.App(*) do args, guard, tag, mod
+         @match (args) begin
+            (l::QuoteNode, r :: QuoteNode) =&gt; MLStyle.Err.SyntaxError(&quot;both sides of (*) are symbols!&quot;)
+            (l::QuoteNode, r) =&gt;
+               quote
+                   $(eval(l)) = $tag / ($r)
+               end
+           (l, r :: QuoteNode) =&gt;
+               quote
+                   $(eval(r)) = $tag / ($l)
+               end
+           end
+end
+
+@match 10 begin
+     5 * :a =&gt; a
+end
+# =&gt; 2.0</code></pre><p>Dictionary pattern, tuple pattern, array pattern and linked list destructing are both implemented by <strong>Custom pattern</strong>.</p><ul><li>Dict pattern(like <code>Elixir</code>&#39;s dictionary matching or ML record matching)</li></ul><pre><code class="language-julia">dict = Dict(1 =&gt; 2, &quot;3&quot; =&gt; 4, 5 =&gt; Dict(6 =&gt; 7))
+@match dict begin
+    Dict(&quot;3&quot; =&gt; four::Int,
+          5  =&gt; Dict(6 =&gt; sev)){four &lt; sev} =&gt; sev
+end
+# =&gt; 7</code></pre><ul><li>Tuple pattern</li></ul><pre><code class="language-julia">
+@match (1, 2, (3, 4, (5, )))
+
+    (a, b, (c, d, (5, ))) =&gt; (a, b, c, d)
+
+end
+# =&gt; (1, 2, 3, 4)</code></pre><ul><li>Array pattern(as efficient as linked list pattern for the usage of array view)</li></ul><pre><code class="language-julia">julia&gt; it = @match [1, 2, 3, 4] begin
+         [1, pack..., a] =&gt; (pack, a)
+       end
+([2, 3], 4)
+
+julia&gt; first(it)
+2-element view(::Array{Int64,1}, 2:3) with eltype Int64:  
+ 2
+ 3
+julia&gt; it[2]
+4</code></pre><ul><li>Linked list pattern</li></ul><pre><code class="language-julia">
+lst = List.List!(1, 2, 3)
+
+@match lst begin
+    1 ^ a ^ tail =&gt; a
+end
+
+# =&gt; (2, MLStyle.Data.List.Cons{Int64}(3, MLStyle.Data.List.Nil{Int64}()))</code></pre><h2><a class="nav-anchor" id="Fall-through-cases-1" href="#Fall-through-cases-1">Fall through cases</a></h2><pre><code class="language-julia">test(num) =
+    @match num begin
+       ::Float64 |
+        0        |
+        1        |
+        2        =&gt; true
+
+        _        =&gt; false
+    end
+
+test(0)   # true
+test(1)   # true
+test(2)   # true
+test(1.0) # true
+test(3)   # false
+test(&quot;&quot;)  # false</code></pre><h2><a class="nav-anchor" id="ADT-destructing-1" href="#ADT-destructing-1">ADT destructing</a></h2><pre><code class="language-julia">
+@case Natural(dimension :: Float32, climate :: String, altitude :: Int32)
+@case Cutural(region :: String,  kind :: String, country :: String, nature :: Natural)
+
+
+神农架 = Cutural(&quot;湖北&quot;, &quot;林区&quot;, &quot;中国&quot;, Natural(31.744, &quot;北亚热带季风气候&quot;, 3106))
+Yellostone = Cutural(&quot;Yellowstone National Park&quot;, &quot;Natural&quot;, &quot;United States&quot;, Natural(44.36, &quot;subarctic&quot;, 2357))
+
+function my_data_query(data_lst :: Vector{Cutural})
+    filter(data_lst) do data
+        @match data begin
+            Cutural(_, &quot;林区&quot;, &quot;中国&quot;, Natural(dim, _, altitude)){
+                dim &gt; 30.0, altitude &gt; 1000
+            } =&gt; true
+
+            Cutural(_, _, &quot;United States&quot;, Natural(_, _, altitude)){
+                altitude &gt; 2000
+            } =&gt; true
+
+            _ =&gt; false
+
+        end
+    end
+end
+my_data_query([神农架, Yellostone])
+...</code></pre><h2><a class="nav-anchor" id="Type-level-feature-1" href="#Type-level-feature-1">Type level feature</a></h2><p>By default, type level feature wouldn&#39;t be activated.</p><pre><code class="language-julia">@match 1 begin
+    ::String =&gt; String
+    ::Int =&gt; Int    
+end
+# =&gt; Int64</code></pre><pre><code class="language-julia">Feature.@activate TypeLevel
+
+@match 1 begin
+    ::String =&gt; String
+    ::Int    =&gt; Int
+end
+# =&gt; Int64</code></pre><p>When using type level feature, if you can only perform runtime type checking when matching, and type level variables could be captured as normal variables.</p><p>If you do want to check type when type level feature is activated, do as the following snippet</p><pre><code class="language-julia">@match 1 begin
+    ::&amp;String =&gt; String
+    ::&amp;Int    =&gt; Int
+end</code></pre><footer><hr/><a class="previous" href="../adt/"><span class="direction">Previous</span><span class="title">Algebraic Data Types</span></a><a class="next" href="../pattern-function/"><span class="direction">Next</span><span class="title">Pattern function</span></a></footer></article></body></html>
