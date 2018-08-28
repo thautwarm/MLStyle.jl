@@ -29,11 +29,17 @@ pattern_match(num :: Number, guard, tag, mod :: Module) =
     end
 
 pattern_match(str :: AbstractString, guard, tag, mod :: Module) =
-
     if guard === nothing
         :($tag == $str)
     else
         :($tag == $str && $guard)
+    end
+
+pattern_match(quoted :: QuoteNode, guard, tag, mod :: Module) =
+    if guard === nothing
+        :($tag == $quoted)
+    else
+        :($tag == $quoted && $guard)
     end
 
 pattern_match(sym :: Symbol, guard, tag, mod :: Module) =
@@ -57,11 +63,24 @@ pattern_match(sym :: Symbol, guard, tag, mod :: Module) =
                 end
             end
         end
+# """
+# @match :(x + 1) begin
+#     :(x + 1) => 1
+# end
+# """
+PatternDef.Meta(expr :: Expr -> expr.head === :quote) do expr, guard, tag, mod
+    if guard === nothing
+        :($tag == $expr)
+    else
+        :($tag == $expr && $guard)
+    end
+end
+
 
 # """
 # like ^ in Erlang/Elixir
 # """
-PatternDef.Meta((expr :: Expr) -> expr.head == :&) do expr, guard, tag, mod
+PatternDef.Meta(expr :: Expr -> expr.head == :&)     do expr, guard, tag, mod
     value = expr.args[1]
     if guard === nothing
         :($tag === $value)

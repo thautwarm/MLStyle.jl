@@ -1,4 +1,16 @@
 @testset "match" begin
+    @testset "AST match" begin
+        @def ast_match begin
+            :x       => 0
+            :(x + 1) => 1
+            :(x + 2) => 2
+            _        => 3
+        end
+        @test ast_match(:(x + 1)) === 1
+        @test ast_match(:(x + 2)) === 2
+        @test ast_match(:x)       === 0
+        @test ast_match(:(x + 5)) === 3
+    end
     @testset "literal match" begin
         simple_match(x) = @match x {
             1  => "wrong!"
@@ -70,14 +82,14 @@
     # TODO: custom pattern is not fully understood yet...
     @testset "dict match" begin
         dict_match(dict) = @match dict begin
-            Dict("3" => four::Int, 
+            Dict("3" => four::Int,
                 5  => Dict(6 => sev)){four < sev} => sev
         end
         @test dict_match(Dict(1 => 2, "3" => 4, 5 => Dict(6 => 7))) == 7
     end
     @testset "tuple match" begin
         @test (1, 2, 3, 4) == @match (1, 2, (3, 4, (5, ))) begin
-            (a, b, (c, d, (5, ))) => (a, b, c, d) 
+            (a, b, (c, d, (5, ))) => (a, b, c, d)
         end
     end
     @testset "array match" begin
