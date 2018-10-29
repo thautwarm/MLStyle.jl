@@ -40,7 +40,7 @@ global app_dispatchers = Dict{Any, Function}()
 global _count = 0
 function mangling(apply, repr_ast)
     global _count = _count + 1
-    let symbol = Symbol("<", repr(repr_ast), ".", _count, ">")
+    let symbol = Symbol("@", repr(repr_ast), ".", _count, "@")
         ret = apply(symbol)
         global _count = _count - 1
         ret
@@ -94,7 +94,6 @@ function merge_cases(cases :: Vector{Case})
         @warn "Pattern optimization not implemented yet."
         _warned = true
     end
-
     cases
 end
 
@@ -145,10 +144,13 @@ function make_match_body(
                 mod :: Module,
                 cases)
 
+
     final = quote
-                throw(($InternalException)("Non-exhaustive pattern found!"))
+                println("123")
+                # throw(($InternalException)("Non-exhaustive pattern found!"))
             end
-    mangled = Symbol("case", ".", "test")
+
+    mangled = Symbol("@case", ".", "test@")
 
     foldr(cases, init=final) do case, last
         if isa(case, LineNumberNode)
@@ -225,7 +227,7 @@ macro def(fn_name, pattern_def)
 
         map(collect(erl_dispatcher)) do (argnum, cases)
             map(1:argnum) do arg_idx
-                Symbol(arg_prefix, "[", arg_idx, "]")
+                Symbol(arg_prefix, "@_[", arg_idx, "]@")
             end |>
             function (args)
                 body =
@@ -326,7 +328,7 @@ register_app_pattern(Dict) do args, guard, tag, mod
             end
             let (k, v) = kv.args[2:end]
                 mangling(tag) do tag!
-                    let tag! = Symbol(tag!, "[", k, "]"),
+                    let tag! = Symbol("@", tag!, "[", k, "]@"),
                         action = pattern_match(v, nothing, tag!, mod)
 
                         quote

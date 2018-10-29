@@ -11,8 +11,8 @@ function enum_next(x :: Number)
     x + 1
 end
 
-function (..)(predicate, start :: T, _end :: T) where T
-    while start < _end
+function (..)(predicate, start, _end)
+    while start <= _end
         if predicate(start)
             return true
         end
@@ -251,7 +251,7 @@ PatternDef.App(..) do args, guard, tag, mod
     start, _end = args
     quote
         let value = $tag
-        ($..)($start, $_end) do it
+        ($(..))($start, $_end) do it
             it === value
         end
         end
@@ -265,6 +265,18 @@ PatternDef.App(⇒) do args, guard, tag, mod
     :($tag <: $Fun && $pat1 && $pat2)
 end
 
+PatternDef.App(:) do args, guard, tag, mod
+    from, to = args
+    expr = Expr(:call, (:), args...)
+    :($tag in $expr)
+end
 
-
+PatternDef.App(|) do args, guard, tag, mod
+    expr = foldl(ast_or, args, false)
+    if guard === nothing
+        expr
+    else
+        :($expr && $guard)
+    end
+end
 end

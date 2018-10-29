@@ -85,18 +85,14 @@ end
 ```
 
 
-Range pattern
--------------
-
+Range Pattern
+--------------------
 ```julia
-
-@match num begin
-    1..10  in x => "$x in [1, 10]"
-    11..20 in x => "$x in [11, 20]"
-    21..30 in x => "$x in [21, 30]"
-end
+@match 1 begin
+    0:2:10 => 1
+    1:10 => 2
+end # 2
 ```
-
 
 Reference pattern
 -----------------
@@ -249,6 +245,64 @@ function my_data_query(data_lst :: Vector{Cutural})
 end
 my_data_query([神农架, Yellostone])
 ...
+```
+
+Enum pattern
+-------------
+
+`Number` supports enumeration.
+```julia
+
+@match num begin
+    1..10  in x => "$x in [1, 10]"
+    11..20 in x => "$x in [11, 20]"
+    21..30 in x => "$x in [21, 30]"
+end
+```
+
+If you want to create your own enumeration protocol, do as the following:
+
+```julia
+import MLStyle.MatchExt: enum_next
+import Base: <, <=
+
+@data MyEnum begin
+    A
+    B
+    C
+end
+
+function (<)(enum1 :: MyEnum, enum2 :: MyEnum)
+    @match enum1 begin
+        A() => enum2 !== A()
+        B() => enum2 === C()
+        C() => false
+    end
+end
+
+function (<=)(enum1 :: MyEnum, enum2 :: MyEnum)
+    enum1 === enum2 || enum1 < enum2
+end
+
+function enum_next(enum :: MyEnum)
+    @match enum begin
+        A() => B()
+        B() => C()
+        C() => nothing
+end
+
+a = A()
+b = B()
+c = C()
+@match a begin
+    a..c => true
+    _    => false
+end # true
+
+@match c begin
+    a..b => true
+    b..c => false
+end # false
 ```
 
 Type level feature

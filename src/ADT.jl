@@ -78,7 +78,7 @@ macro case(cons)
                 pattern_match(arg, nothing, :($tag.$field), mod)
             end |>
             function (last)
-                reduce((a, b) -> Expr(:&&, a, b), last, init=:($isa($tag, $most_union_all)))
+                reduce((a, b) -> Expr(:&&, a, b), last, init=:($tag isa $most_union_all))
             end |>
             function (last)
                 if guard === nothing
