@@ -45,18 +45,13 @@
 
 end
 
-# for type definition not allowed in the local scope, define it at top level.
 abstract type A end
-
-@testset "@case" begin
+@testset "case" begin
+    
     @case C{T}(a :: Int, b::T)
     @case D(a, b)
-
-
     @case E <: A
-
     @test E <: A
     @test fieldnames(D) == (:a, :b)
     @test_throws MethodError C(3.0, :abc)
-
-end
+end 
