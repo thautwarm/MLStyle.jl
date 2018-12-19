@@ -5,7 +5,6 @@ export ($), State, runState, bind, get, put, putBy, getBy,
        return!, combine, forMM, forM, flip, fst, snd
 
 ($)(f, a) = f(a)
-
 flip(f) = a -> b -> f $ b $ a
 fst((a, b)) = a
 snd((a, b)) = b

@@ -1,7 +1,12 @@
 module MatchCore
+import MLStyle.toolz: bind
 using MLStyle.toolz
 using MLStyle.Err
 using DataStructures: list, head, tail, cons, nil, reverse, LinkedList
+
+struct Failed end
+failed = Failed()
+
 struct err_spec
     location :: LineNumberNode
     msg      :: String
@@ -58,7 +63,7 @@ end
 
 internal = qualifier((my_mod, umod) -> my_mod === umod)
 invasive = qualifier((my_mod, umod) -> true)
-shareWith(ms::Set{Module}) = qualifier(umod -> umod in ms)
+shareWith(ms::Set{Module}) = qualifier((_, umod) -> umod in ms)
 
 function qualifierTest(qualifiers :: Set{qualifier}, use_mod, def_mod)
     any(qualifiers) do q
@@ -76,18 +81,36 @@ struct pattern_descriptor
     qualifiers :: Set{qualifier}
 end
 
-pattern_manager = Dict{Module, Vector{pattern_descriptor}}()
+# A bug occurred when key is of Module type.
+pattern_manager = Vector{Tuple{Module, pattern_descriptor}}()
 
-function get_pattern(case :: Expr, use_mod :: Module, def_mod :: Module)
-   get!(pattern_manager, def_mod) do
-      []
-   end |> pattern_desc_lst ->
-   for desc in pattern_desc_lst
-       if qualifierTest(desc.qualifiers, use_mod, def_mod) && desc.predicate(case)
+
+function registerPattern(pdesc :: pattern_descriptor, defmod :: Module)
+    push!(pattern_manager, (defmod, pdesc))
+end
+
+# a simple example to define pattern `1`:
+# tp = pattern_descriptor(
+#       x -> x === 1,
+#       (s, c, m) -> quote $s == 1 end,
+#       Set([invasive])
+#      )
+# registerPattern(tp, MatchCore)
+
+function getPattern(case, use_mod :: Module)
+    for (def_mod, desc) in pattern_manager
+        a = qualifierTest(desc.qualifiers, use_mod, def_mod)
+        b = desc.predicate(case)
+        # @info a
+        # @info b
+        # @info def_mod
+        # @info desc
+
+        if qualifierTest(desc.qualifiers, use_mod, def_mod) && desc.predicate(case)
            return desc.rewrite
-       end
-   end
-   return nothing
+        end
+    end
+    return nothing
 end
 
 # the form:
@@ -140,11 +163,12 @@ function getNameOfModule(m::Module) :: String
 end
 
 function mangle(mod::Module)
-    get(internal_counter, mod) do
+    get!(internal_counter, mod) do
        0
-    end |> id ->
+    end |> id -> begin
     mod_name = getNameOfModule(mod)
-    "$mod_name $id"
+    Symbol("$mod_name $id")
+    end
 
 end
 
@@ -152,10 +176,10 @@ end
 function matchImpl(target, cbl, mod)
     # cb: case body list
     # cb :: Expr
-    cbl |>
+    target |>
     checkSyntax(a -> a isa Expr && a.head == :block) do target
     # cbl = (fst ∘ (flip $ runState $ init_state) ∘ collectCases) $ cbl
-    bind(collectCases(cb))                           do cbl
+    bind(collectCases(cbl))                          do cbl
     # cbl :: [(LineNumberNodem, Expr, Expr)]
     tag_sym = mangle(mod)
     mkMatchBody(target, tag_sym, cbl, mod)
@@ -194,7 +218,11 @@ function mkMatchBody(target, tag_sym, cbl, mod)
               let $result = # start 3
                   let
                      $loc
-                     $expr
+                     if $expr
+                        $body
+                     else
+                        $failed
+                     end
                   end
               if $result  === $failed
                     $last
@@ -204,8 +232,9 @@ function mkMatchBody(target, tag_sym, cbl, mod)
               end # end 3
            end
        end # end 2
+    return! $
     quote
-       let $tag_sym = $tag
+       let $tag_sym = $target
            $main_logic
        end
     end
@@ -214,15 +243,15 @@ end
 
 
 function mkPattern(tag_sym :: Symbol, case, mod :: Module)
-   for (def_mod, _) in collect(pattern_manager)
-       rewrite = get_pattern(case, mod, def_mod)
-       if rewrite !== nothing
-           return rewrite(tag_sym, case, mod)
-       end
-   end
-   case = string(case)
-   throw $ PatternUnsolvedException("invalid usage or unknown case $case")
+
+    rewrite = getPattern(case, mod)
+    if rewrite !== nothing
+        return rewrite(tag_sym, case, mod)
+    end
+    case = string(case)
+    throw $ PatternUnsolvedException("invalid usage or unknown case $case")
 end
+
 
 
 end # module end
