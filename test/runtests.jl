@@ -1,7 +1,19 @@
 using Test
 using MLStyle
 
-include("pervasive.jl")
+# include("pervasive.jl")
+
+using MLStyle.MatchCore: @match; using MLStyle;
+@match Expr(:call, :f, :a) begin
+      Expr(head, tail...) => tail
+end
+
+@testset "expr template" begin
+@match Expr(:call, :f, :a, :b) begin
+      :(f(a, b)) => (a, b)
+end
+end
+
 
 # using Test
 # using MLStyle

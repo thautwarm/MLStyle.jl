@@ -71,7 +71,7 @@ internal = qualifier((my_mod, umod) -> my_mod === umod)
 invasive = qualifier((my_mod, umod) -> true)
 shareWith(ms::Set{Module}) = qualifier((_, umod) -> umod in ms)
 
-
+export qualifierTest
 function qualifierTest(qualifiers :: Set{qualifier}, use_mod, def_mod)
     any(qualifiers) do q
         q.test(def_mod, use_mod)
@@ -79,10 +79,12 @@ function qualifierTest(qualifiers :: Set{qualifier}, use_mod, def_mod)
 end
 
 struct pattern_descriptor
-    # (case:AST) -> bool
+    # for appPatterns: (object :: Object, tl :: Vector{AST}) -> bool
+    # for general    : (case:AST) -> bool
     predicate  :: Function
 
-    # (to_match: Symbol, case:AST, mod :: Module) -> Expr which's evaluated to bool
+    # for app: (to_match: Symbol, caseObj: Any, args::Vector{AST}, mod::Module) -> Expr
+    # general: (to_match: Symbol, case:AST, mod :: Module) -> Expr which's evaluated to bool
     rewrite    :: Function
 
     qualifiers :: Set{qualifier}
@@ -112,8 +114,6 @@ end
 
 function getPattern(case, use_mod :: Module)
     for (def_mod, desc) in pattern_manager
-        a = qualifierTest(desc.qualifiers, use_mod, def_mod)
-        b = desc.predicate(case)
         # @info a
         # @info b
         # @info def_mod
@@ -175,6 +175,7 @@ function getNameOfModule(m::Module) :: String
     string(m)
 end
 
+export mangle
 function mangle(mod::Module)
     get!(internal_counter, mod) do
        0
