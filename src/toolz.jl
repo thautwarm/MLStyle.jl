@@ -76,8 +76,9 @@ end
 
 ast_and(a, b) =  Expr(:&&, a, b)
 ast_or(a, b) = Expr(:||, a, b)
+ast_stmt(lst) = Expr(:block, lst...)
 isCapitalized(s :: AbstractString) :: Bool = !isempty(s) && isuppercase(s[1])
-isCase(sym  :: Symbol) = isCapitalized ∘ string ∘ sym
+isCase(sym  :: Symbol) = isCapitalized ∘ string $ sym
 isCase(expr :: Expr)   = expr.head === :(curly) && isCase(expr.args[1])
 yieldAst(a :: Any) = putBy $ s -> cons(a, s)
 

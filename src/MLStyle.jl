@@ -6,6 +6,8 @@ include("Err.jl")
 
 include("toolz.jl")
 
+include("render.jl")
+
 include("MatchCore.jl")
 
 include("Pervasive.jl")

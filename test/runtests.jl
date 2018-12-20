@@ -1,7 +1,7 @@
 using Test
 using MLStyle
-c = MLStyle.MatchCore
 
+include("pervasive.jl")
 
 # using Test
 # using MLStyle

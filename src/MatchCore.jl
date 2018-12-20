@@ -3,7 +3,7 @@ import MLStyle.toolz: bind
 using MLStyle.toolz.List
 using MLStyle.toolz
 using MLStyle.Err
-
+using MLStyle.Render
 
 # a token to denote matching failure
 export Failed, failed
@@ -215,67 +215,44 @@ macro match(target, cbl)
 end
 
 
-struct ReservedLoc
-    loc :: LineNumberNode
-end
-
-function rmlines(expr::Expr, nested=false)
-    hd_f = return!
-    function tl_f(expr :: Any)
-        if expr isa LineNumberNode
-            @info :remove
-            return! $ nothing
-        elseif expr isa ReservedLoc
-            yieldAst $ expr.loc
-        elseif expr isa Expr
-           if nested
-               expr = rmlines(expr, nested)
-           end
-           yieldAst $ expr
-        else
-           yieldAst $ expr
-        end
-    end
-    runAstMapper $ mapAst(hd_f, tl_f, expr)
-end
-
 
 function mkMatchBody(target, tag_sym, cbl, mod)
-    reserve(loc::LineNumberNode) = ReservedLoc(loc)
     bind(getBy $ loc) do loc # start 1
-    final = rmlines $
-        let loc = reserve $ loc
-        quote
-            $loc
+    final =
+        @format [loc] quote
+            loc
             throw(($InternalException)("Non-exhaustive pattern found!"))
         end
-        end
-
     result = mangle(mod)
     cbl = collect(cbl)
     main_logic =
        foldr(cbl, init=final) do (loc, case, body), last # start 2
-           expr = mkPattern(tag_sym, case, mod)
-           loc  = reserve $ loc
-           rmlines $
-           quote
-              let $result = # start 3
+           expr   = mkPattern(tag_sym, case, mod)
+           @format [
+               result,
+               expr,
+               body,
+               loc,
+               failed,
+               last
+           ] quote
+              let result = # start 3
                   let
-                     $loc
-                     if $expr
-                        $body
+                     loc
+                     if expr
+                        body
                      else
-                        $failed
+                        failed
                      end
                   end
-              if $result  === $failed
-                    $last
+              if result  === failed
+                   last
               else
-                   $result
+                   result
               end
               end # end 3
            end
-       end # end 2
+       end  # end 2
     return! $
     quote
        let $tag_sym = $target
