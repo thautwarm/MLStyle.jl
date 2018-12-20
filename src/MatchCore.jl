@@ -1,9 +1,12 @@
 module MatchCore
 import MLStyle.toolz: bind
+using MLStyle.toolz.List
 using MLStyle.toolz
 using MLStyle.Err
-using DataStructures: list, head, tail, cons, nil, reverse, LinkedList
 
+
+# a token to denote matching failure
+export Failed, failed
 struct Failed end
 failed = Failed()
 
@@ -14,14 +17,15 @@ end
 
 struct config
     loc       :: LineNumberNode
-    errs      :: LinkedList{err_spec}
+    errs      :: linkedlist
 end
 
-# lens
+# lens of config.
+# Variables named in snake_case are marked as internal use
 loc(conf      :: config)               = conf.loc
 errs(conf     :: config)               = conf.errs
 set_loc(loc   :: LineNumberNode)       = (conf) -> config(loc, conf.errs)
-set_errs(errs :: LinkedList{err_spec}) = (conf) -> config(conf.loc, errs)
+set_errs(errs :: linkedlist)           = (conf) -> config(conf.loc, errs)
 
 # some useful utils:
 err!(msg :: String) =
@@ -52,10 +56,12 @@ checkSyntax(f, predicate) = begin
     checkDo(f, check_fn, err_fn)
 end
 
-const init_state = config(LineNumberNode(1), nil(err_spec))
+const init_state = config(LineNumberNode(1), nil())
 
 
 # implementation of qualified pattern matching
+
+export qualifier, internal, invasive, shareWith
 
 struct qualifier
     test :: Function
@@ -64,6 +70,7 @@ end
 internal = qualifier((my_mod, umod) -> my_mod === umod)
 invasive = qualifier((my_mod, umod) -> true)
 shareWith(ms::Set{Module}) = qualifier((_, umod) -> umod in ms)
+
 
 function qualifierTest(qualifiers :: Set{qualifier}, use_mod, def_mod)
     any(qualifiers) do q
@@ -81,9 +88,15 @@ struct pattern_descriptor
     qualifiers :: Set{qualifier}
 end
 
+pattern_descriptor(;predicate, rewrite, qualifiers) =
+    pattern_descriptor(predicate, rewrite, qualifiers)
+
 # A bug occurred when key is of Module type.
+# Tentatively we use associate list(vector?).
+
 pattern_manager = Vector{Tuple{Module, pattern_descriptor}}()
 
+export registerPattern, pattern_descriptor
 
 function registerPattern(pdesc :: pattern_descriptor, defmod :: Module)
     push!(pattern_manager, (defmod, pdesc))
@@ -166,6 +179,7 @@ function mangle(mod::Module)
     get!(internal_counter, mod) do
        0
     end |> id -> begin
+    internal_counter[mod] = id + 1
     mod_name = getNameOfModule(mod)
     Symbol("$mod_name $id")
     end
@@ -174,16 +188,12 @@ end
 
 
 function matchImpl(target, cbl, mod)
-    # cb: case body list
-    # cb :: Expr
-    target |>
-    checkSyntax(a -> a isa Expr && a.head == :block) do target
+    # cbl: case body list
     # cbl = (fst ∘ (flip $ runState $ init_state) ∘ collectCases) $ cbl
     bind(collectCases(cbl))                          do cbl
     # cbl :: [(LineNumberNodem, Expr, Expr)]
     tag_sym = mangle(mod)
     mkMatchBody(target, tag_sym, cbl, mod)
-    end
     end
 end
 
@@ -191,9 +201,10 @@ end
 throwFrom(errs) = begin
     # TODO: pretty print
     s = string(errs)
-    SyntaxError("$s")
+    throw(SyntaxError("$s"))
 end
 
+export @match
 macro match(target, cbl)
    (a, s) = runState $ matchImpl(target, cbl, __module__) $ init_state
    if isempty(s.errs)
@@ -203,17 +214,50 @@ macro match(target, cbl)
    end
 end
 
+
+struct ReservedLoc
+    loc :: LineNumberNode
+end
+
+function rmlines(expr::Expr, nested=false)
+    hd_f = return!
+    function tl_f(expr :: Any)
+        if expr isa LineNumberNode
+            @info :remove
+            return! $ nothing
+        elseif expr isa ReservedLoc
+            yieldAst $ expr.loc
+        elseif expr isa Expr
+           if nested
+               expr = rmlines(expr, nested)
+           end
+           yieldAst $ expr
+        else
+           yieldAst $ expr
+        end
+    end
+    runAstMapper $ mapAst(hd_f, tl_f, expr)
+end
+
+
 function mkMatchBody(target, tag_sym, cbl, mod)
+    reserve(loc::LineNumberNode) = ReservedLoc(loc)
     bind(getBy $ loc) do loc # start 1
-    final = quote
-              $loc
-              throw(($InternalException)("Non-exhaustive pattern found!"))
-            end
+    final = rmlines $
+        let loc = reserve $ loc
+        quote
+            $loc
+            throw(($InternalException)("Non-exhaustive pattern found!"))
+        end
+        end
+
     result = mangle(mod)
     cbl = collect(cbl)
     main_logic =
        foldr(cbl, init=final) do (loc, case, body), last # start 2
            expr = mkPattern(tag_sym, case, mod)
+           loc  = reserve $ loc
+           rmlines $
            quote
               let $result = # start 3
                   let
@@ -242,8 +286,8 @@ function mkMatchBody(target, tag_sym, cbl, mod)
 end
 
 
+export mkPattern
 function mkPattern(tag_sym :: Symbol, case, mod :: Module)
-
     rewrite = getPattern(case, mod)
     if rewrite !== nothing
         return rewrite(tag_sym, case, mod)
@@ -251,7 +295,5 @@ function mkPattern(tag_sym :: Symbol, case, mod :: Module)
     case = string(case)
     throw $ PatternUnsolvedException("invalid usage or unknown case $case")
 end
-
-
 
 end # module end

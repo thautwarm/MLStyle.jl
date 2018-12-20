@@ -8,6 +8,8 @@ include("toolz.jl")
 
 include("MatchCore.jl")
 
+include("Pervasive.jl")
+
 # include("utils.jl")
 # include("Feature.jl")
 

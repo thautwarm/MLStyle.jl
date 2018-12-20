@@ -1,17 +1,5 @@
 
 @testset "match" begin
-    @testset "AST match" begin
-        @def ast_match begin
-            :x       => 0
-            :(x + 1) => 1
-            :(x + 2) => 2
-            _        => 3
-        end
-        @test ast_match(:(x + 1)) === 1
-        @test ast_match(:(x + 2)) === 2
-        @test ast_match(:x)       === 0
-        @test ast_match(:(x + 5)) === 3
-    end
     @testset "literal match" begin
         simple_match(x) = @match x {
             1  => "wrong!"
@@ -108,4 +96,17 @@
             [1, pack..., a] => (pack, a)
             end
     end
+    @testset "AST match" begin
+        @def ast_match begin
+            :x       => 0
+            :(x + 1) => 1
+            :(x + 2) => 2
+            _        => 3
+        end
+        @test ast_match(:(x + 1)) === 1
+        @test ast_match(:(x + 2)) === 2
+        @test ast_match(:x)       === 0
+        @test ast_match(:(x + 5)) === 3
+    end
+
 end

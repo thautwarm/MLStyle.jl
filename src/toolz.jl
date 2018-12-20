@@ -1,8 +1,11 @@
 module toolz
-using DataStructures: list, head, tail, cons, nil, reverse, LinkedList
+include("internal_list.jl")
+using .List: list, head, tail, cons, nil, reverse, linkedlist
 
 export ($), State, runState, bind, get, put, putBy, getBy,
-       return!, combine, forMM, forM, flip, fst, snd
+       return!, combine, forMM, forM, flip, fst, snd,
+       isCapitalized, ast_and, ast_or, mapAst, yieldAst, runAstMapper,
+       isCase
 
 ($)(f, a) = f(a)
 flip(f) = a -> b -> f $ b $ a
@@ -32,7 +35,7 @@ put        = s! -> State  $ _ -> (nothing, s!)
 putBy(f)   = State        $ s -> (nothing, f(s))
 getBy(f)   = State        $ s -> (f $ s,   s)
 return!(a) = State        $ s -> (a, s)
-combine(ma, mb) = bind(ma, _ -> mb)
+combine(ma, mb) = bind( _ -> mb, ma)
 
 
 forMM(k, ms) =
@@ -74,6 +77,52 @@ end
 ast_and(a, b) =  Expr(:&&, a, b)
 ast_or(a, b) = Expr(:||, a, b)
 isCapitalized(s :: AbstractString) :: Bool = !isempty(s) && isuppercase(s[1])
+isCase(sym  :: Symbol) = isCapitalized ∘ string ∘ sym
+isCase(expr :: Expr)   = expr.head === :(curly) && isCase(expr.args[1])
+yieldAst(a :: Any) = putBy $ s -> cons(a, s)
 
+function mapAst(hd_f, tl_f, s :: Expr) :: State
+    State $ lst -> begin
+    head, lst = runState $ hd_f(s.head) $ lst
+    _, lst = runState $ mapreduce(tl_f, combine, s.args, init=return! $ nothing) $ lst
+    lst = collect ∘ reverse $ lst
+    expr :: Any = Expr(head, lst...)
+    nothing, list(expr)
+    end
+end
+
+function mapAst(hd_f, tl_f, s) :: State
+    f(s)
+end
+
+function runAstMapper(s :: State)
+   ast = runState $ s $ nil() |> snd
+   if isempty $ ast
+       throw()
+   elseif length $ ast === 1
+       ast.head
+   else
+      ast = collect ∘ reverse $ ast
+      Expr(ast...)
+  end
+end
+
+macro fn0(expr)
+    esc $ quote
+        () -> $expr
+    end
+end
+
+macro fn1(expr)
+    esc $ quote
+        _1 -> $expr
+    end
+end
+
+macro fn2(expr)
+    esc $ quote
+        (_1, _2)-> $expr
+    end
+end
 
 end

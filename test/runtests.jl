@@ -2,13 +2,6 @@ using Test
 using MLStyle
 c = MLStyle.MatchCore
 
-@testset "naive" begin
-c.@match 1 begin
-   1 => true
-end
-
-end
-
 
 # using Test
 # using MLStyle
