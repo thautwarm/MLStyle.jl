@@ -1,6 +1,6 @@
 module Pervasive
 using MLStyle.MatchCore
-using MLStyle.toolz: ($), ast_and, ast_or, isCase
+using MLStyle.toolz: ($), ast_and, ast_or, isCase, yieldAst, mapAst, runAstMapper
 using MLStyle.Render: render, @format
 
 function def_pervasive(settings)
@@ -120,16 +120,21 @@ def_pervasive $ Dict(
         end
 )
 
-def_pervasive $ Dict(
-       :predicate => x -> x isa Expr && x.head == :quote,
-       :rewrite   => (tag, case, mod) -> begin
-        expr = case.args[1]
-        if expr isa Expr
-             expr = Expr(:call, [Expr, expr.head, expr.args...])
-        end
-        mkPattern(tag, expr, mod)
-       end
-)
+function mk_expr_template(expr :: Expr)
+    if expr.head == :($)
+        return expr.args[1]
+    end
+    rec = mk_expr_template
+    Expr(:call, :Expr, rec(expr.head), map(rec, expr.args)...)
+end
+
+function mk_expr_template(expr :: Symbol)
+    QuoteNode(expr)
+end
+function mk_expr_template(expr)
+    expr
+end
+
 
 # Not decided of capitalized symbol's use case, for generic enum is impossible in Julia.
 def_pervasive $ Dict(
@@ -140,12 +145,22 @@ def_pervasive $ Dict(
         end
 )
 
+def_pervasive $ Dict(
+        :predicate => x -> x isa QuoteNode,
+        :rewrite   => (tag, case, mod) ->
+        @format [case, tag] quote
+            tag == case
+        end
+)
+
 
 # All AppPatterns are mastered by following general pattern:
 def_pervasive $ Dict(
-    :predicate => x -> x isa Expr && x.head == :call && isCase(x.args[1]),
+    :predicate => x -> x isa Expr && x.head == :call,
     :rewrite   => (tag, case, mod) ->
     let hd = case.args[1], tl = case.args[2:end]
+    # @info :ExprCall
+    # dump(case)
     mkAppPattern(tag, hd, tl, mod)
     end
 )
@@ -163,6 +178,20 @@ def_pervasive_app $ Dict(
     end
     end
 )
+
+def_pervasive $ Dict(
+       :predicate => x -> x isa Expr && x.head == :quote,
+       :rewrite   => (tag, case, mod) -> begin
+        expr = case.args[1]
+        expr = mk_expr_template(expr)
+        # @info :QuoteTemplate
+        # dump(expr)
+        mkPattern(tag, expr, mod)
+       end
+)
+
+
+
 
 # arbitray ordered sequential patterns match
 function orderedSeqMatch(tag, args, mod)
@@ -184,7 +213,7 @@ function orderedSeqMatch(tag, args, mod)
             end
             push!(unpack, arg.args[1])
         else
-            atleast_element_count = atleast_element_count + 1
+	    atleast_element_count = atleast_element_count + 1
             ident = mangle(mod)
             perf_match = mkPattern(ident, arg, mod)
             if unpack_begin !== nothing
