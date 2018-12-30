@@ -14,8 +14,6 @@ eg.
     Cons4
 end
 """
-
-
 macro data(typ, def_variants)
     (abstract_typ, tvars) =
         @match typ begin
@@ -59,7 +57,6 @@ macro data(typ, def_variants)
     for each_ctor in ctors
         # TODO: ...
     end
-
 end
 
 
