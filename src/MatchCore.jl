@@ -136,7 +136,7 @@ function collectCases(expr :: Expr) :: State
     expr |>
     checkSyntax(isHeadEq(:block))       do block
     bind(forM(collectCase, block.args)) do cases
-    return! $ filter(a -> !isnothing(a), cases)
+    return! $ filter(a -> a !== nothing, cases)
     end
     end
 end
