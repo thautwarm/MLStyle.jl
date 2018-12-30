@@ -125,12 +125,17 @@ function mk_expr_template(expr :: Expr)
         return expr.args[1]
     end
     rec = mk_expr_template
-    Expr(:call, :Expr, rec(expr.head), map(rec, expr.args)...)
+    Expr(:call, :Expr, rec(expr.head), filter(x -> x !== nothing, map(rec, expr.args))...)
 end
 
 function mk_expr_template(expr :: Symbol)
     QuoteNode(expr)
 end
+
+function mk_expr_template(expr :: LineNumberNode)
+    nothing
+end
+
 function mk_expr_template(expr)
     expr
 end
