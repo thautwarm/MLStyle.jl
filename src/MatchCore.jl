@@ -265,7 +265,7 @@ end
 
 
 export mkPattern
-function mkPattern(tag_sym :: Symbol, case, mod :: Module)
+function mkPattern(tag_sym :: Symbol, case :: Any, mod :: Module)
     rewrite = getPattern(case, mod)
     if rewrite !== nothing
         return rewrite(tag_sym, case, mod)

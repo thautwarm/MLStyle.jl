@@ -87,6 +87,26 @@ def_pervasive $ Dict(
               end)
 
 def_pervasive $ Dict(
+        :predicate => x -> x isa Expr && x.head == :(::),
+        :rewrite   => (tag, case, mod) -> begin
+                args = case.args
+                if length(args) == 1
+                   t = args[1]
+                   @format [t, tag, isa] quote
+                       tag isa t
+                   end
+                # :: T => ...
+                else
+                   pat, t = args
+                   pat = mkPattern(tag, pat, mod)
+                   @format [t, tag, isa, pat] quote
+                       tag isa t && pat
+                   end
+                # a :: T =>
+                end
+              end)
+
+def_pervasive $ Dict(
         :predicate => x -> x isa Expr && x.head == :(&),
         :rewrite   => (tag, case, mod) -> begin
                 @assert length(case.args) == 1 "invalid ref of existed var"
@@ -158,6 +178,44 @@ def_pervasive $ Dict(
         end
 )
 
+def_pervasive $ Dict(
+        :predicate => x -> x isa Expr && x.head === :tuple,
+        :rewrite   => (tag, case, mod) -> begin
+        args = case.args
+        isempty(args) ? :(() === $tag) : begin
+        asts = [
+            begin
+               ident = mangle(mod)
+               pat = mkPattern(ident, arg, mod)
+               @format [i, ident, pat, tag] quote
+                  ident = tag[i]
+                  pat
+               end
+            end
+            for (i, arg) in enumerate(args)
+        ]
+        reduce(ast_and, asts)
+        end
+        end
+)
+
+def_pervasive $ Dict(
+    :predicate => x -> x isa Expr && x.head == :vect,
+    :rewrite   => (tag, case, mod) -> begin
+    args = case.args
+    isempty(args) ? :($isempty($tag)) : orderedSeqMatch(tag, case.args, mod)
+    end
+)
+
+def_pervasive_app $ Dict(
+    :predicate => (hd_obj, args) -> hd_obj === (:),
+    :rewrite   => (tag, hd_obj, args, mod) -> begin
+        pat = Expr(:call, hd_obj, args...)
+        @format [pat, tag] quote
+            tag in pat
+        end
+    end
+)
 
 # All AppPatterns are mastered by following general pattern:
 def_pervasive $ Dict(
@@ -194,8 +252,6 @@ def_pervasive $ Dict(
         mkPattern(tag, expr, mod)
        end
 )
-
-
 
 
 # arbitray ordered sequential patterns match

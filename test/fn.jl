@@ -13,6 +13,5 @@
         end
         @test test_des(f)
         @test !test_des(g)
-        
     end
 end

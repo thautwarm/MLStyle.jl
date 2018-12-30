@@ -1,4 +1,3 @@
-
 @testset "match" begin
     @testset "literal match" begin
         simple_match(x) = @match x {
@@ -12,8 +11,8 @@
     end
     @testset "capture match with guard" begin
         capture_match(x) = @match x begin
-            x{x > 0} => x + 1
-            x{x < 0} => x - 1
+            x where x > 0 => x + 1
+            x where x < 0 => x - 1
             _ => 0
         end
         @test_skip capture_match(0) == 0
@@ -23,8 +22,8 @@
     @testset "type match" begin
         type_match(x) = @match x begin
             ::Float64  => nothing
-            b :: Int => b
-            _        => nothing
+            b :: Int   => b
+            _          => nothing
         end
         @test type_match(3.0) == nothing
         @test type_match(3) == 3
