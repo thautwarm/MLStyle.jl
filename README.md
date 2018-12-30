@@ -75,6 +75,12 @@ Dict{Symbol,Any} with 7 entries:
 
 ```
 
+The **Ast Pattern** of MLStyle.jl is not only elegant, but also very efficient for
+it's purely statically code generation.
+
+Here's an example from MacroTools.jl, and MLStyle.jl achieves the same functionalities with a less than **1/3** time cost, check `benchmark.jl`.
+
+
 ## API changes
 
 Comparing with master branch, there are quite a few differences.

@@ -2,7 +2,7 @@ module Pervasive
 using MLStyle.MatchCore
 using MLStyle.toolz: ($), ast_and, ast_or, isCase, yieldAst, mapAst, runAstMapper
 using MLStyle.Render: render, @format
-
+export Many, PushTo, Push
 function def_pervasive(settings)
     predicate  = settings[:predicate]
     rewrite    = settings[:rewrite]
@@ -235,12 +235,71 @@ def_pervasive_app $ Dict(
     lst        = mangle(mod)
     perf_match = orderedSeqMatch(lst, args, mod)
     @format [lst, tag, perf_match]   quote
-       tag isa   Expr &&             begin
+       tag isa Expr &&             begin
        lst = [tag.head, tag.args...]
        perf_match                    end
     end
     end
 )
+
+struct _ManyDescriptor end
+struct _PushDescriptor end
+struct _PushToDescriptor end
+
+
+Many = _ManyDescriptor()
+Push = _PushDescriptor()
+PushTo = _PushToDescriptor()
+
+def_pervasive_app $ Dict(
+    :predicate => (hd_obj, args) -> hd_obj === Many,
+    :rewrite   => (tag, hd_obj, args, mod) -> begin
+    @assert length(args) == 1
+    arg = args[1]
+    iter_var = mangle(mod)
+    test_var = mangle(mod)
+    pat = mkPattern(iter_var, arg, mod)
+    @format [iter_var, tag, test_var, pat] quote
+       # TODO: any iterable checking method?
+       test_var = true
+       for iter_var in tag
+          if !(pat)
+             test_var = false
+             break
+          end
+       end
+       test_var
+    end
+    end
+)
+
+def_pervasive_app $ Dict(
+    :predicate => (hd_obj, args) -> hd_obj === Push,
+    :rewrite   => (tag, hd_obj, args, mod) -> begin
+    @assert length(args) == 2
+    name  = args[1]
+    value = args[2]
+    @format [value, name] quote
+         begin
+            push!(name, value)
+            true
+         end
+    end
+    end
+)
+
+def_pervasive_app $ Dict(
+    :predicate => (hd_obj, args) -> hd_obj === PushTo,
+    :rewrite   => (tag, hd_obj, args, mod) -> begin
+    @assert length(args) == 1
+    name = args[1]
+    @format [name] quote
+         name = []
+         true
+    end
+    end
+)
+
 
 def_pervasive $ Dict(
        :predicate => x -> x isa Expr && x.head == :quote,
@@ -252,7 +311,6 @@ def_pervasive $ Dict(
         mkPattern(tag, expr, mod)
        end
 )
-
 
 # arbitray ordered sequential patterns match
 function orderedSeqMatch(tag, args, mod)
