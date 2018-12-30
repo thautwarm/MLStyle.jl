@@ -40,7 +40,11 @@ ast = :(
 )
 
 @match ast begin
-          :(function $funcname($firstarg, $(args...), $(a where islowercase(string(a)[1])))
+        quote
+        function $funcname(
+            $firstarg, 
+            $(args...), 
+            $(a where islowercase(string(a)[1])))
             $some_linenumbernode1
             let $bind_name = a + b + $last_operand, $(other_bindings...)
                 $some_linenumbernode2
@@ -48,7 +52,8 @@ ast = :(
                 $(block1...)
             end
             $(block2...)
-       end) where (isempty(block1) && isempty(block2)) =>  begin
+        end
+        end where (isempty(block1) && isempty(block2)) =>
          Dict(:funcname => funcname,
               :firstarg => firstarg,
               :args     => args,
@@ -56,7 +61,6 @@ ast = :(
               :other_bindings => other_bindings,
               :app_fn         => app_fn,
               :app_arg        => app_arg)
-   end
 end
 
 ```
