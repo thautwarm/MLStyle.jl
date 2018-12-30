@@ -31,29 +31,32 @@ efficient and elegant way. **Arbitrary patterns could be used when matching asts
 
 
 ```julia
-ast = :(
+ast = quote
     function f(a, b, c, d)
       let d = a + b + c, e = x -> 2x + d
           e(d)
       end
     end
-)
+end
 
 @match ast begin
+
         quote
-        function $funcname(
-            $firstarg, 
-            $(args...), 
-            $(a where islowercase(string(a)[1])))
-            $some_linenumbernode1
-            let $bind_name = a + b + $last_operand, $(other_bindings...)
-                $some_linenumbernode2
-                $app_fn($app_arg)
-                $(block1...)
+            $(::LineNumberNode)
+            function $funcname(
+                $firstarg, 
+                $(args...), 
+                $(a where islowercase(string(a)[1])))
+                $(::LineNumberNode)
+                let $bind_name = a + b + $last_operand, $(other_bindings...)
+                    $(::LineNumberNode)
+                    $app_fn($app_arg)
+                    $(block1...)
+                end
+                $(block2...)
             end
-            $(block2...)
-        end
         end where (isempty(block1) && isempty(block2)) =>
+
          Dict(:funcname => funcname,
               :firstarg => firstarg,
               :args     => args,
