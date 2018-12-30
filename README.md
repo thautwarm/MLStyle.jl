@@ -40,22 +40,25 @@ ast = quote
 end
 
 @match ast begin
+    quote
+        $(::LineNumberNode)
 
-        quote
+        function $funcname(
+            $firstarg, 
+            $(args...), 
+            $(a where islowercase(string(a)[1])))
+        
             $(::LineNumberNode)
-            function $funcname(
-                $firstarg, 
-                $(args...), 
-                $(a where islowercase(string(a)[1])))
+        
+            let $bind_name = a + b + $last_operand, $(other_bindings...)
                 $(::LineNumberNode)
-                let $bind_name = a + b + $last_operand, $(other_bindings...)
-                    $(::LineNumberNode)
-                    $app_fn($app_arg)
-                    $(block1...)
-                end
-                $(block2...)
+                $app_fn($app_arg)
+                $(block1...)
             end
-        end where (isempty(block1) && isempty(block2)) =>
+        
+            $(block2...)
+        end
+    end where (isempty(block1) && isempty(block2)) =>
 
          Dict(:funcname => funcname,
               :firstarg => firstarg,
