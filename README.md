@@ -121,7 +121,7 @@ end
 The reason why is that, in ML Languages/Haskell,
 there is a convention that enum patterns are represented with uppercase names.
 
-3. ADTs are tentatively removed. We need more time to design a better(syntatically and functionally) ADT implementation.
+3. ADTs are tentatively removed. We need more time to design a better(syntactically and functionally) ADT implementation.
 
 4. The way to define a custom pattern is changed a little, comparing with master branch's implementation, a extra factor has to be
 taken into consideration, it's the **qualifier**. Check `src/Pervasive.jl` to get more info about custom patterns.

@@ -15,7 +15,6 @@ eg.
 end
 """
 
-
 macro data(typ, def_variants)
     (abstract_typ, tvars) =
         @match typ begin
@@ -33,7 +32,7 @@ macro data(typ, def_variants)
     for each in variants
         @match each begin
             ::LineNumberNode => continue
-            :($(name && PushTo(extra_vars) || :($name{$(extra_tvars)}))($(args...))) =>
+            :($(name && PushTo(extra_vars) || :($name{$(extra_tvars...)}))($(args...))) =>
                 begin
                   cons_args = []
                   for (i, arg) in enumerate(args)
