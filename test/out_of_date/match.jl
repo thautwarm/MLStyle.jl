@@ -1,17 +1,4 @@
-
 @testset "match" begin
-    @testset "AST match" begin
-        @def ast_match begin
-            :x       => 0
-            :(x + 1) => 1
-            :(x + 2) => 2
-            _        => 3
-        end
-        @test ast_match(:(x + 1)) === 1
-        @test ast_match(:(x + 2)) === 2
-        @test ast_match(:x)       === 0
-        @test ast_match(:(x + 5)) === 3
-    end
     @testset "literal match" begin
         simple_match(x) = @match x {
             1  => "wrong!"
@@ -24,8 +11,8 @@
     end
     @testset "capture match with guard" begin
         capture_match(x) = @match x begin
-            x{x > 0} => x + 1
-            x{x < 0} => x - 1
+            x where x > 0 => x + 1
+            x where x < 0 => x - 1
             _ => 0
         end
         @test_skip capture_match(0) == 0
@@ -35,8 +22,8 @@
     @testset "type match" begin
         type_match(x) = @match x begin
             ::Float64  => nothing
-            b :: Int => b
-            _        => nothing
+            b :: Int   => b
+            _          => nothing
         end
         @test type_match(3.0) == nothing
         @test type_match(3) == 3
@@ -108,4 +95,17 @@
             [1, pack..., a] => (pack, a)
             end
     end
+    @testset "AST match" begin
+        @def ast_match begin
+            :x       => 0
+            :(x + 1) => 1
+            :(x + 2) => 2
+            _        => 3
+        end
+        @test ast_match(:(x + 1)) === 1
+        @test ast_match(:(x + 2)) === 2
+        @test ast_match(:x)       === 0
+        @test ast_match(:(x + 5)) === 3
+    end
+
 end

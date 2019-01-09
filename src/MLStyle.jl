@@ -1,25 +1,36 @@
 module MLStyle
 
-export Feature , @case, @data, @def, @match, Fun, (⇒), Pattern, Case, Failed, failed, PatternDef, pattern_match, app_pattern_match, (..), enum_next
-
-include("utils.jl")
-include("Feature.jl")
-
+# export Feature , @case, @data, @def, @match, Fun, (⇒), Pattern, Case, Failed, failed, PatternDef, pattern_match, app_pattern_match, (..), enum_next
+export @match, Many, PushTo, Push
 include("Err.jl")
-using MLStyle.Err
 
-include("Match.jl")
-using MLStyle.Match
+include("toolz.jl")
 
-include("ADT.jl")
-using MLStyle.ADT
+include("render.jl")
 
-include("Infras.jl")
+include("MatchCore.jl")
 
-include("MatchExt.jl")
-using MLStyle.MatchExt
+include("Pervasive.jl")
+using MLStyle.MatchCore
+using MLStyle.Pervasive
 
-include("Data/Data.jl")
-using MLStyle.Data
+# include("utils.jl")
+# include("Feature.jl")
+
+# using MLStyle.Err
+
+# include("Match.jl")
+# using MLStyle.Match
+
+# include("ADT.jl")
+# using MLStyle.ADT
+
+# include("Infras.jl")
+
+# include("MatchExt.jl")
+# using MLStyle.MatchExt
+
+# include("Data/Data.jl")
+# using MLStyle.Data
 
 end # module
