@@ -46,10 +46,9 @@ end
         function $funcname(
             $firstarg,
             $(args...),
-            $(a where islowercase(string(a)[1])))
+            $(a && if islowercase(string(a)[1]) end))
 
             $(::LineNumberNode)
-
             let $bind_name = a + b + $last_operand, $(other_bindings...)
                 $(::LineNumberNode)
                 $app_fn($app_arg)
@@ -58,7 +57,7 @@ end
 
             $(block2...)
         end
-    end where (isempty(block1) && isempty(block2)) =>
+    end && if (isempty(block1) && isempty(block2)) end =>
 
          Dict(:funcname => funcname,
               :firstarg => firstarg,
@@ -121,7 +120,33 @@ end
 The reason why is that, in ML Languages/Haskell,
 there is a convention that enum patterns are represented with uppercase names.
 
-3. ADTs are tentatively removed. We need more time to design a better(syntactically and functionally) ADT implementation.
+3. Guard(`Predicate`) is now a pattern, here is an example to make comparisons between Julia and OCaml.
+
+Julia:
+
+```julia
+@match C(1) begin
+    C(x) && if x > 0 end => x
+    _ => @error ""
+end
+```
+
+Ocaml:
+
+```OCaml
+match C(1) with
+    C(x) when x > 0 -> x
+  | _               -> failwith ""
+
+```
+
+Something deserved to be emphasized is, `Guard`s could be nested in Julia:
+
+```julia
+@match [[x, y]] begin
+    [[x && if x > 0 end, y]] && if length(seq) > 1 end => ...
+end
+```
 
 4. The way to define a custom pattern is changed a little, comparing with master branch's implementation, a extra factor has to be
 taken into consideration, it's the **qualifier**. Check `src/Pervasive.jl` to get more info about custom patterns.
