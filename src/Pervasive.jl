@@ -1,5 +1,6 @@
 module Pervasive
 using MLStyle.MatchCore
+using MLStyle.Err
 using MLStyle.toolz: ($), ast_and, ast_or, isCase, yieldAst, mapAst, runAstMapper
 using MLStyle.Render: render, @format
 export Many, PushTo, Push, Do, Seq
@@ -374,6 +375,17 @@ def_pervasive_app $ Dict(
     end
 )
 
+def_pervasive $ Dict(
+       :predicate => x -> x isa Expr && x.head == :quote,
+       :rewrite   => (tag, case, mod) -> begin
+        expr = case.args[1]
+        expr = mk_expr_template(expr)
+        # @info :QuoteTemplate
+        # dump(expr)
+        mkPattern(tag, expr, mod)
+       end
+)
+
 def_pervasive_app $ Dict(
     :predicate => (hd_obj, args) -> hd_obj === PushTo,
     :rewrite   => (tag, hd_obj, args, mod) -> begin
@@ -386,16 +398,32 @@ def_pervasive_app $ Dict(
     end
 )
 
-
-def_pervasive $ Dict(
-       :predicate => x -> x isa Expr && x.head == :quote,
-       :rewrite   => (tag, case, mod) -> begin
-        expr = case.args[1]
-        expr = mk_expr_template(expr)
-        # @info :QuoteTemplate
-        # dump(expr)
-        mkPattern(tag, expr, mod)
-       end
+def_pervasive_app $ Dict(
+       :predicate => (hd_obj, args) -> hd_obj === Dict,
+       :rewrite   => (tag, hd_obj, args, mod) -> begin
+        map(args) do kv # begin do
+            if !(isa(kv, Expr) && kv.head === :call && (@eval mod $(kv.args[1])) === Pair)
+                SyntaxError("Dictionary destruct must take patterns like Dict(<expr> => <pattern>, ...)") |> throw
+            end
+            let (k, v) = kv.args[2:end] # begin let
+                ident = mangle(mod)
+                pat = mkPattern(ident, v, mod)
+                @format [pat, ident, tag, k, get, failed] quote
+                    ident = get(tag, k) do
+                        failed
+                    end
+                    if ident !== failed
+                        pat
+                    else
+                        false
+                    end
+                end
+            end # end let
+        end |> # end do
+        function (seq)
+            reduce(ast_and, seq, init = :($tag isa $Dict))
+        end
+        end
 )
 
 # arbitray ordered sequential patterns match

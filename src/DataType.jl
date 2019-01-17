@@ -27,7 +27,6 @@ function data(typ, def_variants, qualifier, mod)
         end
     mod.eval(:(abstract type $typ end))
     for (ctor_name, pairs, each) in impl(getfield(mod, typename), def_variants, mod)
-        println(string(each))
         mod.eval(each)
         ctor = getfield(mod, ctor_name)
         export_anchor_var = Symbol("MLStyle.ADTConstructor.", ctor_name)
@@ -65,17 +64,23 @@ function data(typ, def_variants, qualifier, mod)
                               end
                             end
                           elseif all(map(!, check_if_given_field_names))
-                             @assert length(destruct_fields) == n_destructor_args "Malformed destructing for case class $ctor_name(from module $(nameof(mod)))."
+                             n_d = length(destruct_fields)
+                             if n_d == 1 && destruct_fields[1] == :(_)
+                                []
+                                # ignore fields
+                             else
+                             @assert length(n_d) == n_destructor_args "Malformed destructing for case class $ctor_name(from module $(nameof(mod)))."
                              map(zip(destruct_fields, pairs)) do (pat, (field, _))
                                     ident = mangle(mod)
                                     pat_ = mkPattern(ident, pat, mod)
                                     @format [tag, pat_, ident] quote
                                         ident = tag.$field
                                         pat_
-                                        end
+                                    end
+                             end
                              end
                           else
-                             @error "Destructor should be used in the form of `C(a, b, c)` or `C(a=a, b=b, c=c)`"
+                             @error "Destructor should be used in the form of `C(a, b, c)` or `C(a=a, b=b, c=c)` or `C(_)`"
                           end |> x -> reduce(ast_and, x, init=:($tag isa $ctor)) # end if
                       end,
                       qualifiers = Set([qualifier_]))

@@ -4,7 +4,8 @@ using MLStyle
 include("pervasive.jl")
 include("expr_template.jl")
 include("gallery/simple.jl")
-
+include("match.jl")
+include("pattern.jl")
 
 
 # using Test
