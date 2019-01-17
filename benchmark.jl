@@ -44,8 +44,15 @@ end
 # Output
 # [ Info: (:Foo, Any[:(x::Int), :y])
 # [ Info: (:Foo, Any[(:x, :Int), (:y, Any)])
+
+# no function impl:
 #   18.824 μs (114 allocations: 6.41 KiB)
 #   5.221 μs (32 allocations: 1.39 KiB)
+
+#   19.825 μs (114 allocations: 6.41 KiB)
+#   5.099 μs (30 allocations: 1.31 KiB)
+
+# inline function impl
 
 
 
