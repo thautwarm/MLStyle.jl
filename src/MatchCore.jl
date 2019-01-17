@@ -61,7 +61,7 @@ const init_state = config(LineNumberNode(1), nil())
 
 # implementation of qualified pattern matching
 
-export qualifier, internal, invasive, shareWith
+export qualifier, internal, invasive, shareWith, shareThrough
 
 struct qualifier
     test :: Function
@@ -70,6 +70,7 @@ end
 internal = qualifier((my_mod, umod) -> my_mod === umod)
 invasive = qualifier((my_mod, umod) -> true)
 shareWith(ms::Set{Module}) = qualifier((_, umod) -> umod in ms)
+shareThrough(symbol, value) = qualifier((_, umod) -> isdefined(umod, symbol) && getfield(umod, symbol) === true)
 
 export qualifierTest
 function qualifierTest(qualifiers :: Set{qualifier}, use_mod, def_mod)
@@ -273,5 +274,8 @@ function mkPattern(tag_sym :: Symbol, case :: Any, mod :: Module)
     case = string(case)
     throw $ PatternUnsolvedException("invalid usage or unknown case $case")
 end
+
+
+
 
 end # module end

@@ -19,17 +19,17 @@
             end
         end
 
-        @test @match rmlines(ex) begin         
-            quote                        
-                function f(x, y=$default)    
-                    x + $a                   
-                    x + $b                   
-                    x + $c                   
-                    x + $d                   
-                    y + x                    
-                end                          
+        @test @match rmlines(ex) begin
+            quote
+                function f(x, y=$default)
+                    x + $a
+                    x + $b
+                    x + $c
+                    x + $d
+                    y + x
+                end
             end => (a, b, c, d, default) == (1, 2, "3", "4", 5)
-        end                             
+        end
 
 
         ex = quote
@@ -56,7 +56,7 @@
         end
     end
     @testset "gallery.simple.`Array & Tuple`" begin
-        
+
         @test @match [1, 2, 3] begin
             [1, a..., b] => (a, b) == ([2], 3)
         end

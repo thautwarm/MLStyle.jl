@@ -22,7 +22,7 @@ include("gallery/simple.jl")
 #         11..20 in x => "$x in [11, 20]"
 #         21..30 in x => "$x in [21, 30]"
 #     end
-    
+
 #     @test range_match(3) == "3 in [1, 10]"
 #     @test range_match(13) == "13 in [11, 20]"
 #     @test range_match(23) == "23 in [21, 30]"
@@ -69,7 +69,7 @@ include("gallery/simple.jl")
 #     end
 #     @test (res === false)
 
-# end 
+# end
 
 
 
