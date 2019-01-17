@@ -1,66 +1,128 @@
 module DataType
 using MLStyle
-using MLStyle.toolz: isCapitalized, ($)
+using MLStyle.Render
+using MLStyle.toolz: isCapitalized, ($), cons, nil, ast_and
+using MLStyle.MatchCore
+using MLStyle.Pervasive
 
+export @data
 isSymCap = isCapitalized ∘ string
 
-"""
-eg.
-@data DataName{T} begin
-    Cons1{A}(A)
-    Cons2(A, B)
-    Cons3{a :: A, b :: B)
-    Cons3
-    Cons4
-end
-"""
 
 macro data(typ, def_variants)
-    (abstract_typ, tvars) =
+    data(typ, def_variants, :public, __module__) |> esc
+end
+
+macro data(qualifier, typ, def_variants)
+    data(typ, def_variants, qualifier, __module__) |> esc
+end
+
+function data(typ, def_variants, qualifier, mod)
+    typename =
         @match typ begin
-            :($typename{$(tvars...)}) => (typename, tvars)
-            :($typename)              => (typename, [])
+           :($typename{$(_...)}) => typename
+           :($typename{$(_...)} <: $_) => typename
+           :($typename) => typename
+           :($typename <: $_) => typename
         end
-    variants =
-        @match def_variants begin
-            quote
-                $(variants...)
-            end => variants
-        end
-    elems = []
-    ctors = []
-    for each in variants
-        @match each begin
-            ::LineNumberNode => continue
-            :($(name && PushTo(extra_vars) || :($name{$(extra_tvars...)}))($(args...))) =>
-                begin
-                  cons_args = []
-                  for (i, arg) in enumerate(args)
-                      cons_arg = @match arg begin
-                          a :: Symbol where isSymCap(a) => (Symbol("_$i"), a)
-                          a :: Symbol                   => (a, Any)
-                          :($field :: $typ)             => (field, typ)
-                      end
-                      push!(cons_args, cons_arg)
-                  end
-                  all_tvars = append(extra_tvars, tvars)
-                  push!(ctors, (name, all_tvars, cons_args))
-                end
+    mod.eval(:(abstract type $typ end))
+    for (ctor_name, pairs, each) in impl(getfield(mod, typename), def_variants, mod)
+        println(string(each))
+        mod.eval(each)
+        ctor = getfield(mod, ctor_name)
+        export_anchor_var = Symbol("MLStyle.ADTConstructor.", ctor_name)
+        mod.eval(@format [export_anchor_var] quote
+                     export export_anchor_var
+                     export_anchor_var = true
+                 end)
+        qualifier_ =
+            @match qualifier begin
+                :public   => shareThrough(export_anchor_var, true)
+                :internal => internal
+            end
+        n_destructor_args = length(pairs)
+        defAppPattern(mod,
+                      predicate = (hd_obj, args) -> hd_obj === ctor,
+                      rewrite   = (tag, hd_obj, destruct_fields, mod) -> begin
+                          check_if_given_field_names = map(destruct_fields) do field
+                            @match field begin
+                              Expr(:kw, _...) => true
+                              _ => false
+                            end
+                          end
+                          if all(check_if_given_field_names) # begin if
+                            map(destruct_fields) do field_
+                              @match field_ begin
+                                Expr(:kw, field::Symbol, pat) => begin
+                                    ident = mangle(mod)
+                                    pat_ = mkPattern(ident, pat, mod)
+                                    @format [tag, pat_, ident] quote
+                                      ident = tag.$field
+                                      pat_
+                                    end
+                                end
+                                _ => @error "The field name of destructor must be a Symbol!"
+                              end
+                            end
+                          elseif all(map(!, check_if_given_field_names))
+                             @assert length(destruct_fields) == n_destructor_args "Malformed destructing for case class $ctor_name(from module $(nameof(mod)))."
+                             map(zip(destruct_fields, pairs)) do (pat, (field, _))
+                                    ident = mangle(mod)
+                                    pat_ = mkPattern(ident, pat, mod)
+                                    @format [tag, pat_, ident] quote
+                                        ident = tag.$field
+                                        pat_
+                                        end
+                             end
+                          else
+                             @error "Destructor should be used in the form of `C(a, b, c)` or `C(a=a, b=b, c=c)`"
+                          end |> x -> reduce(ast_and, x, init=:($tag isa $ctor)) # end if
+                      end,
+                      qualifiers = Set([qualifier_]))
 
-            name :: Symbol   => push!(elems, (name, tvars))
-            :($name{$(extra_tvars...)}) =>
-                push!(elems, (name, append(extra_tvars, tvars)))
-        end
     end
-    for each_elem in elems
-        # TODO: make singleton structs and matching patterns
-    end
-    for each_ctor in ctors
-        # TODO: ...
-    end
-
+    nothing
 end
 
 
+function get_tvars(t :: UnionAll)
+    cons(t.var.name, get_tvars(t.body))
+end
+
+function get_tvars(t :: Base.DataType)
+   nil()
+end
+
+function impl(t, variants :: Expr, mod :: Module)
+    l :: LineNumberNode = LineNumberNode(1)
+    abs_tvars = get_tvars(t)
+    defs = []
+    abst = isempty(abs_tvars) ? t : :($t{$(abs_tvars...)})
+    for each in variants.args
+        @match each begin
+            ::LineNumberNode => (l = each)
+            :($case{$(tvars...)}($(params...))) ||
+            :($case($((params && Do(tvars=[]))...))) => begin
+              pairs = map(enumerate(params)) do (i, each)
+                 @match each begin
+                    :($(a::Symbol && function isSymCap  end)) => (Symbol("_$i"), a)
+                    :($(a::Symbol && function (x) !isSymCap(x) end)) => (a, Any)
+                    :($field :: $ty)                => (field, ty)
+                 end
+              end
+              definition_body = [Expr(:(::), field, ty) for (field, ty) in pairs]
+              definition_head = :($case{$(abs_tvars...), $(tvars...)})
+              definition = @format [l, abst, definition_head] quote
+                 struct definition_head <: abst
+                     l
+                     $(definition_body...)
+                 end
+              end
+              push!(defs, (case, pairs, definition))
+            end
+        end
+    end
+    defs
+end
 
 end # module

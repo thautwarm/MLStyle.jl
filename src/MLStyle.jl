@@ -1,7 +1,8 @@
 module MLStyle
 
 # export Feature , @case, @data, @def, @match, Fun, (⇒), Pattern, Case, Failed, failed, PatternDef, pattern_match, app_pattern_match, (..), enum_next
-export @match, Many, PushTo, Push
+export @match, Many, PushTo, Push, Seq, Do, @data
+
 include("Err.jl")
 
 include("toolz.jl")
@@ -14,6 +15,8 @@ include("Pervasive.jl")
 using MLStyle.MatchCore
 using MLStyle.Pervasive
 
+include("DataType.jl")
+using MLStyle.DataType
 # include("utils.jl")
 # include("Feature.jl")
 

@@ -2,19 +2,29 @@ module Pervasive
 using MLStyle.MatchCore
 using MLStyle.toolz: ($), ast_and, ast_or, isCase, yieldAst, mapAst, runAstMapper
 using MLStyle.Render: render, @format
-export Many, PushTo, Push
-function def_pervasive(settings)
-    predicate  = settings[:predicate]
-    rewrite    = settings[:rewrite]
-    qualifiers = get(settings, :qualifiers) do
-        Set([invasive])
-    end
+export Many, PushTo, Push, Do, Seq
+
+export defPattern
+function defPattern(mod; predicate, rewrite, qualifiers=nothing)
+    qualifiers = qualifiers === nothing ? Set([invasive]) : qualifiers
     desc = pattern_descriptor(predicate, rewrite, qualifiers)
-    registerPattern(desc, Pervasive)
+    registerPattern(desc, mod)
 end
 
-destructors = Vector{Tuple{Module, pattern_descriptor}}()
+export defAppPattern
+function defAppPattern(mod; predicate, rewrite, qualifiers=nothing)
+    qualifiers = qualifiers === nothing ? Set([invasive]) : qualifiers
+    desc = pattern_descriptor(predicate, rewrite, qualifiers)
+    registerAppPattern(desc, mod)
+end
 
+
+def_pervasive = settings -> defPattern(Pervasive, predicate=settings[:predicate], rewrite=settings[:rewrite], qualifiers=nothing)
+def_pervasive_app = settings -> defAppPattern(Pervasive, predicate=settings[:predicate], rewrite=settings[:rewrite], qualifiers=nothing)
+
+
+# For app patterns
+destructors = Vector{Tuple{Module, pattern_descriptor}}()
 
 function mkAppPattern(tag, hd, tl, use_mod)
     hd = use_mod.eval(hd)
@@ -27,16 +37,6 @@ function mkAppPattern(tag, hd, tl, use_mod)
     throw $ PatternUnsolvedException("invalid usage or unknown application case $info.")
 end
 
-
-function def_pervasive_app(settings)
-    predicate  = settings[:predicate]
-    rewrite    = settings[:rewrite]
-    qualifiers = get(settings, :qualifiers) do
-        Set([invasive])
-    end
-    desc = pattern_descriptor(predicate, rewrite, qualifiers)
-    registerAppPattern(desc, Pervasive)
-end
 
 export registerAppPattern
 function registerAppPattern(pdesc :: pattern_descriptor, def_mod::Module)
@@ -116,14 +116,6 @@ def_pervasive $ Dict(
                 end
               end)
 
-def_pervasive $ Dict(
-        :predicate => x -> x isa Expr && x.head == :(where),
-        :rewrite   => (tag, case, mod) -> begin
-                @assert length(case.args) === 2 "invalid where syntax"
-                pat, guard = case.args
-                ast_and(mkPattern(tag, pat, mod), guard)
-              end)
-
 # snake case for internal use.
 is_captured(s)::Bool = !isempty(s) && islowercase(s[1])
 
@@ -169,6 +161,30 @@ def_pervasive $ Dict(
             tag isa case
         end
 )
+
+def_pervasive $ Dict(
+        :predicate => x -> x isa Expr && x.head == :if,
+        :rewrite   => (tag, case, mod) -> begin
+        # TODO: perform syntax validation here.
+        case.args[1]
+        end
+)
+
+def_pervasive $ Dict(
+        :predicate => x -> x isa Expr && x.head == :function,
+        :rewrite   => (tag, case, mod) ->
+        if length(case.args) === 1 # begin if
+          fn = case.args[1]
+          @format [tag, fn] quote
+            fn(tag)
+          end
+        else
+        @format [tag, case] quote
+          case(tag)
+        end
+        end # end if
+)
+
 
 def_pervasive $ Dict(
         :predicate => x -> x isa QuoteNode,
@@ -245,11 +261,15 @@ def_pervasive_app $ Dict(
 struct _ManyDescriptor end
 struct _PushDescriptor end
 struct _PushToDescriptor end
+struct _SeqDescriptor end
+struct _DoDescriptor end
+struct _WhenDescriptor end
 
-
-Many = _ManyDescriptor()
-Push = _PushDescriptor()
+Many   = _ManyDescriptor()
+Push   = _PushDescriptor()
 PushTo = _PushToDescriptor()
+Seq    = _SeqDescriptor()
+Do     = _DoDescriptor()
 
 def_pervasive_app $ Dict(
     :predicate => (hd_obj, args) -> hd_obj === Many,
@@ -272,6 +292,72 @@ def_pervasive_app $ Dict(
     end
     end
 )
+
+
+function allow_assignment(expr :: Expr)
+    head = expr.head == :kw ? :(=) : expr.head
+    Expr(head, expr.args...)
+end
+
+function allow_assignment(expr)
+    expr
+end
+
+def_pervasive_app $ Dict(
+    :predicate => (hd_obj, args) -> hd_obj === Do,
+    :rewrite   => (_, _, args, _) -> begin
+    Expr(:block, map(allow_assignment, args)..., true)
+    end
+)
+
+def_pervasive_app $ Dict(
+    :predicate => (hd_obj, args) -> hd_obj === Seq,
+    :rewrite   => (tag, hd_obj, args, mod) -> begin
+    iter_var = mangle(mod)
+    idx_var  = mangle(mod)
+    n        = mangle(mod)
+    label    = mangle(mod)
+    ln       = LineNumberNode(1)
+    blocks = []
+    has_predicate = false
+    for arg in args
+       if arg isa Expr && arg.head == :if
+         has_predicate = true
+         arg = arg.args[1]
+         block = @format [arg, label, ln] quote
+           if !arg
+             @goto ln label
+           end
+         end
+       else
+         pat = mkPattern(iter_var, arg, mod)
+         block = @format [n, idx_var, iter_var, tag, pat] quote
+           while idx_var <= n
+              iter_var = tag[idx_var]
+              if !pat
+                break
+              end
+              idx_var = idx_var + 1
+           end
+         end
+       end
+       push!(blocks, block)
+    end
+    init = @format [length, tag, n, idx_var] quote
+       idx_var = 1
+       n       = length(tag)
+    end
+    final = @format [n, idx_var] quote
+       n + 1  == idx_var
+    end
+    if has_predicate
+       # TODO: get filename of current module
+    push!(blocks, @format [ln, label] quote @label ln label end)
+    end
+    Expr(:block, init, blocks..., final)
+    end
+)
+
 
 def_pervasive_app $ Dict(
     :predicate => (hd_obj, args) -> hd_obj === Push,

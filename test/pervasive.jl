@@ -99,8 +99,8 @@ end
 
 @testset "Predicate" begin
     @test @match 10 begin
-        x where x^2 > 200 => false
-        x where (x-3)^3 < 125 => false
+        x && if x^2 > 200 end => false
+        x && if (x-3)^3 < 125 end => false
         x => x === 10
     end
 end

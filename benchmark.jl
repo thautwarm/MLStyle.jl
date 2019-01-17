@@ -18,16 +18,16 @@ end
 
 function b_mlstyle(ex)
     MLStyle.@match ex begin
-        PushTo(fields) &&
+        Do(fields = []) &&
         quote
           $(::LineNumberNode)
           struct $typename
             $(
               Many(
                   ::LineNumberNode             ||
-                  :($name :: $typ) && 
+                  :($name :: $typ) &&
                      Push(fields, (name, typ)) ||
-                  (a :: Symbol)    && 
+                  (a :: Symbol)    &&
                      Push(fields, (a, Any))
               )...
             )
