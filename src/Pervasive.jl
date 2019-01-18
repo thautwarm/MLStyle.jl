@@ -429,8 +429,8 @@ def_pervasive_app $ Dict(
 # arbitray ordered sequential patterns match
 function orderedSeqMatch(tag, args, mod)
     length(args) == 0 ? (
-        @format [seq_tag] quote
-            isempty(seq_tag)
+        @format [tag] quote
+            isempty(tag)
         end)          : begin
     atleast_element_count = 0
     unpack_begin          = nothing
@@ -442,7 +442,7 @@ function orderedSeqMatch(tag, args, mod)
                 unpack_begin = atleast_element_count + 1
             else
                 throw $
-                SyntaxError("Vector unpack can only perform sequential unpack at most once.")
+                SyntaxError("Sequential unpacking can only be performed once at most.")
             end
             push!(unpack, arg.args[1])
         else
