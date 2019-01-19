@@ -1,5 +1,6 @@
 module Pervasive
 using MLStyle.MatchCore
+using MLStyle.Extension
 using MLStyle.Err
 using MLStyle.toolz: ($), ast_and, ast_or, isCase, yieldAst, mapAst, runAstMapper
 using MLStyle.Render: render, format
@@ -46,7 +47,7 @@ macro typed_pattern(t)
     end
 end
 
-macro typed_pattern(t, forall)
+macro typed_pattern_generic(t, forall)
     esc $ quote
         __T__ = $t
         __FORALL__ = $forall
@@ -61,6 +62,21 @@ macro typed_pattern(t, forall)
                     failed
                 end
 
+                NAME(tag)
+            end
+        end
+    end
+end
+
+macro typed_pattern_no_fail(t, forall)
+    esc $ quote
+        __T__ = $t
+        __FORALL__ = $forall
+        function (body)
+            @format [body, tag, NAME, TARGET, __T__, __FORALL__] quote
+                @inline L function NAME(TARGET :: __T__) where __FORALL__
+                    body
+                end
                 NAME(tag)
             end
         end
@@ -150,13 +166,22 @@ def_pervasive $ Dict(
 
                     function f(args :: NTuple{2, Any})
                         pat, t = args
-                        mkbody = mkPattern(TARGET, pat, mod)
-                        (@typed_pattern t)∘ mkbody
+                        if used(:TypeLevel, mod)
+                            TVAR = mangle(mod)
+                            (@typed_pattern_no_fail TVAR TVAR) ∘ mkPattern(TVAR, t, mod)
+                        else
+                            @typed_pattern t
+                        end ∘ mkPattern(TARGET, pat, mod)
                     end
 
                     function f(args :: NTuple{1, Any})
                         t = args[1]
-                        @typed_pattern t
+                        if used(:TypeLevel, mod)
+                            TVAR = mangle(mod)
+                            (@typed_pattern_no_fail TVAR TVAR) ∘ mkPattern(TVAR, t, mod)
+                        else
+                            @typed_pattern t
+                        end
                     end
                     f(args)
                 end
@@ -212,13 +237,12 @@ function mk_expr_template(expr)
 end
 
 
+
 # Not decided of capitalized symbol's use case, for generic enum is impossible in Julia.
 def_pervasive $ Dict(
         :predicate => isCase,
-        :rewrite => (tag, case, mod) ->
-        body -> @format [case, tag] quote
-            # TODO: enum
-            body
+        :rewrite => (tag, case, mod) -> begin
+            @error "Uppercase symbol is reserved for further usage(mainly for generic enum types)."
         end
 )
 

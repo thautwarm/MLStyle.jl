@@ -1,7 +1,10 @@
 module MLStyle
 
 # export Feature , @case, @data, @def, @match, Fun, (⇒), Pattern, Case, Failed, failed, PatternDef, pattern_match, app_pattern_match, (..), enum_next
-export @match, Many, PushTo, Push, Seq, Do, @data
+export @match, Many, PushTo, Push, Seq, Do, @data, @use, use, @used
+
+include("Extension.jl")
+using MLStyle.Extension
 
 include("Err.jl")
 
