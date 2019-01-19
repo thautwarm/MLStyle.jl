@@ -46,6 +46,27 @@ macro typed_pattern(t)
     end
 end
 
+macro typed_pattern(t, forall)
+    esc $ quote
+        __T__ = $t
+        __FORALL__ = $forall
+        function (body)
+            @format [body, tag, TARGET, NAME, __T__, __FORALL__] quote
+
+                @inline L function NAME(TARGET :: __T__) where __FORALL__
+                    body
+                end
+
+                @inline L function NAME(TARGET)
+                    failed
+                end
+
+                NAME(tag)
+            end
+        end
+    end
+end
+
 
 def_pervasive(settings) = defPattern(Pervasive, predicate=settings[:predicate], rewrite=settings[:rewrite], qualifiers=nothing)
 def_pervasive_app(settings) = defAppPattern(Pervasive, predicate=settings[:predicate], rewrite=settings[:rewrite], qualifiers=nothing)
@@ -123,7 +144,7 @@ def_pervasive $ Dict(
 def_pervasive $ Dict(
         :predicate => x -> x isa Expr && x.head == :(::),
         :rewrite => (tag, case, mod) ->
-                let args = (case.args..., ),
+                let args   = (case.args..., ),
                     TARGET = mangle(mod),
                     NAME   = mangle(mod)
 
@@ -137,7 +158,6 @@ def_pervasive $ Dict(
                         t = args[1]
                         @typed_pattern t
                     end
-
                     f(args)
                 end
 )
@@ -280,7 +300,7 @@ def_pervasive $ Dict(
     let hd = case.args[1], tl = case.args[2:end]
     # @info :ExprCall
     # dump(case)
-    mkAppPattern(tag, hd, tl, mod)
+    hd isa Symbol ? mkAppPattern(tag, hd, tl, mod) : mkGAppPattern(tag, hd, tl, mod)
     end
 )
 
@@ -475,6 +495,39 @@ function orderedSeqMatch(tag, elts, mod)
 
         (@typed_pattern AbstractArray) ∘ check_len ∘ foldr(patternAnd, unpack)
     end
+end
+
+generalized_destructors = Vector{Tuple{Module, pattern_descriptor}}()
+
+export mkGAppPattern
+function mkGAppPattern(tag, hd, tl, use_mod)
+    @match hd begin
+        :($(ctor :: Symbol)) => mkAppPattern(tag, hd, tl, use_mod)
+        :($ctor{$(tvars...)}) =>
+            begin
+                ctor = use_mod.eval(ctor)
+                for (def_mod, desc) in generalized_destructors
+                    if qualifierTest(desc.qualifiers, use_mod, def_mod) && desc.predicate(tvars, ctor, tl)
+                        return desc.rewrite(tag, tvars, hd, tl, use_mod)
+                    end
+                end
+                info = string(hd) * string(tl)
+                throw $ PatternUnsolvedException("invalid usage or unknown application case $info.")
+            end
+        _ => @error "not implemented yet"
+    end
+end
+
+export defGAppPattern
+function defGAppPattern(mod; predicate, rewrite, qualifiers=nothing)
+    qualifiers = qualifiers === nothing ? Set([invasive]) : qualifiers
+    desc = pattern_descriptor(predicate, rewrite, qualifiers)
+    registerGAppPattern(desc, mod)
+end
+
+export registerGAppPattern
+function registerGAppPattern(pdesc :: pattern_descriptor, def_mod::Module)
+    push!(generalized_destructors, (def_mod, pdesc))
 end
 
 end

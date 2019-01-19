@@ -4,6 +4,7 @@ using MLStyle.Render
 using MLStyle.toolz: isCapitalized, ($), cons, nil, ast_and
 using MLStyle.MatchCore
 using MLStyle.Pervasive
+using MLStyle.Pervasive: @typed_pattern
 
 export @data
 isSymCap = isCapitalized ∘ string
@@ -32,12 +33,12 @@ end
 
 
 function data(typ, def_variants, qualifier, mod)
-    typename, orginal_def =
+    typename, original_def =
         @match typ begin
-           :($typename{$(a...)})       => typename, (spec_name) -> :($spec_name($(a...)))
-           :($typename{$(a...)} <: $b) => typename, (spec_name) -> :($spec_name($(a...)) <: $b)
-           :($typename)                => typename, identity
-           :($typename <: $b)          => typename, (spec_name) -> :($spec_name <: $b)
+           :($typename{$(a...)})       => (typename, (spec_name) -> :($spec_name{$(a...)}))
+           :($typename{$(a...)} <: $b) => (typename, (spec_name) -> :($spec_name{$(a...)} <: $b))
+           :($typename)                => (typename, identity)
+           :($typename <: $b)          => (typename, (spec_name) -> :($spec_name <: $b))
         end
 
     spec_name = Symbol("MLStyle.ADTUnion.", typename)
@@ -46,10 +47,16 @@ function data(typ, def_variants, qualifier, mod)
     mod.eval(:(abstract type $original_ty_ast end))
 
     original_ty = getfield(mod, spec_name)
-    tvars_of_abst = get_tvar(original_ty)
-    concrete_orig = :($original_ty{$(tvars_of_abst...)})
+    tvars_of_abst = get_tvars(original_ty)
 
-    mod.eval(:($typename{$(tvars_of_abst...)} = $Union{$concrete_orig, $Type{$concrete_orig}}))
+    if isempty(tvars_of_abst)
+        mod.eval $ quote
+            $typename = $Union{$original_ty, $Type{$original_ty}}
+        end
+    else
+        concrete_orig = :($original_ty{$(tvars_of_abst...)})
+        mod.eval(:($typename{$(tvars_of_abst...)} = $Union{$concrete_orig, $Type{$concrete_orig}}))
+    end
 
     for (ctor_name, pairs, each) in impl(original_ty, def_variants, mod)
         mod.eval(each)
@@ -65,54 +72,85 @@ function data(typ, def_variants, qualifier, mod)
                 :internal => internal
             end
         n_destructor_args = length(pairs)
+
+        mk_match(tag, hd_obj, destruct_fields, mod) = begin
+              check_if_given_field_names = map(destruct_fields) do field
+                @match field begin
+                  Expr(:kw, _...) => true
+                  _               => false
+                end
+              end
+              TARGET = mangle(mod)
+              NAME   = mangle(mod)
+
+              if all(check_if_given_field_names) # begin if
+                map(destruct_fields) do field_
+                  @match field_ begin
+                    Expr(:kw, field::Symbol, pat) => begin
+                        let ident = mangle(mod), field = field
+                            function(body)
+                                @format [TARGET, body, ident] quote
+                                    ident = TARGET.$field
+                                    body
+                                end
+                            end ∘ mkPattern(ident, pat, mod)
+                        end
+                    end
+                    _ => @error "The field name of destructor must be a Symbol!"
+                  end
+                end
+              elseif all(map(!, check_if_given_field_names))
+                 n_d = length(destruct_fields)
+                 if n_d == 1 && destruct_fields[1] == :(_)
+                    []
+                    # ignore fields
+                 else
+                     @assert length(n_d) == n_destructor_args "Malformed destructing for case class $ctor_name(from module $(nameof(mod)))."
+                     map(zip(destruct_fields, pairs)) do (pat, (field, _))
+                            let ident = mangle(mod)
+                                function (body)
+                                    @format [tag, body, ident] quote
+                                        ident = tag.$field
+                                        body
+                                    end
+                                end ∘ mkPattern(ident, pat, mod)
+                            end
+                     end
+                 end
+              else
+                 @error "Destructor should be used in the form of `C(a, b, c)` or `C(a=a, b=b, c=c)` or `C(_)`"
+              end |> x -> (TARGET, NAME, reduce(∘, x, init=identity))
+
+        end
+
         defAppPattern(mod,
                       predicate = (hd_obj, args) -> hd_obj === ctor,
                       rewrite   = (tag, hd_obj, destruct_fields, mod) -> begin
-                          check_if_given_field_names = map(destruct_fields) do field
-                            @match field begin
-                              Expr(:kw, _...) => true
-                              _               => false
-                            end
-                          end
-                          if all(check_if_given_field_names) # begin if
-                            map(destruct_fields) do field_
-                              @match field_ begin
-                                Expr(:kw, field::Symbol, pat) => begin
-                                    ident = mangle(mod)
-                                    pat_ = mkPattern(ident, pat, mod)
-                                    @format [tag, pat_, ident] quote
-                                      ident = tag.$field
-                                      pat_
-                                    end
-                                end
-                                _ => @error "The field name of destructor must be a Symbol!"
-                              end
-                            end
-                          elseif all(map(!, check_if_given_field_names))
-                             n_d = length(destruct_fields)
-                             if n_d == 1 && destruct_fields[1] == :(_)
-                                []
-                                # ignore fields
-                             else
-                             @assert length(n_d) == n_destructor_args "Malformed destructing for case class $ctor_name(from module $(nameof(mod)))."
-                             map(zip(destruct_fields, pairs)) do (pat, (field, _))
-                                    ident = mangle(mod)
-                                    pat_ = mkPattern(ident, pat, mod)
-                                    function (body)
-                                        @format [tag, body, ident] quote
-                                            ident = tag.$field
-                                            body
-                                        end
-                                    end
-
-                             end
-                             end
-                          else
-                             @error "Destructor should be used in the form of `C(a, b, c)` or `C(a=a, b=b, c=c)` or `C(_)`"
-                          end |> x -> reduce(ast_and, x, init=:($tag isa $ctor)) # end if
+                        TARGET, NAME, match_fields = mk_match(tag, hd_obj, destruct_fields, mod)
+                        (@typed_pattern hd_obj) ∘ match_fields
                       end,
                       qualifiers = Set([qualifier_]))
 
+
+        # GADT syntax support!!!
+        defGAppPattern(mod,
+                      predicate = (tvars, hd_obj, args) -> hd_obj === ctor,
+                      rewrite   = (tag, tvars, hd_obj, destruct_fields, mod) -> begin
+                        TARGET, NAME, match_fields = mk_match(tag, hd_obj, destruct_fields, mod)
+                        L = LineNumberNode(1)
+                        function (body)
+                            @format [TARGET, NAME, tag, body, failed, L, hd_obj] quote
+                                @inline L function NAME(TARGET :: hd_obj) where {$(tvars...)}
+                                    body
+                                end
+                                @inline L function NAME(_)
+                                    failed
+                                end
+                                NAME(tag)
+                            end
+                        end ∘ match_fields
+                      end,
+                      qualifiers = Set([qualifier_]))
     end
     nothing
 end
