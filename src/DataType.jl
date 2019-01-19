@@ -17,16 +17,41 @@ macro data(qualifier, typ, def_variants)
     data(typ, def_variants, qualifier, __module__) |> esc
 end
 
+function get_tvars(t :: UnionAll)
+    cons(t.var.name, get_tvars(t.body))
+end
+
+function get_tvars(t :: Base.DataType)
+   nil()
+end
+
+
+function get_tvars(t :: Union)
+   nil()
+end
+
+
 function data(typ, def_variants, qualifier, mod)
-    typename =
+    typename, orginal_def =
         @match typ begin
-           :($typename{$(_...)}) => typename
-           :($typename{$(_...)} <: $_) => typename
-           :($typename) => typename
-           :($typename <: $_) => typename
+           :($typename{$(a...)})       => typename, (spec_name) -> :($spec_name($(a...)))
+           :($typename{$(a...)} <: $b) => typename, (spec_name) -> :($spec_name($(a...)) <: $b)
+           :($typename)                => typename, identity
+           :($typename <: $b)          => typename, (spec_name) -> :($spec_name <: $b)
         end
-    mod.eval(:(abstract type $typ end))
-    for (ctor_name, pairs, each) in impl(getfield(mod, typename), def_variants, mod)
+
+    spec_name = Symbol("MLStyle.ADTUnion.", typename)
+    original_ty_ast = original_def(spec_name)
+
+    mod.eval(:(abstract type $original_ty_ast end))
+
+    original_ty = getfield(mod, spec_name)
+    tvars_of_abst = get_tvar(original_ty)
+    concrete_orig = :($original_ty{$(tvars_of_abst...)})
+
+    mod.eval(:($typename{$(tvars_of_abst...)} = $Union{$concrete_orig, $Type{$concrete_orig}}))
+
+    for (ctor_name, pairs, each) in impl(original_ty, def_variants, mod)
         mod.eval(each)
         ctor = getfield(mod, ctor_name)
         export_anchor_var = Symbol("MLStyle.ADTConstructor.", ctor_name)
@@ -46,7 +71,7 @@ function data(typ, def_variants, qualifier, mod)
                           check_if_given_field_names = map(destruct_fields) do field
                             @match field begin
                               Expr(:kw, _...) => true
-                              _ => false
+                              _               => false
                             end
                           end
                           if all(check_if_given_field_names) # begin if
@@ -73,10 +98,13 @@ function data(typ, def_variants, qualifier, mod)
                              map(zip(destruct_fields, pairs)) do (pat, (field, _))
                                     ident = mangle(mod)
                                     pat_ = mkPattern(ident, pat, mod)
-                                    @format [tag, pat_, ident] quote
-                                        ident = tag.$field
-                                        pat_
+                                    function (body)
+                                        @format [tag, body, ident] quote
+                                            ident = tag.$field
+                                            body
+                                        end
                                     end
+
                              end
                              end
                           else
@@ -89,14 +117,6 @@ function data(typ, def_variants, qualifier, mod)
     nothing
 end
 
-
-function get_tvars(t :: UnionAll)
-    cons(t.var.name, get_tvars(t.body))
-end
-
-function get_tvars(t :: Base.DataType)
-   nil()
-end
 
 function impl(t, variants :: Expr, mod :: Module)
     l :: LineNumberNode = LineNumberNode(1)

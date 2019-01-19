@@ -229,30 +229,17 @@ function mkMatchBody(target, tag_sym, cbl, mod)
     cbl = collect(cbl)
     main_logic =
        foldr(cbl, init=final) do (loc, case, body), last # start 2
-           expr   = mkPattern(tag_sym, case, mod)
+           expr = mkPattern(tag_sym, case, mod)(body)
            @format [
                result,
                expr,
-               body,
                loc,
                failed,
                last
            ] quote
-              let result = # start 3
-                  let
-                     loc
-                     if expr
-                        body
-                     else
-                        failed
-                     end
-                  end
-              if result  === failed
-                   last
-              else
-                   result
-              end
-              end # end 3
+              loc
+              result = expr
+              result === failed ? last : result
            end
        end  # end 2
     return! $

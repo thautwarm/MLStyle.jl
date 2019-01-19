@@ -93,7 +93,7 @@ end
     @test @match 2 begin
         "1" || 1 => false
         2   && 1 => false
-        10  || 2 && Int => true
+        10  || 2 && ::Int => true
     end
 end
 

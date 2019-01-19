@@ -15,8 +15,8 @@ include("Pervasive.jl")
 using MLStyle.MatchCore
 using MLStyle.Pervasive
 
-include("DataType.jl")
-using MLStyle.DataType
+# include("DataType.jl")
+# using MLStyle.DataType
 # include("utils.jl")
 # include("Feature.jl")
 

@@ -1,7 +1,7 @@
 module Render
 using MLStyle.toolz
 using Base: get
-export render, @format
+export render, @format, format
 function render(expr::Expr, config :: Dict{Symbol, Any}, nested=true)
     hd_f = return!
     function tl_f(expr :: Any)
@@ -24,11 +24,15 @@ function render(expr::Expr, config :: Dict{Symbol, Any}, nested=true)
     runAstMapper $ mapAst(hd_f, tl_f, expr)
 end
 
-macro format(args, template)
+function format(args, template)
     constlist = [Expr(:call, :(=>), QuoteNode(arg), arg) for arg in args.args if arg isa Symbol]
-    constlist =  Expr(:vect, constlist...)
-    config    =  Expr(:call, Dict{Symbol, Any}, constlist)
-    esc(Expr(:call, render, template, config))
+    constlist = Expr(:vect, constlist...)
+    config = Expr(:call, Dict{Symbol, Any}, constlist)
+    Expr(:call, render, template, config)
+end
+
+macro format(args, template)
+    esc(format(args, template))
 end
 
 end
