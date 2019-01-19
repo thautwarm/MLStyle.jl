@@ -105,7 +105,7 @@ function data(typ, def_variants, qualifier, mod)
                     []
                     # ignore fields
                  else
-                     @assert length(n_d) == n_destructor_args "Malformed destructing for case class $ctor_name(from module $(nameof(mod)))."
+                     @assert n_d == n_destructor_args "Malformed destructing for case class $ctor_name(from module $(nameof(mod)))."
                      map(zip(destruct_fields, pairs)) do (pat, (field, _))
                             let ident = mangle(mod)
                                 function (body)
@@ -134,19 +134,34 @@ function data(typ, def_variants, qualifier, mod)
 
         # GADT syntax support!!!
         defGAppPattern(mod,
-                      predicate = (tvars, hd_obj, args) -> hd_obj === ctor,
-                      rewrite   = (tag, tvars, hd_obj, destruct_fields, mod) -> begin
-                        TARGET, NAME, match_fields = mk_match(tag, hd_obj, destruct_fields, mod)
+                      predicate = (spec_vars, hd_obj, args) -> hd_obj === ctor,
+                      rewrite   = (tag, forall, hd, destruct_fields, mod) -> begin
+                        TARGET, NAME, match_fields = mk_match(tag, hd, destruct_fields, mod)
                         L = LineNumberNode(1)
-                        function (body)
-                            @format [TARGET, NAME, tag, body, failed, L, hd_obj] quote
-                                @inline L function NAME(TARGET :: hd_obj) where {$(tvars...)}
-                                    body
+                        if forall === nothing
+                            function (body)
+                                @format [TARGET, NAME, tag, body, failed, L, hd] quote
+                                    @inline L function NAME(TARGET :: hd)
+                                        body
+                                    end
+                                    @inline L function NAME(_)
+                                        failed
+                                    end
+                                    NAME(tag)
                                 end
-                                @inline L function NAME(_)
-                                    failed
+                            end
+                        else
+                            function (body)
+                                @format [TARGET, NAME, tag, body, failed, L, hd] quote
+                                    @inline L function NAME(TARGET :: hd) where {$(forall...)}
+                                        ($(forall...), )
+                                        body
+                                    end
+                                    @inline L function NAME(_)
+                                        failed
+                                    end
+                                    NAME(tag)
                                 end
-                                NAME(tag)
                             end
                         end ∘ match_fields
                       end,

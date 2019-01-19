@@ -47,6 +47,57 @@ macro typed_pattern(t)
     end
 end
 
+macro typed_pattern_gadt(t)
+    esc $ quote
+        __T__ = $t
+        function (body)
+            @format [body, tag, TARGET, NAME, __T__] quote
+
+                @inline L function NAME(TARGET :: __T__)
+                    body
+                end
+
+                @inline L function NAME(TARGET)
+                    failed
+                end
+
+                NAME(tag)
+            end
+        end
+    end
+end
+
+# macro typed_pattern_gadt(t)
+#     esc $ quote
+#         __T__ = $t
+#         function (body)
+#             @format [body, tag, TARGET, NAME, __T__] quote
+#                 @inline L function NAME(TARGET)
+#                     TARGET isa __T__ ? body : failed
+#                 end
+#                 NAME(tag)
+#             end
+#         end
+#     end
+# end
+
+
+macro typed_pattern_no_fail(t, forall)
+    esc $ quote
+        __T__ = $t
+        __FORALL__ = $forall
+        function (body)
+            @format [body, tag, NAME, TARGET, __T__, __FORALL__] quote
+                @inline L function NAME(TARGET :: __T__) where __FORALL__
+                    body
+                end
+                NAME(tag)
+            end
+        end
+    end
+end
+
+
 macro typed_pattern_generic(t, forall)
     esc $ quote
         __T__ = $t
@@ -68,20 +119,6 @@ macro typed_pattern_generic(t, forall)
     end
 end
 
-macro typed_pattern_no_fail(t, forall)
-    esc $ quote
-        __T__ = $t
-        __FORALL__ = $forall
-        function (body)
-            @format [body, tag, NAME, TARGET, __T__, __FORALL__] quote
-                @inline L function NAME(TARGET :: __T__) where __FORALL__
-                    body
-                end
-                NAME(tag)
-            end
-        end
-    end
-end
 
 
 def_pervasive(settings) = defPattern(Pervasive, predicate=settings[:predicate], rewrite=settings[:rewrite], qualifiers=nothing)
@@ -170,7 +207,7 @@ def_pervasive $ Dict(
                             TVAR = mangle(mod)
                             (@typed_pattern_no_fail TVAR TVAR) ∘ mkPattern(TVAR, t, mod)
                         else
-                            @typed_pattern t
+                            used(:GADT, mod) ? (@typed_pattern_gadt t) : (@typed_pattern t)
                         end ∘ mkPattern(TARGET, pat, mod)
                     end
 
@@ -180,7 +217,7 @@ def_pervasive $ Dict(
                             TVAR = mangle(mod)
                             (@typed_pattern_no_fail TVAR TVAR) ∘ mkPattern(TVAR, t, mod)
                         else
-                            @typed_pattern t
+                            used(:GADT, mod) ? (@typed_pattern_gadt t) : (@typed_pattern t)
                         end
                     end
                     f(args)
@@ -205,6 +242,8 @@ def_pervasive $ Dict(
         :predicate => x -> x isa Symbol && x == :(_),
         :rewrite => (_, _, _) -> identity
 )
+
+
 
 def_pervasive $ Dict(
         :predicate => x -> x isa Symbol && is_captured ∘ string $ x,
@@ -324,7 +363,7 @@ def_pervasive $ Dict(
     let hd = case.args[1], tl = case.args[2:end]
     # @info :ExprCall
     # dump(case)
-    hd isa Symbol ? mkAppPattern(tag, hd, tl, mod) : mkGAppPattern(tag, hd, tl, mod)
+    hd isa Symbol ? mkAppPattern(tag, hd, tl, mod) : mkGAppPattern(tag, [], hd, tl, mod)
     end
 )
 
@@ -521,26 +560,45 @@ function orderedSeqMatch(tag, elts, mod)
     end
 end
 
+
+def_pervasive $ Dict(
+        :predicate => x -> x isa Expr && x.head === :where,
+        :rewrite => (tag, case, mod) ->
+        begin
+            if !used(:GADT, mod)
+                throw $ SyntaxError("GADT extension haven't been enabled. Try `@use GADT`.")
+            end
+            # Not sure about if there's any other references of `where`,
+            # but GADT is particularly important,
+            # Tentatively, we use `where` for GADT support only.
+            @match case begin
+                :($hd($(tl...)) where {$(forall...)}) => mkGAppPattern(tag, forall, hd, tl, mod)
+                _ =>
+                    @error "Unknown usage of `where` in pattern region. Current `where` is used for only GADT syntax."
+            end
+        end
+)
+
 generalized_destructors = Vector{Tuple{Module, pattern_descriptor}}()
 
 export mkGAppPattern
-function mkGAppPattern(tag, hd, tl, use_mod)
+function mkGAppPattern(tag, forall, hd, tl, use_mod)
     @match hd begin
-        :($(ctor :: Symbol)) => mkAppPattern(tag, hd, tl, use_mod)
-        :($ctor{$(tvars...)}) =>
+        ::Symbol && if isempty(forall) end => mkAppPattern(tag, hd, tl, use_mod)
+        :($(ctor :: Symbol){$(spec_vars...)}) || ctor :: Symbol && Do(spec_vars = [])=>
             begin
                 ctor = use_mod.eval(ctor)
                 for (def_mod, desc) in generalized_destructors
-                    if qualifierTest(desc.qualifiers, use_mod, def_mod) && desc.predicate(tvars, ctor, tl)
-                        return desc.rewrite(tag, tvars, hd, tl, use_mod)
+                    if qualifierTest(desc.qualifiers, use_mod, def_mod) && desc.predicate(spec_vars, ctor, tl)
+                        return desc.rewrite(tag, forall, hd, tl, use_mod)
                     end
                 end
                 info = string(hd) * string(tl)
                 throw $ PatternUnsolvedException("invalid usage or unknown application case $info.")
             end
-        _ => @error "not implemented yet"
     end
 end
+
 
 export defGAppPattern
 function defGAppPattern(mod; predicate, rewrite, qualifiers=nothing)
