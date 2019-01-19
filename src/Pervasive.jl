@@ -34,26 +34,7 @@ macro typed_pattern(t)
             @format [body, tag, TARGET, NAME, __T__] quote
 
                 @inline L function NAME(TARGET :: __T__)
-                    body
-                end
-
-                @inline L function NAME(TARGET)
-                    failed
-                end
-
-                NAME(tag)
-            end
-        end
-    end
-end
-
-macro typed_pattern_gadt(t)
-    esc $ quote
-        __T__ = $t
-        function (body)
-            @format [body, tag, TARGET, NAME, __T__] quote
-
-                @inline L function NAME(TARGET :: __T__)
+                    __T__
                     body
                 end
 
@@ -89,6 +70,7 @@ macro typed_pattern_no_fail(t, forall)
         function (body)
             @format [body, tag, NAME, TARGET, __T__, __FORALL__] quote
                 @inline L function NAME(TARGET :: __T__) where __FORALL__
+                    __T__ # if not put this here, an error would be raised : "local variable XXX cannot be used in closure declaration"
                     body
                 end
                 NAME(tag)
@@ -106,6 +88,7 @@ macro typed_pattern_generic(t, forall)
             @format [body, tag, TARGET, NAME, __T__, __FORALL__] quote
 
                 @inline L function NAME(TARGET :: __T__) where __FORALL__
+                    __T__
                     body
                 end
 
@@ -133,7 +116,7 @@ function mkPatBy(f)
      end
 end
 
-patternAnd = (p1, p2) -> p1 ∘ p2
+patternAnd = ∘
 patternOr  = (p1, p2) -> body ->
     let p1 = p1(body), p2 = p2(body)
         @format [p1, p2] quote
@@ -207,7 +190,7 @@ def_pervasive $ Dict(
                             TVAR = mangle(mod)
                             (@typed_pattern_no_fail TVAR TVAR) ∘ mkPattern(TVAR, t, mod)
                         else
-                            used(:GADT, mod) ? (@typed_pattern_gadt t) : (@typed_pattern t)
+                            @typed_pattern t
                         end ∘ mkPattern(TARGET, pat, mod)
                     end
 
@@ -217,7 +200,7 @@ def_pervasive $ Dict(
                             TVAR = mangle(mod)
                             (@typed_pattern_no_fail TVAR TVAR) ∘ mkPattern(TVAR, t, mod)
                         else
-                            used(:GADT, mod) ? (@typed_pattern_gadt t) : (@typed_pattern t)
+                            @typed_pattern t
                         end
                     end
                     f(args)

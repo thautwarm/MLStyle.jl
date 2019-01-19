@@ -154,7 +154,6 @@ function data(typ, def_variants, qualifier, mod)
                             function (body)
                                 @format [TARGET, NAME, tag, body, failed, L, hd] quote
                                     @inline L function NAME(TARGET :: hd) where {$(forall...)}
-                                        ($(forall...), )
                                         body
                                     end
                                     @inline L function NAME(_)
