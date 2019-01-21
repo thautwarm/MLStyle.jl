@@ -167,6 +167,8 @@ end
 end
 
 
+struct TestGH end
+
 @testset "Generalized Recognizer(GAppPattern)" begin
     @use GADT
     @data internal TestGRecog{T} begin
@@ -174,7 +176,6 @@ end
         TestGRecog_B{B}(a :: T, b :: B)
     end
 
-    struct TestGH end
     a = TestGRecog_A(1, TestGH())
     b = TestGRecog_B([1], "2")
 
@@ -219,7 +220,7 @@ end
         end
 
         @test @match a begin
-            TestGRecog_A{TestGH, T}(_) where T >: Number => true
+            TestGRecog_A{TestGH, A}(_) where A <: Number => true
             _ => false
         end
 

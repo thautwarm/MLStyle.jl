@@ -1,10 +1,9 @@
 module DataType
 using MLStyle
-using MLStyle.Render
 using MLStyle.toolz: isCapitalized, ($), cons, nil, ast_and
 using MLStyle.MatchCore
-using MLStyle.Pervasive
-using MLStyle.Pervasive: @typed_pattern
+using MLStyle.Infras
+using MLStyle.Pervasives
 
 export @data
 isSymCap = isCapitalized ∘ string
@@ -81,7 +80,6 @@ function data(typ, def_variants, qualifier, mod)
                 end
               end
               TARGET = mangle(mod)
-              NAME   = mangle(mod)
 
               if all(check_if_given_field_names) # begin if
                 map(destruct_fields) do field_
@@ -119,15 +117,15 @@ function data(typ, def_variants, qualifier, mod)
                  end
               else
                  @error "Destructor should be used in the form of `C(a, b, c)` or `C(a=a, b=b, c=c)` or `C(_)`"
-              end |> x -> (TARGET, NAME, reduce(∘, x, init=identity))
+              end |> x -> (TARGET, reduce(∘, x, init=identity))
 
         end
 
         defAppPattern(mod,
                       predicate = (hd_obj, args) -> hd_obj === ctor,
                       rewrite   = (tag, hd_obj, destruct_fields, mod) -> begin
-                        TARGET, NAME, match_fields = mk_match(tag, hd_obj, destruct_fields, mod)
-                        (@typed_pattern hd_obj) ∘ match_fields
+                        TARGET, match_fields = mk_match(tag, hd_obj, destruct_fields, mod)
+                        (@typed_as hd_obj) ∘ match_fields
                       end,
                       qualifiers = Set([qualifier_]))
 
@@ -136,24 +134,14 @@ function data(typ, def_variants, qualifier, mod)
         defGAppPattern(mod,
                       predicate = (spec_vars, hd_obj, args) -> hd_obj === ctor,
                       rewrite   = (tag, forall, hd, destruct_fields, mod) -> begin
-                        TARGET, NAME, match_fields = mk_match(tag, hd, destruct_fields, mod)
-                        L = LineNumberNode(1)
+                        TARGET, match_fields = mk_match(tag, hd, destruct_fields, mod)
                         if forall === nothing
-                            function (body)
-                                @format [TARGET, NAME, tag, body, failed, L, hd] quote
-                                    @inline L function NAME(TARGET :: hd)
-                                        body
-                                    end
-                                    @inline L function NAME(_)
-                                        failed
-                                    end
-                                    NAME(tag)
-                                end
-                            end
+                            @typed_as hd
                         else
                             function (body)
-                                @format [TARGET, NAME, tag, body, failed, L, hd] quote
-                                    @inline L function NAME(TARGET :: hd) where {$(forall...)}
+                                NAME = mangle(mod)
+                                @format [TARGET, tag, body, hd] quote
+                                    @inline __L__ function NAME(TARGET :: hd) where {$(forall...)}
                                         body
                                     end
                                     @inline L function NAME(_)

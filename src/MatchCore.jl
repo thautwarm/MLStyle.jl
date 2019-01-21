@@ -115,10 +115,6 @@ end
 
 function getPattern(case, use_mod :: Module)
     for (def_mod, desc) in pattern_manager
-        # @info a
-        # @info b
-        # @info def_mod
-        # @info desc
 
         if qualifierTest(desc.qualifiers, use_mod, def_mod) && desc.predicate(case)
            return desc.rewrite
@@ -127,10 +123,7 @@ function getPattern(case, use_mod :: Module)
     return nothing
 end
 
-# the form:
-# @match begin
-#     ...
-# end
+
 isHeadEq(s :: Symbol) = (e::Expr) -> e.head == s
 
 function collectCases(expr :: Expr) :: State
@@ -162,10 +155,6 @@ function collectCase(expr :: Expr) :: State
     end
 end
 
-# macro match
-
-# allocate names for anonymous temporary variables.
-
 internal_counter = Dict{Module, Int}()
 
 function removeModulePatterns(mod :: Module)
@@ -176,6 +165,8 @@ function getNameOfModule(m::Module) :: String
     string(m)
 end
 
+
+# allocate names for anonymous temporary variables.
 export mangle
 function mangle(mod::Module)
     get!(internal_counter, mod) do
@@ -206,6 +197,10 @@ throwFrom(errs) = begin
     throw(SyntaxError("$s"))
 end
 
+# the form:
+# @match begin
+#     ...
+# end
 export @match
 macro match(target, cbl)
    (a, s) = runState $ matchImpl(target, cbl, __module__) $ init_state
