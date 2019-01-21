@@ -106,27 +106,6 @@ defPattern(Pervasives,
         end
 )
 
-
-function mk_expr_template(expr :: Expr)
-    if expr.head == :($)
-        return expr.args[1]
-    end
-    rec = mk_expr_template
-    Expr(:call, :Expr, rec(expr.head), filter(x -> x !== nothing, map(rec, expr.args))...)
-end
-
-function mk_expr_template(expr :: Symbol)
-        QuoteNode(expr)
-end
-
-function mk_expr_template(expr :: LineNumberNode)
-        nothing
-end
-
-function mk_expr_template(expr)
-        expr
-end
-
 # Not decided yet about capitalized symbol's semantics, for generic enum is impossible in Julia.
 defPattern(Pervasives,
         predicate = isCase,
@@ -193,14 +172,59 @@ defPattern(Pervasives,
     end
 )
 
+struct QuotePattern
+        value
+end
+
+function mk_expr_template(expr :: Expr)
+    if expr.head == :($)
+        return expr.args[1]
+    end
+    rec = mk_expr_template
+    Expr(:call, :Expr, rec(expr.head), filter(x -> x !== nothing, map(rec, expr.args))...)
+end
+
+function mk_expr_template(expr :: Symbol)
+        QuoteNode(expr)
+end
+
+function mk_expr_template(expr :: QuoteNode)
+        QuotePattern(expr.value)
+end
+
+function mk_expr_template(expr :: LineNumberNode)
+        nothing
+end
+
+function mk_expr_template(expr)
+        expr
+end
+
+
 defPattern(Pervasives,
        predicate = x -> x isa Expr && x.head == :quote,
        rewrite  = (tag, case, mod) -> begin
         expr = case.args[1]
         expr = mk_expr_template(expr)
-        # @info :QuoteTemplate
-        # dump(expr)
         mkPattern(tag, expr, mod)
+       end
+)
+
+
+defPattern(Pervasives,
+       predicate = x -> x isa QuotePattern,
+       rewrite  = (tag, case, mod) -> begin
+        expr = case.value
+        expr = mk_expr_template(expr)
+        TARGET = mangle(mod)
+        VALUE = mangle(mod)
+        access_value(body) =
+                @format [body, TARGET, VALUE] quote
+                        (@inline __L__ function (VALUE)
+                                body
+                        end)(TARGET.value)
+                end
+        (@typed_as QuoteNode) ∘  access_value ∘ mkPattern(VALUE ,expr, mod)
        end
 )
 
