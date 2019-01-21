@@ -123,7 +123,7 @@ function mkAppPattern(tag, hd, tl, use_mod)
             return desc.rewrite(tag, hd, tl, use_mod)
         end
     end
-    info = string(hd) * string(tl)
+    info = string(hd) * "(" * string(tl) * ")"
     throw $ PatternUnsolvedException("invalid usage or unknown application case $info.")
 end
 

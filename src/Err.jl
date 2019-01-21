@@ -19,8 +19,5 @@ struct SyntaxError <: Exception
     msg :: String
 end
 
-struct DataTypeUsageError <: Exception
-    msg :: String
-end
 
 end
