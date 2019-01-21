@@ -1,9 +1,9 @@
 module DataType
 using MLStyle
-using MLStyle.Render
 using MLStyle.toolz: isCapitalized, ($), cons, nil, ast_and
 using MLStyle.MatchCore
-using MLStyle.Pervasive
+using MLStyle.Infras
+using MLStyle.Pervasives
 
 export @data
 isSymCap = isCapitalized ∘ string
@@ -17,16 +17,47 @@ macro data(qualifier, typ, def_variants)
     data(typ, def_variants, qualifier, __module__) |> esc
 end
 
+function get_tvars(t :: UnionAll)
+    cons(t.var.name, get_tvars(t.body))
+end
+
+function get_tvars(t :: Base.DataType)
+   nil()
+end
+
+
+function get_tvars(t :: Union)
+   nil()
+end
+
+
 function data(typ, def_variants, qualifier, mod)
-    typename =
+    typename, original_def =
         @match typ begin
-           :($typename{$(_...)}) => typename
-           :($typename{$(_...)} <: $_) => typename
-           :($typename) => typename
-           :($typename <: $_) => typename
+           :($typename{$(a...)})       => (typename, (spec_name) -> :($spec_name{$(a...)}))
+           :($typename{$(a...)} <: $b) => (typename, (spec_name) -> :($spec_name{$(a...)} <: $b))
+           :($typename)                => (typename, identity)
+           :($typename <: $b)          => (typename, (spec_name) -> :($spec_name <: $b))
         end
-    mod.eval(:(abstract type $typ end))
-    for (ctor_name, pairs, each) in impl(getfield(mod, typename), def_variants, mod)
+
+    spec_name = Symbol("MLStyle.ADTUnion.", typename)
+    original_ty_ast = original_def(spec_name)
+
+    mod.eval(:(abstract type $original_ty_ast end))
+
+    original_ty = getfield(mod, spec_name)
+    tvars_of_abst = get_tvars(original_ty)
+
+    if isempty(tvars_of_abst)
+        mod.eval $ quote
+            $typename = $Union{$original_ty, $Type{$original_ty}}
+        end
+    else
+        concrete_orig = :($original_ty{$(tvars_of_abst...)})
+        mod.eval(:($typename{$(tvars_of_abst...)} = $Union{$concrete_orig, $Type{$concrete_orig}}))
+    end
+
+    for (ctor_name, pairs, each) in impl(original_ty, def_variants, mod)
         mod.eval(each)
         ctor = getfield(mod, ctor_name)
         export_anchor_var = Symbol("MLStyle.ADTConstructor.", ctor_name)
@@ -40,63 +71,92 @@ function data(typ, def_variants, qualifier, mod)
                 :internal => internal
             end
         n_destructor_args = length(pairs)
+
+        mk_match(tag, hd_obj, destruct_fields, mod) = begin
+              check_if_given_field_names = map(destruct_fields) do field
+                @match field begin
+                  Expr(:kw, _...) => true
+                  _               => false
+                end
+              end
+              TARGET = mangle(mod)
+
+              if all(check_if_given_field_names) # begin if
+                map(destruct_fields) do field_
+                  @match field_ begin
+                    Expr(:kw, field::Symbol, pat) => begin
+                        let ident = mangle(mod), field = field
+                            function(body)
+                                @format [TARGET, body, ident] quote
+                                    ident = TARGET.$field
+                                    body
+                                end
+                            end ∘ mkPattern(ident, pat, mod)
+                        end
+                    end
+                    _ => @error "The field name of destructor must be a Symbol!"
+                  end
+                end
+              elseif all(map(!, check_if_given_field_names))
+                 n_d = length(destruct_fields)
+                 if n_d == 1 && destruct_fields[1] == :(_)
+                    []
+                    # ignore fields
+                 else
+                     @assert n_d == n_destructor_args "Malformed destructing for case class $ctor_name(from module $(nameof(mod)))."
+                     map(zip(destruct_fields, pairs)) do (pat, (field, _))
+                            let ident = mangle(mod)
+                                function (body)
+                                    @format [tag, body, ident] quote
+                                        ident = tag.$field
+                                        body
+                                    end
+                                end ∘ mkPattern(ident, pat, mod)
+                            end
+                     end
+                 end
+              else
+                 @error "Destructor should be used in the form of `C(a, b, c)` or `C(a=a, b=b, c=c)` or `C(_)`"
+              end |> x -> (TARGET, reduce(∘, x, init=identity))
+
+        end
+
         defAppPattern(mod,
                       predicate = (hd_obj, args) -> hd_obj === ctor,
                       rewrite   = (tag, hd_obj, destruct_fields, mod) -> begin
-                          check_if_given_field_names = map(destruct_fields) do field
-                            @match field begin
-                              Expr(:kw, _...) => true
-                              _ => false
-                            end
-                          end
-                          if all(check_if_given_field_names) # begin if
-                            map(destruct_fields) do field_
-                              @match field_ begin
-                                Expr(:kw, field::Symbol, pat) => begin
-                                    ident = mangle(mod)
-                                    pat_ = mkPattern(ident, pat, mod)
-                                    @format [tag, pat_, ident] quote
-                                      ident = tag.$field
-                                      pat_
-                                    end
-                                end
-                                _ => @error "The field name of destructor must be a Symbol!"
-                              end
-                            end
-                          elseif all(map(!, check_if_given_field_names))
-                             n_d = length(destruct_fields)
-                             if n_d == 1 && destruct_fields[1] == :(_)
-                                []
-                                # ignore fields
-                             else
-                             @assert length(n_d) == n_destructor_args "Malformed destructing for case class $ctor_name(from module $(nameof(mod)))."
-                             map(zip(destruct_fields, pairs)) do (pat, (field, _))
-                                    ident = mangle(mod)
-                                    pat_ = mkPattern(ident, pat, mod)
-                                    @format [tag, pat_, ident] quote
-                                        ident = tag.$field
-                                        pat_
-                                    end
-                             end
-                             end
-                          else
-                             @error "Destructor should be used in the form of `C(a, b, c)` or `C(a=a, b=b, c=c)` or `C(_)`"
-                          end |> x -> reduce(ast_and, x, init=:($tag isa $ctor)) # end if
+                        TARGET, match_fields = mk_match(tag, hd_obj, destruct_fields, mod)
+                        (@typed_as hd_obj) ∘ match_fields
                       end,
                       qualifiers = Set([qualifier_]))
 
+
+        # GADT syntax support!!!
+        defGAppPattern(mod,
+                      predicate = (spec_vars, hd_obj, args) -> hd_obj === ctor,
+                      rewrite   = (tag, forall, hd, destruct_fields, mod) -> begin
+                        TARGET, match_fields = mk_match(tag, hd, destruct_fields, mod)
+                        if forall === nothing
+                            @typed_as hd
+                        else
+                            function (body)
+                                NAME = mangle(mod)
+                                @format [TARGET, tag, body, hd] quote
+                                    @inline __L__ function NAME(TARGET :: hd) where {$(forall...)}
+                                        body
+                                    end
+                                    @inline L function NAME(_)
+                                        failed
+                                    end
+                                    NAME(tag)
+                                end
+                            end
+                        end ∘ match_fields
+                      end,
+                      qualifiers = Set([qualifier_]))
     end
     nothing
 end
 
-
-function get_tvars(t :: UnionAll)
-    cons(t.var.name, get_tvars(t.body))
-end
-
-function get_tvars(t :: Base.DataType)
-   nil()
-end
 
 function impl(t, variants :: Expr, mod :: Module)
     l :: LineNumberNode = LineNumberNode(1)

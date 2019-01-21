@@ -41,7 +41,7 @@
 
 
         @match rmlines(ex) begin
-            PushTo(names) &&
+            Do(names=[]) &&
                 quote
                     $(
                         Many(
@@ -49,7 +49,7 @@
                                 :(struct $name end)
                                 || :(struct $name{$(_...)} end)
                             ) &&
-                            Push(names, name)
+                            Do(push!(names, name))
                         )...
                     )
                 end => names == [:A, :B, :C, :D]

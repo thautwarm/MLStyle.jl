@@ -1,4 +1,4 @@
-using MLStyle.MatchCore
+using MLStyle
 
 @testset "Int" begin
     @testset "affirm: 1-10" begin
@@ -93,7 +93,7 @@ end
     @test @match 2 begin
         "1" || 1 => false
         2   && 1 => false
-        10  || 2 && Int => true
+        10  || 2 && ::Int => true
     end
 end
 
@@ -123,4 +123,118 @@ end
         (&a)     =>  true
         _        =>  false
     end
+end
+
+
+@testset "Recognizer(AppPattern)" begin
+    @data internal TestRecog begin
+        TestRecog_A(Int, Int)
+        TestRecog_B(a :: Float32, b :: String)
+    end
+
+    a = TestRecog_A(1, 2)
+    b = TestRecog_B(1.0, "2")
+
+    @testset "Wildcard" begin
+        @test @match a begin
+            TestRecog_A(_) => true
+            _ => false
+        end
+    end
+    @testset "Ordered Anonymous Fields" begin
+        @test @match a begin
+            TestRecog_A(1, 2) => true
+            _ => false
+        end
+
+        @test @match b begin
+            TestRecog_B(1.0, "2") => true
+            _ => false
+        end
+    end
+
+    @testset "Named Fields" begin
+        @test @match a begin
+            TestRecog_A(_2 = 2) => true
+            _ => false
+        end
+
+        @test @match b begin
+            TestRecog_B(a = 1.0) => true
+            _ => false
+        end
+    end
+end
+
+
+struct TestGH end
+
+@testset "Generalized Recognizer(GAppPattern)" begin
+    @use GADT
+    @data internal TestGRecog{T} begin
+        TestGRecog_A{A}(A, T)
+        TestGRecog_B{B}(a :: T, b :: B)
+    end
+
+    a = TestGRecog_A(1, TestGH())
+    b = TestGRecog_B([1], "2")
+
+    @testset "Matching for specialization" begin
+        @test @match a begin
+            TestGRecog_A(_) => true
+            _ => false
+        end
+
+        @test @match a begin
+            TestGRecog_A{TestGH, Int}(_) => true
+            _ => false
+        end
+
+        @test @match b begin
+            TestGRecog_B{Vector{Int}, String}(_) => true
+            _ => false
+        end
+
+        @test @match b begin
+            ::TestGRecog{Vector{Int}} => true
+            _ => false
+        end
+
+        @test @match a begin
+            ::TestGRecog{TestGH} => true
+            _ => false
+        end
+
+        @test @match a begin
+            TestGRecog_A{TestGH}(_) => true
+            _ => false
+        end
+
+    end
+
+    @testset "Matching for generalization" begin
+
+        @test @match a begin
+            TestGRecog_A{T, A}(::A, ::T) where {A, T} => true
+            _ => false
+        end
+
+        @test @match a begin
+            TestGRecog_A{TestGH, A}(_) where A <: Number => true
+            _ => false
+        end
+
+        @test @match a begin
+            TestGRecog_A{TestGH}(_) => true
+            _ => false
+        end
+
+        @test @match b begin
+            TestGRecog_B{A, B}(::B, ::A) where {A, B} => false
+            TestGRecog_B{A, B}(::A, ::B) where {A, B} => true
+            _ => false
+        end
+
+    end
+
 end

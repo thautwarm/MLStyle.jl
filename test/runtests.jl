@@ -1,5 +1,6 @@
 using Test
 using MLStyle
+@use GADT
 
 include("pervasive.jl")
 include("expr_template.jl")
