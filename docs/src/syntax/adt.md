@@ -12,7 +12,7 @@ Syntax
 <fieldname>     = %Lowercase identifier%  
 <TVar>          = %Uppercase identifier%
 <ConsName>      = %Uppercase identifier%
-<ImplicitTVar> = %Uppercase identifier%
+<ImplicitTVar>  = %Uppercase identifier%
 <Type>          = <TypeName> [ '{' <Seq TVar> '}' ]
 
 
