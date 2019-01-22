@@ -337,9 +337,51 @@ end # 9
 
 They may be not used very often but quite convenient for some specific domain.
 
+Active Pattern
+------------------
+
+This implementation is a subset of F# active patterns.
+
+There're 2 distinct active patterns, first of which is the normal form:
+
+```julia
+@active LessThan0(x) begin
+    if x > 0
+        nothing
+    else
+        x
+    end
+end
+
+@match 15 begin
+    LessThan0(_) => :a
+    _ => :b
+end # :b
+
+@match -15 begin
+    LessThan0(a) => a
+    _ => 0
+end # -15
+
+```
+
+The second is the parametric version.
+
+```julia
+@active Re{r :: Regex}(x) begin
+    match(r, x)
+end
+
+@match "123" begin
+    Re{r"\\d+"}(x) => x
+    _ => @error ""
+end # RegexMatch("123")
+```
+
+
 Ast Pattern
 --------------------------
 
 This is the most important update since v0.2.
 
-To be continue. Check `test/expr_template.jl` or `test/dot_expression.jl` to get more about this exciting features.
+Check `test/expr_template.jl` or `test/dot_expression.jl` to get more about this exciting features.

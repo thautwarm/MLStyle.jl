@@ -7,7 +7,7 @@ Pattern function
 f = @λ begin
     # patterns here
     x                  -> 1
-    (x, (1, 2)) && 
+    (x, (1, 2)) &&
         if x > 3 end   -> 5
     (x, y)             -> 2
     ::String           -> "is string"

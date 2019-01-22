@@ -97,4 +97,74 @@ defPattern(StandardPatterns,
                     f(args)
                 end
 )
+
+export @active
+"""
+simple active pattern.
+
+@active F(x) begin
+    if x > 0
+        nothing
+    else
+        :ok
+    end
+end
+@match -1 begin
+    F(:ok) => false
+    _ => true
+end
+"""
+
+macro active(case, active_body)
+    mod = __module__
+    (case_name, IDENTS, param) = @match case begin
+        :($(case_name :: Symbol)($param)) => (case_name, nothing, param)
+        :($(case_name :: Symbol){$(idents...)}($param)) => (case_name, idents, param)
+    end
+    TARGET = mangle(mod)
+    mod.eval(quote struct $case_name end end)
+    case_obj = getfield(mod, case_name)
+    if IDENTS === nothing
+        defAppPattern(mod,
+            predicate = (hd_obj, args) -> hd_obj === case_obj,
+            rewrite = (tag, hd_obj, args, mod) -> begin
+                arg = args[1]
+                function (body)
+                    @format [tag, param, TARGET, active_body, body] quote
+                        let  TARGET =
+                            let param = tag
+                                active_body
+                            end
+                            TARGET === nothing ?  failed : body
+                        end
+                    end
+                end ∘ mkPattern(TARGET, arg, mod)
+        end)
+    else
+        n_idents = length(IDENTS)
+        defGAppPattern(mod,
+            predicate = (spec_vars, hd_obj, args) -> hd_obj === case_obj && length(spec_vars) === n_idents,
+            rewrite   = (tag, forall, spec_vars, hd_obj, args, mod) -> begin
+                arg = args[1]
+                assign_elts_and_active_body =
+                    let arr = [:($IDENT = $(spec_vars[i]))
+                                for (i, IDENT)
+                                in enumerate(IDENTS)]
+                        Expr(:let, Expr(:block, arr...), Expr(:block, active_body))
+                    end
+                function (body)
+                    @format [tag, param, TARGET, assign_elts_and_active_body, body] quote
+                        let TARGET =
+                            let param = tag
+                                assign_elts_and_active_body
+                            end
+                            TARGET === nothing ?  failed : body
+                        end
+                    end
+                end ∘ mkPattern(TARGET, arg, mod)
+        end)
+    end
+    nothing
+end
+
 end

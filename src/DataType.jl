@@ -122,7 +122,8 @@ function data(typ, def_variants, qualifier, mod)
         # GADT syntax support!!!
         defGAppPattern(mod,
                       predicate = (spec_vars, hd_obj, args) -> hd_obj === ctor,
-                      rewrite   = (tag, forall, hd, destruct_fields, mod) -> begin
+                      rewrite   = (tag, forall, spec_vars, hd_obj, destruct_fields, mod) -> begin
+                        hd = :($hd_obj{$(spec_vars...)})
                         TARGET, match_fields = mk_match(tag, hd, destruct_fields, mod)
                         if forall === nothing
                             @typed_as hd

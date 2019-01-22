@@ -5,6 +5,7 @@ export @match, Many, PushTo, Push, Seq, Do, @data, @use, use, @used
 export defPattern, defAppPattern, defGAppPattern, mkPattern, mkAppPattern, mkGAppPattern
 export PatternUnsolvedException, InternalException, SyntaxError
 export Atom, Rule, Parserc
+export @active
 
 include("Extension.jl")
 using MLStyle.Extension
@@ -60,6 +61,11 @@ macro λ(cases)
             end)
         _ => @error "syntax error in lambda case definition."
     end
+end
+
+export @stagedexpr
+macro stagedexpr(exp)
+    __module__.eval(exp)
 end
 
 end # module
