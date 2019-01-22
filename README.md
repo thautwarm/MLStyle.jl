@@ -17,7 +17,7 @@ pkg> add MLStyle
 
 ## Preview
 
-In this README I'm glad to share some non-trivial code snippets subsequently.
+In this README I'm glad to share some non-trivial code snippets.
 
 ### Homoiconic pattern matching for Julia ASTs
 
