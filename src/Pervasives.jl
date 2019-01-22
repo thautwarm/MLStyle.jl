@@ -49,35 +49,6 @@ defPattern(Pervasives,
 
 
 defPattern(Pervasives,
-        predicate = x -> x isa Expr && x.head == :(::),
-        rewrite = (tag, case, mod) ->
-                let args   = (case.args..., ),
-                    TARGET = mangle(mod)
-
-                    function f(args :: NTuple{2, Any})
-                        pat, t = args
-                        if used(:TypeLevel, mod)
-                            TVAR = mangle(mod)
-                            (@capture_type TVAR TVAR) ∘ mkPattern(TVAR, t, mod)
-                        else
-                            @typed_as t
-                        end ∘ mkPattern(TARGET, pat, mod)
-                    end
-
-                    function f(args :: NTuple{1, Any})
-                        t = args[1]
-                        if used(:TypeLevel, mod)
-                            TVAR = mangle(mod)
-                            (@capture_type TVAR TVAR) ∘ mkPattern(TVAR, t, mod)
-                        else
-                            @typed_as t
-                        end
-                    end
-                    f(args)
-                end
-)
-
-defPattern(Pervasives,
         predicate = x -> x isa Expr && x.head == :(&),
         rewrite = (tag, case, mod) -> begin
                 @assert length(case.args) == 1 "invalid ref pattern."
@@ -255,6 +226,24 @@ defAppPattern(Pervasives,
         end
 )
 
+defPattern(Pervasives,
+        predicate = x -> x isa Expr && x.head == :(::),
+        rewrite = (tag, case, mod) ->
+                let args   = (case.args..., ),
+                    TARGET = mangle(mod)
+                    function f(args :: NTuple{2, Any})
+                        pat, t = args
+                        (@typed_as t) ∘ mkPattern(TARGET, pat, mod)
+                    end
+
+                    function f(args :: NTuple{1, Any})
+                        t = args[1]
+                        @typed_as t
+                    end
+                    f(args)
+                end,
+        qualifiers = Set([internal])
+)
 
 defAppPattern(Pervasives,
         predicate = (hd_obj, args) -> hd_obj === Dict,

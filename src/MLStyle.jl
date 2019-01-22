@@ -25,6 +25,10 @@ using MLStyle.Infras
 include("Pervasives.jl")
 using MLStyle.Pervasives
 
+
+include("StandardPatterns.jl")
+using MLStyle.StandardPatterns
+
 include("DataType.jl")
 using MLStyle.DataType
 

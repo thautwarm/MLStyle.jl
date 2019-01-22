@@ -1,7 +1,6 @@
 module Extension
 
 Support = Dict{Symbol, Vector{Module}}(
-    :TypeLevel => [],
     :GADT      => []
 )
 

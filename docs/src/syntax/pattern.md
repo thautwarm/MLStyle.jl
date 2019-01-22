@@ -264,10 +264,10 @@ end
 
 ```
 
-Type level feature
-----------------
+Generic type patterns
+-------------------------
 
-By default, type level feature wouldn't be activated.
+Instead of `TypeLevel` feature used in v0.1, an ideal type-stable way to destruct types now is introduced here.
 
 ```julia
 @match 1 begin
@@ -275,28 +275,29 @@ By default, type level feature wouldn't be activated.
     ::Int => Int    
 end
 # => Int64
-```
-
-```julia
-Feature.@activate TypeLevel
 
 @match 1 begin
-    ::String => String
-    ::Int    => Int
+    ::T where T <: AbstractArray => 0
+    ::T where T <: Number => 1
+end
+
+# => 0
+
+struct S{A, B}
+    a :: A
+    b :: B
+end
+
+@match S(1, "2") begin
+    S{A} where A => A
 end
 # => Int64
-```
 
-When using type level feature, if you can only perform runtime type checking when matching, and type level variables could be captured as normal variables.
-
-If you do want to check type when type level feature is activated,
-do as the following snippet
-
-```julia
-@match 1 begin
-    ::&String => String
-    ::&Int    => Int
+@match S(1, "2") begin
+    S{A, B} where {A, B} => (A, B)
 end
+# => (Int64, String)
+
 ```
 
 

@@ -31,14 +31,6 @@ function get_tvars(t :: Union)
    nil()
 end
 
-function extract_tvars(t :: AbstractArray)
-    @match t begin
-        [] => nil()
-        [hd::Symbol || :($hd <: $_) || :($hd >: $(_)), tl...] => cons(hd, extract_tvars(tl))
-        _ => @error "invalid tvars"
-    end
-end
-
 function data(typ, def_variants, qualifier, mod)
     typename =
         @match typ begin

@@ -61,14 +61,13 @@ e.g
 TARGET = :target_id
 (@typed_as T) # which generates a pattern to bind type of `TARGET` as `T`
 """
-macro capture_type(t, forall)
+macro capture_type(t)
     esc $ quote
         NAME = mangle(mod)
         __T__ = $t
-        __FORALL__ = $forall
         function (body)
-            @format [body, tag, NAME, TARGET, __T__, __FORALL__] quote
-                @inline __L__ function NAME(TARGET :: __T__) where __FORALL__
+            @format [body, tag, NAME, TARGET, __T__] quote
+                @inline __L__ function NAME(TARGET :: __T__) where __T__
                     __T__ # if not put this here, an error would be raised : "local variable XXX cannot be used in closure declaration"
                     body
                 end
