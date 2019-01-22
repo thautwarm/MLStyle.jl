@@ -6,142 +6,63 @@ MLStyle.jl
 [![Build Status](https://travis-ci.org/thautwarm/MLStyle.jl.svg?branch=master)](https://travis-ci.org/thautwarm/MLStyle.jl)
 [![codecov](https://codecov.io/gh/thautwarm/MLStyle.jl/branch/master/graph/badge.svg)](https://codecov.io/gh/thautwarm/MLStyle.jl)
 [![License](https://img.shields.io/badge/license-MIT-blue.svg)](https://github.com/thautwarm/MLStyle.jl/blob/master/LICENSE)
-<!-- [![Docs](https://img.shields.io/badge/docs-latest-orange.svg)](https://thautwarm.github.io/MLStyle.jl/latest/) -->
+[![Docs](https://img.shields.io/badge/docs-latest-orange.svg)](https://thautwarm.github.io/MLStyle.jl/latest/)
 
+Rich features are provided by MLStyle.jl and you can check [documents](https://thautwarm.github.io/MLStyle.jl/latest/) to get started.
 
-P.S **This branch is ready to be released very sooner. And there're 3 main changes presented in following sections.**
+For installation, open package manager mode in Julia shell and `add MLStyle`:
+```
+pkg> add MLStyle
+```
 
-## Qualified Pattern Matching
+## Preview
 
-`MLStyle` now is implemented with a much more elegant abstraction,
-and since then programmers don't have to burden with the scoping of matching patterns:
+In this README I'm glad to share some non-trivial code snippets subsequently.
 
-Along with the definition of a pattern, a qualifier is defined too to descibe which module could use this pattern.
-The qualifier `predicate` takes 2 arguments, one of them is the module where the pattern is defined, and another is the caller module.
-
-Only the patterns defined in `src/Pervasive.jl` are exposed to all modules.
-
-
-## Ast Pattern
+### Homoiconic pattern matching for Julia ASTs
 
 ```julia
-ast = quote
-    function f(a, b, c, d)
-      let d = a + b + c, e = x -> 2x + d
-          e(d)
-      end
+rmlines = @λ begin
+    e :: Expr           -> Expr(e.head, filter(x -> x !== nothing, map(rmlines, e.args))...)
+      :: LineNumberNode -> nothing
+    a                   -> a
+end
+expr = quote
+    struct S{T}
+        a :: Int
+        b :: T
     end
-end
+end |> rmlines
 
-@match ast begin
+@match expr begin
     quote
-        $(::LineNumberNode)
-
-        function $funcname(
-            $firstarg,
-            $(args...),
-            $(a && if islowercase(string(a)[1]) end))
-
-            $(::LineNumberNode)
-            let $bind_name = a + b + $last_operand, $(other_bindings...)
-                $(::LineNumberNode)
-                $app_fn($app_arg)
-                $(block1...)
-            end
-
-            $(block2...)
+        struct $name{$tvar}
+            $f1 :: $t1
+            $f2 :: $t2
         end
-    end && if (isempty(block1) && isempty(block2)) end =>
-
-         Dict(:funcname => funcname,
-              :firstarg => firstarg,
-              :args     => args,
-              :last_operand => last_operand,
-              :other_bindings => other_bindings,
-              :app_fn         => app_fn,
-              :app_arg        => app_arg)
+    end =>
+    quote
+        struct $name{$tvar}
+            $f1 :: $t1
+            $f2 :: $t2
+        end
+    end |> rmlines == expr
 end
 ```
 
-Output:
+### Generalized Algebraic Data Types
 
-```julia
-Dict{Symbol,Any} with 7 entries:
-  :app_fn         => :e
-  :args           => Symbol[:b, :c]
-  :firstarg       => :a
-  :funcname       => :f
-  :other_bindings => Any[:(e = (x->begin…
-  :last_operand   => :c
-  :app_arg        => :d
+ ```julia
+@use GADT
 
-```
-
-The **Ast Pattern** of MLStyle.jl is not only elegant, but also very efficient for
-it's purely statically code generation.
-
-Here's an example from MacroTools.jl, and MLStyle.jl achieves the same functionalities with a less than **1/3** time cost, check `benchmark.jl`.
-
-
-## API changes
-
-Comparing with master branch, there are quite a few differences.
-
-1. Fallthrough cases now use `||` instead of `|`:
-
-```julia
-@match 1 begin
-    # match interval [1,10] or [100, 200]
-    1:10 || 100:200 => :ok
-    _               => :fail
-end # => :ok
-```
-
-2. Uppercase names are now preserved and cannot be used as capture patterns.
-
-```julia
-@match 1 begin
-       a => a # ok
-end
-
-@match 1 begin
-       A => A # wrong!
+@data public Exp{T} begin
+    Sym       :: Symbol => Exp{A} where {A}
+    Val{A}    :: A => Exp{A}
+    App{A, B} :: (Exp{Fun{A, B}}, Exp{A_}) => Exp{B} where {A_ <: A}
+    Lam{A, B} :: (Symbol, Exp{B}) => Exp{Fun{A, B}}
+    If{A}     :: (Exp{Bool}, Exp{A}, Exp{A}) => Exp{A}
 end
 
 ```
 
-The reason why is that, in ML Languages/Haskell,
-there is a convention that enum patterns are represented with uppercase names.
-
-3. Guard(`Predicate`) is now a pattern, here is an example to make comparisons between Julia and OCaml.
-
-Julia:
-
-```julia
-@match C(1) begin
-    C(x) && if x > 0 end => x
-    _ => @error ""
-end
-```
-
-Ocaml:
-
-```OCaml
-match C(1) with
-    C(x) when x > 0 -> x
-  | _               -> failwith ""
-
-```
-
-Something deserved to be emphasized is, `Guard`s could be nested in Julia:
-
-```julia
-@match [[x, y]] begin
-    [[x && if x > 0 end, y]] && if length(seq) > 1 end => ...
-end
-```
-
-4. The way to define a custom pattern is changed a little, comparing with master branch's implementation, a extra factor has to be
-taken into consideration, it's the **qualifier**. Check `src/Pervasive.jl` to get more info about custom patterns.
-
-P.S: We strongly recommend not to define a pattern with `invasive` qualifier.
+A simple intepreter implementation using GADTs could be found at `test/untyped_lam.jl`.

@@ -11,7 +11,8 @@ Pattern
 - [Custom Pattern, Dict, Tuple, Array](#Custom-pattern-1)
 - [Or Pattern](#Or-pattern-1)
 - [ADT destructing, GADTs](#ADT-destructing-1)
-- [Type Pattern](#Advanced-type-pattern-1)
+- [Advanced Type Pattern](#Advanced-type-pattern-1)
+- [Side Effect](#Side-effect-1)
 - [Ast Pattern](#Ast-Patrtern-1)
 
 Patterns provide convenient ways to manipulate data.
@@ -306,6 +307,35 @@ end
 
 ```
 
+
+Side-Effect
+-----------------------
+
+To introduce side-effects into pattern matching, we provide a built-in pattern called `Do` pattern to achieve this.
+Also, a pattern called `Many` can work with `Do` pattern in a perfect way.
+
+
+Do-Pattern and Many-Pattern
+--------------------
+
+```julia
+
+@match [1, 2, 3] begin
+    Many(::Int) => true
+    _ => false
+end # true
+
+@match [1, 2, 3,  "a", "b", "c", :a, :b, :c] begin
+    Do(count = 0) &&
+    Many(
+        a::Int && Do(count = count + a) ||
+        ::String                        ||
+        ::Symbol && Do(count = count + 1)
+    ) => count
+end # 9
+```
+
+They may be not used very often but quite convenient for some specific domain.
 
 Ast Pattern
 --------------------------
