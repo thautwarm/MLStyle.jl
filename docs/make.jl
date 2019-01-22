@@ -1,16 +1,21 @@
 using Documenter
-using MLStyle, MLStyle.Data
+using MLStyle
 
 
-DataModule = [MLStyle.Data.List]
 makedocs(
-    modules = [MLStyle.ADT, MLStyle.Match, MLStyle.Feature, MLStyle.Err,
-               DataModule...],
-
+    modules = [
+        MLStyle.MatchCore,
+        MLStyle.DataType,
+        MLStyle.Err,
+        MLStyle.Extension,
+        MLStyle.Infras,
+        MLStyle.Pervasives,
+        MLStyle.StandardPatterns,
+        MLStyle.render
+    ],
     clean = false,
     format = :html,
     sitename = "MLStyle.jl",
-
     linkcheck = !("skiplinks" in ARGS),
     analytics = "UA-89508993-1",
     pages = [
@@ -19,14 +24,7 @@ makedocs(
             "syntax/adt.md",
             "syntax/pattern.md",
             "syntax/pattern-function.md",
-        ],
-        # "Data" => Any[
-        #     # "data/list.md",
-        #     # "data/typed-function.md",
-        # ],
-        # "Feature" => Any[
-        #     # "feature/type-level.md"
-        # ],
+        ]
     ],
     html_prettyurls = !("local" in ARGS),
 )
