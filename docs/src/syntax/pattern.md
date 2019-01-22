@@ -32,7 +32,7 @@ Literal pattern
 Default supported literal patterns are `Number`and `AbstractString`.
 
 
-Capture pattern
+Capturing pattern
 --------------
 
 ```julia
@@ -61,14 +61,11 @@ However, when you use `TypeLevel Feature`, the behavious could change slightly. 
 As-Pattern
 ----------
 
-For julia don't have an `as`  keyword and operator `@`(adopted by Haskell and Rust) is invalid for the conflicts against *macro*,
-we use `in` keyword to do such stuffs.
-
-The feature is unstable for there might be perspective usage on `in` keyword about making patterns.
+`As-Pattern` can be expressed with `And-Pattern`. 
 
 ```julia
 @match (1, 2) begin
-    (a, b) in c => c[1] == a && c[2] == b
+    (a, b) && c => c[1] == a && c[2] == b
 end
 ```
 
@@ -79,9 +76,32 @@ Guard
 ```julia
 
 @match x begin
-    x{x > 5} => 5 - x # only succeed when x > 5
+    x && if x > 5 end => 5 - x # only succeed when x > 5
     _        => 1
 end
+```
+
+Predicate
+---------------
+
+The following has the same semantics as the above snippet.
+
+```julia
+
+function pred(x)
+    x > 5
+end
+
+@match x begin
+    x && function pred end => 5 - x # only succeed when x > 5
+    _        => 1
+end
+
+@match x begin
+    x && function (x) x > 5 end => 5 - x # only succeed when x > 5
+    _        => 1
+end
+
 ```
 
 
@@ -112,35 +132,14 @@ end
 Custom pattern
 --------------
 
-The reason why Julia is a new "best language" might be that you can implement your own static
-pattern matching with this feature:-).
+Not recommend to do this for it's implementation specific.
+If you want to make your own extensions, check `MLStyle/src/Pervasives.jl`.
 
-Here is a example although it's not robust at all. You can use it to solve multiplication equations.
-```julia
-uisng MLStyle
+Defining your own patterns using the low level APIs is quite easy, 
+but exposing the implementations would cause compatibilities in future development.
+ 
 
-# define pattern for application
-PatternDef.App(*) do args, guard, tag, mod
-         @match (args) begin
-            (l::QuoteNode, r :: QuoteNode) => MLStyle.Err.SyntaxError("both sides of (*) are symbols!")
-            (l::QuoteNode, r) =>
-               quote
-                   $(eval(l)) = $tag / ($r)
-               end
-           (l, r :: QuoteNode) =>
-               quote
-                   $(eval(r)) = $tag / ($l)
-               end
-           end
-end
 
-@match 10 begin
-     5 * :a => a
-end
-# => 2.0
-```
-
-Dictionary pattern, tuple pattern, array pattern and linked list destructing are both implemented by **Custom pattern**.
 
 - Dict pattern(like `Elixir`'s dictionary matching or ML record matching)
 
@@ -148,7 +147,7 @@ Dictionary pattern, tuple pattern, array pattern and linked list destructing are
 dict = Dict(1 => 2, "3" => 4, 5 => Dict(6 => 7))
 @match dict begin
     Dict("3" => four::Int,
-          5  => Dict(6 => sev)){four < sev} => sev
+          5  => Dict(6 => sev)) && if four < sev end => sev
 end
 # => 7
 ```
@@ -157,8 +156,7 @@ end
 
 ```julia
 
-@match (1, 2, (3, 4, (5, )))
-
+@match (1, 2, (3, 4, (5, ))) begin
     (a, b, (c, d, (5, ))) => (a, b, c, d)
 
 end
@@ -181,28 +179,16 @@ julia> it[2]
 4
 ```
 
-- Linked list pattern
 
-```julia
-
-lst = List.List!(1, 2, 3)
-
-@match lst begin
-    1 ^ a ^ tail => a
-end
-
-# => (2, MLStyle.Data.List.Cons{Int64}(3, MLStyle.Data.List.Nil{Int64}()))
-```
-
-Fall through cases
+Or patterns
 -------------------
 
 ```julia
 test(num) =
     @match num begin
-       ::Float64 |
-        0        |
-        1        |
+       ::Float64 ||
+        0        ||
+        1        ||
         2        => true
 
         _        => false
@@ -216,13 +202,31 @@ test(3)   # false
 test("")  # false
 ```
 
+Tips: `Or Pattern`s could nested. 
+
 ADT destructing
 ---------------
+
+You can match `ADT` in following 3 means:
+
 ```julia
 
-@case Natural(dimension :: Float32, climate :: String, altitude :: Int32)
-@case Cutural(region :: String,  kind :: String, country :: String, nature :: Natural)
+C(a, b, c) => ... # ordered arguments
+C(b = b) => ...   # record syntax
+C(_) => ...       # wildcard for destructing
 
+``` 
+
+Here is an example:
+
+```julia
+
+
+
+@data Example begin
+    Natural(dimension :: Float32, climate :: String, altitude :: Int32)
+    Cutural(region :: String,  kind :: String, country :: String, nature :: Natural)
+end
 
 神农架 = Cutural("湖北", "林区", "中国", Natural(31.744, "北亚热带季风气候", 3106))
 Yellostone = Cutural("Yellowstone National Park", "Natural", "United States", Natural(44.36, "subarctic", 2357))
@@ -230,14 +234,12 @@ Yellostone = Cutural("Yellowstone National Park", "Natural", "United States", Na
 function my_data_query(data_lst :: Vector{Cutural})
     filter(data_lst) do data
         @match data begin
-            Cutural(_, "林区", "中国", Natural(dim, _, altitude)){
-                dim > 30.0, altitude > 1000
-            } => true
-
-            Cutural(_, _, "United States", Natural(_, _, altitude)){
-                altitude > 2000
-            } => true
-
+            Cutural(_, "林区", "中国", Natural(dim=dim, altitude)) &&
+            if dim > 30.0 && altitude > 1000 end => true
+            
+            Cutural(_, _, "United States", Natural(altitude=altitude)) &&
+            if altitude > 2000 end  => true
+                
             _ => false
 
         end
@@ -247,62 +249,19 @@ my_data_query([神农架, Yellostone])
 ...
 ```
 
-Enum pattern
--------------
-
-`Number` supports enumeration.
-```julia
-
-@match num begin
-    1..10  in x => "$x in [1, 10]"
-    11..20 in x => "$x in [11, 20]"
-    21..30 in x => "$x in [21, 30]"
-end
-```
-
-If you want to create your own enumeration protocol, do as the following:
+- About GADTs
 
 ```julia
-import MLStyle.MatchExt: enum_next
-import Base: <, <=
+@use GADT
 
-@data MyEnum begin
-    A
-    B
-    C
+@data internal Example{T} begin
+    A{T} :: (Int, T) => Example{Tuple{Int, T}}
 end
 
-function (<)(enum1 :: MyEnum, enum2 :: MyEnum)
-    @match enum1 begin
-        A() => enum2 !== A()
-        B() => enum2 === C()
-        C() => false
-    end
+@match A(1, 2) begin
+    A{T}(a :: Int, b :: T) where T <: Number => (a == 1 && T == Int) 
 end
 
-function (<=)(enum1 :: MyEnum, enum2 :: MyEnum)
-    enum1 === enum2 || enum1 < enum2
-end
-
-function enum_next(enum :: MyEnum)
-    @match enum begin
-        A() => B()
-        B() => C()
-        C() => nothing
-end
-
-a = A()
-b = B()
-c = C()
-@match a begin
-    a..c => true
-    _    => false
-end # true
-
-@match c begin
-    a..b => true
-    b..c => false
-end # false
 ```
 
 Type level feature
@@ -339,3 +298,11 @@ do as the following snippet
     ::&Int    => Int
 end
 ```
+
+
+Ast patterns
+--------------------------
+
+This is the most important update since v0.2.
+
+To be continue. Check `test/expr_template.jl` to get more about this exciting features.

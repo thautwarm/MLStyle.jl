@@ -24,6 +24,11 @@ function render(expr::Expr, config :: Dict{Symbol, Any}, nested=true)
     runAstMapper $ mapAst(hd_f, tl_f, expr)
 end
 
+function render(sym::Symbol, config :: Dict{Symbol, Any}, nested=true)
+    get(config, sym) do
+        sym
+    end
+end
 
 
 function format(args, template)

@@ -87,8 +87,8 @@ Let's try something else that might make you more pleasant.
 ```julia
 extracted = map data do record
   @match record
-    D1(_, age, gender) |
-    D2(_, age, gender) |
+    D1(_, age, gender) ||
+    D2(_, age, gender) ||
     D3(gender, age) => (age, gender)
     _               => @error "unknown schema"
   end
@@ -97,3 +97,5 @@ end
 
 What do you think about this? I admit that writing codes like the above may not
 guarantee your attending to the party, but something is different, I think.
+
+To be continue.

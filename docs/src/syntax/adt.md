@@ -1,24 +1,34 @@
 Algebraic Data Types
 ==============================
 
-What's the so-called ADT?
 
-- An efficient way to represent data.
-- An elegant way to composite data.
-- An effective way to manipulate data.
-- An easy way to analyse data.
+Syntax
+-----------------
 
+```
+
+@data [public | internal] TypeName[{TVars...}] begin
+
+    ( ConstructorName[{Generalized TVars...}](fieldname*) 
+    | ConstructorName[{Generalized TVars...}](TypeName*)
+    | ConstructorName[{Generalized TVars...}]((fieldname=TypeNames)*)
+    )*
+    
+end
+
+
+```
 
 Example: Describe arithmetic operations
 --------------------------------------
 
 ```julia
 using MLStyle
-@data Arith begin 
-    Number(v :: Int)
-    Minus(fst :: Arith, snd :: Arith)
-    Mult(fst :: Arith, snd :: Arith)
-    Divide(fst :: Arith, snd :: Arith)
+@data internal Arith begin
+    Number(Int)
+    Minus(Arith, Arith)
+    Mult(Arith, Arith)
+    Divide(Arith, Arith)
 end
 ```
 
@@ -48,43 +58,37 @@ eval_arith(
 # => 0
 ```
 
-Case Class
-----------
 
-Just like the similar one in Scala
+
+Generalized ADT
+--------------------------
+
+
 ```julia
-abstract type A end
-@case C{T}(a :: Int, b)
-@case D(a, b)
-@case E <: A
+
+
+struct FuncType{A, B}
+    fn :: Function 
+end
+
+@data public Exp{T} begin
+    Sym{A} :: A => Exp{A}
+    Val{A} :: A => Exp{A}
+    App{A, B} :: (Exp{FuncType{A, B}}, Exp{A}) => Exp{B}
+    Lam{A, B} :: (Symbol, Exp{B}) => Exp{FuncType{A, B}}
+    If{A} :: (Exp{Bool}, Exp{A}, Exp{A}) => Exp{A} 
+end
+
+function eval_exp(exp :: Exp{T}, context :: Dict{Type, Dict{Symbol, Any}})
+    @match exp begin
+        Sym(a :: T) => context[T][a]
+        Val(a :: T) => a
+        App{A, T}(f :: Exp{FuncType{A, T}}, arg :: Exp{A}) where A => eval_exp(f, context)(eval_exp(arg, context))
+        Lam{A, B}(sym, exp::Exp{B}) where {A, B} => (x :: A) -> eval_exp(substitute(exp, sym => x))
+        If(cond, exp1, exp2) => eval_exp(eval_exp(cond) ? exp1 : exp2)
+    end
+end
+
 ```
-
-In terms of data structure definition, following codes could be expanded to
-```julia
-abstract type A end
-struct C{T}
-    a :: Int
-    b
-end
-
-struct D
-    a
-    b
-end
-
-struct E <: A
-end
-
-<additional codes>
-```
-
-Take care that any instance of `E` is a **singleton** thanks to Julia's language design pattern.
-
-However the two snippet above are not equivalent, for there are other hidden details to support
-**pattern matching** on these data structures.
-
-See [pattern.md](https://thautwarm.github.io/MLStyle.jl/latest/syntax/pattern/).
-
-
 
 

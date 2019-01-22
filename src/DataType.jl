@@ -4,6 +4,7 @@ using MLStyle.toolz: isCapitalized, ($), cons, nil, ast_and
 using MLStyle.MatchCore
 using MLStyle.Infras
 using MLStyle.Pervasives
+using MLStyle.Render: render
 
 export @data
 isSymCap = isCapitalized ∘ string
@@ -30,32 +31,27 @@ function get_tvars(t :: Union)
    nil()
 end
 
+function extract_tvars(t :: AbstractArray)
+    @match t begin
+        [] => nil()
+        [hd::Symbol || :($hd <: $_) || :($hd >: $(_)), tl...] => cons(hd, extract_tvars(tl))
+        _ => @error "invalid tvars"
+    end
+end
 
 function data(typ, def_variants, qualifier, mod)
-    typename, original_def =
+    typename =
         @match typ begin
-           :($typename{$(a...)})       => (typename, (spec_name) -> :($spec_name{$(a...)}))
-           :($typename{$(a...)} <: $b) => (typename, (spec_name) -> :($spec_name{$(a...)} <: $b))
-           :($typename)                => (typename, identity)
-           :($typename <: $b)          => (typename, (spec_name) -> :($spec_name <: $b))
+           :($typename{$(a...)})       => typename
+           :($typename{$(a...)} <: $b) => typename
+           :($typename)                => typename
+           :($typename <: $b)          => typename
         end
 
-    spec_name = Symbol("MLStyle.ADTUnion.", typename)
-    original_ty_ast = original_def(spec_name)
+    mod.eval(:(abstract type $typ end))
 
-    mod.eval(:(abstract type $original_ty_ast end))
-
-    original_ty = getfield(mod, spec_name)
+    original_ty = getfield(mod, typename)
     tvars_of_abst = get_tvars(original_ty)
-
-    if isempty(tvars_of_abst)
-        mod.eval $ quote
-            $typename = $Union{$original_ty, $Type{$original_ty}}
-        end
-    else
-        concrete_orig = :($original_ty{$(tvars_of_abst...)})
-        mod.eval(:($typename{$(tvars_of_abst...)} = $Union{$concrete_orig, $Type{$concrete_orig}}))
-    end
 
     for (ctor_name, pairs, each) in impl(original_ty, def_variants, mod)
         mod.eval(each)
@@ -162,26 +158,77 @@ function impl(t, variants :: Expr, mod :: Module)
     l :: LineNumberNode = LineNumberNode(1)
     abs_tvars = get_tvars(t)
     defs = []
-    abst = isempty(abs_tvars) ? t : :($t{$(abs_tvars...)})
+    abst() = isempty(abs_tvars) ? t : :($t{$(abs_tvars...)})
+    VAR = mangle(mod)
+
     for each in variants.args
         @match each begin
             ::LineNumberNode => (l = each)
-            :($case{$(tvars...)}($(params...))) ||
-            :($case($((params && Do(tvars=[]))...))) => begin
+            :($case{$(tvars...)} :: ($(params...), ) => $(ret_ty) where {$(gtvars...)}) ||
+            :($case{$(tvars...)} :: ($(params...), ) => $(ret_ty && Do(gtvars=[])))     ||
+            :($case{$(tvars...)} :: $(arg_ty && Do(params = [arg_ty])) => $ret_ty where {$(gtvars...)})  ||
+            :($case{$(tvars...)} :: $(arg_ty && Do(params = [arg_ty])) => $(ret_ty && Do(gtvars=[])))    ||
+            :($case($((params && Do(tvars=abs_tvars))...))) && Do(ret_ty = abst(), gtvars=[]) => begin
+              config = Dict{Symbol, Any}([gtvar => Any for gtvar in gtvars])
+
               pairs = map(enumerate(params)) do (i, each)
                  @match each begin
-                    :($(a::Symbol && function isSymCap  end)) => (Symbol("_$i"), a)
-                    :($(a::Symbol && function (x) !isSymCap(x) end)) => (a, Any)
-                    :($field :: $ty)                => (field, ty)
+                    :($(a::Symbol && function isSymCap  end)) => (Symbol("_$i"), a, render(a, config))
+                    :($(a::Symbol && function (x) !isSymCap(x) end)) => (a, Any, Any)
+                    :($field :: $ty)                => (field, ty, render(ty, config))
                  end
               end
-              definition_body = [Expr(:(::), field, ty) for (field, ty) in pairs]
-              definition_head = :($case{$(abs_tvars...), $(tvars...)})
-              definition = @format [l, abst, definition_head] quote
-                 struct definition_head <: abst
+
+              definition_body = [Expr(:(::), field, ty) for (field, ty, _) in pairs]
+              constructor_args = [Expr(:(::), field, ty) for (field, _, ty) in pairs]
+              arg_names = [field for (field, _, _) in pairs]
+              spec_tvars = [tvars..., [Any for _ in gtvars]...]
+              getfields = [:($VAR.$field) for field in arg_names]
+
+              convert_fn = isempty(gtvars) ? nothing : begin
+                        out_tvars = [spec_tvars...]
+                        fresh_tvars1 = [gtvars...]
+                        fresh_tvars2 = [[Expr(:_) for _ in gtvars]...]
+                        inp_tvars = [spec_tvars...]
+
+                        for (i, _) in enumerate(gtvars)
+                            TAny = mangle(mod)
+                            TCov = mangle(mod)
+                            fresh_tvars2[end-i + 1] = :($TCov <: $TAny)
+                            fresh_tvars1[end-i + 1] = TAny
+                            inp_tvars[end-i + 1] = TAny
+                            out_tvars[end-i + 1] = TCov
+                        end
+
+                        arg1 = :($Type{$case{$(out_tvars...)}})
+                        arg2 = :($VAR :: $case{$(inp_tvars...)})
+                        specialized = :($case{$(out_tvars...)}($(getfields...)))
+                        quote
+                            $Base.convert(::$arg1, $arg2) where {$(tvars...), $(fresh_tvars1...), $(fresh_tvars2...)} = $specialized
+                        end
+                    end
+
+
+              definition_head = :($case{$(tvars...), $(gtvars...)})
+              def_cons = isempty(spec_tvars) ?
+                quote
+                    function $case(;$(constructor_args...))
+                        $case($(arg_names...))
+                    end
+                end :
+                quote
+                    function $case($(constructor_args...), ) where {$(tvars...)}
+                        $case{$(spec_tvars...)}($(arg_names...))
+                    end
+                end
+
+              definition = @format [case, l, ret_ty, definition_head] quote
+                 struct definition_head <: ret_ty
                      l
                      $(definition_body...)
                  end
+                 $def_cons
+                 $convert_fn
               end
               push!(defs, (case, pairs, definition))
             end

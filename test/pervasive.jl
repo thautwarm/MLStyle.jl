@@ -172,8 +172,8 @@ struct TestGH end
 @testset "Generalized Recognizer(GAppPattern)" begin
     @use GADT
     @data internal TestGRecog{T} begin
-        TestGRecog_A{A}(A, T)
-        TestGRecog_B{B}(a :: T, b :: B)
+        TestGRecog_A{T, A} :: (A, T) => TestGRecog{T}
+        TestGRecog_B{T, B} :: (a :: T, b :: B) => TestGRecog{T}
     end
 
     a = TestGRecog_A(1, TestGH())
