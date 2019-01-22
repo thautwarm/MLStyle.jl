@@ -13,7 +13,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Home",
     "title": "MLStyle.jl",
     "category": "section",
-    "text": "ML language pattern provider for JuliaCheck out documents here:ADT\nPatterns for matching\nPattern functionOr you want some examples."
+    "text": "ML-style infrastructure provider for JuliaCheck out documents here:ADT\nPatterns for matching\nPattern functionOr you want some examples."
 },
 
 {
@@ -22,14 +22,6 @@ var documenterSearchIndex = {"docs": [
     "title": "Install",
     "category": "section",
     "text": "pkg> add MLStyle"
-},
-
-{
-    "location": "#Why-ADT-and-pattern-matching-1",
-    "page": "Home",
-    "title": "Why ADT and pattern matching",
-    "category": "section",
-    "text": "ClarityLet\'s start from a simple case.function switch_task(status :: Int)\r\n    @match status begin\r\n        1 => \"finish your homework:)\"\r\n        2 => \"reading\"\r\n        3 => \"put down your mobilephone and get outside for a one-hour exercise.\"\r\n        4 => \"go to some website and watch some live.\"\r\n        _ => \"sleep\"\r\n    end\r\nendFor there is no switch-case in Julia syntax, sometimes there might be enormous single cases to hard-code, if-else-end does hurt for its verbosity.Another example is getting specific data from different schemas. Assume that you have many deserialized JSON data, and they\'re in 3 schemas. Each of them represents some information of a person.struct D1\r\n  name : String\r\n  age  : Int\r\n  sex  : Int\r\nend\r\n\r\nstruct D2\r\n  nickname : String\r\n  lifetime : Int\r\n  gender   : Int\r\nend\r\n\r\nstruct D3\r\n  sex   : Int\r\n  lifetime : Int\r\nend\r\ndata :: Vector{Union{D1, D2, D3}}Now your boss told you to extract age and gender from those people. How would you do?Yes it\'s so easy:extracted = map data do record\r\n  if isa(record, D1)\r\n    (data.age, data.sex)\r\n  else if isa(data, D2)\r\n    (data.lifetime, data.gender)\r\n  else\r\n    (data.lifetime, data.sex)\r\n  end\r\nendHowever, in real word, data from different places could have so many schemas and you code will just swell both your editor and time. Think that your friends told you in the morning to take part in their party when knock off, but you have a series of these stupid tasks to finish...Let\'s try something else that might make you more pleasant.extracted = map data do record\r\n  @match record\r\n    D1(_, age, gender) |\r\n    D2(_, age, gender) |\r\n    D3(gender, age) => (age, gender)\r\n    _               => @error \"unknown schema\"\r\n  end\r\nendWhat do you think about this? I admit that writing codes like the above may not guarantee your attending to the party, but something is different, I think."
 },
 
 {
@@ -45,7 +37,23 @@ var documenterSearchIndex = {"docs": [
     "page": "Algebraic Data Types",
     "title": "Algebraic Data Types",
     "category": "section",
-    "text": "What\'s the so-called ADT?An efficient way to represent data.\nAn elegant way to composite data.\nAn effective way to manipulate data.\nAn easy way to analyse data."
+    "text": ""
+},
+
+{
+    "location": "syntax/adt/#Syntax-1",
+    "page": "Algebraic Data Types",
+    "title": "Syntax",
+    "category": "section",
+    "text": "\n<Seq> a         = a (\',\' a)*\n<TypeName>      = %Uppercase identifier%\n<fieldname>     = %Lowercase identifier%  \n<TVar>          = %Uppercase identifier%\n<ConsName>      = %Uppercase identifier%\n<ImplicitTVar>  = %Uppercase identifier%\n<Type>          = <TypeName> [ \'{\' <Seq TVar> \'}\' ]\n<Module>        = %Uppercase identifier% \n\n<ADT>           =\n    \'@data\' [\'public\' | \'internal\' | \'visible\' \'in\' <Seq Module>] <Type> \'begin\'\n        \n        (<ConsName>[{<Seq TVar>}] (\n            <Seq fieldname> | <Seq Type> | <Seq (<fieldname> :: <Type>)>\n        ))*\n        \n    \'end\'\n    \n<GADT>           =\n    \'@data\' [\'public\' | \'internal\'] <Type> \'begin\'\n        \n        (<ConsName>[{<Seq TVar>}] \'::\' \n           ( \'(\'  \n                (<Seq fieldname> | <Seq Type> | <Seq (<fieldname> :: <Type>)>) \n             \')\' \n              | <fieldname>\n              | <Type>\n           )\n           \'=>\' <Type> [\'where\' \'{\' <Seq ImplicitTvar> \'}\']\n        )*\n\n    \'end\'\n"
+},
+
+{
+    "location": "syntax/adt/#Qualifier-1",
+    "page": "Algebraic Data Types",
+    "title": "Qualifier",
+    "category": "section",
+    "text": "There are 3 default qualifiers for ADT definition:internal: The pattern created by the ADT can only be used in the module it\'s defined in.\npublic: If the constructor is imported into current module, the corresponding pattern will be available.\nvisible in [mod...]: Define a set of modules where the pattern is available."
 },
 
 {
@@ -53,15 +61,15 @@ var documenterSearchIndex = {"docs": [
     "page": "Algebraic Data Types",
     "title": "Example: Describe arithmetic operations",
     "category": "section",
-    "text": "using MLStyle\n@data Arith begin \n    Number(v :: Int)\n    Minus(fst :: Arith, snd :: Arith)\n    Mult(fst :: Arith, snd :: Arith)\n    Divide(fst :: Arith, snd :: Arith)\nendAbove codes makes a clarified description about Arithmetic and provides a corresponding implementation.If you want to transpile above ADTs to some specific language, there is a clear step: \neval_arith(arith :: Arith) = \n    let wrap_op(op)  = (a, b) -> op(eval_arith(a), eval_arith(b)),\n        (+, -, *, /) = map(wrap_op, (+, -, *, /))\n        @match arith begin\n            Number(v)       => v\n            Minus(fst, snd) => fst - snd\n            Mult(fst, snd)   => fst * snd\n            Divide(fst, snd) => fst / snd\n        end\n    end\n\neval_arith(\n    Minus(\n        Number(2), \n        Divide(Number(20), \n               Mult(Number(2), \n                    Number(5)))))\n# => 0"
+    "text": "using MLStyle\n@data internal Arith begin\n    Number(Int)\n    Minus(Arith, Arith)\n    Mult(Arith, Arith)\n    Divide(Arith, Arith)\nendAbove codes makes a clarified description about Arithmetic and provides a corresponding implementation.If you want to transpile above ADTs to some specific language, there is a clear step: \neval_arith(arith :: Arith) = \n    let wrap_op(op)  = (a, b) -> op(eval_arith(a), eval_arith(b)),\n        (+, -, *, /) = map(wrap_op, (+, -, *, /))\n        @match arith begin\n            Number(v)       => v\n            Minus(fst, snd) => fst - snd\n            Mult(fst, snd)   => fst * snd\n            Divide(fst, snd) => fst / snd\n        end\n    end\n\neval_arith(\n    Minus(\n        Number(2), \n        Divide(Number(20), \n               Mult(Number(2), \n                    Number(5)))))\n# => 0"
 },
 
 {
-    "location": "syntax/adt/#Case-Class-1",
+    "location": "syntax/adt/#Generalized-ADT-1",
     "page": "Algebraic Data Types",
-    "title": "Case Class",
+    "title": "Generalized ADT",
     "category": "section",
-    "text": "Just like the similar one in Scalaabstract type A end\n@case C{T}(a :: Int, b)\n@case D(a, b)\n@case E <: AIn terms of data structure definition, following codes could be expanded toabstract type A end\nstruct C{T}\n    a :: Int\n    b\nend\n\nstruct D\n    a\n    b\nend\n\nstruct E <: A\nend\n\n<additional codes>Take care that any instance of E is a singleton thanks to Julia\'s language design pattern.However the two snippet above are not equivalent, for there are other hidden details to support pattern matching on these data structures.See pattern.md."
+    "text": "A simple intepreter implemented through GADT.\nusing MLStyle\n@use GADT\n\nimport Base: convert\n\nstruct Fun{T, R}\n    fn :: Function\nend\n\nfunction (typed_fn :: Fun{T, R})(arg :: T) :: R where {T, R}\n    typed_fn.fn(arg)\nend\n\nfunction convert(::Type{Fun{T, R}}, fn :: Function) where {T, R}\n    Fun{T, R}(fn)\nend\n\nfunction convert(::Type{Fun{T, R}}, fn :: Fun{C, D}) where{T, R, C <: T, D <: R}\n    Fun{T, R}(fn.fn)\nend\n\n⇒(::Type{A}, ::Type{B}) where {A, B} = Fun{A, B}\n\n@data public Exp{T} begin\n    Sym       :: Symbol => Exp{A} where {A}\n    Val{A}    :: A => Exp{A}\n    \n    # add constraints to implicit tvars to get covariance\n    App{A, B} :: (Exp{Fun{A, B}}, Exp{A_}) => Exp{B} where {A_ <: A} \n    \n    Lam{A, B} :: (Symbol, Exp{B}) => Exp{Fun{A, B}}\n    If{A}     :: (Exp{Bool}, Exp{A}, Exp{A}) => Exp{A}\nend\n\nfunction substitute(template :: Exp{T}, pair :: Tuple{Symbol, Exp{G}}) where {T, G}\n    (sym, exp) = pair\n    @match template begin\n        Sym(&sym) => exp\n        Val(_) => template\n        App(f, a) => App(substitute(f, pair), substitute(a, pair)) :: Exp{T}\n        Lam(&sym, exp) => template\n        If(cond, exp1, exp2) =>\n            let (cond, exp1, exp2) = map(substitute, (cond, exp1, exp2))\n                If(cond, exp1, exp2) :: Exp{T}\n            end\n    end\nend\n\nfunction eval_exp(exp :: Exp{T}, ctx :: Dict{Symbol, Any}) where T\n    @match exp begin\n        Sym(a) => (ctx[a] :: T, ctx)\n        Val(a :: T) => (a, ctx)\n        App{A, T, A_}(f :: Exp{Fun{A, T}}, arg :: Exp{A_}) where {A, A_ <: A} =>\n            let (f, ctx) = eval_exp(f, ctx),\n                (arg, ctx) = eval_exp(arg, ctx)\n                (f(arg), ctx)\n            end\n        Lam{A, B}(sym, exp::Exp{B}) where {A, B} =>\n            let f(x :: A) = begin\n                    A\n                    eval_exp(substitute(exp, sym => Val(x)), ctx)[1]\n                end\n\n                (f, ctx)\n            end\n        If(cond, exp1, exp2) =>\n            let (cond, ctx) = eval_exp(cond, ctx)\n                eval_exp(cond ? exp1 : exp2, ctx)\n            end\n    end\nend\n\nadd = Val{Number ⇒ Number ⇒ Number}(x -> y -> x + y)\nsub = Val{Number ⇒ Number ⇒ Number}(x -> y -> x - y)\ngt = Val{Number ⇒ Number ⇒ Bool}(x -> y -> x > y)\nctx = Dict{Symbol, Any}()\n\n@assert 3 == eval_exp(App(App(add, Val(1)), Val(2)), ctx)[1]\n@assert -1 == eval_exp(App(App(sub, Val(1)), Val(2)), ctx)[1]\n@assert 1 == eval_exp(\n    If(\n        App(App(gt, Sym{Int}(:x)), Sym{Int}(:y)),\n        App(App(sub, Sym{Int}(:x)), Sym{Int}(:y)),\n        App(App(sub, Sym{Int}(:y)), Sym{Int}(:x))\n    ), Dict{Symbol, Any}(:x => 1, :y => 2))[1]\n\n"
 },
 
 {
@@ -77,31 +85,31 @@ var documenterSearchIndex = {"docs": [
     "page": "Pattern",
     "title": "Pattern",
     "category": "section",
-    "text": "As-Pattern\nLiteral pattern\nCapture pattern\nType pattern\nGuard\nCustom pattern & dictionary, tuple, array, linked list pattern\nRange Pattern\nReference Pattern\nFall through cases\nType level feature\nADT destructingPatterns provide convenient ways to manipulate data,"
+    "text": "Literal Pattern\nCapturing pattern\nType Pattern\nAs-Pattern, And Pattern\nGuard\nRange Pattern\nPredicate\nRference Pattern\nCustom Pattern, Dict, Tuple, Array\nOr Pattern\nADT destructing, GADTs\nAdvanced Type Pattern\nSide Effect\nAst PatternPatterns provide convenient ways to manipulate data."
 },
 
 {
-    "location": "syntax/pattern/#Literal-pattern-1",
+    "location": "syntax/pattern/#Literal-Pattern-1",
     "page": "Pattern",
-    "title": "Literal pattern",
+    "title": "Literal Pattern",
     "category": "section",
-    "text": "\n\n@match 10 {\n    1  => \"wrong!\"\n    2  => \"wrong!\"\n    10 => \"right!\"\n}\n\n# => \"right\"Default supported literal patterns are Numberand AbstractString."
+    "text": "\n\n@match 10 {\n    1  => \"wrong!\"\n    2  => \"wrong!\"\n    10 => \"right!\"\n}\n\n# => \"right\"There are 3 distinct types whose literal data could be used as literal patterns:Number\nAbstractString\nSymbol"
 },
 
 {
-    "location": "syntax/pattern/#Capture-pattern-1",
+    "location": "syntax/pattern/#Capturing-Pattern-1",
     "page": "Pattern",
-    "title": "Capture pattern",
+    "title": "Capturing Pattern",
     "category": "section",
     "text": "\n@match 1 begin\n    x => x + 1\nend\n# => 2"
 },
 
 {
-    "location": "syntax/pattern/#Type-pattern-1",
+    "location": "syntax/pattern/#Type-Pattern-1",
     "page": "Pattern",
-    "title": "Type pattern",
+    "title": "Type Pattern",
     "category": "section",
-    "text": "\n@match 1 begin\n    ::Float  => nothing\n    b :: Int => b\n    _        => nothing\nend\n# => 1However, when you use TypeLevel Feature, the behavious could change slightly. See TypeLevel Feature."
+    "text": "\n@match 1 begin\n    ::Float  => nothing\n    b :: Int => b\n    _        => nothing\nend\n# => 1There is an advanced version of Type-Patterns, which you can destruct types with fewer limitations. Check Advanced Type Pattern.However, when you use TypeLevel Feature, the behavious could change slightly. See TypeLevel Feature."
 },
 
 {
@@ -109,7 +117,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Pattern",
     "title": "As-Pattern",
     "category": "section",
-    "text": "For julia don\'t have an as  keyword and operator @(adopted by Haskell and Rust) is invalid for the conflicts against macro, we use in keyword to do such stuffs.The feature is unstable for there might be perspective usage on in keyword about making patterns.@match (1, 2) begin\n    (a, b) in c => c[1] == a && c[2] == b\nend"
+    "text": "As-Pattern can be expressed with And-Pattern. @match (1, 2) begin\n    (a, b) && c => c[1] == a && c[2] == b\nend"
 },
 
 {
@@ -117,55 +125,95 @@ var documenterSearchIndex = {"docs": [
     "page": "Pattern",
     "title": "Guard",
     "category": "section",
-    "text": "\n@match x begin\n    x{x > 5} => 5 - x # only succeed when x > 5\n    _        => 1\nend"
+    "text": "\n@match x begin\n    x && if x > 5 end => 5 - x # only succeed when x > 5\n    _        => 1\nend"
 },
 
 {
-    "location": "syntax/pattern/#Range-pattern-1",
+    "location": "syntax/pattern/#Predicate-1",
     "page": "Pattern",
-    "title": "Range pattern",
+    "title": "Predicate",
     "category": "section",
-    "text": "\n@match num begin\n    1..10  in x => \"$x in [1, 10]\"\n    11..20 in x => \"$x in [11, 20]\"\n    21..30 in x => \"$x in [21, 30]\"\nend"
+    "text": "The following has the same semantics as the above snippet.\nfunction pred(x)\n    x > 5\nend\n\n@match x begin\n    x && function pred end => 5 - x # only succeed when x > 5\n    _        => 1\nend\n\n@match x begin\n    x && function (x) x > 5 end => 5 - x # only succeed when x > 5\n    _        => 1\nend\n"
 },
 
 {
-    "location": "syntax/pattern/#Reference-pattern-1",
+    "location": "syntax/pattern/#Range-Pattern-1",
     "page": "Pattern",
-    "title": "Reference pattern",
+    "title": "Range Pattern",
+    "category": "section",
+    "text": "@match 1 begin\n    0:2:10 => 1\n    1:10 => 2\nend # 2"
+},
+
+{
+    "location": "syntax/pattern/#Reference-Pattern-1",
+    "page": "Pattern",
+    "title": "Reference Pattern",
     "category": "section",
     "text": "This feature is from Elixir which could slightly extends ML pattern matching.c = ...\n@match (x, y) begin\n    (&c, _)  => \"x equals to c!\"\n    (_,  &c) => \"y equals to c!\"\n    _        => \"none of x and y equal to c\"\nend"
 },
 
 {
-    "location": "syntax/pattern/#Custom-pattern-1",
+    "location": "syntax/pattern/#Custom-Pattern-1",
     "page": "Pattern",
-    "title": "Custom pattern",
+    "title": "Custom Pattern",
     "category": "section",
-    "text": "The reason why Julia is a new \"best language\" might be that you can implement your own static pattern matching with this feature:-).Here is a example although it\'s not robust at all. You can use it to solve multiplication equations.uisng MLStyle\n\n# define pattern for application\nPatternDef.App(*) do args, guard, tag, mod\n         @match (args) begin\n            (l::QuoteNode, r :: QuoteNode) => MLStyle.Err.SyntaxError(\"both sides of (*) are symbols!\")\n            (l::QuoteNode, r) =>\n               quote\n                   $(eval(l)) = $tag / ($r)\n               end\n           (l, r :: QuoteNode) =>\n               quote\n                   $(eval(r)) = $tag / ($l)\n               end\n           end\nend\n\n@match 10 begin\n     5 * :a => a\nend\n# => 2.0Dictionary pattern, tuple pattern, array pattern and linked list destructing are both implemented by Custom pattern.Dict pattern(like Elixir\'s dictionary matching or ML record matching)dict = Dict(1 => 2, \"3\" => 4, 5 => Dict(6 => 7))\n@match dict begin\n    Dict(\"3\" => four::Int,\n          5  => Dict(6 => sev)){four < sev} => sev\nend\n# => 7Tuple pattern\n@match (1, 2, (3, 4, (5, )))\n\n    (a, b, (c, d, (5, ))) => (a, b, c, d)\n\nend\n# => (1, 2, 3, 4)Array pattern(as efficient as linked list pattern for the usage of array view)julia> it = @match [1, 2, 3, 4] begin\n         [1, pack..., a] => (pack, a)\n       end\n([2, 3], 4)\n\njulia> first(it)\n2-element view(::Array{Int64,1}, 2:3) with eltype Int64:  \n 2\n 3\njulia> it[2]\n4Linked list pattern\nlst = List.List!(1, 2, 3)\n\n@match lst begin\n    1 ^ a ^ tail => a\nend\n\n# => (2, MLStyle.Data.List.Cons{Int64}(3, MLStyle.Data.List.Nil{Int64}()))"
+    "text": "Not recommend to do this for it\'s implementation specific. If you want to make your own extensions, check MLStyle/src/Pervasives.jl.Defining your own patterns using the low level APIs is quite easy, but exposing the implementations would cause compatibilities in future development."
 },
 
 {
-    "location": "syntax/pattern/#Fall-through-cases-1",
+    "location": "syntax/pattern/#Dict,-Tuple,-Array-1",
     "page": "Pattern",
-    "title": "Fall through cases",
+    "title": "Dict, Tuple, Array",
     "category": "section",
-    "text": "test(num) =\n    @match num begin\n       ::Float64 |\n        0        |\n        1        |\n        2        => true\n\n        _        => false\n    end\n\ntest(0)   # true\ntest(1)   # true\ntest(2)   # true\ntest(1.0) # true\ntest(3)   # false\ntest(\"\")  # false"
+    "text": "Dict pattern(like Elixir\'s dictionary matching or ML record matching)dict = Dict(1 => 2, \"3\" => 4, 5 => Dict(6 => 7))\n@match dict begin\n    Dict(\"3\" => four::Int,\n          5  => Dict(6 => sev)) && if four < sev end => sev\nend\n# => 7Tuple pattern\n@match (1, 2, (3, 4, (5, ))) begin\n    (a, b, (c, d, (5, ))) => (a, b, c, d)\n\nend\n# => (1, 2, 3, 4)Array pattern(much more efficient than Python for taking advantage of array views)julia> it = @match [1, 2, 3, 4] begin\n         [1, pack..., a] => (pack, a)\n       end\n([2, 3], 4)\n\njulia> first(it)\n2-element view(::Array{Int64,1}, 2:3) with eltype Int64:\n 2\n 3\njulia> it[2]\n4"
 },
 
 {
-    "location": "syntax/pattern/#ADT-destructing-1",
+    "location": "syntax/pattern/#Or-Pattern-1",
     "page": "Pattern",
-    "title": "ADT destructing",
+    "title": "Or Pattern",
     "category": "section",
-    "text": "\n@case Natural(dimension :: Float32, climate :: String, altitude :: Int32)\n@case Cutural(region :: String,  kind :: String, country :: String, nature :: Natural)\n\n\n神农架 = Cutural(\"湖北\", \"林区\", \"中国\", Natural(31.744, \"北亚热带季风气候\", 3106))\nYellostone = Cutural(\"Yellowstone National Park\", \"Natural\", \"United States\", Natural(44.36, \"subarctic\", 2357))\n\nfunction my_data_query(data_lst :: Vector{Cutural})\n    filter(data_lst) do data\n        @match data begin\n            Cutural(_, \"林区\", \"中国\", Natural(dim, _, altitude)){\n                dim > 30.0, altitude > 1000\n            } => true\n\n            Cutural(_, _, \"United States\", Natural(_, _, altitude)){\n                altitude > 2000\n            } => true\n\n            _ => false\n\n        end\n    end\nend\nmy_data_query([神农架, Yellostone])\n..."
+    "text": "test(num) =\n    @match num begin\n       ::Float64 ||\n        0        ||\n        1        ||\n        2        => true\n\n        _        => false\n    end\n\ntest(0)   # true\ntest(1)   # true\ntest(2)   # true\ntest(1.0) # true\ntest(3)   # false\ntest(\"\")  # falseTips: Or Patterns could nested."
 },
 
 {
-    "location": "syntax/pattern/#Type-level-feature-1",
+    "location": "syntax/pattern/#ADT-Destructing-1",
     "page": "Pattern",
-    "title": "Type level feature",
+    "title": "ADT Destructing",
     "category": "section",
-    "text": "By default, type level feature wouldn\'t be activated.@match 1 begin\n    ::String => String\n    ::Int => Int    \nend\n# => Int64Feature.@activate TypeLevel\n\n@match 1 begin\n    ::String => String\n    ::Int    => Int\nend\n# => Int64When using type level feature, if you can only perform runtime type checking when matching, and type level variables could be captured as normal variables.If you do want to check type when type level feature is activated, do as the following snippet@match 1 begin\n    ::&String => String\n    ::&Int    => Int\nend"
+    "text": "You can match ADT in following 3 means:\nC(a, b, c) => ... # ordered arguments\nC(b = b) => ...   # record syntax\nC(_) => ...       # wildcard for destructing\nHere is an example:\n@data Example begin\n    Natural(dimension :: Float32, climate :: String, altitude :: Int32)\n    Cutural(region :: String,  kind :: String, country :: String, nature :: Natural)\nend\n\n神农架 = Cutural(\"湖北\", \"林区\", \"中国\", Natural(31.744, \"北亚热带季风气候\", 3106))\nYellostone = Cutural(\"Yellowstone National Park\", \"Natural\", \"United States\", Natural(44.36, \"subarctic\", 2357))\n\nfunction my_data_query(data_lst :: Vector{Cutural})\n    filter(data_lst) do data\n        @match data begin\n            Cutural(_, \"林区\", \"中国\", Natural(dim=dim, altitude)) &&\n            if dim > 30.0 && altitude > 1000 end => true\n\n            Cutural(_, _, \"United States\", Natural(altitude=altitude)) &&\n            if altitude > 2000 end  => true\n            _ => false\n\n        end\n    end\nend\nmy_data_query([神农架, Yellostone])\n...About GADTs@use GADT\n\n@data internal Example{T} begin\n    A{T} :: (Int, T) => Example{Tuple{Int, T}}\nend\n\n@match A(1, 2) begin\n    A{T}(a :: Int, b :: T) where T <: Number => (a == 1 && T == Int)\nend\n"
+},
+
+{
+    "location": "syntax/pattern/#Advanced-Type-Pattern-1",
+    "page": "Pattern",
+    "title": "Advanced Type Pattern",
+    "category": "section",
+    "text": "Instead of TypeLevel feature used in v0.1, an ideal type-stable way to destruct types now is introduced here.@match 1 begin\n    ::String => String\n    ::Int => Int\nend\n# => Int64\n\n@match 1 begin\n    ::T where T <: AbstractArray => 0\n    ::T where T <: Number => 1\nend\n\n# => 0\n\nstruct S{A, B}\n    a :: A\n    b :: B\nend\n\n@match S(1, \"2\") begin\n    S{A} where A => A\nend\n# => Int64\n\n@match S(1, \"2\") begin\n    S{A, B} where {A, B} => (A, B)\nend\n# => (Int64, String)\n"
+},
+
+{
+    "location": "syntax/pattern/#Side-Effect-1",
+    "page": "Pattern",
+    "title": "Side-Effect",
+    "category": "section",
+    "text": "To introduce side-effects into pattern matching, we provide a built-in pattern called Do pattern to achieve this. Also, a pattern called Many can work with Do pattern in a perfect way."
+},
+
+{
+    "location": "syntax/pattern/#Do-Pattern-and-Many-Pattern-1",
+    "page": "Pattern",
+    "title": "Do-Pattern and Many-Pattern",
+    "category": "section",
+    "text": "\n@match [1, 2, 3] begin\n    Many(::Int) => true\n    _ => false\nend # true\n\n@match [1, 2, 3,  \"a\", \"b\", \"c\", :a, :b, :c] begin\n    Do(count = 0) &&\n    Many(\n        a::Int && Do(count = count + a) ||\n        ::String                        ||\n        ::Symbol && Do(count = count + 1)\n    ) => count\nend # 9They may be not used very often but quite convenient for some specific domain."
+},
+
+{
+    "location": "syntax/pattern/#Ast-Pattern-1",
+    "page": "Pattern",
+    "title": "Ast Pattern",
+    "category": "section",
+    "text": "This is the most important update since v0.2.To be continue. Check test/expr_template.jl or test/dot_expression.jl to get more about this exciting features."
 },
 
 {
@@ -181,7 +229,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Pattern function",
     "title": "Pattern function",
     "category": "section",
-    "text": "Pattern function is a convenient way to define a function with multiple entries.@def f begin\n    # patterns here\n    x                  => 1\n    (x, (1, 2)){x > 3} => 5\n    (x, y)             => 2\n    ::String           => \"is string\"\n    _                  => \"is any\"\nend\nf(1) # => 1\nf(4, (1, 2)) # => 5\nf(1, (1, 2)) # => 2\nf(\"\") # => \"is string\"Take care that until now performance of pattern functions could be not that efficient.The use case of pattern functions is somewherewithout a signaficant requirerment of execution efficiency.\nfilled with tedious business logics.There is promise that we will make outstanding optimizations on pattern functions in the future, where we bootstrap a new MLStyle with the current version. Reservedly, the user interfaces of MLStyle builtin patterns and pattern functions will not change at all, the only one without complete backward compatibility is the way to extending custom patterns, that is to say, if you don\'t use PatternDef.Meta or PatternDef.App, your codes will works well no matter which version of Julia/MLStyle you\'re getting along with."
+    "text": "Pattern function is a convenient way to define a function with multiple entries.f = @λ begin\n    # patterns here\n    x                  -> 1\n    (x, (1, 2)) && \n        if x > 3 end   -> 5\n    (x, y)             -> 2\n    ::String           -> \"is string\"\n    _                  -> \"is any\"\nend\nf(1) # => 1\nf((4, (1, 2))) # => 5\nf((1, (1, 2))) # => 2\nf(\"\") # => \"is string\"\n\nmap((@λ [a, b, c...] -> c))\nA pattern function is no more than using a @match inside some anonymous function.\nfunction (x)\n    @match x begin\n        pat1 => body1\n        pat2 => body2\n    end\nend\n"
 },
 
 ]}
