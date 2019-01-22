@@ -9,29 +9,29 @@ Syntax
 
 <Seq> a         = a (',' a)*
 <TypeName>      = %Uppercase identifier%
-<fieldname>     = %Lowercase identifier%  
+<fieldname>     = %Lowercase identifier%
 <TVar>          = %Uppercase identifier%
 <ConsName>      = %Uppercase identifier%
 <ImplicitTVar>  = %Uppercase identifier%
 <Type>          = <TypeName> [ '{' <Seq TVar> '}' ]
-<Module>        = %Uppercase identifier% 
+<Module>        = %Uppercase identifier%
 
 <ADT>           =
     '@data' ['public' | 'internal' | 'visible' 'in' <Seq Module>] <Type> 'begin'
-        
+
         (<ConsName>[{<Seq TVar>}] (
             <Seq fieldname> | <Seq Type> | <Seq (<fieldname> :: <Type>)>
         ))*
-        
+
     'end'
-    
+
 <GADT>           =
     '@data' ['public' | 'internal'] <Type> 'begin'
-        
-        (<ConsName>[{<Seq TVar>}] '::' 
-           ( '('  
-                (<Seq fieldname> | <Seq Type> | <Seq (<fieldname> :: <Type>)>) 
-             ')' 
+
+        (<ConsName>[{<Seq TVar>}] '::'
+           ( '('
+                (<Seq fieldname> | <Seq Type> | <Seq (<fieldname> :: <Type>)>)
+             ')'
               | <fieldname>
               | <Type>
            )
@@ -68,11 +68,11 @@ end
 
 Above codes makes a clarified description about `Arithmetic` and provides a corresponding implementation.
 
-If you want to transpile above ADTs to some specific language, there is a clear step: 
+If you want to transpile above ADTs to some specific language, there is a clear step:
 
 ```julia
 
-eval_arith(arith :: Arith) = 
+eval_arith(arith :: Arith) =
     let wrap_op(op)  = (a, b) -> op(eval_arith(a), eval_arith(b)),
         (+, -, *, /) = map(wrap_op, (+, -, *, /))
         @match arith begin
@@ -85,9 +85,9 @@ eval_arith(arith :: Arith) =
 
 eval_arith(
     Minus(
-        Number(2), 
-        Divide(Number(20), 
-               Mult(Number(2), 
+        Number(2),
+        Divide(Number(20),
+               Mult(Number(2),
                     Number(5)))))
 # => 0
 ```
@@ -97,13 +97,30 @@ eval_arith(
 Generalized ADT
 --------------------------
 
-A simple intepreter implemented through GADT.
+
+
+Note that, for GADTs would use `where` syntax as a pattern, it means that you cannot
+use GADTs and your custom `where` patterns at the same time. To resolve this, we introduce
+the extension system like Haskell here.
+
+Since that you can define your own `where` pattern and export it to any modules.
+Given an arbitrary Julia module, if you don't use `@use GADT` to enable GADT extensions and,
+the qualifier of the your `where` pattern makes it visible here(current module),
+your own `where` pattern could work here.
+
+
+Here's a simple intepreter implemented using GADTs.
+
+Firstly, enable GADT extension.
 
 ```julia
-
 using MLStyle
 @use GADT
+```
 
+Then define the function type.
+
+```julia
 import Base: convert
 
 struct Fun{T, R}
@@ -123,18 +140,51 @@ function convert(::Type{Fun{T, R}}, fn :: Fun{C, D}) where{T, R, C <: T, D <: R}
 end
 
 ⇒(::Type{A}, ::Type{B}) where {A, B} = Fun{A, B}
+```
+
+And now let's define the operators of our abstract machine.
+
+```julia
 
 @data public Exp{T} begin
+
+    # The symbol referes to some variable in current context.
     Sym       :: Symbol => Exp{A} where {A}
+
+    # Value.
     Val{A}    :: A => Exp{A}
-    
+
+    # Function application.
     # add constraints to implicit tvars to get covariance
-    App{A, B} :: (Exp{Fun{A, B}}, Exp{A_}) => Exp{B} where {A_ <: A} 
-    
+    App{A, B} :: (Exp{Fun{A, B}}, Exp{A_}) => Exp{B} where {A_ <: A}
+
+    # Lambda/Anonymous function.
     Lam{A, B} :: (Symbol, Exp{B}) => Exp{Fun{A, B}}
+
+    # If expression
     If{A}     :: (Exp{Bool}, Exp{A}, Exp{A}) => Exp{A}
 end
+```
 
+Something deserved to be remark here: when using this GADT syntax like
+
+```
+    ConsName{TVars1...} :: ... => Exp{TVars2...} where {TVar3...}
+```
+
+You can add constraints to both `TVars1` and `TVars3`, and `TVars2` should be
+always empty or a sequence of `Symbol`s. Furthermore, `TVars3` are the so-called
+implicit type variables, and `TVars1` are the normal generic type variables.
+
+Let's back to our topic.
+
+To make function abstractions, we need a `substitute` operation.
+
+```julia
+
+"""
+e.g: substitute(some_exp, :a => another_exp)
+"""
 function substitute(template :: Exp{T}, pair :: Tuple{Symbol, Exp{G}}) where {T, G}
     (sym, exp) = pair
     @match template begin
@@ -148,7 +198,11 @@ function substitute(template :: Exp{T}, pair :: Tuple{Symbol, Exp{G}}) where {T,
             end
     end
 end
+```
 
+Then we could write how to execute our abstract machine.
+
+```julia
 function eval_exp(exp :: Exp{T}, ctx :: Dict{Symbol, Any}) where T
     @match exp begin
         Sym(a) => (ctx[a] :: T, ctx)
@@ -172,7 +226,14 @@ function eval_exp(exp :: Exp{T}, ctx :: Dict{Symbol, Any}) where T
             end
     end
 end
+```
 
+This `eval_exp` takes 2 arguments, one of which is an `Exp{T}`, while another is the store(you can regard it as the scope),
+the return is a tuple, the first of which is a value typed `T` and the second is the new store after the execution.
+
+Following codes are about how to use this abstract machine.
+
+```julia
 add = Val{Number ⇒ Number ⇒ Number}(x -> y -> x + y)
 sub = Val{Number ⇒ Number ⇒ Number}(x -> y -> x - y)
 gt = Val{Number ⇒ Number ⇒ Bool}(x -> y -> x > y)
@@ -186,7 +247,6 @@ ctx = Dict{Symbol, Any}()
         App(App(sub, Sym{Int}(:x)), Sym{Int}(:y)),
         App(App(sub, Sym{Int}(:y)), Sym{Int}(:x))
     ), Dict{Symbol, Any}(:x => 1, :y => 2))[1]
-
 
 ```
 

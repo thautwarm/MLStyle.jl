@@ -296,12 +296,12 @@ struct S{A, B}
 end
 
 @match S(1, "2") begin
-    S{A} where A => A
+    ::S{A} where A => A
 end
 # => Int64
 
 @match S(1, "2") begin
-    S{A, B} where {A, B} => (A, B)
+    ::S{A, B} where {A, B <: AbstractString} => (A, B)
 end
 # => (Int64, String)
 

@@ -17,7 +17,12 @@ f(1) # => 1
 f((4, (1, 2))) # => 5
 f((1, (1, 2))) # => 2
 f("") # => "is string"
+```
 
+Also, sometimes you might want to pass a single lambda which just matches the
+argument in one means:
+
+```julia
 map((@λ [a, b, c...] -> c))
 
 ```
@@ -33,4 +38,4 @@ function (x)
     end
 end
 
-```  
+```
