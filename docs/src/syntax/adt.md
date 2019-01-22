@@ -7,15 +7,38 @@ Syntax
 
 ```
 
-@data [public | internal] TypeName[{TVars...}] begin
+<Seq> a         = a (',' a)*
+<TypeName>      = %Uppercase identifier%
+<fieldname>     = %Lowercase identifier%  
+<TVar>          = %Uppercase identifier%
+<ConsName>      = %Uppercase identifier%
+<ImplicitTVar> = %Uppercase identifier%
+<Type>          = <TypeName> [ '{' <Seq TVar> '}' ]
 
-    ( ConstructorName[{Generalized TVars...}](fieldname*) 
-    | ConstructorName[{Generalized TVars...}](TypeName*)
-    | ConstructorName[{Generalized TVars...}]((fieldname=TypeNames)*)
-    )*
+
+<ADT>           =
+    '@data' ['public' | 'internal'] <Type> 'begin'
+        
+        (<ConsName>[{<Seq TVar>}] (
+            <Seq fieldname> | <Seq Type> | <Seq (<fieldname> :: <Type>)>
+        ))*
+        
+    'end'
     
-end
+<GADT>           =
+    '@data' ['public' | 'internal'] <Type> 'begin'
+        
+        (<ConsName>[{<Seq TVar>}] '::' 
+           ( '('  
+                (<Seq fieldname> | <Seq Type> | <Seq (<fieldname> :: <Type>)>) 
+             ')' 
+              | <fieldname>
+              | <Type>
+           )
+           '=>' <Type> ['where' '{' <Seq ImplicitTvar> '}']
+        )*
 
+    'end'
 
 ```
 
@@ -91,11 +114,14 @@ end
 ⇒(::Type{A}, ::Type{B}) where {A, B} = Fun{A, B}
 
 @data public Exp{T} begin
-    Sym :: Symbol => Exp{A} where {A}
-    Val{A} :: A => Exp{A}
-    App{A, B} :: (Exp{Fun{A, B}}, Exp{A_}) => Exp{B} where {A_ <: A} # covariant
+    Sym       :: Symbol => Exp{A} where {A}
+    Val{A}    :: A => Exp{A}
+    
+    # add constraints to implicit tvars to get covariance
+    App{A, B} :: (Exp{Fun{A, B}}, Exp{A_}) => Exp{B} where {A_ <: A} 
+    
     Lam{A, B} :: (Symbol, Exp{B}) => Exp{Fun{A, B}}
-    If{A} :: (Exp{Bool}, Exp{A}, Exp{A}) => Exp{A}
+    If{A}     :: (Exp{Bool}, Exp{A}, Exp{A}) => Exp{A}
 end
 
 function substitute(template :: Exp{T}, pair :: Tuple{Symbol, Exp{G}}) where {T, G}
