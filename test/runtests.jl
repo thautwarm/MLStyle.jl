@@ -1,7 +1,10 @@
 using Test
 using MLStyle
+
 @use GADT
 
+include("exception.jl")
+include("render.jl")
 include("pervasive.jl")
 include("expr_template.jl")
 include("gallery/simple.jl")

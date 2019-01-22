@@ -57,6 +57,7 @@ function data(typ, def_variants, qualifier, mod)
             @match qualifier begin
                 :public   => shareThrough(export_anchor_var, true)
                 :internal => internal
+                :(visible in [$(mods...)]) => shareWith(Set(map(mod.eval, mods)))
             end
         n_destructor_args = length(pairs)
 

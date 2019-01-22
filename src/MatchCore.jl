@@ -115,7 +115,6 @@ end
 
 function getPattern(case, use_mod :: Module)
     for (def_mod, desc) in pattern_manager
-
         if qualifierTest(desc.qualifiers, use_mod, def_mod) && desc.predicate(case)
            return desc.rewrite
         end

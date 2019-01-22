@@ -424,10 +424,12 @@ function mkGAppPattern(tag, forall, hd, tl, use_mod)
             ::Symbol && if isempty(forall) end => mkAppPattern(tag, hd, tl, use_mod)
             :($(ctor :: Symbol){$(spec_vars...)}) || ctor :: Symbol && Do(spec_vars = [])=>
                 begin
-                    ctor = use_mod.eval(ctor)
-                    for (def_mod, desc) in Infras.generalized_destructors
-                        if qualifierTest(desc.qualifiers, use_mod, def_mod) && desc.predicate(spec_vars, ctor, tl)
-                            return desc.rewrite(tag, forall, hd, tl, use_mod)
+                    if isdefined(use_mod, ctor)
+                        ctor = use_mod.eval(ctor)
+                        for (def_mod, desc) in Infras.generalized_destructors
+                            if qualifierTest(desc.qualifiers, use_mod, def_mod) && desc.predicate(spec_vars, ctor, tl)
+                                return desc.rewrite(tag, forall, hd, tl, use_mod)
+                            end
                         end
                     end
                     info = string(hd) * string(tl)

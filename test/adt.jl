@@ -56,4 +56,35 @@ end
     @test E <: A
     @test fieldnames(D) == (:a, :b)
     @test_throws MethodError C(3.0, :abc)
-end 
+end
+
+
+module ADummy
+    using MLStyle
+end
+
+module BDummy
+    using MLStyle
+end
+
+@testset "share data with several modules" begin
+    @data visible in [ADummy] SSS begin
+        SSS_1(Int)
+    end
+    ADummy.eval(:(SSS_1 = $SSS_1; SSS = $SSS))
+
+    @test ADummy.eval(quote
+        @match SSS_1(2) begin
+            SSS_1(_) => :ok
+        end
+    end) == :ok
+
+
+    BDummy.eval(:(SSS_1 = $SSS_1; SSS = $SSS))
+
+    @test_skip BDummy.eval(quote
+        @match SSS_1(2) begin
+            SSS_1(_) => :ok
+        end
+    end)
+end

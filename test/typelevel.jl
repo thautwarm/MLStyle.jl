@@ -11,8 +11,15 @@
     @testset "curried destructing" begin
         s = S_1(S_1(1, 2), "2")
         @match s begin
+            ::S{String} => false
             ::S{A} where A => A <: S{Int, Int}
             _ => false
         end
+    end
+
+    @test @match S_1(nothing, nothing) begin
+        ::S{Int, Int} => false
+        ::S{T} where T => T >: Nothing
+        _ => false
     end
 end

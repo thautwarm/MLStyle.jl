@@ -50,33 +50,6 @@ macro typed_as(t)
 end
 
 
-export @capture_type
-"""
-this macro provide a convenient and type-stable way to capture type
-as a given variable.
-
-Requires metavar `TARGET`.
-e.g
-
-TARGET = :target_id
-(@typed_as T) # which generates a pattern to bind type of `TARGET` as `T`
-"""
-macro capture_type(t)
-    esc $ quote
-        NAME = mangle(mod)
-        __T__ = $t
-        function (body)
-            @format [body, tag, NAME, TARGET, __T__] quote
-                @inline __L__ function NAME(TARGET :: __T__) where __T__
-                    __T__ # if not put this here, an error would be raised : "local variable XXX cannot be used in closure declaration"
-                    body
-                end
-                NAME(tag)
-            end
-        end
-    end
-end
-
 
 export patternAnd, patternOr
 patternAnd = ∘
@@ -116,10 +89,12 @@ function defAppPattern(mod; predicate, rewrite, qualifiers=nothing)
 end
 
 function mkAppPattern(tag, hd, tl, use_mod)
-    hd = use_mod.eval(hd)
-    for (def_mod, desc) in destructors
-        if qualifierTest(desc.qualifiers, use_mod, def_mod) && desc.predicate(hd, tl)
-            return desc.rewrite(tag, hd, tl, use_mod)
+    if isdefined(use_mod, hd)
+        hd = getfield(use_mod, hd)
+        for (def_mod, desc) in destructors
+            if qualifierTest(desc.qualifiers, use_mod, def_mod) && desc.predicate(hd, tl)
+                return desc.rewrite(tag, hd, tl, use_mod)
+            end
         end
     end
     info = string(hd) * "(" * string(tl) * ")"

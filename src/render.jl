@@ -2,7 +2,9 @@ module Render
 using MLStyle.toolz
 using Base: get
 export render, @format, format
-function render(expr::Expr, config :: Dict{Symbol, Any}, nested=true)
+
+
+function render(expr::Expr, config :: Dict{Symbol, Any})
     hd_f = return!
     function tl_f(expr :: Any)
         if expr isa LineNumberNode
@@ -13,9 +15,7 @@ function render(expr::Expr, config :: Dict{Symbol, Any}, nested=true)
                 expr
             end
         elseif expr isa Expr
-           if nested
-               expr = render(expr, config, nested)
-           end
+           expr = render(expr, config)
            yieldAst $ expr
         else
            yieldAst $ expr
@@ -24,7 +24,7 @@ function render(expr::Expr, config :: Dict{Symbol, Any}, nested=true)
     runAstMapper $ mapAst(hd_f, tl_f, expr)
 end
 
-function render(sym::Symbol, config :: Dict{Symbol, Any}, nested=true)
+function render(sym::Symbol, config :: Dict{Symbol, Any})
     get(config, sym) do
         sym
     end
@@ -43,7 +43,7 @@ function format(args, template)
     function dispatch(arg :: Expr)
         @assert arg.head == :(=)
         sym = arg.args[1]
-        @assert arg isa Symbol
+        @assert sym isa Symbol "$sym"
         value = arg.args[2]
         Expr(:call, :(=>), QuoteNode(sym), value)
     end

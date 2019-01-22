@@ -14,10 +14,10 @@ Syntax
 <ConsName>      = %Uppercase identifier%
 <ImplicitTVar>  = %Uppercase identifier%
 <Type>          = <TypeName> [ '{' <Seq TVar> '}' ]
-
+<Module>        = %Uppercase identifier% 
 
 <ADT>           =
-    '@data' ['public' | 'internal'] <Type> 'begin'
+    '@data' ['public' | 'internal' | 'visible' 'in' <Seq Module>] <Type> 'begin'
         
         (<ConsName>[{<Seq TVar>}] (
             <Seq fieldname> | <Seq Type> | <Seq (<fieldname> :: <Type>)>
@@ -41,6 +41,17 @@ Syntax
     'end'
 
 ```
+
+Qualifier
+----------------------
+
+
+There are 3 default qualifiers for ADT definition:
+
+- `internal`: The pattern created by the ADT can only be used in the module it's defined in.
+- `public`: If the constructor is imported into current module, the corresponding pattern will be available.
+- `visible in [mod...]`: Define a set of modules where the pattern is available.
+
 
 Example: Describe arithmetic operations
 --------------------------------------
