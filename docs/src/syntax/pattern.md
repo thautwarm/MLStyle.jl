@@ -14,6 +14,7 @@ Pattern
 - [ADT destructing, GADTs](#ADT-Destructing-1)
 - [Advanced Type Pattern](#Advanced-Type-Pattern-1)
 - [Side Effect](#Side-Effect-1)
+- [Active Pattern](#Active-Pattern-1)
 - [Ast Pattern](#Ast-Patrtern-1)
 
 Patterns provide convenient ways to manipulate data.
@@ -340,7 +341,7 @@ They may be not used very often but quite convenient for some specific domain.
 Active Pattern
 ------------------
 
-This implementation is a subset of F# active patterns.
+This implementation is a subset of [F# Active Patterns](https://docs.microsoft.com/en-us/dotnet/fsharp/language-reference/active-patterns).
 
 There're 2 distinct active patterns, first of which is the normal form:
 
