@@ -1,18 +1,19 @@
 Pattern
 =======================
 
-- [Literal Pattern](#Literal-pattern-1)
-- [Capturing pattern](#Capturing-pattern-1)
-- [Type Pattern](#Type-pattern-1)
+- [Literal Pattern](#Literal-Pattern-1)
+- [Capturing pattern](#Capturing-Pattern-1)
+- [Type Pattern](#Type-Pattern-1)
 - [As-Pattern, And Pattern](#As-Pattern-1)
 - [Guard](#Guard-1)
+- [Range Pattern](#Range-Pattern-1)
 - [Predicate](#Predicate-1)
-- [Rference Pattern](#Reference-pattern-1)
-- [Custom Pattern, Dict, Tuple, Array](#Custom-pattern-1)
-- [Or Pattern](#Or-pattern-1)
-- [ADT destructing, GADTs](#ADT-destructing-1)
-- [Advanced Type Pattern](#Advanced-type-pattern-1)
-- [Side Effect](#Side-effect-1)
+- [Rference Pattern](#Reference-Pattern-1)
+- [Custom Pattern, Dict, Tuple, Array](#Custom-Pattern-1)
+- [Or Pattern](#Or-Pattern-1)
+- [ADT destructing, GADTs](#ADT-Destructing-1)
+- [Advanced Type Pattern](#Advanced-Type-Pattern-1)
+- [Side Effect](#Side-Effect-1)
 - [Ast Pattern](#Ast-Patrtern-1)
 
 Patterns provide convenient ways to manipulate data.
@@ -142,9 +143,9 @@ Custom Pattern
 Not recommend to do this for it's implementation specific.
 If you want to make your own extensions, check `MLStyle/src/Pervasives.jl`.
 
-Defining your own patterns using the low level APIs is quite easy, 
+Defining your own patterns using the low level APIs is quite easy,
 but exposing the implementations would cause compatibilities in future development.
- 
+
 
 
 Dict, Tuple, Array
@@ -181,7 +182,7 @@ julia> it = @match [1, 2, 3, 4] begin
 ([2, 3], 4)
 
 julia> first(it)
-2-element view(::Array{Int64,1}, 2:3) with eltype Int64:  
+2-element view(::Array{Int64,1}, 2:3) with eltype Int64:
  2
  3
 julia> it[2]
@@ -189,7 +190,7 @@ julia> it[2]
 ```
 
 
-Or patterns
+Or Pattern
 -------------------
 
 ```julia
@@ -224,7 +225,7 @@ C(a, b, c) => ... # ordered arguments
 C(b = b) => ...   # record syntax
 C(_) => ...       # wildcard for destructing
 
-``` 
+```
 
 Here is an example:
 
@@ -243,10 +244,9 @@ function my_data_query(data_lst :: Vector{Cutural})
         @match data begin
             Cutural(_, "林区", "中国", Natural(dim=dim, altitude)) &&
             if dim > 30.0 && altitude > 1000 end => true
-            
+
             Cutural(_, _, "United States", Natural(altitude=altitude)) &&
             if altitude > 2000 end  => true
-                
             _ => false
 
         end
@@ -266,7 +266,7 @@ my_data_query([神农架, Yellostone])
 end
 
 @match A(1, 2) begin
-    A{T}(a :: Int, b :: T) where T <: Number => (a == 1 && T == Int) 
+    A{T}(a :: Int, b :: T) where T <: Number => (a == 1 && T == Int)
 end
 
 ```
@@ -279,7 +279,7 @@ Instead of `TypeLevel` feature used in v0.1, an ideal type-stable way to destruc
 ```julia
 @match 1 begin
     ::String => String
-    ::Int => Int    
+    ::Int => Int
 end
 # => Int64
 

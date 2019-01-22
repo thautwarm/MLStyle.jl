@@ -11,7 +11,7 @@ makedocs(
         MLStyle.Infras,
         MLStyle.Pervasives,
         MLStyle.StandardPatterns,
-        MLStyle.render
+        MLStyle.Render
     ],
     clean = false,
     format = :html,
