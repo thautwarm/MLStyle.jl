@@ -1,21 +1,22 @@
 Pattern
 =======================
 
-- [As-Pattern](#As-Pattern-1)
-- [Literal pattern](#Literal-pattern-1)
-- [Capture pattern](#Capture-pattern-1)
-- [Type pattern](#Type-pattern-1)
+- [Literal Pattern](#Literal-pattern-1)
+- [Capturing pattern](#Capturing-pattern-1)
+- [Type Pattern](#Type-pattern-1)
+- [As-Pattern, And Pattern](#As-Pattern-1)
 - [Guard](#Guard-1)
-- [Custom pattern & dictionary, tuple, array, linked list pattern](#Custom-pattern-1)
-- [Range Pattern](#Range-pattern-1)
-- [Reference Pattern](#Reference-pattern-1)
-- [Fall through cases](#Fall-through-cases-1)
-- [Type level feature](#Type-level-feature-1)
-- [ADT destructing](#ADT-destructing-1)
+- [Predicate](#Predicate-1)
+- [Rference Pattern](#Reference-pattern-1)
+- [Custom Pattern, Dict, Tuple, Array](#Custom-pattern-1)
+- [Or Pattern](#Or-pattern-1)
+- [ADT destructing, GADTs](#ADT-destructing-1)
+- [Type Pattern](#Advanced-type-pattern-1)
+- [Ast Pattern](#Ast-Patrtern-1)
 
-Patterns provide convenient ways to manipulate data,
+Patterns provide convenient ways to manipulate data.
 
-Literal pattern
+Literal Pattern
 ------------------------
 
 ```julia
@@ -29,10 +30,13 @@ Literal pattern
 
 # => "right"
 ```
-Default supported literal patterns are `Number`and `AbstractString`.
+There are 3 distinct types whose literal data could be used as literal patterns:
 
+- `Number`
+- `AbstractString`
+- `Symbol`
 
-Capturing pattern
+Capturing Pattern
 --------------
 
 ```julia
@@ -43,7 +47,7 @@ end
 # => 2
 ```
 
-Type pattern
+Type Pattern
 -----------------
 
 ```julia
@@ -55,6 +59,8 @@ Type pattern
 end
 # => 1
 ```
+
+There is an advanced version of `Type-Pattern`s, which you can destruct types with fewer limitations. Check [Advanced Type Pattern](#advanced-type-pattern).
 
 However, when you use `TypeLevel Feature`, the behavious could change slightly. See [TypeLevel Feature](#type-level-feature).
 
@@ -114,7 +120,7 @@ Range Pattern
 end # 2
 ```
 
-Reference pattern
+Reference Pattern
 -----------------
 
 This feature is from `Elixir` which could slightly extends ML pattern matching.
@@ -129,7 +135,7 @@ end
 ```
 
 
-Custom pattern
+Custom Pattern
 --------------
 
 Not recommend to do this for it's implementation specific.
@@ -140,6 +146,8 @@ but exposing the implementations would cause compatibilities in future developme
  
 
 
+Dict, Tuple, Array
+---------------------
 
 - Dict pattern(like `Elixir`'s dictionary matching or ML record matching)
 
@@ -163,7 +171,7 @@ end
 # => (1, 2, 3, 4)
 ```
 
-- Array pattern(as efficient as linked list pattern for the usage of array view)
+- Array pattern(much more efficient than Python for taking advantage of array views)
 
 ```julia
 julia> it = @match [1, 2, 3, 4] begin
@@ -202,9 +210,9 @@ test(3)   # false
 test("")  # false
 ```
 
-Tips: `Or Pattern`s could nested. 
+Tips: `Or Pattern`s could nested.
 
-ADT destructing
+ADT Destructing
 ---------------
 
 You can match `ADT` in following 3 means:
@@ -220,8 +228,6 @@ C(_) => ...       # wildcard for destructing
 Here is an example:
 
 ```julia
-
-
 
 @data Example begin
     Natural(dimension :: Float32, climate :: String, altitude :: Int32)
@@ -264,7 +270,7 @@ end
 
 ```
 
-Generic type patterns
+Advanced Type Pattern
 -------------------------
 
 Instead of `TypeLevel` feature used in v0.1, an ideal type-stable way to destruct types now is introduced here.
@@ -301,7 +307,7 @@ end
 ```
 
 
-Ast patterns
+Ast Pattern
 --------------------------
 
 This is the most important update since v0.2.

@@ -24,12 +24,6 @@ Only the patterns defined in `src/Pervasive.jl` are exposed to all modules.
 
 ## Ast Pattern
 
-If you have tried `MacroTools.jl`, you might feel that although it's quite powerful,
-the way to perform capturing in that library is not so powerful and elegant. Now there is a
-built-in pattern named *Ast Pattern* in MLStyle.jl, which could be used to match asts in a both
-efficient and elegant way. **Arbitrary patterns could be used when matching asts**:
-
-
 ```julia
 ast = quote
     function f(a, b, c, d)
@@ -67,7 +61,6 @@ end
               :app_fn         => app_fn,
               :app_arg        => app_arg)
 end
-
 ```
 
 Output:
