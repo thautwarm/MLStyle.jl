@@ -66,3 +66,19 @@ end
 ```
 
 A simple intepreter implementation using GADTs could be found at `test/untyped_lam.jl`.
+
+
+### Active Patterns
+
+Currently, in MLStyle it's not a [full featured](https://docs.microsoft.com/en-us/dotnet/fsharp/language-reference/active-patterns) one, but even a subset with parametric active pattern could be super useful.
+
+```julia
+@active Re{r :: Regex}(x) begin
+    match(r, x)
+end
+
+@match "123" begin
+    Re{r"\d+"}(x) => x
+    _ => @error ""
+end # RegexMatch("123")
+```
