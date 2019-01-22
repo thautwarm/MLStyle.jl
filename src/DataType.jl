@@ -156,17 +156,23 @@ function impl(t, variants :: Expr, mod :: Module)
     for each in variants.args
         @match each begin
             ::LineNumberNode => (l = each)
-            :($case{$(tvars...)} :: ($(params...), ) => $(ret_ty) where {$(gtvars...)}) ||
-            :($case{$(tvars...)} :: ($(params...), ) => $(ret_ty && Do(gtvars=[])))     ||
-            :($case{$(tvars...)} :: $(arg_ty && Do(params = [arg_ty])) => $ret_ty where {$(gtvars...)})  ||
-            :($case{$(tvars...)} :: $(arg_ty && Do(params = [arg_ty])) => $(ret_ty && Do(gtvars=[])))    ||
+            :($case{$(tvars...)} :: ($(params...), ) => $(ret_ty) where {$(gtvars...)})                          ||
+            :($case{$(tvars...)} :: ($(params...), ) => $(ret_ty && Do(gtvars=[])))                              ||
+            :($case{$(tvars...)} :: $(arg_ty && Do(params = [arg_ty])) => $ret_ty where {$(gtvars...)})          ||
+            :($case{$(tvars...)} :: $(arg_ty && Do(params = [arg_ty])) => $(ret_ty && Do(gtvars=[])))            ||
+            :($(case && Do(tvars = [])) :: ($(params...), ) => $(ret_ty) where {$(gtvars...)})                   ||
+            :($(case && Do(tvars = [])) :: ($(params...), ) => $(ret_ty && Do(gtvars=[])))                       ||
+            :($(case && Do(tvars = [])) :: $(arg_ty && Do(params = [arg_ty])) => $(ret_ty) where {$(gtvars...)}) ||
+            :($(case && Do(tvars = [])) :: $(arg_ty && Do(params = [arg_ty])) => $(ret_ty && Do(gtvars=[])))     ||
+
             :($case($((params && Do(tvars=abs_tvars))...))) && Do(ret_ty = abst(), gtvars=[]) => begin
-              config = Dict{Symbol, Any}([gtvar => Any for gtvar in gtvars])
+
+              config = Dict{Symbol, Any}([(gtvar isa Expr ? gtvar.args[1] : gtvar) => Any for gtvar in gtvars])
 
               pairs = map(enumerate(params)) do (i, each)
                  @match each begin
-                    :($(a::Symbol && function isSymCap  end)) => (Symbol("_$i"), a, render(a, config))
                     :($(a::Symbol && function (x) !isSymCap(x) end)) => (a, Any, Any)
+                    :($(a && function isSymCap  end)) => (Symbol("_$i"), a, render(a, config))
                     :($field :: $ty)                => (field, ty, render(ty, config))
                  end
               end
@@ -177,11 +183,11 @@ function impl(t, variants :: Expr, mod :: Module)
               spec_tvars = [tvars..., [Any for _ in gtvars]...]
               getfields = [:($VAR.$field) for field in arg_names]
 
-              convert_fn = isempty(gtvars) ? nothing : begin
-                        out_tvars = [spec_tvars...]
-                        fresh_tvars1 = [gtvars...]
-                        fresh_tvars2 = [[Expr(:_) for _ in gtvars]...]
-                        inp_tvars = [spec_tvars...]
+              convert_fn = isempty(gtvars) ? nothing : let (=>) = (a, b) -> convert(b, a)
+                        out_tvars    = fill(nothing, length(spec_tvars)) => Vector{Any}
+                        inp_tvars    = fill(nothing, length(spec_tvars)) => Vector{Any}
+                        fresh_tvars1 = fill(nothing, length(gtvars)) => Vector{Any}
+                        fresh_tvars2 = fill(nothing, length(gtvars)) => Vector{Any}
 
                         for (i, _) in enumerate(gtvars)
                             TAny = mangle(mod)
