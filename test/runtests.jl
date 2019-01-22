@@ -3,6 +3,7 @@ using MLStyle
 
 @use GADT
 
+include("active_patterns.jl")
 include("exception.jl")
 include("render.jl")
 include("pervasive.jl")
@@ -14,3 +15,4 @@ include("dot_expression.jl")
 include("adt.jl")
 include("typelevel.jl")
 include("untyped_lam.jl")
+

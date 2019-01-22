@@ -373,7 +373,7 @@ The second is the parametric version.
 end
 
 @match "123" begin
-    Re{r"\\d+"}(x) => x
+    Re{r"\d+"}(x) => x
     _ => @error ""
 end # RegexMatch("123")
 ```
