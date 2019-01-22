@@ -4,7 +4,7 @@ Pattern function
 `Pattern function` is a convenient way to define a function with multiple entries.
 
 ```julia
-f = @λ f begin
+f = @λ begin
     # patterns here
     x                  -> 1
     (x, (1, 2)) && 
@@ -29,6 +29,7 @@ A `pattern function` is no more than using a `@match` inside some anonymous func
 function (x)
     @match x begin
         pat1 => body1
+        pat2 => body2
     end
 end
 

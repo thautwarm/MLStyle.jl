@@ -306,4 +306,4 @@ Ast patterns
 
 This is the most important update since v0.2.
 
-To be continue. Check `test/expr_template.jl` to get more about this exciting features.
+To be continue. Check `test/expr_template.jl` or `test/dot_expression.jl` to get more about this exciting features.
