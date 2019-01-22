@@ -1,31 +1,18 @@
+@testset "type destructing" begin
+    @data internal S{A, B} begin
+        S_1{A, B} :: (a :: A, b :: B) => S{A, B}
+    end
 
-@testset "type level" begin
-    @case S{A, B}(a :: A, b :: B)
-    s = S(1, "2")
+    s = S_1(1, "2")
     @test @match s begin
-        ::S{Int, String} => true
+        ::S{A, B} where {A, B} => A == Int && B == String
     end
 
-    @testset "type level for func pattern" begin
-        f = (Int ⇒ Int)(x -> x)
-        Feature.@activate TypeLevel
-        function()
-                 @match f begin
-                ::(T ⇒ G)  => T == G
-                _          => false
-                end
-        end |> it -> @test it()
-
+    @testset "curried destructing" begin
+        s = S_1(S_1(1, 2), "2")
+        @match s begin
+            ::S{A} where A => A <: S{Int, Int}
+            _ => false
+        end
     end
-
-    @testset "type level for type parameter destruction" begin
-        @case S{A, B}(a :: A, b :: B)
-        s = S(1, "2")
-        function ()
-            @match s begin
-                ::Kind{A, B} => Kind === S && A === Int && B === String
-            end
-        end |> it -> @test it()
-    end
-
 end

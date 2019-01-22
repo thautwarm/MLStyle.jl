@@ -1,95 +1,3 @@
-Algebraic Data Types
-==============================
-
-
-Syntax
------------------
-
-```
-
-<Seq> a         = a (',' a)*
-<TypeName>      = %Uppercase identifier%
-<fieldname>     = %Lowercase identifier%  
-<TVar>          = %Uppercase identifier%
-<ConsName>      = %Uppercase identifier%
-<ImplicitTVar>  = %Uppercase identifier%
-<Type>          = <TypeName> [ '{' <Seq TVar> '}' ]
-
-
-<ADT>           =
-    '@data' ['public' | 'internal'] <Type> 'begin'
-        
-        (<ConsName>[{<Seq TVar>}] (
-            <Seq fieldname> | <Seq Type> | <Seq (<fieldname> :: <Type>)>
-        ))*
-        
-    'end'
-    
-<GADT>           =
-    '@data' ['public' | 'internal'] <Type> 'begin'
-        
-        (<ConsName>[{<Seq TVar>}] '::' 
-           ( '('  
-                (<Seq fieldname> | <Seq Type> | <Seq (<fieldname> :: <Type>)>) 
-             ')' 
-              | <fieldname>
-              | <Type>
-           )
-           '=>' <Type> ['where' '{' <Seq ImplicitTvar> '}']
-        )*
-
-    'end'
-
-```
-
-Example: Describe arithmetic operations
---------------------------------------
-
-```julia
-using MLStyle
-@data internal Arith begin
-    Number(Int)
-    Minus(Arith, Arith)
-    Mult(Arith, Arith)
-    Divide(Arith, Arith)
-end
-```
-
-Above codes makes a clarified description about `Arithmetic` and provides a corresponding implementation.
-
-If you want to transpile above ADTs to some specific language, there is a clear step: 
-
-```julia
-
-eval_arith(arith :: Arith) = 
-    let wrap_op(op)  = (a, b) -> op(eval_arith(a), eval_arith(b)),
-        (+, -, *, /) = map(wrap_op, (+, -, *, /))
-        @match arith begin
-            Number(v)       => v
-            Minus(fst, snd) => fst - snd
-            Mult(fst, snd)   => fst * snd
-            Divide(fst, snd) => fst / snd
-        end
-    end
-
-eval_arith(
-    Minus(
-        Number(2), 
-        Divide(Number(20), 
-               Mult(Number(2), 
-                    Number(5)))))
-# => 0
-```
-
-
-
-Generalized ADT
---------------------------
-
-A simple intepreter implemented through GADT.
-
-```julia
-
 using MLStyle
 @use GADT
 
@@ -114,14 +22,11 @@ end
 ⇒(::Type{A}, ::Type{B}) where {A, B} = Fun{A, B}
 
 @data public Exp{T} begin
-    Sym       :: Symbol => Exp{A} where {A}
-    Val{A}    :: A => Exp{A}
-    
-    # add constraints to implicit tvars to get covariance
-    App{A, B} :: (Exp{Fun{A, B}}, Exp{A_}) => Exp{B} where {A_ <: A} 
-    
+    Sym :: Symbol => Exp{A} where {A}
+    Val{A} :: A => Exp{A}
+    App{A, B} :: (Exp{Fun{A, B}}, Exp{A_}) => Exp{B} where {A_ <: A}
     Lam{A, B} :: (Symbol, Exp{B}) => Exp{Fun{A, B}}
-    If{A}     :: (Exp{Bool}, Exp{A}, Exp{A}) => Exp{A}
+    If{A} :: (Exp{Bool}, Exp{A}, Exp{A}) => Exp{A}
 end
 
 function substitute(template :: Exp{T}, pair :: Tuple{Symbol, Exp{G}}) where {T, G}
@@ -175,8 +80,3 @@ ctx = Dict{Symbol, Any}()
         App(App(sub, Sym{Int}(:x)), Sym{Int}(:y)),
         App(App(sub, Sym{Int}(:y)), Sym{Int}(:x))
     ), Dict{Symbol, Any}(:x => 1, :y => 2))[1]
-
-
-```
-
-

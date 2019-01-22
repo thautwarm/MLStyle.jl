@@ -1,14 +1,13 @@
 using Test
 using MLStyle
+@use GADT
 
+include("pervasive.jl")
+include("expr_template.jl")
+include("gallery/simple.jl")
 include("match.jl")
 include("pattern.jl")
+include("dot_expression.jl")
 include("adt.jl")
-include("fn.jl")
 include("typelevel.jl")
-
-# WARNING: typelevel.jl must be at the end of the test for once `type level` feature
-#          is activated in a module, it won't be able to disable in this module.
-
-# TODO:
-# include("data.jl")
+include("untyped_lam.jl")
