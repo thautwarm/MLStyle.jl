@@ -17,7 +17,10 @@ pkg> add MLStyle
 
 ## Benchmark
 
-Many comparsions among distinct related Julia productions have made.
+Many comparsions among distinct related Julia productions have been made.
+
+Check source codes at [Matrix Benchmark](https://github.com/thautwarm/MLStyle.jl/blob/master/matrix_benchmark.jl).
+
 
 Time Overhead
 ---------------
