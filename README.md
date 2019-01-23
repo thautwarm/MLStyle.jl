@@ -12,7 +12,7 @@ Rich features are provided by MLStyle.jl and you can check [documents](https://t
 
 For installation, open package manager mode in Julia shell and `add MLStyle`.
 
-P.S: The Julia Registries doesn't synchronize with the lastest version currently, so you
+P.S: The Julia Registries hasn't synchronized with the lastest version currently, so you
 might have to clone this repo manually now.
 ```
 pkg> add MLStyle
