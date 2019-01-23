@@ -221,7 +221,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Pattern",
     "title": "Ast Pattern",
     "category": "section",
-    "text": "This is the most important update since v0.2.Check test/expr_template.jl or test/dot_expression.jl to get more about this exciting features."
+    "text": "This might be the most important update since v0.2.rmlines = @λ begin\n    e :: Expr           -> Expr(e.head, filter(x -> x !== nothing, map(rmlines, e.args))...)\n      :: LineNumberNode -> nothing\n    a                   -> a\nend\nexpr = quote\n    struct S{T}\n        a :: Int\n        b :: T\n    end\nend |> rmlines\n\n@match expr begin\n    quote\n        struct $name{$tvar}\n            $f1 :: $t1\n            $f2 :: $t2\n        end\n    end =>\n    quote\n        struct $name{$tvar}\n            $f1 :: $t1\n            $f2 :: $t2\n        end\n    end |> rmlines == expr\nend # trueHow you create an AST, then how you match them.How you use AST interpolations($ operation), then how you use capturing patterns on them.Here is an article about this Ast Pattern."
 },
 
 {
