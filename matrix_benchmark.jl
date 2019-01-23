@@ -79,8 +79,8 @@ module VersusMacroTools
     report_meantime = report(:meantime, df, Scale.y_log10)[1]
     report_allocs = report(:allocs, df)[1]
 
-    draw(SVG("vs-macrotools-on-time.svg", 10inch, 7inch), report_meantime);
-    draw(SVG("vs-macrotools-on-allocs.svg", 10inch, 7inch), report_allocs);
+    draw(SVG("vs-macrotools-on-time.svg", 10inch, 4inch), report_meantime);
+    draw(SVG("vs-macrotools-on-allocs.svg", 10inch, 4inch), report_allocs);
 end
 
 module VersusMatch
@@ -196,7 +196,7 @@ module VersusMatch
     report_meantime = report(:meantime, df, Scale.y_log10)[1]
     report_allocs = report(:allocs, df)[1]
 
-    draw(SVG("vs-match-on-time.svg", 10inch, 7inch), report_meantime);
-    draw(SVG("vs-match-on-allocs.svg", 10inch, 7inch), report_allocs);
+    draw(SVG("vs-match-on-time.svg", 10inch, 4inch), report_meantime);
+    draw(SVG("vs-match-on-allocs.svg", 10inch, 4inch), report_allocs);
 
 end
