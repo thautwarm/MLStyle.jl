@@ -418,4 +418,50 @@ end # true
 
 **How you use AST interpolations(`$` operation), then how you use capturing patterns on them.**
 
+The pattern `quote .. end` is equivalent to `:(begin ... end)`.
+
+Additonally, you can use any other patterns simultaneously when matching asts. In fact, there're regular patterns inside a `$` expression of your ast pattern.
+
+A more complex example presented here might help with your comprehension about this:
+
+```julia
+ast = quote
+    function f(a, b, c, d)
+      let d = a + b + c, e = x -> 2x + d
+          e(d)
+      end
+    end
+end
+
+@match ast begin
+    quote
+        $(::LineNumberNode)
+
+        function $funcname(
+            $firstarg,
+            $(args...),
+            $(a && if islowercase(string(a)[1]) end))
+
+            $(::LineNumberNode)
+            let $bind_name = a + b + $last_operand, $(other_bindings...)
+                $(::LineNumberNode)
+                $app_fn($app_arg)
+                $(block1...)
+            end
+
+            $(block2...)
+        end
+    end && if (isempty(block1) && isempty(block2)) end =>
+
+         Dict(:funcname => funcname,
+              :firstarg => firstarg,
+              :args     => args,
+              :last_operand => last_operand,
+              :other_bindings => other_bindings,
+              :app_fn         => app_fn,
+              :app_arg        => app_arg)
+end
+```
+
+
 Here is an article about this [Ast Pattern](https://discourse.julialang.org/t/an-elegant-and-efficient-way-to-extract-something-from-asts/19123).
