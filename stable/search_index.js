@@ -85,7 +85,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Pattern",
     "title": "Pattern",
     "category": "section",
-    "text": "Literal Pattern\nCapturing pattern\nType Pattern\nAs-Pattern, And Pattern\nGuard\nRange Pattern\nPredicate\nRference Pattern\nCustom Pattern, Dict, Tuple, Array\nOr Pattern\nADT destructing, GADTs\nAdvanced Type Pattern\nSide Effect\nActive Pattern\nAst PatternPatterns provide convenient ways to manipulate data."
+    "text": "Literal Pattern\nCapturing pattern\nType Pattern\nAs-Pattern, And Pattern\nGuard\nRange Pattern\nPredicate\nReference Pattern\nCustom Pattern, Dict, Tuple, Array\nOr Pattern\nADT destructing, GADTs\nAdvanced Type Pattern\nSide Effect\nActive Pattern\nAst PatternPatterns provide convenient ways to manipulate data."
 },
 
 {
@@ -221,7 +221,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Pattern",
     "title": "Ast Pattern",
     "category": "section",
-    "text": "This is the most important update since v0.2.Check test/expr_template.jl or test/dot_expression.jl to get more about this exciting features."
+    "text": "This might be the most important update since v0.2.rmlines = @λ begin\n    e :: Expr           -> Expr(e.head, filter(x -> x !== nothing, map(rmlines, e.args))...)\n      :: LineNumberNode -> nothing\n    a                   -> a\nend\nexpr = quote\n    struct S{T}\n        a :: Int\n        b :: T\n    end\nend |> rmlines\n\n@match expr begin\n    quote\n        struct $name{$tvar}\n            $f1 :: $t1\n            $f2 :: $t2\n        end\n    end =>\n    quote\n        struct $name{$tvar}\n            $f1 :: $t1\n            $f2 :: $t2\n        end\n    end |> rmlines == expr\nend # trueHow you create an AST, then how you match them.How you use AST interpolations($ operation), then how you use capturing patterns on them.The pattern quote .. end is equivalent to :(begin ... end).Additonally, you can use any other patterns simultaneously when matching asts. In fact, there\'re regular patterns inside a $ expression of your ast pattern.A more complex example presented here might help with your comprehension about this:ast = quote\n    function f(a, b, c, d)\n      let d = a + b + c, e = x -> 2x + d\n          e(d)\n      end\n    end\nend\n\n@match ast begin\n    quote\n        $(::LineNumberNode)\n\n        function $funcname(\n            $firstarg,\n            $(args...),\n            $(a && if islowercase(string(a)[1]) end))\n\n            $(::LineNumberNode)\n            let $bind_name = a + b + $last_operand, $(other_bindings...)\n                $(::LineNumberNode)\n                $app_fn($app_arg)\n                $(block1...)\n            end\n\n            $(block2...)\n        end\n    end && if (isempty(block1) && isempty(block2)) end =>\n\n         Dict(:funcname => funcname,\n              :firstarg => firstarg,\n              :args     => args,\n              :last_operand => last_operand,\n              :other_bindings => other_bindings,\n              :app_fn         => app_fn,\n              :app_arg        => app_arg)\nendHere is an article about this Ast Pattern."
 },
 
 {
