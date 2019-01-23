@@ -8,18 +8,12 @@ import MLStyle.Infras: mkGAppPattern
 
 @use GADT
 
-
 function mk_pat_by(f)
     (tag, case, mod) -> body ->
      @format [f, tag, case, body] quote
         f(tag, case) ? body : failed
      end
 end
-
-defPattern(Pervasives,
-        predicate = x -> x isa Int,
-        rewrite = mk_pat_by(===)
-)
 
 defPattern(Pervasives,
         predicate = x -> x isa Int,
