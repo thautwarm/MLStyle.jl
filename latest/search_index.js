@@ -85,7 +85,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Pattern",
     "title": "Pattern",
     "category": "section",
-    "text": "Literal Pattern\nCapturing pattern\nType Pattern\nAs-Pattern, And Pattern\nGuard\nRange Pattern\nPredicate\nRference Pattern\nCustom Pattern, Dict, Tuple, Array\nOr Pattern\nADT destructing, GADTs\nAdvanced Type Pattern\nSide Effect\nActive Pattern\nAst PatternPatterns provide convenient ways to manipulate data."
+    "text": "Literal Pattern\nCapturing pattern\nType Pattern\nAs-Pattern, And Pattern\nGuard\nRange Pattern\nPredicate\nReference Pattern\nCustom Pattern, Dict, Tuple, Array\nOr Pattern\nADT destructing, GADTs\nAdvanced Type Pattern\nSide Effect\nActive Pattern\nAst PatternPatterns provide convenient ways to manipulate data."
 },
 
 {
