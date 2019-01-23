@@ -15,6 +15,47 @@ For installation, open package manager mode in Julia shell and `add MLStyle`:
 pkg> add MLStyle
 ```
 
+## Benchmark
+
+Many comparsions among distinct related Julia productions have made.
+
+Time Overhead
+---------------
+
+In x-axis, after the name of test-case is the least time-consuming one's index, the unit is `ns`).
+
+The y-label is the ratio of the implementation's time cost to that of the least time-consuming.
+
+- vs MacroTools
+
+[![vs MacroTools.jl on time](./vs-macrotools-on-time.svg)](./vs-macrotools-on-time.svg)
+
+- vs Match.jl
+
+[![vs Match.jl on time](./vs-match-on-time.svg)](./vs-match-on-time.svg)
+
+
+Allocation
+-----------------
+
+In x-axis, after the name of test-case is the least allocted one's index, the unit is `bytes`).
+
+The y-label is the ratio of  the implementation's allocation cost to that of the least allocted.
+
+- vs MacroTools
+
+[![vs MacroTools.jl on time](./vs-macrotools-on-allocs.svg)](./vs-macrotools-on-allocs.svg)
+
+- vs Match.jl
+
+[![vs Match.jl on time](./vs-match-on-allocs.svg)](./vs-match-on-allocs.svg)
+
+
+Comparison Among Different Languages
+----------------------------------------
+
+Benchmark scripts for any other language are welcome. We're curious about the actual performance ranking of MLStyle.jl.
+
 ## Preview
 
 In this README I'm glad to share some non-trivial code snippets.

@@ -7,21 +7,20 @@ module VersusMacroTools
     using Gadfly
     using MacroTools: @capture
 
-
     data = [
         :simple1 => quote
             struct Foo
                 x :: Int
                 y
             end
-        end |> QuoteNode,
+        end,
 
         :simple2 => quote
             struct Foo
                 x :: Int
                 y :: Array{Int}
             end
-        end |> QuoteNode,
+        end,
 
         Symbol("N(fields) = 5") => quote
             struct Foo
@@ -31,7 +30,7 @@ module VersusMacroTools
                 x4 :: Float32
                 x5 :: Int
             end
-        end |> QuoteNode,
+        end,
         Symbol("N(fields) = 10") => quote
             struct Foo
                 x1 :: Int
@@ -45,7 +44,7 @@ module VersusMacroTools
                 x9 :: Int
                 x10 :: Int
             end
-        end |> QuoteNode
+        end
     ]
 
     implementations = [
@@ -74,10 +73,14 @@ module VersusMacroTools
         end
     ]
 
-    criterion(x) = (meantime = mean(x.times), )
+    criterion(x) = (meantime = mean(x.times), allocs = float(x.allocs))
     df = Benchmarkplotting.bcompare(criterion, data, implementations)
-    res = Benchmarkplotting.report(:meantime, df)
-    draw(SVG("vs-macrotools.svg"), res[1]);
+
+    report_meantime = report(:meantime, df, Scale.y_log10)[1]
+    report_allocs = report(:allocs, df)[1]
+
+    draw(SVG("vs-macrotools-on-time.svg", 10inch, 7inch), report_meantime);
+    draw(SVG("vs-macrotools-on-allocs.svg", 10inch, 7inch), report_allocs);
 end
 
 module VersusMatch
@@ -86,13 +89,17 @@ module VersusMatch
     using Gadfly
     using MLStyle
     using Match
+    import Base.getindex
+    getindex(asoc_lst :: Vector{Pair{Symbol, T}}, key ::Symbol) where T =
+        for (search_key, value) in asoc_lst
+            if search_key === key
+                return value
+            end
+        end
 
     data = [
         :node_fn1 => :(function f(a, b) a + b end),
         :node_fn2 => :(function f(a, b, c...) c end),
-        :node_let => :(let x = a + b
-                        2x
-                        end),
         :node_chain => :(subject.method(arg1, arg2)),
         :node_struct => :(
                 struct name <: base
@@ -109,7 +116,7 @@ module VersusMatch
         :Match =>  let
             extract_name(e :: Symbol) = e
             function extract_name(e::Expr)
-                @match e begin
+                Match.@match e begin
                     Expr(:<:, [a, b])                  => extract_name(a)
                     Expr(:struct,      [_, name, _])   => extract_name(name)
                     Expr(:call,      [f, _...])        => extract_name(f)
@@ -132,7 +139,7 @@ module VersusMatch
         end,
         Symbol(:MLStyle, " Expr-pattern") => let
             function extract_name(e)
-                @match e begin
+                MLStyle.@match e begin
                     ::Symbol                           => e
                     Expr(:<:, a, _)                    => extract_name(a)
                     Expr(:struct, _, name, _)          => extract_name(name)
@@ -156,7 +163,7 @@ module VersusMatch
         end,
         Symbol(:MLStyle, " AST-pattern") => let
             function extract_name_homoiconic(e)
-                @match e begin
+                MLStyle.@match e begin
                     ::Symbol                           => e
                     :($a <: $_)                        => extract_name_homoiconic(a)
                     :(struct $name <: $_
@@ -183,9 +190,13 @@ module VersusMatch
             extract_name_homoiconic
         end
     ]
-
-    criterion(x) = (meantime = mean(x.times), )
+    criterion(x) = (meantime = mean(x.times), allocs = float(x.allocs))
     df = bcompare(criterion, data, implementations)
-    res = report(:meantime, df)
-    draw(SVG("vs-macrotools.svg"), res[1]);
+
+    report_meantime = report(:meantime, df, Scale.y_log10)[1]
+    report_allocs = report(:allocs, df)[1]
+
+    draw(SVG("vs-match-on-time.svg", 10inch, 7inch), report_meantime);
+    draw(SVG("vs-match-on-allocs.svg", 10inch, 7inch), report_allocs);
+
 end
