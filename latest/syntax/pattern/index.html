@@ -212,4 +212,39 @@ end |&gt; rmlines
             $f2 :: $t2
         end
     end |&gt; rmlines == expr
-end # true</code></pre><p><strong>How you create an AST, then how you match them.</strong></p><p><strong>How you use AST interpolations(<code>$</code> operation), then how you use capturing patterns on them.</strong></p><p>Here is an article about this <a href="https://discourse.julialang.org/t/an-elegant-and-efficient-way-to-extract-something-from-asts/19123">Ast Pattern</a>.</p><footer><hr/><a class="previous" href="../adt/"><span class="direction">Previous</span><span class="title">Algebraic Data Types</span></a><a class="next" href="../pattern-function/"><span class="direction">Next</span><span class="title">Pattern function</span></a></footer></article></body></html>
+end # true</code></pre><p><strong>How you create an AST, then how you match them.</strong></p><p><strong>How you use AST interpolations(<code>$</code> operation), then how you use capturing patterns on them.</strong></p><p>The pattern <code>quote .. end</code> is equivalent to <code>:(begin ... end)</code>.</p><p>Additonally, you can use any other patterns simultaneously when matching asts. In fact, there&#39;re regular patterns inside a <code>$</code> expression of your ast pattern.</p><p>A more complex example presented here might help with your comprehension about this:</p><pre><code class="language-julia">ast = quote
+    function f(a, b, c, d)
+      let d = a + b + c, e = x -&gt; 2x + d
+          e(d)
+      end
+    end
+end
+
+@match ast begin
+    quote
+        $(::LineNumberNode)
+
+        function $funcname(
+            $firstarg,
+            $(args...),
+            $(a &amp;&amp; if islowercase(string(a)[1]) end))
+
+            $(::LineNumberNode)
+            let $bind_name = a + b + $last_operand, $(other_bindings...)
+                $(::LineNumberNode)
+                $app_fn($app_arg)
+                $(block1...)
+            end
+
+            $(block2...)
+        end
+    end &amp;&amp; if (isempty(block1) &amp;&amp; isempty(block2)) end =&gt;
+
+         Dict(:funcname =&gt; funcname,
+              :firstarg =&gt; firstarg,
+              :args     =&gt; args,
+              :last_operand =&gt; last_operand,
+              :other_bindings =&gt; other_bindings,
+              :app_fn         =&gt; app_fn,
+              :app_arg        =&gt; app_arg)
+end</code></pre><p>Here is an article about this <a href="https://discourse.julialang.org/t/an-elegant-and-efficient-way-to-extract-something-from-asts/19123">Ast Pattern</a>.</p><footer><hr/><a class="previous" href="../adt/"><span class="direction">Previous</span><span class="title">Algebraic Data Types</span></a><a class="next" href="../pattern-function/"><span class="direction">Next</span><span class="title">Pattern function</span></a></footer></article></body></html>
