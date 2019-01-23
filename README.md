@@ -22,8 +22,8 @@ Many comparsions among distinct related Julia productions have been made.
 Check source codes at [Matrix Benchmark](https://github.com/thautwarm/MLStyle.jl/blob/master/matrix_benchmark.jl).
 
 
-Time Overhead
----------------
+### Time Overhead
+
 
 In x-axis, after the name of test-case is the least time-consuming one's index, the unit is `ns`).
 
@@ -38,8 +38,8 @@ The y-label is the ratio of the implementation's time cost to that of the least 
 [![vs Match.jl on time](./vs-match-on-time.svg)](./vs-match-on-time.svg)
 
 
-Allocation
------------------
+### Allocation
+
 
 In x-axis, after the name of test-case is the least allocted one's index, the unit is `bytes`).
 
@@ -54,8 +54,8 @@ The y-label is the ratio of  the implementation's allocation cost to that of the
 [![vs Match.jl on time](./vs-match-on-allocs.svg)](./vs-match-on-allocs.svg)
 
 
-Comparison Among Different Languages
-----------------------------------------
+### Compare With Other Languages
+
 
 Benchmark scripts for any other language are welcome. We're curious about the actual performance ranking of MLStyle.jl.
 
