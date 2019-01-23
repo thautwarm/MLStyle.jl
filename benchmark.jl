@@ -128,27 +128,17 @@ module TestMLStylejl
     using MLStyle
     using BenchmarkTools
 
-    @active NonUnpackExpr(x) begin
-        @inline function f(x :: Expr)
-            (x.head, x.args)
-        end
-        @inline function f(x :: Symbol)
-            x
-        end
-        f(x)
-    end
-
     function extract_name(e)
         @match e begin
-            NonUnpackExpr(::Symbol)                     => e
-            NonUnpackExpr(:<:, [a, _])                  => extract_name(a)
-            NonUnpackExpr(:struct,      [_, name, _])   => extract_name(name)
-            NonUnpackExpr(:call,      [f, _...])        => extract_name(f)
-            NonUnpackExpr(:., [subject, attr, _...])    => extract_name(subject)
-            NonUnpackExpr(:function,  [sig, _...])      => extract_name(sig)
-            NonUnpackExpr(:const,     [assn, _...])     => extract_name(assn)
-            NonUnpackExpr(:(=),       [fn, body, _...]) => extract_name(fn)
-            NonUnpackExpr(expr_type,  _)                => error("Can't extract name from ",
+            ::Symbol                           => e
+            Expr(:<:, a, _)                    => extract_name(a)
+            Expr(:struct, _, name, _)          => extract_name(name)
+            Expr(:call, f, _...)               => extract_name(f)
+            Expr(:., subject, attr, _...)      => extract_name(subject)
+            Expr(:function, sig, _...)         => extract_name(sig)
+            Expr(:const, assn, _...)           => extract_name(assn)
+            Expr(:(=), fn, body, _...)         => extract_name(fn)
+            Expr(expr_type,  _)                => error("Can't extract name from ",
                                                         expr_type, " expression:\n",
                                                         "    $e\n")
         end

@@ -213,6 +213,7 @@ defAppPattern(Pervasives,
 defAppPattern(Pervasives,
     predicate = (hd_obj, args) -> hd_obj === Expr && !isempty(args),
     rewrite = (tag, hd_obj, args, mod) ->
+        length(args) === 1 ?
         let lst        = mangle(mod),
             perf_match = orderedSeqMatch(lst, args, mod),
             TARGET     = mangle(mod),
@@ -223,6 +224,22 @@ defAppPattern(Pervasives,
                 end
 
             (@typed_as Expr) ∘ exprargs_to_arr ∘ perf_match
+        end :
+        let TARGET     = mangle(mod),
+            HEAD       = mangle(mod),
+            ARGS       = mangle(mod)
+
+            head_pat = args[1]
+            args_pat = args[2:end]
+
+            assign_attrs(body) =
+                @format [body, HEAD, ARGS, TARGET] quote
+                    let (HEAD, ARGS) = (TARGET.head, TARGET.args)
+                        body
+                    end
+                end
+
+            (@typed_as Expr) ∘ assign_attrs ∘ mkPattern(HEAD, head_pat, mod) ∘ orderedSeqMatch(ARGS, args_pat, mod)
         end
 )
 
