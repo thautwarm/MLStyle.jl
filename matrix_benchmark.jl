@@ -76,8 +76,15 @@ module VersusMacroTools
     criterion(x) = (meantime = mean(x.times), allocs = float(x.allocs))
     df = Benchmarkplotting.bcompare(criterion, data, implementations)
 
-    report_meantime = report(:meantime, df, Scale.y_log10)[1]
-    report_allocs = report(:allocs, df)[1]
+    theme = Theme(
+        guide_title_position = :left,
+        colorkey_swatch_shape = :circle,
+        minor_label_font = "Consolas",
+        major_label_font = "Consolas",
+        point_size=6px
+    )
+    report_meantime = report(:meantime, df, Scale.y_log10, theme)[1]
+    report_allocs = report(:allocs, df, theme)[1]
 
     draw(SVG("vs-macrotools-on-time.svg", 10inch, 4inch), report_meantime);
     draw(SVG("vs-macrotools-on-allocs.svg", 10inch, 4inch), report_allocs);
@@ -193,8 +200,15 @@ module VersusMatch
     criterion(x) = (meantime = mean(x.times), allocs = float(x.allocs))
     df = bcompare(criterion, data, implementations)
 
-    report_meantime = report(:meantime, df, Scale.y_log10)[1]
-    report_allocs = report(:allocs, df)[1]
+    theme = Theme(
+        guide_title_position = :left,
+        colorkey_swatch_shape = :circle,
+        minor_label_font = "Consolas",
+        major_label_font = "Consolas",
+        point_size=6px
+    )
+    report_meantime = report(:meantime, df, Scale.y_log10, theme)[1]
+    report_allocs = report(:allocs, df, theme)[1]
 
     draw(SVG("vs-match-on-time.svg", 10inch, 4inch), report_meantime);
     draw(SVG("vs-match-on-allocs.svg", 10inch, 4inch), report_allocs);
