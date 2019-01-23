@@ -8,7 +8,7 @@ Pattern
 - [Guard](#Guard-1)
 - [Range Pattern](#Range-Pattern-1)
 - [Predicate](#Predicate-1)
-- [Rference Pattern](#Reference-Pattern-1)
+- [Reference Pattern](#Reference-Pattern-1)
 - [Custom Pattern, Dict, Tuple, Array](#Custom-Pattern-1)
 - [Or Pattern](#Or-Pattern-1)
 - [ADT destructing, GADTs](#ADT-Destructing-1)
