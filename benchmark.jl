@@ -138,7 +138,7 @@ module TestMLStylejl
             Expr(:function, sig, _...)         => extract_name(sig)
             Expr(:const, assn, _...)           => extract_name(assn)
             Expr(:(=), fn, body, _...)         => extract_name(fn)
-            Expr(expr_type,  _)                => error("Can't extract name from ",
+            Expr(expr_type,  _...)             => error("Can't extract name from ",
                                                         expr_type, " expression:\n",
                                                         "    $e\n")
         end
@@ -151,7 +151,7 @@ module TestMLStylejl
     @assert extract_name(Samples.node_const) == :a
     @assert extract_name(Samples.node_assign) == :a
 
-    @info "=======MLStyle.jl=========="
+    @info "=======MLStyle.jl Expr pattern=========="
     @info :node_fn1
     @btime extract_name(Samples.node_fn1) == :f
     @info :node_fn2
@@ -164,5 +164,47 @@ module TestMLStylejl
     @btime extract_name(Samples.node_const) == :a
     @info :node_assign
     @btime extract_name(Samples.node_assign) == :a
+
+
+    function extract_name_homoiconic(e)
+        @match e begin
+            ::Symbol                           => e
+            :($a <: $_)                        => extract_name_homoiconic(a)
+            :(struct $name <: $_
+                $(_...)
+              end)                             => name
+            :($f($(_...)))                     => extract_name_homoiconic(f)
+            :($subject.$_)                     => extract_name_homoiconic(subject)
+            :(function $name($(_...))
+                $(_...)
+               end)                            => extract_name_homoiconic(name)
+            :(const $assn = $_)                => extract_name_homoiconic(assn)
+            :($fn = $_)                        => extract_name_homoiconic(fn)
+            Expr(expr_type,  _...)             => error("Can't extract name from ",
+                                                        expr_type, " expression:\n",
+                                                        "    $e\n")
+        end
+    end
+
+    @assert extract_name_homoiconic(Samples.node_fn1) == :f
+    @assert extract_name_homoiconic(Samples.node_fn2) == :f
+    @assert extract_name_homoiconic(Samples.node_chain) == :subject
+    @assert extract_name_homoiconic(Samples.node_struct) == :name
+    @assert extract_name_homoiconic(Samples.node_const) == :a
+    @assert extract_name_homoiconic(Samples.node_assign) == :a
+
+    @info "=======MLStyle.jl Ast pattern=========="
+    @info :node_fn1
+    @btime extract_name_homoiconic(Samples.node_fn1) == :f
+    @info :node_fn2
+    @btime extract_name_homoiconic(Samples.node_fn2) == :f
+    @info :node_chain
+    @btime extract_name_homoiconic(Samples.node_chain) == :subject
+    @info :node_struct
+    @btime extract_name_homoiconic(Samples.node_struct) == :name
+    @info :node_const
+    @btime extract_name_homoiconic(Samples.node_const) == :a
+    @info :node_assign
+    @btime extract_name_homoiconic(Samples.node_assign) == :a
 
 end

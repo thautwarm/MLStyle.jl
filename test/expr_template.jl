@@ -65,3 +65,52 @@ end
 
 end
 
+
+module ASTSamples
+
+    node_fn1 = :(function f(a, b) a + b end)
+    node_fn2 = :(function f(a, b, c...) c end)
+    node_let = :(let x = a + b
+                2x
+            end)
+    node_chain = :(subject.method(arg1, arg2))
+    node_struct = :(
+            struct name <: base
+                field1 :: Int
+                field2 :: Float32
+            end
+    )
+
+    node_const = :(
+            const a = value
+    )
+    node_assign = :(a = b + c)
+
+end
+
+@testset "case from Match.jl" begin
+
+extract_name = @λ begin
+        e ::Symbol                         -> e
+        Expr(:<:, a, _)                    -> extract_name(a)
+        Expr(:struct, _, name, _)          -> extract_name(name)
+        Expr(:call, f, _...)               -> extract_name(f)
+        Expr(:., subject, attr, _...)      -> extract_name(subject)
+        Expr(:function, sig, _...)         -> extract_name(sig)
+        Expr(:const, assn, _...)           -> extract_name(assn)
+        Expr(:(=), fn, body, _...)         -> extract_name(fn)
+        Expr(expr_type,  _...)             -> error("Can't extract name from ",
+                                                    expr_type, " expression:\n",
+                                                    "    $e\n")
+end
+
+@test extract_name(ASTSamples.node_fn1) == :f
+@test extract_name(ASTSamples.node_fn2) == :f
+@test extract_name(ASTSamples.node_chain) == :subject
+@test extract_name(ASTSamples.node_struct) == :name
+@test extract_name(ASTSamples.node_const) == :a
+@test extract_name(ASTSamples.node_assign) == :a
+@test_skip extract_name(:(1 + 1))
+
+end
+

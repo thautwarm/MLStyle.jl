@@ -15,6 +15,7 @@ Pattern
 - [Advanced Type Pattern](#Advanced-Type-Pattern-1)
 - [Side Effect](#Side-Effect-1)
 - [Active Pattern](#Active-Pattern-1)
+- [Expr Pattern](#Expr-Pattern-1)
 - [Ast Pattern](#Ast-Pattern-1)
 
 Patterns provide convenient ways to manipulate data.
@@ -377,6 +378,34 @@ end
     Re{r"\d+"}(x) => x
     _ => @error ""
 end # RegexMatch("123")
+```
+
+Expr Pattern
+-------------------
+
+This is mainly for AST manipulations. In fact, another pattern called Ast Pattern, would be translated into Expr Pattern.
+
+```julia
+function extract_name(e)
+        @match e begin
+            ::Symbol                           => e
+            Expr(:<:, a, _)                    => extract_name(a)
+            Expr(:struct, _, name, _)          => extract_name(name)
+            Expr(:call, f, _...)               => extract_name(f)
+            Expr(:., subject, attr, _...)      => extract_name(subject)
+            Expr(:function, sig, _...)         => extract_name(sig)
+            Expr(:const, assn, _...)           => extract_name(assn)
+            Expr(:(=), fn, body, _...)         => extract_name(fn)
+            Expr(expr_type,  _...)             => error("Can't extract name from ",
+                                                        expr_type, " expression:\n",
+                                                        "    $e\n")
+        end
+end
+@assert extract_name(:(quote
+    function f()
+        1 + 1
+    end
+end)) == :f
 ```
 
 
