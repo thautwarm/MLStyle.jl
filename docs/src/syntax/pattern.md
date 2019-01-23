@@ -15,7 +15,7 @@ Pattern
 - [Advanced Type Pattern](#Advanced-Type-Pattern-1)
 - [Side Effect](#Side-Effect-1)
 - [Active Pattern](#Active-Pattern-1)
-- [Ast Pattern](#Ast-Patrtern-1)
+- [Ast Pattern](#Ast-Pattern-1)
 
 Patterns provide convenient ways to manipulate data.
 
@@ -383,6 +383,39 @@ end # RegexMatch("123")
 Ast Pattern
 --------------------------
 
-This is the most important update since v0.2.
+This might be the most important update since v0.2.
 
-Check `test/expr_template.jl` or `test/dot_expression.jl` to get more about this exciting features.
+```julia
+rmlines = @λ begin
+    e :: Expr           -> Expr(e.head, filter(x -> x !== nothing, map(rmlines, e.args))...)
+      :: LineNumberNode -> nothing
+    a                   -> a
+end
+expr = quote
+    struct S{T}
+        a :: Int
+        b :: T
+    end
+end |> rmlines
+
+@match expr begin
+    quote
+        struct $name{$tvar}
+            $f1 :: $t1
+            $f2 :: $t2
+        end
+    end =>
+    quote
+        struct $name{$tvar}
+            $f1 :: $t1
+            $f2 :: $t2
+        end
+    end |> rmlines == expr
+end # true
+```
+
+**How you create an AST, then how you match them.**
+
+**How you use AST interpolations(`$` operation), then how you use capturing patterns on them.**
+
+Here is an article about this [Ast Pattern](https://discourse.julialang.org/t/an-elegant-and-efficient-way-to-extract-something-from-asts/19123).
