@@ -128,7 +128,7 @@ macro active(case, active_body)
         defAppPattern(mod,
             predicate = (hd_obj, args) -> hd_obj === case_obj,
             rewrite = (tag, hd_obj, args, mod) -> begin
-                arg = args[1]
+                arg = length(args) == 1 ? args[1] : Expr(:tuple, args...)
                 function (body)
                     @format [tag, param, TARGET, active_body, body] quote
                         let  TARGET =
@@ -145,7 +145,7 @@ macro active(case, active_body)
         defGAppPattern(mod,
             predicate = (spec_vars, hd_obj, args) -> hd_obj === case_obj && length(spec_vars) === n_idents,
             rewrite   = (tag, forall, spec_vars, hd_obj, args, mod) -> begin
-                arg = args[1]
+                arg = length(args) == 1 ? args[1] : Expr(:tuple, args...)
                 assign_elts_and_active_body =
                     let arr = [:($IDENT = $(spec_vars[i]))
                                 for (i, IDENT)

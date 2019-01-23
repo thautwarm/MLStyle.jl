@@ -1,7 +1,6 @@
 using BenchmarkTools
 using MacroTools
 using MLStyle
-using MLStyle.Pervasive: Do, Many
 
 
 ex = quote
@@ -35,8 +34,8 @@ function b_mlstyle(ex)
         end => (typename, fields)
     end
 end
-@info b_macrotools(ex)
-@info b_mlstyle(ex)
+# @info b_macrotools(ex)
+# @info b_mlstyle(ex)
 
 @btime b_macrotools(ex)
 @btime b_mlstyle(ex)
@@ -58,3 +57,122 @@ end
 #   3.918 μs (30 allocations: 1.23 KiB)
 
 
+module Samples
+
+    node_fn1 = :(function f(a, b) a + b end)
+    node_fn2 = :(function f(a, b, c...) c end)
+    node_let = :(let x = a + b
+                2x
+            end)
+    node_chain = :(subject.method(arg1, arg2))
+    node_struct = :(
+            struct name <: base
+                field1 :: Int
+                field2 :: Float32
+            end
+    )
+
+    node_const = :(
+            const a = value
+    )
+    node_assign = :(a = b + c)
+
+end
+
+module TestMatchJl
+    using ..Samples
+    using Match
+    using BenchmarkTools
+
+    extract_name(e :: Symbol) = e
+    function extract_name(e::Expr)
+        @match e begin
+            Expr(:<:, [a, b])                  => extract_name(a)
+            Expr(:struct,      [_, name, _])   => extract_name(name)
+            Expr(:call,      [f, _...])        => extract_name(f)
+            Expr(:., [subject, attr, _...])    => extract_name(subject)
+            Expr(:function,  [sig, _...])      => extract_name(sig)
+            Expr(:const,     [assn, _...])     => extract_name(assn)
+            Expr(:(=),       [fn, body, _...]) => extract_name(fn)
+            Expr(expr_type,  _...)             => error("Can't extract name from ",
+                                                        expr_type, " expression:\n",
+                                                        "    $e\n")
+        end
+    end
+
+    @assert extract_name(Samples.node_fn1) == :f
+    @assert extract_name(Samples.node_fn2) == :f
+    @assert extract_name(Samples.node_chain) == :subject
+    @assert extract_name(Samples.node_struct) == :name
+    @assert extract_name(Samples.node_const) == :a
+    @assert extract_name(Samples.node_assign) == :a
+
+    @info "=======Match.jl=========="
+    @info :node_fn1
+    @btime extract_name(Samples.node_fn1) == :f
+    @info :node_fn2
+    @btime extract_name(Samples.node_fn2) == :f
+    @info :node_chain
+    @btime extract_name(Samples.node_chain) == :subject
+    @info :node_struct
+    @btime extract_name(Samples.node_struct) == :name
+    @info :node_const
+    @btime extract_name(Samples.node_const) == :a
+    @info :node_assign
+    @btime extract_name(Samples.node_assign) == :a
+
+end
+
+module TestMLStylejl
+    using ..Samples
+    using MLStyle
+    using BenchmarkTools
+
+    @active NonUnpackExpr(x) begin
+        @inline function f(x :: Expr)
+            (x.head, x.args)
+        end
+        @inline function f(x :: Symbol)
+            x
+        end
+        f(x)
+    end
+
+    function extract_name(e)
+        @match e begin
+            NonUnpackExpr(::Symbol)                     => e
+            NonUnpackExpr(:<:, [a, _])                  => extract_name(a)
+            NonUnpackExpr(:struct,      [_, name, _])   => extract_name(name)
+            NonUnpackExpr(:call,      [f, _...])        => extract_name(f)
+            NonUnpackExpr(:., [subject, attr, _...])    => extract_name(subject)
+            NonUnpackExpr(:function,  [sig, _...])      => extract_name(sig)
+            NonUnpackExpr(:const,     [assn, _...])     => extract_name(assn)
+            NonUnpackExpr(:(=),       [fn, body, _...]) => extract_name(fn)
+            NonUnpackExpr(expr_type,  _)                => error("Can't extract name from ",
+                                                        expr_type, " expression:\n",
+                                                        "    $e\n")
+        end
+    end
+
+    @assert extract_name(Samples.node_fn1) == :f
+    @assert extract_name(Samples.node_fn2) == :f
+    @assert extract_name(Samples.node_chain) == :subject
+    @assert extract_name(Samples.node_struct) == :name
+    @assert extract_name(Samples.node_const) == :a
+    @assert extract_name(Samples.node_assign) == :a
+
+    @info "=======MLStyle.jl=========="
+    @info :node_fn1
+    @btime extract_name(Samples.node_fn1) == :f
+    @info :node_fn2
+    @btime extract_name(Samples.node_fn2) == :f
+    @info :node_chain
+    @btime extract_name(Samples.node_chain) == :subject
+    @info :node_struct
+    @btime extract_name(Samples.node_struct) == :name
+    @info :node_const
+    @btime extract_name(Samples.node_const) == :a
+    @info :node_assign
+    @btime extract_name(Samples.node_assign) == :a
+
+end
