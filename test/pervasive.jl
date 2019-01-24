@@ -166,6 +166,14 @@ end
     end
 end
 
+@testset "null-value dict pattern" begin
+    x = Dict(:a => nothing)
+    @test @match x begin
+        Dict(:a => a) => a === nothing
+        _ => false
+    end
+
+end
 
 struct TestGH end
 

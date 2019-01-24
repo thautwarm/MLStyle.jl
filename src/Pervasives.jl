@@ -287,9 +287,9 @@ defAppPattern(Pervasives,
                     function (body)
                         @format [IDENT, TARGET, get, k, body] quote
                             IDENT = get(TARGET, k) do
-                                nothing
+                                failed
                             end
-                            IDENT === nothing ? failed : body
+                            IDENT === failed ? failed : body
                         end
                     end ∘ match_elt ∘ last
                 end
