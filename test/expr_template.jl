@@ -49,20 +49,41 @@ let_expr = :(let a = 10 + 20, b = 20
              end)
 
 @testset "let binding" begin
-@test @match let_expr begin
-        :(let $bind_name = $fn($left, $right), $(other_bindings...)
-               $(block...)
-          end) => begin
-        bind_name == :a   &&
-        fn        == :(+) &&
-        left      == 10   &&
-        right     == 20   &&
-        block[1]  isa LineNumberNode &&
-        block[2]  == :(20a)
+
+    @test @match let_expr begin
+            :(let $bind_name = $fn($left, $right), $(other_bindings...)
+                $(block...)
+            end) => begin
+            bind_name == :a   &&
+            fn        == :(+) &&
+            left      == 10   &&
+            right     == 20   &&
+            block[1]  isa LineNumberNode &&
+            block[2]  == :(20a)
+        end
+    end
     end
 end
+
+@testset "only head" begin
+    @test @match Expr(:f) begin
+        Expr(a) => a === :f
+        _       => false
+    end
 end
 
+@testset "only pack" begin
+    @test @match Expr(:f) begin
+        Expr(a...) => a == [:f]
+        _          => false
+    end
+end
+
+@testset "pack all" begin
+    @test @match Expr(:f, :a) begin
+        Expr(a...) => a == [:f, :a]
+        _          => false
+    end
 end
 
 

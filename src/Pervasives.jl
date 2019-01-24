@@ -211,7 +211,9 @@ defAppPattern(Pervasives,
         length(args) === 1 ?
         let arg = args[1]
             (arg isa Expr && arg.head === :...) ?
-            let lst        = mangle(mod),
+            let _          = (@assert length(arg.args) === 1),
+                lst        = mangle(mod),
+                arg        = arg.args[1],
                 perf_match = mkPattern(lst, arg, mod)
                 exprargs_to_arr(body) =
                     @format [body, lst, TARGET] quote
