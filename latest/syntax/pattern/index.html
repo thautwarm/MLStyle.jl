@@ -24,7 +24,7 @@ end
     b :: Int =&gt; b
     _        =&gt; nothing
 end
-# =&gt; 1</code></pre><p>There is an advanced version of <code>Type-Pattern</code>s, which you can destruct types with fewer limitations. Check <a href="#advanced-type-pattern">Advanced Type Pattern</a>.</p><p>However, when you use <code>TypeLevel Feature</code>, the behavious could change slightly. See <a href="#type-level-feature">TypeLevel Feature</a>.</p><h2><a class="nav-anchor" id="As-Pattern-1" href="#As-Pattern-1">As-Pattern</a></h2><p><code>As-Pattern</code> can be expressed with <code>And-Pattern</code>. </p><pre><code class="language-julia">@match (1, 2) begin
+# =&gt; 1</code></pre><p>There is an advanced version of <code>Type-Pattern</code>s, which you can destruct types with fewer limitations. Check <a href="#Advanced-Type-Pattern-1">Advanced Type Pattern</a>.</p><h2><a class="nav-anchor" id="As-Pattern-1" href="#As-Pattern-1">As-Pattern</a></h2><p><code>As-Pattern</code> can be expressed with <code>And-Pattern</code>.</p><pre><code class="language-julia">@match (1, 2) begin
     (a, b) &amp;&amp; c =&gt; c[1] == a &amp;&amp; c[2] == b
 end</code></pre><h2><a class="nav-anchor" id="Guard-1" href="#Guard-1">Guard</a></h2><pre><code class="language-julia">
 @match x begin
@@ -52,7 +52,7 @@ end # 2</code></pre><h2><a class="nav-anchor" id="Reference-Pattern-1" href="#Re
     (&amp;c, _)  =&gt; &quot;x equals to c!&quot;
     (_,  &amp;c) =&gt; &quot;y equals to c!&quot;
     _        =&gt; &quot;none of x and y equal to c&quot;
-end</code></pre><h2><a class="nav-anchor" id="Custom-Pattern-1" href="#Custom-Pattern-1">Custom Pattern</a></h2><p>Not recommend to do this for it&#39;s implementation specific. If you want to make your own extensions, check <code>MLStyle/src/Pervasives.jl</code>.</p><p>Defining your own patterns using the low level APIs is quite easy, but exposing the implementations would cause compatibilities in future development.</p><h2><a class="nav-anchor" id="Dict,-Tuple,-Array-1" href="#Dict,-Tuple,-Array-1">Dict, Tuple, Array</a></h2><ul><li>Dict pattern(like <code>Elixir</code>&#39;s dictionary matching or ML record matching)</li></ul><pre><code class="language-julia">dict = Dict(1 =&gt; 2, &quot;3&quot; =&gt; 4, 5 =&gt; Dict(6 =&gt; 7))
+end</code></pre><h2><a class="nav-anchor" id="Custom-Pattern-1" href="#Custom-Pattern-1">Custom Pattern</a></h2><p>Not recommend to do this for it&#39;s implementation specific. If you want to make your own extensions, check <a href="https://github.com/thautwarm/MLStyle.jl/blob/master/src/Pervasives.jl">Pervasives.jl</a>.</p><p>Defining your own patterns using the low level APIs is quite easy, but exposing the implementations would cause compatibilities in future development.</p><h2><a class="nav-anchor" id="Dict,-Tuple,-Array-1" href="#Dict,-Tuple,-Array-1">Dict, Tuple, Array</a></h2><ul><li>Dict pattern(like <code>Elixir</code>&#39;s dictionary matching or ML record matching)</li></ul><pre><code class="language-julia">dict = Dict(1 =&gt; 2, &quot;3&quot; =&gt; 4, 5 =&gt; Dict(6 =&gt; 7))
 @match dict begin
     Dict(&quot;3&quot; =&gt; four::Int,
           5  =&gt; Dict(6 =&gt; sev)) &amp;&amp; if four &lt; sev end =&gt; sev

@@ -109,7 +109,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Pattern",
     "title": "Type Pattern",
     "category": "section",
-    "text": "\n@match 1 begin\n    ::Float  => nothing\n    b :: Int => b\n    _        => nothing\nend\n# => 1There is an advanced version of Type-Patterns, which you can destruct types with fewer limitations. Check Advanced Type Pattern.However, when you use TypeLevel Feature, the behavious could change slightly. See TypeLevel Feature."
+    "text": "\n@match 1 begin\n    ::Float  => nothing\n    b :: Int => b\n    _        => nothing\nend\n# => 1There is an advanced version of Type-Patterns, which you can destruct types with fewer limitations. Check Advanced Type Pattern."
 },
 
 {
@@ -117,7 +117,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Pattern",
     "title": "As-Pattern",
     "category": "section",
-    "text": "As-Pattern can be expressed with And-Pattern. @match (1, 2) begin\n    (a, b) && c => c[1] == a && c[2] == b\nend"
+    "text": "As-Pattern can be expressed with And-Pattern.@match (1, 2) begin\n    (a, b) && c => c[1] == a && c[2] == b\nend"
 },
 
 {
@@ -157,7 +157,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Pattern",
     "title": "Custom Pattern",
     "category": "section",
-    "text": "Not recommend to do this for it\'s implementation specific. If you want to make your own extensions, check MLStyle/src/Pervasives.jl.Defining your own patterns using the low level APIs is quite easy, but exposing the implementations would cause compatibilities in future development."
+    "text": "Not recommend to do this for it\'s implementation specific. If you want to make your own extensions, check Pervasives.jl.Defining your own patterns using the low level APIs is quite easy, but exposing the implementations would cause compatibilities in future development."
 },
 
 {
