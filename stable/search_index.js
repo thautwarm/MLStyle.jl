@@ -85,7 +85,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Pattern",
     "title": "Pattern",
     "category": "section",
-    "text": "Literal Pattern\nCapturing pattern\nType Pattern\nAs-Pattern, And Pattern\nGuard\nRange Pattern\nPredicate\nReference Pattern\nCustom Pattern, Dict, Tuple, Array\nOr Pattern\nADT destructing, GADTs\nAdvanced Type Pattern\nSide Effect\nActive Pattern\nAst PatternPatterns provide convenient ways to manipulate data."
+    "text": "Literal Pattern\nCapturing pattern\nType Pattern\nAs-Pattern, And Pattern\nGuard\nRange Pattern\nPredicate\nReference Pattern\nCustom Pattern, Dict, Tuple, Array\nOr Pattern\nADT destructing, GADTs\nAdvanced Type Pattern\nSide Effect\nActive Pattern\nExpr Pattern\nAst PatternPatterns provide convenient ways to manipulate data."
 },
 
 {
@@ -109,7 +109,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Pattern",
     "title": "Type Pattern",
     "category": "section",
-    "text": "\n@match 1 begin\n    ::Float  => nothing\n    b :: Int => b\n    _        => nothing\nend\n# => 1There is an advanced version of Type-Patterns, which you can destruct types with fewer limitations. Check Advanced Type Pattern.However, when you use TypeLevel Feature, the behavious could change slightly. See TypeLevel Feature."
+    "text": "\n@match 1 begin\n    ::Float  => nothing\n    b :: Int => b\n    _        => nothing\nend\n# => 1There is an advanced version of Type-Patterns, which you can destruct types with fewer limitations. Check Advanced Type Pattern."
 },
 
 {
@@ -117,7 +117,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Pattern",
     "title": "As-Pattern",
     "category": "section",
-    "text": "As-Pattern can be expressed with And-Pattern. @match (1, 2) begin\n    (a, b) && c => c[1] == a && c[2] == b\nend"
+    "text": "As-Pattern can be expressed with And-Pattern.@match (1, 2) begin\n    (a, b) && c => c[1] == a && c[2] == b\nend"
 },
 
 {
@@ -157,7 +157,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Pattern",
     "title": "Custom Pattern",
     "category": "section",
-    "text": "Not recommend to do this for it\'s implementation specific. If you want to make your own extensions, check MLStyle/src/Pervasives.jl.Defining your own patterns using the low level APIs is quite easy, but exposing the implementations would cause compatibilities in future development."
+    "text": "Not recommend to do this for it\'s implementation specific. If you want to make your own extensions, check Pervasives.jl.Defining your own patterns using the low level APIs is quite easy, but exposing the implementations would cause compatibilities in future development."
 },
 
 {
@@ -214,6 +214,14 @@ var documenterSearchIndex = {"docs": [
     "title": "Active Pattern",
     "category": "section",
     "text": "This implementation is a subset of F# Active Patterns.There\'re 2 distinct active patterns, first of which is the normal form:@active LessThan0(x) begin\n    if x > 0\n        nothing\n    else\n        x\n    end\nend\n\n@match 15 begin\n    LessThan0(_) => :a\n    _ => :b\nend # :b\n\n@match -15 begin\n    LessThan0(a) => a\n    _ => 0\nend # -15\nThe second is the parametric version.@active Re{r :: Regex}(x) begin\n    match(r, x)\nend\n\n@match \"123\" begin\n    Re{r\"\\d+\"}(x) => x\n    _ => @error \"\"\nend # RegexMatch(\"123\")"
+},
+
+{
+    "location": "syntax/pattern/#Expr-Pattern-1",
+    "page": "Pattern",
+    "title": "Expr Pattern",
+    "category": "section",
+    "text": "This is mainly for AST manipulations. In fact, another pattern called Ast Pattern, would be translated into Expr Pattern.function extract_name(e)\n        @match e begin\n            ::Symbol                           => e\n            Expr(:<:, a, _)                    => extract_name(a)\n            Expr(:struct, _, name, _)          => extract_name(name)\n            Expr(:call, f, _...)               => extract_name(f)\n            Expr(:., subject, attr, _...)      => extract_name(subject)\n            Expr(:function, sig, _...)         => extract_name(sig)\n            Expr(:const, assn, _...)           => extract_name(assn)\n            Expr(:(=), fn, body, _...)         => extract_name(fn)\n            Expr(expr_type,  _...)             => error(\"Can\'t extract name from \",\n                                                        expr_type, \" expression:\\n\",\n                                                        \"    $e\\n\")\n        end\nend\n@assert extract_name(:(quote\n    function f()\n        1 + 1\n    end\nend)) == :f"
 },
 
 {
