@@ -12,10 +12,8 @@ Rich features are provided by MLStyle.jl and you can check [documents](https://t
 
 For installation, open package manager mode in Julia shell and `add MLStyle`.
 
-P.S: The Julia Registries hasn't synchronized with the lastest version currently, so you
-might have to clone this repo manually now.
 ```
-pkg> add MLStyle
+pkg> add MLStyle#master
 ```
 
 ## Benchmark
@@ -24,6 +22,7 @@ Many comparsions among distinct related Julia productions have been made.
 
 Check source codes at [Matrix Benchmark](https://github.com/thautwarm/MLStyle.jl/blob/master/matrix_benchmark.jl).
 
+P.S: The dependency to make this cross-implementation benchmarks has been removed from this repo, clone [Benchmarkplotting](https://github.com/thautwarm/Benchmarkplotting.jl) to run `maxtrix-benchmark.jl`.
 
 ### Time Overhead
 
