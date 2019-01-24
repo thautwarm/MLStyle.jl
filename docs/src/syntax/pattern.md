@@ -64,14 +64,12 @@ end
 # => 1
 ```
 
-There is an advanced version of `Type-Pattern`s, which you can destruct types with fewer limitations. Check [Advanced Type Pattern](#advanced-type-pattern).
-
-However, when you use `TypeLevel Feature`, the behavious could change slightly. See [TypeLevel Feature](#type-level-feature).
+There is an advanced version of `Type-Pattern`s, which you can destruct types with fewer limitations. Check [Advanced Type Pattern](#Advanced-Type-Pattern-1).
 
 As-Pattern
 ----------
 
-`As-Pattern` can be expressed with `And-Pattern`. 
+`As-Pattern` can be expressed with `And-Pattern`.
 
 ```julia
 @match (1, 2) begin
@@ -143,7 +141,7 @@ Custom Pattern
 --------------
 
 Not recommend to do this for it's implementation specific.
-If you want to make your own extensions, check `MLStyle/src/Pervasives.jl`.
+If you want to make your own extensions, check [Pervasives.jl](https://github.com/thautwarm/MLStyle.jl/blob/master/src/Pervasives.jl).
 
 Defining your own patterns using the low level APIs is quite easy,
 but exposing the implementations would cause compatibilities in future development.
