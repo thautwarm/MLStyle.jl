@@ -1,4 +1,0 @@
-[submodule "Benchmarkplotting.jl"]
-	path = Benchmarkplotting.jl
-	url = https://github.com/thautwarm/Benchmarkplotting.jl
-	branch = master
