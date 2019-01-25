@@ -23,11 +23,13 @@ Also, sometimes you might want to pass a single lambda which just matches the
 argument in one means:
 
 ```julia
-map((@λ [a, b, c...] -> c))
-
+map((@λ [a, b, c...] -> c), [[1, 2, 3, 4], [1, 2]])
+# => 2-element Array{SubArray{Int64,1,Array{Int64,1},Tuple{UnitRange{Int64}},true},1}:
+#    [3, 4]
+#    []
 ```
 
-A `pattern function` is no more than using a `@match` inside some anonymous function.
+Functionally, A `pattern function` is no more than using a `@match` inside some anonymous function.
 
 ```julia
 
