@@ -38,7 +38,9 @@ The y-label is the ratio of the implementation's time cost to that of the least 
 
 [![vs Match.jl on time](./vs-match-on-time.svg)](./vs-match-on-time.svg)
 
-- vs hand-written
+- vs hand-written(tuple pattern)
+
+Working on this...
 
 ### Allocation
 
