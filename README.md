@@ -26,7 +26,6 @@ P.S: The dependency to make this cross-implementation benchmarks has been remove
 
 ### Time Overhead
 
-
 In x-axis, after the name of test-case is the least time-consuming one's index, the unit is `ns`).
 
 The y-label is the ratio of the implementation's time cost to that of the least time-consuming.
@@ -39,6 +38,7 @@ The y-label is the ratio of the implementation's time cost to that of the least 
 
 [![vs Match.jl on time](./vs-match-on-time.svg)](./vs-match-on-time.svg)
 
+- vs hand-written
 
 ### Allocation
 

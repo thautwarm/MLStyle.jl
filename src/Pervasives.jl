@@ -112,19 +112,16 @@ defPattern(Pervasives,
             n = length(pat_elts),
             TARGET = mangle(mod),
             IDENTS = [mangle(mod) for _ in 1:n]
-
-            assign_elts = body ->
-                let arr = [:($IDENT = $TARGET[$i])
-                            for (i, IDENT)
-                            in enumerate(IDENTS)]
-                    Expr(:block, arr..., body)
-                end
-
-            match_elts = foldr(collect(enumerate(pat_elts)), init = identity) do (i, elt), last
+            map(1:n) do i
                 IDENT = IDENTS[i]
-                mkPattern(IDENT, elt, mod) ∘ last
+                elt = pat_elts[i]
+                function (body)
+                    Expr(:block, Expr(:(=), IDENT, :($TARGET[$i])), body)
+                end ∘ mkPattern(IDENT, elt, mod)
+            end |> match_elts ->
+            let match_elts =  reduce(∘, match_elts, init=identity)
+                (@typed_as NTuple{n, Any}) ∘ match_elts
             end
-            (@typed_as NTuple{n, Any}) ∘ assign_elts ∘ match_elts
         end
 )
 

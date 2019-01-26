@@ -85,6 +85,6 @@ theme = Theme(
 report_meantime = report(:meantime, df, Scale.y_log10, theme)[1]
 report_allocs = report(:allocs, df, theme)[1]
 
-draw(SVG("vs-macrotools-on-time.svg", 8inch, 3inch), report_meantime)
-draw(SVG("vs-macrotools-on-allocs.svg", 8inch, 3inch), report_allocs)
+draw(SVG("vs-macrotools-on-time.svg", 10inch, 4inch), report_meantime)
+draw(SVG("vs-macrotools-on-allocs.svg", 10inch, 4inch), report_allocs)
 end

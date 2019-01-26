@@ -1,6 +1,7 @@
 # If you want to run this matrix-benchmarks, you should install
 # a dependency `Benchmarkplotting` which is not registered on JuliaRegistries.
 #    pkg> add https://github.com/thautwarm/Benchmarkplotting.jl
+include("src/MLStyle.jl")
 using MLStyle
 using ArgParse
 
@@ -23,7 +24,7 @@ check_versus(x) = x in ("hw-tuple", "macrotools", "match")
 function benchmark(x)
     filename = "matrix-benchmark/versus-$x.jl"
     open(filename) do f
-        include_string(Main, read(f), filename);
+        include_string(Main, read(f, String), filename);
     end
 end
 
