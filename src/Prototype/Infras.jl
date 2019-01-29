@@ -12,6 +12,10 @@ macro format(args, template)
     esc(format(args, template))
 end
 
+export @format
+macro format(template)
+    esc(format(template))
+end
 
 export @typed_as
 """

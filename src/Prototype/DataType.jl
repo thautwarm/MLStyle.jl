@@ -210,17 +210,20 @@ function impl(t, variants :: Expr, mod :: Module)
 
 
               definition_head = :($case{$(tvars...), $(gtvars...)})
-              def_cons = isempty(spec_tvars) ?
-                quote
-                    function $case(;$(constructor_args...))
-                        $case($(arg_names...))
+              def_cons =
+                isempty(spec_tvars) ?
+                    !isempty(constructor_args) ?
+                    quote
+                        function $case(;$(constructor_args...))
+                            $case($(arg_names...))
+                        end
+                    end                       :
+                    nothing        :
+                    quote
+                        function $case($(constructor_args...), ) where {$(tvars...)}
+                            $case{$(spec_tvars...)}($(arg_names...))
+                        end
                     end
-                end :
-                quote
-                    function $case($(constructor_args...), ) where {$(tvars...)}
-                        $case{$(spec_tvars...)}($(arg_names...))
-                    end
-                end
 
               definition = @format [case, l, ret_ty, definition_head] quote
                  struct definition_head <: ret_ty

@@ -60,11 +60,11 @@ end
 
 
 module ADummy
-    using MLStyle
+    using MLStyle.Prototype
 end
 
 module BDummy
-    using MLStyle
+    using MLStyle.Prototype
 end
 
 @testset "share data with several modules" begin
