@@ -56,7 +56,7 @@ function fmt(args, template)
     constlist = map(dispatch, args.args)
     constlist = Expr(:vect, constlist...)
     config = Expr(:call, Dict{Symbol, Any}, constlist)
-    Expr(:call, render, template, config)
+    Expr(:call, render, template, Expr(:call, merge, :(Base.@locals), config))
 end
 
 function fmt(template)

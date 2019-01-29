@@ -129,7 +129,7 @@ defPattern(Pervasives,
                     mkPattern(IDENT, elt, mod)
                 end
 
-            function tuple_check(body)
+            tuple_check(body) =
                 if n === 0
                     let TARGET = mangle(mod)
                         (@typed_as Tuple{})
@@ -140,7 +140,7 @@ defPattern(Pervasives,
                     TYP1 = Expr(:curly, Tuple, fill(T, n)...)
                     TYP2 = Expr(:curly, Tuple, fill(Any, n)...)
                     TARGET = Expr(:tuple, IDENTS...)
-                    @format quote
+                    @format [] quote
                         @inline __L__ function NAME(TARGET :: TYP1) where T
                             body
                         end
@@ -153,7 +153,6 @@ defPattern(Pervasives,
                         NAME(tag)
                     end
                 end
-            end
 
             reduce(1:n, init=tuple_check) do last, i
                 last ∘ match_elt(i)
