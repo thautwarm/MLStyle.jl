@@ -138,13 +138,14 @@ defPattern(Pervasives,
                     NAME = mangle(mod)
                     T = mangle(mod)
                     TYP1 = Expr(:curly, Tuple, fill(T, n)...)
-                    TYP2 = Expr(:curly, Tuple, fill(Any, n)...)
+                    TVARS = [mangle(mod) for _ in 1:n]
+                    TYP2 = Expr(:curly, Tuple, TVARS...)
                     TARGET = Expr(:tuple, IDENTS...)
                     @format [] quote
                         @inline __L__ function NAME(TARGET :: TYP1) where T
                             body
                         end
-                        @inline __L__ function NAME(TARGET :: TYP2)
+                        @inline __L__ function NAME(TARGET :: TYP2) where {$(TVARS...)}
                             body
                         end
                         @inline __L__ function NAME(_)
@@ -217,9 +218,9 @@ defPattern(Pervasives,
         VALUE = mangle(mod)
         access_value(body) =
                 @format [body, TARGET, VALUE] quote
-                        (@inline __L__ function (VALUE)
-                                body
-                        end)(TARGET.value)
+                    let VALUE = TARGET.value
+                        body
+                    end
                 end
         (@typed_as QuoteNode) ∘  access_value ∘ mkPattern(VALUE ,expr, mod)
        end
@@ -332,13 +333,33 @@ defAppPattern(Pervasives,
 
 # arbitray ordered sequential patterns match
 function orderedSeqMatch(tag, elts, mod)
+
         TARGET = mangle(mod)
+        NAME = mangle(mod)
+        T = mangle(mod)
+        A = mangle(mod)
+        function check_generic_array(body)
+            @format [AbstractArray] quote
+
+                @inline __L__ function NAME(TARGET :: A) where {T, A <: AbstractArray{T}}
+                    body
+                end
+
+
+                @inline __L__ function NAME(_)
+                    failed
+                end
+
+                NAME(tag)
+            end
+        end
+
         length(elts) == 0 ?
         (
-            (@typed_as AbstractArray) ∘
+            check_generic_array ∘
             function (body)
-                @format [isempty, body, tag] quote
-                    isempty(tag) ? body : failed
+                @format [isempty] quote
+                    isempty(TARGET) ? body : failed
                 end
             end
         )              :
@@ -359,7 +380,6 @@ function orderedSeqMatch(tag, elts, mod)
                 else
                     atleast_element_count = atleast_element_count + 1
                     IDENT = mangle(mod)
-                    perf_match = mkPattern(IDENT, elt, mod)
                     index = unpack_begin === nothing ?
                         begin
                             :($TARGET[$atleast_element_count])
@@ -370,17 +390,22 @@ function orderedSeqMatch(tag, elts, mod)
                                 exp
                             end
                         end
-                    push!(
-                        unpack,
-                        let IDENT = IDENT, index = index
-                            function (body)
-                                @format [IDENT, body, index] quote
-                                    IDENT = index
-                                    body
-                                end
-                            end ∘ perf_match
-                        end
-                    )
+                    if elt === :_
+                        push!(unpack, identity)
+                    else
+                        perf_match = mkPattern(IDENT, elt, mod)
+                        push!(
+                            unpack,
+                            let IDENT = IDENT, index = index
+                                function (body)
+                                    @format [IDENT, body, index] quote
+                                        IDENT = index
+                                        body
+                                    end
+                                end ∘ perf_match
+                            end
+                        )
+                    end
                 end
             end
             if unpack_begin !== nothing
@@ -404,7 +429,7 @@ function orderedSeqMatch(tag, elts, mod)
                     length(TARGET) == atleast_element_count ? body : failed
                 end
             end
-            (@typed_as AbstractArray) ∘ check_len ∘ foldr(patternAnd, unpack)
+            check_generic_array ∘ check_len ∘ foldr(patternAnd, unpack)
 
         end
 end

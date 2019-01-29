@@ -210,7 +210,33 @@ macro match(target, cbl)
    end
 end
 
+function simplify(expr :: Expr)
+    head = expr.head
+    args = expr.args
 
+    if head === :block
+        map(args)do arg
+            Meta.isexpr(arg, :block) ? arg.args : [arg]
+        end |>
+        function (nested)
+            res = []
+            for seq in nested
+                for e in seq
+                    push!(res, e)
+                end
+            end
+            args = res
+        end
+    end
+    rec = simplify
+    Expr(head, map(rec, args)...)
+
+
+end
+
+function simplify(expr)
+    expr
+end
 
 function mkMatchBody(target, tag_sym, cbl, mod)
     bind(getBy $ loc) do loc # start 1
@@ -223,7 +249,7 @@ function mkMatchBody(target, tag_sym, cbl, mod)
     cbl = collect(cbl)
     main_logic =
        foldr(cbl, init=final) do (loc, case, body), last # start 2
-           expr = mkPattern(tag_sym, case, mod)(body)
+           expr = mkPattern(tag_sym, case, mod)(body) |> simplify
            @format [
                result,
                expr,
