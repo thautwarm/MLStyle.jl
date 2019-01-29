@@ -1,5 +1,8 @@
+module Prototype
 using Test
-using MLStyle
+using MLStyle.Prototype
+
+MODULE = Prototype
 
 @use GADT
 
@@ -16,3 +19,4 @@ include("adt.jl")
 include("typelevel.jl")
 include("untyped_lam.jl")
 
+end

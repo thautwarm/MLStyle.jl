@@ -1,5 +1,3 @@
-using MLStyle
-
 @testset "Int" begin
     @testset "affirm: 1-10" begin
     @test all(1:10) do a
@@ -37,7 +35,7 @@ using MLStyle
 end
 
 @testset "Generic Number" begin
-    _1_10 = map(Float32, 1:10)
+    _1_10 = map(Float64, 1:10)
     @testset "affirm float32: 1-10" begin
     @test all(_1_10) do a
         @match a begin
@@ -129,7 +127,7 @@ end
 @testset "Recognizer(AppPattern)" begin
     @data internal TestRecog begin
         TestRecog_A(Int, Int)
-        TestRecog_B(a :: Float32, b :: String)
+        TestRecog_B(a :: Float64, b :: String)
     end
 
     a = TestRecog_A(1, 2)

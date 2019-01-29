@@ -1,10 +1,10 @@
 module Pervasives
-using MLStyle.MatchCore
-using MLStyle.Infras
-using MLStyle.Extension
-using MLStyle.Err
-using MLStyle.toolz: ($), isCase
-import MLStyle.Infras: mkGAppPattern
+using MLStyle.Prototype.MatchCore
+using MLStyle.Prototype.Infras
+using MLStyle.Prototype.Extension
+using MLStyle.Prototype.Err
+using MLStyle.Prototype.toolz: ($), isCase
+import MLStyle.Prototype.Infras: mkGAppPattern
 
 @use GADT
 
@@ -15,14 +15,26 @@ function mk_pat_by(f)
      end
 end
 
+@inline function _equiv(a :: T, b :: T) where T
+    a == b
+end
+
+@inline function _equiv(_, _)
+    false
+end
+
+# https://github.com/JuliaLang/julia/issues/22193
 defPattern(Pervasives,
-        predicate = x -> x isa Int,
-        rewrite = mk_pat_by(===)
+        predicate = x -> typeof(x) in (Int, Char, String, Float64, Float32, Nothing),
+        rewrite = (tag, case, mod) -> body ->
+        @format [tag, case, body] quote
+           tag === case ? body : failed
+        end
 )
 
 defPattern(Pervasives,
-        predicate = x -> x isa Union{Number, AbstractString, QuoteNode},
-        rewrite   = mk_pat_by(==)
+        predicate = x -> x isa Union{Number, AbstractString, AbstractChar, AbstractFloat, QuoteNode},
+        rewrite   = mk_pat_by(_equiv)
 )
 
 defPattern(Pervasives,
@@ -65,9 +77,9 @@ defPattern(Pervasives,
         predicate = x -> x isa Symbol && to_capture ∘ string $ x,
         rewrite = (tag, case, mod) -> body ->
         @format [case, tag, body] quote
-            (@inline __L__ function (case)
+            let case = tag
                 body
-            end)(tag)
+            end
         end
 )
 
@@ -75,7 +87,7 @@ defPattern(Pervasives,
 defPattern(Pervasives,
         predicate = isCase,
         rewrite = (tag, case, mod) -> begin
-            @error "Uppercase symbol is reserved for further usage(mainly for generic enum types)."
+            @syntax_err "Uppercase symbol is reserved for further usage(mainly for generic enum types)."
         end
 )
 
@@ -110,17 +122,38 @@ defPattern(Pervasives,
         rewrite  = (tag, case, mod) ->
         let pat_elts = case.args,
             n = length(pat_elts),
-            TARGET = mangle(mod),
-            IDENTS = [mangle(mod) for _ in 1:n]
-            map(1:n) do i
-                IDENT = IDENTS[i]
-                elt = pat_elts[i]
-                function (body)
-                    Expr(:block, Expr(:(=), IDENT, :($TARGET[$i])), body)
-                end ∘ mkPattern(IDENT, elt, mod)
-            end |> match_elts ->
-            let match_elts =  reduce(∘, match_elts, init=identity)
-                (@typed_as NTuple{n, Any}) ∘ match_elts
+            IDENTS = [mangle(mod) for _ in 1:n],
+            match_elt(i) =
+                let IDENT = IDENTS[i],
+                    elt = pat_elts[i]
+                    mkPattern(IDENT, elt, mod)
+                end,
+            tuple_check(body) =
+                if n === 0
+                    let TARGET = mangle(mod)
+                        (@typed_as Tuple{})
+                    end
+                else
+                    NAME = mangle(mod)
+                    T = mangle(mod)
+                    TYP1 = Expr(:curly, Tuple, fill(T, n)...)
+                    TYP2 = Expr(:curly, Tuple, fill(Any, n)...)
+                    TARGET = Expr(:tuple, IDENTS...)
+                    @format [tag, n, body, TYP1, TYP2, T,  NAME, TARGET] quote
+                        @inline __L__ function NAME(TARGET :: TYP1) where T
+                            body
+                        end
+                        @inline __L__ function NAME(TARGET :: TYP2)
+                            body
+                        end
+                        @inline __L__ function NAME(_)
+                            failed
+                        end
+                        NAME(tag)
+                    end
+                end
+            reduce(1:n, init=tuple_check) do last, i
+                last ∘ match_elt(i)
             end
         end
 )
@@ -354,12 +387,16 @@ function orderedSeqMatch(tag, elts, mod)
                     length(TARGET) >= atleast_element_count ? body : failed
                 end
                 elt = unpack[unpack_begin]
-                unpack[unpack_begin] = function (body)
-                    @format [body, IDENT, TARGET, unpack_begin, unpack_end, length] quote
-                        IDENT = view(TARGET, unpack_begin: (length(TARGET) - unpack_end))
-                        body
-                    end
-                end ∘ mkPattern(IDENT, elt, mod)
+                if elt === :_
+                    unpack[unpack_begin] = identity
+                else
+                    unpack[unpack_begin] = function (body)
+                        @format [body, IDENT, TARGET, unpack_begin, unpack_end, length] quote
+                            IDENT = view(TARGET, unpack_begin: (length(TARGET) - unpack_end))
+                            body
+                        end
+                    end ∘ mkPattern(IDENT, elt, mod)
+                end
             else
                 check_len = body -> @format [body, TARGET, length, atleast_element_count] quote
                     length(TARGET) == atleast_element_count ? body : failed
@@ -437,7 +474,7 @@ defPattern(Pervasives,
             @match case begin
                 :($hd($(tl...)) where {$(forall...)}) => mkGAppPattern(tag, forall, hd, tl, mod)
                 _ =>
-                    @error "Unknown usage of `where` in pattern region. Current `where` is used for only GADT syntax."
+                    @syntax_err "Unknown usage of `where` in pattern region. Current `where` is used for only GADT syntax."
             end
         end
 )

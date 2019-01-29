@@ -1,4 +1,4 @@
-using MLStyle.Render
+using MLStyle.Prototype.Render
 module S_test_render
         b = 5
         node = :(function func_name(a)

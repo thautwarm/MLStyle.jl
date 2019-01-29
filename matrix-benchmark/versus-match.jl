@@ -1,4 +1,5 @@
 module VersusMatch
+
 using Benchmarkplotting
 using Statistics
 using Gadfly
@@ -120,4 +121,5 @@ report_allocs = report(:allocs, df, theme)[1]
 
 draw(SVG("vs-match-on-time.svg", 10inch, 4inch), report_meantime);
 draw(SVG("vs-match-on-allocs.svg", 10inch, 4inch), report_allocs);
+
 end

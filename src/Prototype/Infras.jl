@@ -1,9 +1,9 @@
 module Infras
-using MLStyle.MatchCore
-using MLStyle.Extension
-using MLStyle.Err
-using MLStyle.toolz: ($)
-using MLStyle.Render: render, format
+using MLStyle.Prototype.MatchCore
+using MLStyle.Prototype.Extension
+using MLStyle.Prototype.Err
+using MLStyle.Prototype.toolz: ($)
+using MLStyle.Prototype.Render: render, format
 
 export @format
 macro format(args, template)

@@ -1,5 +1,5 @@
 module Render
-using MLStyle.toolz
+using MLStyle.Prototype.toolz
 using Base: get
 export render, @format, format
 

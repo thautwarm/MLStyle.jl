@@ -1,10 +1,10 @@
 module StandardPatterns
 # This module is designed for creating complex patterns from the primtive ones.
 
-using MLStyle
-using MLStyle.toolz.List: cons, nil
-using MLStyle.Infras
-using MLStyle.MatchCore
+using MLStyle.Prototype
+using MLStyle.Prototype.toolz.List: cons, nil
+using MLStyle.Prototype.Infras
+using MLStyle.Prototype.MatchCore
 
 struct TypeVar
     t :: Symbol
@@ -68,7 +68,7 @@ function extract_tvars(t :: AbstractArray)
         [hd && if hd isa Symbol end, tl...] => cons(TypeVar(hd), extract_tvars(tl))
         [:($hd <: $r), tl...] =>  cons(Relation(hd, :<:, r), extract_tvars(tl))
         [:($hd >: $(r)), tl...] =>  cons(Relation(hd, Symbol(">:"), r), extract_tvars(tl))
-        _ => @error "invalid tvars"
+        _ => @syntax_err "invalid tvars at `$(string(t))`"
     end
 end
 

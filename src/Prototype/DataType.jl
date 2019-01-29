@@ -1,10 +1,10 @@
 module DataType
-using MLStyle
-using MLStyle.toolz: isCapitalized, ($), cons, nil, ast_and
-using MLStyle.MatchCore
-using MLStyle.Infras
-using MLStyle.Pervasives
-using MLStyle.Render: render
+using MLStyle.Prototype
+using MLStyle.Prototype.toolz: isCapitalized, ($), cons, nil, ast_and
+using MLStyle.Prototype.MatchCore
+using MLStyle.Prototype.Infras
+using MLStyle.Prototype.Pervasives
+using MLStyle.Prototype.Render: render
 
 export @data
 isSymCap = isCapitalized ∘ string
@@ -48,7 +48,7 @@ function data(typ, def_variants, qualifier, mod)
     for (ctor_name, pairs, each) in impl(original_ty, def_variants, mod)
         mod.eval(each)
         ctor = getfield(mod, ctor_name)
-        export_anchor_var = Symbol("MLStyle.ADTConstructor.", ctor_name)
+        export_anchor_var = Symbol("MLStyle.Prototype.ADTConstructor.", ctor_name)
         mod.eval(@format [export_anchor_var] quote
                      export export_anchor_var
                      export_anchor_var = true
@@ -83,7 +83,7 @@ function data(typ, def_variants, qualifier, mod)
                             end ∘ mkPattern(ident, pat, mod)
                         end
                     end
-                    _ => @error "The field name of destructor must be a Symbol!"
+                    _ => @syntax_err "The field name of destructor must be a Symbol!"
                   end
                 end
               elseif all(map(!, check_if_given_field_names))
@@ -105,8 +105,8 @@ function data(typ, def_variants, qualifier, mod)
                      end
                  end
               else
-                 @error "Destructor should be used in the form of `C(a, b, c)` or `C(a=a, b=b, c=c)` or `C(_)`"
-              end |> x -> (TARGET, reduce(∘, x, init=identity))
+                 @syntax_err "Destructor should be used in the form of `C(a, b, c)` or `C(a=a, b=b, c=c)` or `C(_)`"
+            end |> x -> (TARGET, reduce(∘, x, init=identity))
 
         end
 

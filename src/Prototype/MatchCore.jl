@@ -1,9 +1,9 @@
 module MatchCore
-import MLStyle.toolz: bind
-using MLStyle.toolz.List
-using MLStyle.toolz
-using MLStyle.Err
-using MLStyle.Render
+import MLStyle.Prototype.toolz: bind
+using MLStyle.Prototype.toolz.List
+using MLStyle.Prototype.toolz
+using MLStyle.Prototype.Err
+using MLStyle.Prototype.Render
 
 # a token to denote matching failure
 export Failed, failed
@@ -247,7 +247,7 @@ end
 
 
 export mkPattern
-function mkPattern(tag_sym :: Symbol, case :: Any, mod :: Module)
+function mkPattern(tag_sym, case :: Any, mod :: Module)
     rewrite = getPattern(case, mod)
     if rewrite !== nothing
         return rewrite(tag_sym, case, mod)
