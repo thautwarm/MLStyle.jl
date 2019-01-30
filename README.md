@@ -18,48 +18,45 @@ pkg> add MLStyle#master
 
 ## Benchmark
 
-Many comparsions among distinct related Julia productions have been made.
+Recently the rudimentary benchmarks have been finished, which turns out that MLStyle.jl could be extremely fast
+when matching cases are complicated, while in terms of some very simple cases(straightforward destruct shallow tuples, arrays and datatypes without recursive invocations), Match.jl could be faster.
 
-Check source codes at [Matrix Benchmark](https://github.com/thautwarm/MLStyle.jl/blob/master/matrix_benchmark.jl).
+All benchmark scripts are provided at directory [Matrix-Benchmark](https://github.com/thautwarm/MLStyle.jl/blob/master/matrix-benchmark).
 
-P.S: The dependency to make this cross-implementation benchmarks has been removed from this repo, clone [Benchmarkplotting](https://github.com/thautwarm/Benchmarkplotting.jl) to run `maxtrix-benchmark.jl`.
 
-### Time Overhead
+To run these cross-implementation benchmarks, some extra dependencies should be installed:
+
+- `(v1.1) pkg> add https://github.com/thautwarm/Benchmarkplotting.jl#master` for making cross-implementation benchmark methods and plotting.
+
+- `(v1.1) pkg> add Gadfly MacroTools Match BenchmarkTools StatsBase Statistics ArgParse DataFrames`.
+
+- `(v1.1) pkg> add MLStyle#base` for a specific version of MLStyle.jl is required.
+
+After installing dependencies, you can directly benchmark them with `julia matrix_benchmark.jl hw-tuple hw-array match macrotools match-datatype` at the root directory. 
+
+
+### Visualization
+
+- Time Overhead
 
 In x-axis, after the name of test-case is the least time-consuming one's index, the unit is `ns`).
 
 The y-label is the ratio of the implementation's time cost to that of the least time-consuming.
 
-- vs MacroTools
 
-[![vs MacroTools.jl on time](./vs-macrotools-on-time.svg)](./vs-macrotools-on-time.svg)
+- Allocation
 
-- vs Match.jl
-
-[![vs Match.jl on time](./vs-match-on-time.svg)](./vs-match-on-time.svg)
-
-- vs hand-written(tuple pattern)
-
-Working on this...
-
-### Allocation
-
-
-In x-axis, after the name of test-case is the least allocted one's index, the unit is `bytes`).
+In x-axis, after the name of test-case is the least allocted one's index, the unit is `_ -> (_ + 1) bytes`).
 
 The y-label is the ratio of  the implementation's allocation cost to that of the least allocted.
 
-- vs MacroTools
+- Gallery
 
-[![vs MacroTools.jl on time](./vs-macrotools-on-allocs.svg)](./vs-macrotools-on-allocs.svg)
+Check directory [stats](https://github.com/thautwarm/MLStyle.jl/tree/master/stats).
 
-- vs Match.jl
-
-[![vs Match.jl on time](./vs-match-on-allocs.svg)](./vs-match-on-allocs.svg)
 
 
 ### Compare With Other Languages
-
 
 Benchmark scripts for any other language are welcome. We're curious about the actual performance ranking of MLStyle.jl.
 

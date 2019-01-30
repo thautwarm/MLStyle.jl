@@ -27,13 +27,12 @@ end
 defPattern(Pervasives,
         predicate = x -> typeof(x) in (Int, Char, String, Float64, Float32, Nothing),
         rewrite = (tag, case, mod) ->
-        let t = typeof(case),
-            TARGET = mangle(mod)
-
-            (@typed_as t) ∘ function(body)
-            @format quote
-                case === TARGET ? body : nothing
-            end
+        let t = typeof(case)
+        
+            function(body)
+                @format quote
+                    case === tag ? body : nothing
+                end
             end
         end
 )
@@ -380,7 +379,7 @@ function orderedSeqMatch(tag, elts, mod)
         function check_generic_array(body)
             @format [AbstractArray] quote
 
-                @inline __L__ function NAME(TARGET :: A) where {T, A <: AbstractArray{T}}
+                @inline __L__ function NAME(TARGET :: A) where {N, T, A <: AbstractArray{T, N}}
                     body
                 end
 
@@ -437,8 +436,8 @@ function orderedSeqMatch(tag, elts, mod)
                             unpack,
                             let IDENT = IDENT, index = index
                                 function (body)
-                                    @format [IDENT, body, index] quote
-                                        IDENT = index
+                                    @format [T, IDENT, body, index] quote
+                                        IDENT :: T = index
                                         body
                                     end
                                 end ∘ perf_match
@@ -449,8 +448,8 @@ function orderedSeqMatch(tag, elts, mod)
             end
             if unpack_begin !== nothing
                 IDENT = mangle(mod)
-                check_len = body -> @format [body, TARGET, atleast_element_count, length] quote
-                    LEN = length(TARGET)
+                check_len = body -> @format [Int, body, TARGET, atleast_element_count, length] quote
+                    LEN :: Int = length(TARGET)
                     LEN >= atleast_element_count ? body : nothing
                 end
                 elt = unpack[unpack_begin]
@@ -458,15 +457,19 @@ function orderedSeqMatch(tag, elts, mod)
                     unpack[unpack_begin] = identity
                 else
                     unpack[unpack_begin] = function (body)
-                        @format [body, IDENT, TARGET, unpack_begin, unpack_end] quote
-                            IDENT = view(TARGET, unpack_begin: (LEN - unpack_end))
+                        @format [
+                            T, A, Tuple, SubArray, UnitRange, Int,
+                            body, IDENT, TARGET,
+                            unpack_begin, unpack_end
+                        ] quote
+                            IDENT :: SubArray{T, 1, Vector{T}, Tuple{UnitRange{Int}}, true} = view(TARGET, unpack_begin: (LEN - unpack_end))
                             body
                         end
                     end ∘ mkPattern(IDENT, elt, mod)
                 end
             else
-                check_len = body -> @format [body, TARGET, length, atleast_element_count] quote
-                    LEN = length(TARGET)
+                check_len = body -> @format [Int, body, TARGET, length, atleast_element_count] quote
+                    LEN :: Int = length(TARGET)
                     LEN == atleast_element_count ? body : nothing
                 end
             end

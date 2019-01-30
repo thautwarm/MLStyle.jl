@@ -59,7 +59,7 @@ data = [
 implementations = [
     :MLStyle => (@λ begin
         Normal1(c = ::T where T <: Number) -> 1
-        Normal1(c = Normal1(1)) -> 2
+        Normal1(c = Normal2(1)) -> 2
         Generic1(a = 3, b = 3) -> 3
         Generic2((1, 2)) -> 4
         ::GenericData{String} -> 5
@@ -67,11 +67,11 @@ implementations = [
     end),
     Symbol("Match.jl") => function (x)
         Match.@match x begin
-            Normal1(_, _, ::Number) => 1
-            Normal1(_, _, Normal1(1)) => 2
+            Normal1(_, _, _ :: Number) => 1
+            Normal1(_, _, Normal2(1)) => 2
             Generic1(3, 3) => 3
             Generic2((1, 2)) => 4
-            ::GenericData{String} => 5
+            _ :: GenericData{String} => 5
             _ => 0 
         end
     end
