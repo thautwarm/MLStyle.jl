@@ -1,0 +1,26 @@
+
+f is 30% slower than g:
+
+function f(x::Tuple)
+    
+    v = begin
+        a = x[1]
+        if a === 1
+            b = x[2]
+            if b === 2
+                true
+            else
+                nothing
+            end
+        else
+            nothing
+        end
+    end    
+    v
+end
+
+function g(x::Tuple)
+    if x[1] === 1 && x[2] === 3
+            1
+    end
+end

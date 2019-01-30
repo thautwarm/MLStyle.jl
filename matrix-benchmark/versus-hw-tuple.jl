@@ -73,7 +73,7 @@ implementations = [
                    tp[10] === 5
                 3
             elseif n === 2 && tp[1] isa Tuple && tp[2] isa Tuple
-                eqtp(a, slice, v) =
+                @inline eqtp(a, slice, v) =
                     all(slice) do i
                         a[i] === v[i]
                     end

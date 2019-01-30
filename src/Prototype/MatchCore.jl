@@ -241,13 +241,13 @@ _nothing = _Nothing()
 export failed
 failed = _nothing
 
-distinguish_wrap(e :: Nothing) = _nothing
+@inline distinguish_wrap(e :: Nothing) = _nothing
 
-distinguish_wrap(e :: T) where T = e
+@inline distinguish_wrap(e :: T) where T = e
 
-distinguish_unwrap(e :: _Nothing) = nothing
+@inline distinguish_unwrap(e :: _Nothing) = nothing
 
-distinguish_unwrap(e :: T) where T = e
+@inline distinguish_unwrap(e :: T) where T = e
 
 function mkMatchBody(target, tag_sym, cbl, mod)
     bind(getBy $ loc) do loc # start 1
@@ -261,7 +261,11 @@ function mkMatchBody(target, tag_sym, cbl, mod)
     main_logic =
        foldr(cbl, init=final) do (loc, case, body), last # start 2
            body = @format [distinguish_wrap] quote
-                distinguish_wrap(body)
+                distinguish_wrap(
+                    (@inline (@__LINE__) function()
+                            body
+                        end)()
+                )
            end
            expr = mkPattern(tag_sym, case, mod)(body) |> simplify
            @format [distinguish_unwrap] quote
