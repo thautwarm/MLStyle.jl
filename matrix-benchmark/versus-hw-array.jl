@@ -69,12 +69,6 @@ implementations = [
 
 criterion(x) = (meantime = mean(x.times), allocs = float(x.allocs))
 
-@info macroexpand(BenchArray, :(@λ begin
-        [_, _, (frag && if sum(frag) > 10 end)..., 10] -> 1
-        [1, 2, 3, _...]  -> 2
-        [_, _, 1, _, 2, 3, z && if z > 10 end]  -> 3
-        _ -> 4
-    end))
 
 df = bcompare(criterion, data, implementations, repeat=1)
 

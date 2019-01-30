@@ -7,14 +7,13 @@ export @active
 export Extension
 
 using ..Err
+using ..Render
 
 include("Extension.jl")
 using MLStyle.Prototype.Extension
 
 
 include("toolz.jl")
-
-include("render.jl")
 
 include("MatchCore.jl")
 using MLStyle.Prototype.MatchCore
@@ -41,10 +40,6 @@ macro λ(cases)
                     function ($TARGET, )
                         @match $TARGET begin
                             $a => begin $(b...) end
-                            _ =>
-                            begin
-                                @syntax_err "syntax error in lambda case definition."
-                            end
                         end
                     end
                 end)

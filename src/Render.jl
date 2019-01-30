@@ -1,5 +1,4 @@
 module Render
-using MLStyle.Prototype.toolz
 using Base: get
 export render, @format, format
 
@@ -67,6 +66,10 @@ format = fmt
 
 macro format(args, template)
     esc(format(args, template))
+end
+
+macro format(template)
+    esc(format(template))
 end
 
 end

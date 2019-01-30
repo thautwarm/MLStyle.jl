@@ -1,10 +1,10 @@
 module DataType
 using MLStyle.Prototype
-using MLStyle.Prototype.toolz: isCapitalized, ($), cons, nil, ast_and
+using MLStyle.Prototype.toolz: isCapitalized, ($), cons, nil
 using MLStyle.Prototype.MatchCore
 using MLStyle.Prototype.Infras
 using MLStyle.Prototype.Pervasives
-using MLStyle.Prototype.Render: render
+using MLStyle.Render: render
 
 export @data
 isSymCap = isCapitalized ∘ string
@@ -135,7 +135,7 @@ function data(typ, def_variants, qualifier, mod)
                                         body
                                     end
                                     @inline L function NAME(_)
-                                        failed
+                                        nothing
                                     end
                                     NAME(tag)
                                 end

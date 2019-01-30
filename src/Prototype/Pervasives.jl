@@ -11,7 +11,7 @@ import MLStyle.Prototype.Infras: mkGAppPattern
 function mk_pat_by(f)
     (tag, case, mod) -> body ->
      @format [f, tag, case, body] quote
-        f(tag, case) ? body : failed
+        f(tag, case) ? body : nothing
      end
 end
 
@@ -26,16 +26,53 @@ end
 # https://github.com/JuliaLang/julia/issues/22193
 defPattern(Pervasives,
         predicate = x -> typeof(x) in (Int, Char, String, Float64, Float32, Nothing),
-        rewrite = (tag, case, mod) -> body ->
-        @format [tag, case, body] quote
-           tag === case ? body : failed
+        rewrite = (tag, case, mod) ->
+        let t = typeof(case),
+            TARGET = mangle(mod)
+
+            (@typed_as t) ∘ function(body)
+            @format quote
+                case === TARGET ? body : nothing
+            end
+            end
         end
 )
 
 defPattern(Pervasives,
-        predicate = x -> x isa Union{Number, AbstractString, AbstractChar, AbstractFloat, QuoteNode},
-        rewrite   = mk_pat_by(_equiv)
+        predicate = x -> x isa Union{Number, AbstractString, AbstractChar, AbstractFloat},
+        rewrite   = (tag, case, mod) ->
+        let t = (case isa Number ? Number :
+                case isa AbstractString ? AbstractString :
+                case isa AbstractChar ? AbstractChar :
+                case isa AbstractFloat ? AbstractFloat :
+                case isa QuoteNode ? QuoteNode : throw(InternalException("unknown type $(typeof(case))")))
+
+            TARGET = mangle(mod)
+            NAME = mangle(mod)
+            function(body)
+                @format quote
+                    @inline (@__LINE__) function NAME(TARGET :: T) where {T <: t}
+                        case == TARGET ? body : nothing
+                    end
+                    @inline (@__LINE__) function NAME(_)
+                        nothing
+                    end
+                    NAME(tag)
+                end
+            end
+        end
 )
+
+defPattern(Pervasives,
+        predicate = x -> x isa QuoteNode,
+        rewrite   = (tag, case, mod) ->
+            function(body)
+            @format quote
+                    case == tag ? body : nothing
+                end
+            end
+)
+
 
 defPattern(Pervasives,
         predicate = x -> x isa Expr && x.head == :(||),
@@ -60,7 +97,7 @@ defPattern(Pervasives,
                 @assert length(case.args) == 1 "invalid ref pattern."
                 var = case.args[1]
                 body -> @format [tag, var, body] quote
-                   tag == var ? body : failed
+                   tag == var ? body : nothing
                 end
         end
 )
@@ -97,7 +134,7 @@ defPattern(Pervasives,
         # TODO: perform syntax validation here.
         let cond = case.args[1]
             body -> @format [cond, body] quote
-                cond ? body : failed
+                cond ? body : nothing
             end
         end
 )
@@ -112,7 +149,7 @@ defPattern(Pervasives,
                 fn = case
             end
             body -> @format [body, fn, tag] quote
-                fn(tag) ? body : failed
+                fn(tag) ? body : nothing
             end
         end
 )
@@ -149,7 +186,7 @@ defPattern(Pervasives,
                             body
                         end
                         @inline __L__ function NAME(_)
-                            failed
+                            nothing
                         end
                         NAME(tag)
                     end
@@ -232,7 +269,7 @@ defAppPattern(Pervasives,
     rewrite = (tag, hd_obj, args, mod) -> begin
         pat = Expr(:call, hd_obj, args...)
         body -> @format [pat, tag, body] quote
-            tag in pat ? body : failed
+            tag in pat ? body : nothing
         end
     end
 )
@@ -259,7 +296,7 @@ defAppPattern(Pervasives,
                 perf_match = mkPattern(HEAD, arg, mod)
                 bind_head(body) =
                     @format [body, HEAD, TARGET] quote
-                        !isempty(TARGET.args) ? failed :
+                        !isempty(TARGET.args) ? nothing :
                         let HEAD = TARGET.head
                             body
                         end
@@ -322,7 +359,7 @@ defAppPattern(Pervasives,
                             IDENT = get(TARGET, k) do
                                 failed
                             end
-                            IDENT === failed ? failed : body
+                            IDENT === failed ? nothing : body
                         end
                     end ∘ match_elt ∘ last
                 end
@@ -336,6 +373,7 @@ function orderedSeqMatch(tag, elts, mod)
 
         TARGET = mangle(mod)
         NAME = mangle(mod)
+        LEN = mangle(mod)
         T = mangle(mod)
         A = mangle(mod)
         function check_generic_array(body)
@@ -347,7 +385,7 @@ function orderedSeqMatch(tag, elts, mod)
 
 
                 @inline __L__ function NAME(_)
-                    failed
+                    nothing
                 end
 
                 NAME(tag)
@@ -359,7 +397,7 @@ function orderedSeqMatch(tag, elts, mod)
             check_generic_array ∘
             function (body)
                 @format [isempty] quote
-                    isempty(TARGET) ? body : failed
+                    isempty(TARGET) ? body : nothing
                 end
             end
         )              :
@@ -411,22 +449,24 @@ function orderedSeqMatch(tag, elts, mod)
             if unpack_begin !== nothing
                 IDENT = mangle(mod)
                 check_len = body -> @format [body, TARGET, atleast_element_count, length] quote
-                    length(TARGET) >= atleast_element_count ? body : failed
+                    LEN = length(TARGET)
+                    LEN >= atleast_element_count ? body : nothing
                 end
                 elt = unpack[unpack_begin]
                 if elt === :_
                     unpack[unpack_begin] = identity
                 else
                     unpack[unpack_begin] = function (body)
-                        @format [body, IDENT, TARGET, unpack_begin, unpack_end, length] quote
-                            IDENT = view(TARGET, unpack_begin: (length(TARGET) - unpack_end))
+                        @format [body, IDENT, TARGET, unpack_begin, unpack_end] quote
+                            IDENT = view(TARGET, unpack_begin: (LEN - unpack_end))
                             body
                         end
                     end ∘ mkPattern(IDENT, elt, mod)
                 end
             else
                 check_len = body -> @format [body, TARGET, length, atleast_element_count] quote
-                    length(TARGET) == atleast_element_count ? body : failed
+                    LEN = length(TARGET)
+                    LEN == atleast_element_count ? body : nothing
                 end
             end
             check_generic_array ∘ check_len ∘ foldr(patternAnd, unpack)
@@ -472,18 +512,18 @@ defAppPattern(Pervasives,
     let inner = args[1],
         ITER_VAR = mangle(mod),
         TEST_VAR = mangle(mod),
-        iter_check = mkPattern(ITER_VAR, inner, mod)(nothing)
+        iter_check = mkPattern(ITER_VAR, inner, mod)(0)
 
         @assert length(args) === 1 "syntax form should be `Many(pat)`."
         body -> @format [ITER_VAR, TEST_VAR, tag, iter_check, body] quote
             TEST_VAR = true
             for ITER_VAR in tag
-                if iter_check !== nothing
+                if iter_check === nothing
                     TEST_VAR = false
                     break
                 end
             end
-            TEST_VAR ? body : failed
+            TEST_VAR ? body : nothing
         end
     end
 )

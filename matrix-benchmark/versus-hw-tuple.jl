@@ -93,6 +93,9 @@ implementations = [
     end
 ]
 
+Main.code_warntype(implementations[:MLStyle], (NTuple{10, Int}, ))
+
+Main.code_warntype(implementations[Symbol("Match.jl")], (NTuple{10, Int}, ))
 
 criterion(x) = (meantime = mean(x.times), allocs = float(x.allocs))
 df = bcompare(criterion, data, implementations)

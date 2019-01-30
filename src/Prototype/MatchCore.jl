@@ -3,12 +3,9 @@ import MLStyle.Prototype.toolz: bind
 using MLStyle.Prototype.toolz.List
 using MLStyle.Prototype.toolz
 using MLStyle.Prototype.Err
-using MLStyle.Prototype.Render
+using MLStyle.Render
 
 # a token to denote matching failure
-export Failed, failed
-struct Failed end
-failed = Failed()
 
 struct err_spec
     location :: LineNumberNode
@@ -238,6 +235,20 @@ function simplify(expr)
     expr
 end
 
+struct _Nothing end
+_nothing = _Nothing()
+
+export failed
+failed = _nothing
+
+distinguish_wrap(e :: Nothing) = _nothing
+
+distinguish_wrap(e :: T) where T = e
+
+distinguish_unwrap(e :: _Nothing) = nothing
+
+distinguish_unwrap(e :: T) where T = e
+
 function mkMatchBody(target, tag_sym, cbl, mod)
     bind(getBy $ loc) do loc # start 1
     final =
@@ -249,17 +260,14 @@ function mkMatchBody(target, tag_sym, cbl, mod)
     cbl = collect(cbl)
     main_logic =
        foldr(cbl, init=final) do (loc, case, body), last # start 2
+           body = @format [distinguish_wrap] quote
+                distinguish_wrap(body)
+           end
            expr = mkPattern(tag_sym, case, mod)(body) |> simplify
-           @format [
-               result,
-               expr,
-               loc,
-               failed,
-               last
-           ] quote
+           @format [distinguish_unwrap] quote
               loc
               result = expr
-              result === failed ? last : result
+              result === nothing ? last : distinguish_unwrap(result)
            end
        end  # end 2
     return! $

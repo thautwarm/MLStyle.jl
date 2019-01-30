@@ -53,7 +53,7 @@ macro type_matching(t, forall)
                         body
                     end
                     @inline __L__ function NAME(_)
-                        failed
+                        nothing
                     end
                     NAME(tag)
                 end
@@ -135,7 +135,7 @@ macro active(case, active_body)
                             let param = tag
                                 active_body
                             end
-                            TARGET === nothing ?  failed : body
+                            TARGET === nothing ?  nothing : body
                         end
                     end
                 end ∘ mkPattern(TARGET, arg, mod)
@@ -158,7 +158,7 @@ macro active(case, active_body)
                             let param = tag
                                 assign_elts_and_active_body
                             end
-                            TARGET === nothing ?  failed : body
+                            TARGET === nothing ?  nothing : body
                         end
                     end
                 end ∘ mkPattern(TARGET, arg, mod)

@@ -3,7 +3,7 @@ using MLStyle.Prototype.MatchCore
 using MLStyle.Prototype.Extension
 using MLStyle.Prototype.Err
 using MLStyle.Prototype.toolz: ($)
-using MLStyle.Prototype.Render: render, format
+using MLStyle.Render: render, format
 
 export @format
 macro format(args, template)
@@ -44,7 +44,7 @@ macro typed_as(t)
                 end
 
                 @inline __L__ function NAME(TARGET)
-                    $failed
+                    nothing
                 end
 
                 NAME(tag)
@@ -62,7 +62,7 @@ patternOr  = (p1, p2) -> body ->
         tmp = mangle(Infras)
         @format [tmp, p1, p2] quote
             tmp = p1
-            tmp === failed ? p2 : tmp
+            tmp === nothing ? p2 : tmp
         end
     end
 

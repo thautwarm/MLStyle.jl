@@ -8,6 +8,8 @@ export Extension
 
 include("Err.jl")
 using .Err
+include("Render.jl")
+using .Render
 
 include("Prototype/Prototype.jl")
 using .Prototype
