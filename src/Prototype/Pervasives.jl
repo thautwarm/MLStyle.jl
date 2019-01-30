@@ -41,11 +41,12 @@ defPattern(Pervasives,
 defPattern(Pervasives,
         predicate = x -> x isa Union{Number, AbstractString, AbstractChar, AbstractFloat},
         rewrite   = (tag, case, mod) ->
-        let t = (case isa Number ? Number :
+        let t = (
+                case isa Number ? Number :
                 case isa AbstractString ? AbstractString :
                 case isa AbstractChar ? AbstractChar :
                 case isa AbstractFloat ? AbstractFloat :
-                case isa QuoteNode ? QuoteNode : throw(InternalException("unknown type $(typeof(case))")))
+                throw(InternalException("unknown type $(typeof(case))")))
 
             TARGET = mangle(mod)
             NAME = mangle(mod)

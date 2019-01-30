@@ -67,9 +67,7 @@ implementations = [
     end
 ]
 
-criterion(x) = (meantime = mean(x.times), allocs = float(x.allocs))
-
-
+criterion(x) = (meantime = mean(x.times), allocs = 1 + x.allocs)
 df = bcompare(criterion, data, implementations, repeat=1)
 
 
@@ -82,8 +80,14 @@ theme = Theme(
     major_label_font = "Consolas",
     point_size=5px
 )
-report_meantime = report(:meantime, df, theme)[1]
+report_meantime, df_time = report(:meantime, df, Scale.y_log10, theme)
+report_allocs, df_allocs = report(:allocs, df, theme)
 
-draw(SVG("vs-handwritten(array)-on-time.svg", 12inch, 4inch), report_meantime);
+open("stats/vs-hw(array).txt", "w") do f
+    write(f, string(df))
+end
+
+draw(SVG("stats/vs-hw(array)-on-time.svg", 10inch, 4inch), report_meantime);
+draw(SVG("stats/vs-hw(array)-on-allocs.svg", 10inch, 4inch), report_allocs);
 
 end

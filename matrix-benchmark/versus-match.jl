@@ -29,30 +29,6 @@ data = [
     :node_assign => :(a = b + c)
 ]
 implementations = [
-    :Match =>  let
-        extract_name(e :: Symbol) = e
-        function extract_name(e::Expr)
-            Match.@match e begin
-                Expr(:<:, [a, b])                  => extract_name(a)
-                Expr(:struct,      [_, name, _])   => extract_name(name)
-                Expr(:call,      [f, _...])        => extract_name(f)
-                Expr(:., [subject, attr, _...])    => extract_name(subject)
-                Expr(:function,  [sig, _...])      => extract_name(sig)
-                Expr(:const,     [assn, _...])     => extract_name(assn)
-                Expr(:(=),       [fn, body, _...]) => extract_name(fn)
-                Expr(expr_type,  _...)             => error("Can't extract name from ",
-                                                            expr_type, " expression:\n",
-                                                            "    $e\n")
-            end
-        end
-        @assert extract_name(data[:node_fn1]) == :f
-        @assert extract_name(data[:node_fn2]) == :f
-        @assert extract_name(data[:node_chain]) == :subject
-        @assert extract_name(data[:node_struct]) == :name
-        @assert extract_name(data[:node_const]) == :a
-        @assert extract_name(data[:node_assign]) == :a
-        extract_name
-    end,
     Symbol(:MLStyle, " Expr-pattern") => let
         function extract_name(e)
             MLStyle.@match e begin
@@ -104,9 +80,34 @@ implementations = [
         @assert extract_name_homoiconic(data[:node_const]) == :a
         @assert extract_name_homoiconic(data[:node_assign]) == :a
         extract_name_homoiconic
+    end,
+    Symbol("Match.jl") =>  let
+        extract_name(e :: Symbol) = e
+        function extract_name(e::Expr)
+            Match.@match e begin
+                Expr(:<:, [a, b])                  => extract_name(a)
+                Expr(:struct,      [_, name, _])   => extract_name(name)
+                Expr(:call,      [f, _...])        => extract_name(f)
+                Expr(:., [subject, attr, _...])    => extract_name(subject)
+                Expr(:function,  [sig, _...])      => extract_name(sig)
+                Expr(:const,     [assn, _...])     => extract_name(assn)
+                Expr(:(=),       [fn, body, _...]) => extract_name(fn)
+                Expr(expr_type,  _...)             => error("Can't extract name from ",
+                                                            expr_type, " expression:\n",
+                                                            "    $e\n")
+            end
+        end
+        @assert extract_name(data[:node_fn1]) == :f
+        @assert extract_name(data[:node_fn2]) == :f
+        @assert extract_name(data[:node_chain]) == :subject
+        @assert extract_name(data[:node_struct]) == :name
+        @assert extract_name(data[:node_const]) == :a
+        @assert extract_name(data[:node_assign]) == :a
+        extract_name
     end
 ]
-criterion(x) = (meantime = mean(x.times), allocs = float(x.allocs))
+
+criterion(x) = (meantime = mean(x.times), allocs = 1 + x.allocs)
 df = bcompare(criterion, data, implementations)
 
 theme = Theme(
@@ -116,10 +117,14 @@ theme = Theme(
     major_label_font = "Consolas",
     point_size=6px
 )
-report_meantime = report(:meantime, df, Scale.y_log10, theme)[1]
-report_allocs = report(:allocs, df, theme)[1]
+report_meantime, df_time = report(:meantime, df, Scale.y_log10, theme)
+report_allocs, df_allocs = report(:allocs, df, theme)
 
-draw(SVG("vs-match-on-time.svg", 10inch, 4inch), report_meantime);
-draw(SVG("vs-match-on-allocs.svg", 10inch, 4inch), report_allocs);
+open("stats/vs-match(expr).txt", "w") do f
+    write(f, string(df))
+end
+
+draw(SVG("stats/vs-match(expr)-on-time.svg", 10inch, 4inch), report_meantime);
+draw(SVG("stats/vs-match(expr)-on-allocs.svg", 10inch, 4inch), report_allocs);
 
 end

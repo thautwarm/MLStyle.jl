@@ -186,8 +186,8 @@ function impl(t, variants :: Expr, mod :: Module)
               getfields = [:($VAR.$field) for field in arg_names]
 
               convert_fn = isempty(gtvars) ? nothing : let (=>) = (a, b) -> convert(b, a)
-                        out_tvars    = fill(nothing, length(spec_tvars)) => Vector{Any}
-                        inp_tvars    = fill(nothing, length(spec_tvars)) => Vector{Any}
+                        out_tvars    = [tvars..., fill(nothing, length(gtvars))...] => Vector{Any}
+                        inp_tvars    = [tvars..., fill(nothing, length(gtvars))...] => Vector{Any}
                         fresh_tvars1 = fill(nothing, length(gtvars)) => Vector{Any}
                         fresh_tvars2 = fill(nothing, length(gtvars)) => Vector{Any}
 
