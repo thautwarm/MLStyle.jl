@@ -1,5 +1,5 @@
 module Err
-export PatternUnsolvedException, InternalException, SyntaxError
+export PatternUnsolvedException, InternalException, SyntaxError, UnknownExtension, @syntax_err
 
 struct PatternUnsolvedException <: Exception
     msg :: String
@@ -19,5 +19,12 @@ struct SyntaxError <: Exception
     msg :: String
 end
 
+struct UnknownExtension <: Exception
+    ext :: Union{String, Symbol}
+end
+
+macro syntax_err(msg)
+    :($throw($SyntaxError($msg)))
+end
 
 end

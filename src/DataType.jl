@@ -1,13 +1,13 @@
 module DataType
 using MLStyle
-using MLStyle.toolz: isCapitalized, ($), cons, nil, ast_and
+using MLStyle.toolz: isCapitalized, ($), cons, nil
 using MLStyle.MatchCore
 using MLStyle.Infras
 using MLStyle.Pervasives
 using MLStyle.Render: render
 
 export @data
-isSymCap = isCapitalized ∘ string
+is_symbol_capitalized = isCapitalized ∘ string
 
 
 macro data(typ, def_variants)
@@ -55,9 +55,9 @@ function data(typ, def_variants, qualifier, mod)
                  end)
         qualifier_ =
             @match qualifier begin
-                :public   => shareThrough(export_anchor_var, true)
+                :public   => share_through(export_anchor_var, true)
                 :internal => internal
-                :(visible in [$(mods...)]) => shareWith(Set(map(mod.eval, mods)))
+                :(visible in [$(mods...)]) => share_with(Set(map(mod.eval, mods)))
             end
         n_destructor_args = length(pairs)
 
@@ -80,10 +80,10 @@ function data(typ, def_variants, qualifier, mod)
                                     ident = TARGET.$field
                                     body
                                 end
-                            end ∘ mkPattern(ident, pat, mod)
+                            end ∘ mk_pattern(ident, pat, mod)
                         end
                     end
-                    _ => @error "The field name of destructor must be a Symbol!"
+                    _ => @syntax_err "The field name of destructor must be a Symbol!"
                   end
                 end
               elseif all(map(!, check_if_given_field_names))
@@ -96,21 +96,21 @@ function data(typ, def_variants, qualifier, mod)
                      map(zip(destruct_fields, pairs)) do (pat, (field, _))
                             let ident = mangle(mod)
                                 function (body)
-                                    @format [tag, body, ident] quote
-                                        ident = tag.$field
+                                    @format [TARGET, body, ident] quote
+                                        ident = TARGET.$field
                                         body
                                     end
-                                end ∘ mkPattern(ident, pat, mod)
+                                end ∘ mk_pattern(ident, pat, mod)
                             end
                      end
                  end
               else
-                 @error "Destructor should be used in the form of `C(a, b, c)` or `C(a=a, b=b, c=c)` or `C(_)`"
+                 @syntax_err "Destructor should be used in the form of `C(a, b, c)` or `C(a=a, b=b, c=c)` or `C(_)`"
               end |> x -> (TARGET, reduce(∘, x, init=identity))
 
         end
 
-        defAppPattern(mod,
+        def_app_pattern(mod,
                       predicate = (hd_obj, args) -> hd_obj === ctor,
                       rewrite   = (tag, hd_obj, destruct_fields, mod) -> begin
                         TARGET, match_fields = mk_match(tag, hd_obj, destruct_fields, mod)
@@ -120,12 +120,12 @@ function data(typ, def_variants, qualifier, mod)
 
 
         # GADT syntax support!!!
-        defGAppPattern(mod,
+        def_gapp_pattern(mod,
                       predicate = (spec_vars, hd_obj, args) -> hd_obj === ctor,
                       rewrite   = (tag, forall, spec_vars, hd_obj, destruct_fields, mod) -> begin
                         hd = :($hd_obj{$(spec_vars...)})
                         TARGET, match_fields = mk_match(tag, hd, destruct_fields, mod)
-                        if forall === nothing
+                        if isempty(forall)
                             @typed_as hd
                         else
                             function (body)
@@ -173,8 +173,8 @@ function impl(t, variants :: Expr, mod :: Module)
 
               pairs = map(enumerate(params)) do (i, each)
                  @match each begin
-                    :($(a::Symbol && function (x) !isSymCap(x) end)) => (a, Any, Any)
-                    :($(a && function isSymCap  end)) => (Symbol("_$i"), a, render(a, config))
+                    :($(a::Symbol && function (x) !is_symbol_capitalized(x) end)) => (a, Any, Any)
+                    :($(a && function is_symbol_capitalized  end)) => (Symbol("_$i"), a, render(a, config))
                     :($field :: $ty)                => (field, ty, render(ty, config))
                  end
               end
@@ -186,8 +186,8 @@ function impl(t, variants :: Expr, mod :: Module)
               getfields = [:($VAR.$field) for field in arg_names]
 
               convert_fn = isempty(gtvars) ? nothing : let (=>) = (a, b) -> convert(b, a)
-                        out_tvars    = fill(nothing, length(spec_tvars)) => Vector{Any}
-                        inp_tvars    = fill(nothing, length(spec_tvars)) => Vector{Any}
+                        out_tvars    = [tvars..., fill(nothing, length(gtvars))...] => Vector{Any}
+                        inp_tvars    = [tvars..., fill(nothing, length(gtvars))...] => Vector{Any}
                         fresh_tvars1 = fill(nothing, length(gtvars)) => Vector{Any}
                         fresh_tvars2 = fill(nothing, length(gtvars)) => Vector{Any}
 
@@ -209,18 +209,21 @@ function impl(t, variants :: Expr, mod :: Module)
                     end
 
 
-              definition_head = :($case{$(tvars...), $(gtvars...)})
-              def_cons = isempty(spec_tvars) ?
-                quote
-                    function $case(;$(constructor_args...))
-                        $case($(arg_names...))
+            definition_head = :($case{$(tvars...), $(gtvars...)})
+            def_cons =
+                isempty(spec_tvars) ?
+                    !isempty(constructor_args) ?
+                    quote
+                        function $case(;$(constructor_args...))
+                            $case($(arg_names...))
+                        end
+                    end                       :
+                    nothing        :
+                    quote
+                        function $case($(constructor_args...), ) where {$(tvars...)}
+                            $case{$(spec_tvars...)}($(arg_names...))
+                        end
                     end
-                end :
-                quote
-                    function $case($(constructor_args...), ) where {$(tvars...)}
-                        $case{$(spec_tvars...)}($(arg_names...))
-                    end
-                end
 
               definition = @format [case, l, ret_ty, definition_head] quote
                  struct definition_head <: ret_ty

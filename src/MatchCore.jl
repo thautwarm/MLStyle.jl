@@ -8,7 +8,7 @@ using MLStyle.Render
 # a token to denote matching failure
 export Failed, failed
 struct Failed end
-failed = Failed()
+const failed = Failed()
 
 struct err_spec
     location :: LineNumberNode
@@ -37,7 +37,7 @@ err!(msg :: String) =
     end
 
 
-checkDo(f, check_fn, err_fn) = expr ->
+check_do(f, check_fn, err_fn) = expr ->
      if !check_fn(expr)
          err_fn(expr)
      else
@@ -46,14 +46,14 @@ checkDo(f, check_fn, err_fn) = expr ->
 
 
 # TODO: for friendly error report
-recogErr(expr) :: String = "syntax error"
+recog_err(expr) :: String = "syntax error"
 
-checkSyntax(f, predicate) = begin
+check_syntax(f, predicate) = begin
     check_fn = expr -> predicate(expr)
-    err_fn   = expr -> bind(err! ∘ recogErr $ expr) do _
+    err_fn   = expr -> bind(err! ∘ recog_err $ expr) do _
         return! $ nothing
     end
-    checkDo(f, check_fn, err_fn)
+    check_do(f, check_fn, err_fn)
 end
 
 const init_state = config(LineNumberNode(1), nil())
@@ -61,48 +61,59 @@ const init_state = config(LineNumberNode(1), nil())
 
 # implementation of qualified pattern matching
 
-export qualifier, internal, invasive, shareWith, shareThrough
 
-struct qualifier
-    test :: Function
-end
+export Qualifier
+Qualifier = Function
 
-internal = qualifier((my_mod, umod) -> my_mod === umod)
-invasive = qualifier((my_mod, umod) -> true)
-shareWith(ms::Set{Module}) = qualifier((_, umod) -> umod in ms)
-shareThrough(symbol, value) = qualifier((_, umod) -> isdefined(umod, symbol) && getfield(umod, symbol) === true)
 
-export qualifierTest
-function qualifierTest(qualifiers :: Set{qualifier}, use_mod, def_mod)
+export internal, invasive, share_with, share_through
+
+internal = (my_mod, umod) -> my_mod === umod
+invasive = (my_mod, umod) -> true
+share_with(ms::Set{Module}) = (_, umod) -> umod in ms
+share_through(symbol, value) = (_, umod) -> isdefined(umod, symbol) && getfield(umod, symbol) === true
+
+export qualifier_test
+function qualifier_test(qualifiers :: Set{Qualifier}, use_mod, def_mod)
     any(qualifiers) do q
-        q.test(def_mod, use_mod)
+        q(def_mod, use_mod)
     end
 end
 
-struct pattern_descriptor
-    # for appPatterns: (object :: Object, tl :: Vector{AST}) -> bool
+export PDesc
+struct PDesc
+    # for gapp patterns: (spec_vars :: Vector{Any}, gapobject :: Object, tl :: Vector{AST}) -> bool
+    # for app patterns: (appobject :: Object, tl :: Vector{AST}) -> bool
     # for general    : (case:AST) -> bool
+
     predicate  :: Function
 
-    # for app: (to_match: Symbol, caseObj: Any, args::Vector{AST}, mod::Module) -> Expr
-    # general: (to_match: Symbol, case:AST, mod :: Module) -> Expr which's evaluated to bool
+    # for gapp: 
+    #    (to_match : Symbol, 
+    #     forall :: Vector{Any}, 
+    #     spec_vars :: Vector{Any},
+    #     appobject :: Object,
+    #     args :: Vector{AST},
+    #     mod :: Module) -> (AST -> AST) 
+    # for app: (to_match  : Symbol, appobject: Object, args::Vector{AST}, mod::Module) -> (AST -> AST)
+    # general: (to_match  : Symbol, case:AST, mod :: Module) -> (AST -> AST)
     rewrite    :: Function
 
-    qualifiers :: Set{qualifier}
+    qualifiers :: Set{Qualifier}
 end
 
-pattern_descriptor(;predicate, rewrite, qualifiers) =
-    pattern_descriptor(predicate, rewrite, qualifiers)
+PDesc(;predicate, rewrite, qualifiers) =
+    PDesc(predicate, rewrite, qualifiers)
 
 # A bug occurred when key is of Module type.
 # Tentatively we use associate list(vector?).
 
-pattern_manager = Vector{Tuple{Module, pattern_descriptor}}()
+const PATTERNS = Vector{Tuple{Module, PDesc}}()
 
-export registerPattern, pattern_descriptor
+export register_pattern
 
-function registerPattern(pdesc :: pattern_descriptor, defmod :: Module)
-    push!(pattern_manager, (defmod, pdesc))
+function register_pattern(pdesc :: PDesc, defmod :: Module)
+    push!(PATTERNS, (defmod, pdesc))
 end
 
 # a simple example to define pattern `1`:
@@ -113,38 +124,37 @@ end
 #      )
 # registerPattern(tp, MatchCore)
 
-function getPattern(case, use_mod :: Module)
-    for (def_mod, desc) in pattern_manager
-        if qualifierTest(desc.qualifiers, use_mod, def_mod) && desc.predicate(case)
+function get_pattern(case, use_mod :: Module)
+    for (def_mod, desc) in PATTERNS
+        if qualifier_test(desc.qualifiers, use_mod, def_mod) && desc.predicate(case)
            return desc.rewrite
         end
     end
-    return nothing
 end
 
 
-isHeadEq(s :: Symbol) = (e::Expr) -> e.head == s
+is_head_eq(s :: Symbol) = (e::Expr) -> e.head == s
 
-function collectCases(expr :: Expr) :: State
+function collect_cases(expr :: Expr) :: State
     expr |>
-    checkSyntax(isHeadEq(:block))       do block
-    bind(forM(collectCase, block.args)) do cases
+    check_syntax(is_head_eq(:block))       do block
+    bind(forM(collect_case, block.args))   do cases
     return! $ filter(a -> a !== nothing, cases)
     end
     end
 end
 
-function collectCase(expr :: LineNumberNode) :: State
+function collect_case(expr :: LineNumberNode) :: State
     bind(putBy ∘ set_loc $ expr) do _
     return! $ nothing
     end
 end
 
-function collectCase(expr :: Expr) :: State
+function collect_case(expr :: Expr) :: State
     expr |>
-    checkSyntax(isHeadEq(:call))            do expr
+    check_syntax(is_head_eq(:call))            do expr
     expr.args |>
-    checkSyntax(args ->
+    check_syntax(args ->
                 length(args) == 3 &&
                 args[1]      == :(=>))      do (_, case, body)
     bind(getBy $ loc)                       do loc
@@ -154,13 +164,13 @@ function collectCase(expr :: Expr) :: State
     end
 end
 
-internal_counter = Dict{Module, Int}()
+const INTERNAL_COUNTER = Dict{Module, Int}()
 
-function removeModulePatterns(mod :: Module)
-    delete!(internal_counter, mod)
+function remove_module_patterns(mod :: Module)
+    delete!(INTERNAL_COUNTER, mod)
 end
 
-function getNameOfModule(m::Module) :: String
+function get_name_of_module(m::Module) :: String
     string(m)
 end
 
@@ -168,29 +178,29 @@ end
 # allocate names for anonymous temporary variables.
 export mangle
 function mangle(mod::Module)
-    get!(internal_counter, mod) do
+    get!(INTERNAL_COUNTER, mod) do
        0
     end |> id -> begin
-    internal_counter[mod] = id + 1
-    mod_name = getNameOfModule(mod)
+    INTERNAL_COUNTER[mod] = id + 1
+    mod_name = get_name_of_module(mod)
     Symbol("$mod_name $id")
     end
 
 end
 
 
-function matchImpl(target, cbl, mod)
+function match_impl(target, cbl, mod)
     # cbl: case body list
     # cbl = (fst ∘ (flip $ runState $ init_state) ∘ collectCases) $ cbl
-    bind(collectCases(cbl))                          do cbl
+    bind(collect_cases(cbl))                          do cbl
     # cbl :: [(LineNumberNodem, Expr, Expr)]
     tag_sym = mangle(mod)
-    mkMatchBody(target, tag_sym, cbl, mod)
+    mk_match_body(target, tag_sym, cbl, mod)
     end
 end
 
 
-throwFrom(errs) = begin
+throw_from(errs) = begin
     # TODO: pretty print
     s = string(errs)
     throw(SyntaxError("$s"))
@@ -202,17 +212,15 @@ end
 # end
 export @match
 macro match(target, cbl)
-   (a, s) = runState $ matchImpl(target, cbl, __module__) $ init_state
+   (a, s) = runState $ match_impl(target, cbl, __module__) $ init_state
    if isempty(s.errs)
        esc $ a
    else
-       throwFrom(s.errs)
+       throw_from(s.errs)
    end
 end
 
-
-
-function mkMatchBody(target, tag_sym, cbl, mod)
+function mk_match_body(target, tag_sym, cbl, mod)
     bind(getBy $ loc) do loc # start 1
     final =
         @format [loc] quote
@@ -223,7 +231,7 @@ function mkMatchBody(target, tag_sym, cbl, mod)
     cbl = collect(cbl)
     main_logic =
        foldr(cbl, init=final) do (loc, case, body), last # start 2
-           expr = mkPattern(tag_sym, case, mod)(body)
+           expr = mk_pattern(tag_sym, case, mod)(body)
            @format [
                result,
                expr,
@@ -236,27 +244,22 @@ function mkMatchBody(target, tag_sym, cbl, mod)
               result === failed ? last : result
            end
        end  # end 2
-    return! $
-    quote
-       let $tag_sym = $target
-           $main_logic
+    return! $ @format quote
+       let tag_sym = target
+           main_logic
        end
     end
     end # end 1
 end
 
-
-export mkPattern
-function mkPattern(tag_sym :: Symbol, case :: Any, mod :: Module)
-    rewrite = getPattern(case, mod)
+export mk_pattern
+function mk_pattern(tag_sym :: Symbol, case :: Any, mod :: Module)
+    rewrite = get_pattern(case, mod)
     if rewrite !== nothing
         return rewrite(tag_sym, case, mod)
     end
     case = string(case)
     throw $ PatternUnsolvedException("invalid usage or unknown case $case")
 end
-
-
-
 
 end # module end

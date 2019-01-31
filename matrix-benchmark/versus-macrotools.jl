@@ -47,10 +47,6 @@ data = [
 ]
 
 implementations = [
-    :MacroTools => function(ex)
-        @capture(ex, struct T_ fields__ end)
-        (T, fields)
-    end,
     :MLStyle => function (ex)
         @match ex begin
             Do(fields = []) &&
@@ -69,10 +65,15 @@ implementations = [
             end
             end => (typename, fields)
         end
+    end,
+    :MacroTools => function(ex)
+        @capture(ex, struct T_ fields__ end)
+        (T, fields)
     end
+
 ]
 
-criterion(x) = (meantime = mean(x.times), allocs = float(x.allocs))
+criterion(x) = (meantime = mean(x.times), allocs = 1 + x.allocs)
 df = Benchmarkplotting.bcompare(criterion, data, implementations)
 
 theme = Theme(
@@ -82,9 +83,14 @@ theme = Theme(
     major_label_font = "Consolas",
     point_size=6px
 )
-report_meantime = report(:meantime, df, Scale.y_log10, theme)[1]
-report_allocs = report(:allocs, df, theme)[1]
+report_meantime, df_time = report(:meantime, df, Scale.y_log10, theme)
+report_allocs, df_allocs = report(:allocs, df, theme)
 
-draw(SVG("vs-macrotools-on-time.svg", 10inch, 4inch), report_meantime)
-draw(SVG("vs-macrotools-on-allocs.svg", 10inch, 4inch), report_allocs)
+open("stats/vs-macrotools(ast).txt", "w") do f
+    write(f, string(df))
+end
+
+draw(SVG("stats/vs-macrotools(ast)-on-time.svg", 10inch, 4inch), report_meantime);
+draw(SVG("stats/vs-macrotools(ast)-on-allocs.svg", 10inch, 4inch), report_allocs);
+
 end

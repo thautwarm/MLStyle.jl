@@ -1,5 +1,3 @@
-using MLStyle
-
 rmlines = @λ begin
     e :: Expr           -> Expr(e.head, filter(x -> x !== nothing, map(rmlines, e.args))...)
       :: LineNumberNode -> nothing
