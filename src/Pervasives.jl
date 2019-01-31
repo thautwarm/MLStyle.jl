@@ -146,8 +146,11 @@ function mk_expr_template(expr :: Expr)
         return expr.args[1]
     end
     rec = mk_expr_template
-    Expr(:call, :Expr, rec(expr.head), filter(x -> x !== nothing, map(rec, expr.args))...)
+    Expr(:call, :Expr, rec(expr.head), filter(x -> x !== _discard, map(rec, expr.args))...)
 end
+
+struct Discard end
+const _discard = Discard()
 
 function mk_expr_template(expr :: Symbol)
         QuoteNode(expr)
@@ -158,7 +161,7 @@ function mk_expr_template(expr :: QuoteNode)
 end
 
 function mk_expr_template(expr :: LineNumberNode)
-        nothing
+    _discard
 end
 
 function mk_expr_template(expr)
@@ -311,7 +314,7 @@ function orderedSeqMatch(tag, elts, mod)
                 end
 
                 @inline __L__ function NAME(_)
-                    nothing
+                    failed
                 end
 
                 NAME(tag)
