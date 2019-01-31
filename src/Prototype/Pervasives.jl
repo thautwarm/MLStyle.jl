@@ -437,7 +437,7 @@ function orderedSeqMatch(tag, elts, mod)
                             let IDENT = IDENT, index = index
                                 function (body)
                                     @format [T, IDENT, body, index] quote
-                                        IDENT :: T = index
+                                        IDENT = index
                                         body
                                     end
                                 end ∘ perf_match
@@ -448,8 +448,8 @@ function orderedSeqMatch(tag, elts, mod)
             end
             if unpack_begin !== nothing
                 IDENT = mangle(mod)
-                check_len = body -> @format [Int, body, TARGET, atleast_element_count, length] quote
-                    LEN :: Int = length(TARGET)
+                check_len = body -> @format [body, TARGET, atleast_element_count, length] quote
+                    LEN = length(TARGET)
                     LEN >= atleast_element_count ? body : nothing
                 end
                 elt = unpack[unpack_begin]
@@ -458,18 +458,17 @@ function orderedSeqMatch(tag, elts, mod)
                 else
                     unpack[unpack_begin] = function (body)
                         @format [
-                            T, A, Tuple, SubArray, UnitRange, Int,
                             body, IDENT, TARGET,
                             unpack_begin, unpack_end
                         ] quote
-                            IDENT :: SubArray{T, 1, Vector{T}, Tuple{UnitRange{Int}}, true} = view(TARGET, unpack_begin: (LEN - unpack_end))
+                            IDENT = view(TARGET, unpack_begin: (LEN - unpack_end))
                             body
                         end
                     end ∘ mkPattern(IDENT, elt, mod)
                 end
             else
-                check_len = body -> @format [Int, body, TARGET, length, atleast_element_count] quote
-                    LEN :: Int = length(TARGET)
+                check_len = body -> @format [body, TARGET, length, atleast_element_count] quote
+                    LEN = length(TARGET)
                     LEN == atleast_element_count ? body : nothing
                 end
             end
