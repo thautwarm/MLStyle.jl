@@ -1,10 +1,8 @@
 module MLStyle
 
-# export Feature , @case, @data, @def, @match, Fun, (⇒), Pattern, Case, Failed, failed, PatternDef, pattern_match, app_pattern_match, (..), enum_next
-export @match, Many, PushTo, Push, Seq, Do, @data, @use, use, @used
-export defPattern, defAppPattern, defGAppPattern, mkPattern, mkAppPattern, mkGAppPattern
+export @match, Many, Do, @data, @use, use, @used
+export def_pattern_def_app_pattern_def_gapp_pattern_mk_pattern_mk_app_pattern_mk_gapp_pattern
 export PatternUnsolvedException, InternalException, SyntaxError, UnknownExtension, @syntax_err
-export Atom, Rule, Parserc
 export @active
 
 include("Err.jl")

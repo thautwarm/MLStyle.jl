@@ -52,8 +52,7 @@ macro typed_as(t)
     end
 end
 
-export patternAnd, patternOr
-patternAnd = ∘
+export patternOr
 patternOr  = (p1, p2) -> body ->
     let p1 = p1(body), p2 = p2(body)
         tmp = mangle(Infras)
@@ -64,36 +63,36 @@ patternOr  = (p1, p2) -> body ->
     end
 
 
-destructors = Vector{Tuple{Module, pattern_descriptor}}()
-generalized_destructors = Vector{Tuple{Module, pattern_descriptor}}()
+const APP_DESTRUCTORS = Vector{Tuple{Module, PDesc}}()
+const GAPP_DESTRUCTORS = Vector{Tuple{Module, PDesc}}()
 
-export defPattern
-function defPattern(mod; predicate, rewrite, qualifiers=nothing)
+export def_pattern
+function def_pattern(mod; predicate, rewrite, qualifiers=nothing)
     qualifiers = qualifiers === nothing ? Set([invasive]) : qualifiers
-    desc = pattern_descriptor(predicate, rewrite, qualifiers)
-    registerPattern(desc, mod)
+    desc = PDesc(predicate, rewrite, qualifiers)
+    register_pattern(desc, mod)
 end
 
 
 # ======= App Patterns =============
 
-export registerAppPattern
-function registerAppPattern(pdesc :: pattern_descriptor, def_mod::Module)
-    push!(destructors, (def_mod, pdesc))
+export register_app_pattern
+function register_app_pattern(pdesc :: PDesc, def_mod::Module)
+    push!(APP_DESTRUCTORS, (def_mod, pdesc))
 end
 
-export defAppPattern
-function defAppPattern(mod; predicate, rewrite, qualifiers=nothing)
+export def_app_pattern
+function def_app_pattern(mod; predicate, rewrite, qualifiers=nothing)
     qualifiers = qualifiers === nothing ? Set([invasive]) : qualifiers
-    desc = pattern_descriptor(predicate, rewrite, qualifiers)
-    registerAppPattern(desc, mod)
+    desc = PDesc(predicate, rewrite, qualifiers)
+    register_app_pattern(desc, mod)
 end
 
-function mkAppPattern(tag, hd, tl, use_mod)
+function mk_app_pattern(tag, hd, tl, use_mod)
     if isdefined(use_mod, hd)
         hd = getfield(use_mod, hd)
-        for (def_mod, desc) in destructors
-            if qualifierTest(desc.qualifiers, use_mod, def_mod) && desc.predicate(hd, tl)
+        for (def_mod, desc) in APP_DESTRUCTORS
+            if qualifier_test(desc.qualifiers, use_mod, def_mod) && desc.predicate(hd, tl)
                 return desc.rewrite(tag, hd, tl, use_mod)
             end
         end
@@ -106,29 +105,29 @@ end
 
 # ===== Generalized App Patterns ====
 
-export defGAppPattern
-function defGAppPattern(mod; predicate, rewrite, qualifiers=nothing)
+export def_gapp_pattern
+function def_gapp_pattern(mod; predicate, rewrite, qualifiers=nothing)
     qualifiers = qualifiers === nothing ? Set([invasive]) : qualifiers
-    desc = pattern_descriptor(predicate, rewrite, qualifiers)
-    registerGAppPattern(desc, mod)
+    desc = PDesc(predicate, rewrite, qualifiers)
+    register_gapp_pattern(desc, mod)
 end
 
-export registerGAppPattern
-function registerGAppPattern(pdesc :: pattern_descriptor, def_mod::Module)
-    push!(generalized_destructors, (def_mod, pdesc))
+export register_gapp_pattern
+function register_gapp_pattern(pdesc :: PDesc, def_mod::Module)
+    push!(GAPP_DESTRUCTORS, (def_mod, pdesc))
 end
 
-export mkGAppPattern
-function mkGAppPattern
+export mk_gapp_pattern
+function mk_gapp_pattern
 end
 
 # ===================================
 
-defPattern(Infras,
+def_pattern(Infras,
     predicate = x -> x isa Expr && x.head == :call,
     rewrite = (tag, case, mod) ->
     let hd = case.args[1], tl = case.args[2:end]
-    hd isa Symbol ? mkAppPattern(tag, hd, tl, mod) : mkGAppPattern(tag, [], hd, tl, mod)
+    hd isa Symbol ? mk_app_pattern(tag, hd, tl, mod) : mk_gapp_pattern(tag, [], hd, tl, mod)
     end)
 
 end

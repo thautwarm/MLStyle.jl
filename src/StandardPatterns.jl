@@ -72,7 +72,7 @@ function extract_tvars(t :: AbstractArray)
     end
 end
 
-defPattern(StandardPatterns,
+def_pattern(StandardPatterns,
         predicate = x -> x isa Expr && x.head == :(::),
         rewrite = (tag, case, mod) ->
                 let args   = (case.args..., ),
@@ -87,7 +87,7 @@ defPattern(StandardPatterns,
 
                     function f(args :: NTuple{2, Any})
                         pat, t = args
-                        for_type(t) ∘ mkPattern(TARGET, pat, mod)
+                        for_type(t) ∘ mk_pattern(TARGET, pat, mod)
                     end
 
                     function f(args :: NTuple{1, Any})
@@ -125,7 +125,7 @@ macro active(case, active_body)
     mod.eval(quote struct $case_name end end)
     case_obj = getfield(mod, case_name)
     if IDENTS === nothing
-        defAppPattern(mod,
+        def_app_pattern(mod,
             predicate = (hd_obj, args) -> hd_obj === case_obj,
             rewrite = (tag, hd_obj, args, mod) -> begin
                 arg = length(args) == 1 ? args[1] : Expr(:tuple, args...)
@@ -138,11 +138,11 @@ macro active(case, active_body)
                             TARGET === nothing ?  failed : body
                         end
                     end
-                end ∘ mkPattern(TARGET, arg, mod)
+                end ∘ mk_pattern(TARGET, arg, mod)
         end)
     else
         n_idents = length(IDENTS)
-        defGAppPattern(mod,
+        def_gapp_pattern(mod,
             predicate = (spec_vars, hd_obj, args) -> hd_obj === case_obj && length(spec_vars) === n_idents,
             rewrite   = (tag, forall, spec_vars, hd_obj, args, mod) -> begin
                 arg = length(args) == 1 ? args[1] : Expr(:tuple, args...)
@@ -161,7 +161,7 @@ macro active(case, active_body)
                             TARGET === nothing ?  failed : body
                         end
                     end
-                end ∘ mkPattern(TARGET, arg, mod)
+                end ∘ mk_pattern(TARGET, arg, mod)
         end)
     end
     nothing

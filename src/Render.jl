@@ -3,7 +3,7 @@ using Base: get
 export render, @format, format
 
 struct Discard end
-discard = Discard()
+const discard = Discard()
 
 function render(expr, pair :: Pair{Symbol, Any})
     render(expr, Dict(pair))

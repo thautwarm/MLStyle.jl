@@ -3,9 +3,7 @@ include("internal_list.jl")
 using .List: list, head, tail, cons, nil, reverse, linkedlist
 
 export ($), State, runState, bind, get, put, putBy, getBy,
-       return!, combine, forMM, forM, flip, fst, snd,
-       isCapitalized, ast_and, ast_or, mapAst, yieldAst, runAstMapper,
-       isCase
+       return!, combine, forM, isCapitalized, isCase
 
 ($)(f, a) = f(a)
 

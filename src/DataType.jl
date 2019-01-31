@@ -7,7 +7,7 @@ using MLStyle.Pervasives
 using MLStyle.Render: render
 
 export @data
-isSymCap = isCapitalized ∘ string
+is_symbol_capitalized = isCapitalized ∘ string
 
 
 macro data(typ, def_variants)
@@ -55,9 +55,9 @@ function data(typ, def_variants, qualifier, mod)
                  end)
         qualifier_ =
             @match qualifier begin
-                :public   => shareThrough(export_anchor_var, true)
+                :public   => share_through(export_anchor_var, true)
                 :internal => internal
-                :(visible in [$(mods...)]) => shareWith(Set(map(mod.eval, mods)))
+                :(visible in [$(mods...)]) => share_with(Set(map(mod.eval, mods)))
             end
         n_destructor_args = length(pairs)
 
@@ -80,7 +80,7 @@ function data(typ, def_variants, qualifier, mod)
                                     ident = TARGET.$field
                                     body
                                 end
-                            end ∘ mkPattern(ident, pat, mod)
+                            end ∘ mk_pattern(ident, pat, mod)
                         end
                     end
                     _ => @syntax_err "The field name of destructor must be a Symbol!"
@@ -100,7 +100,7 @@ function data(typ, def_variants, qualifier, mod)
                                         ident = TARGET.$field
                                         body
                                     end
-                                end ∘ mkPattern(ident, pat, mod)
+                                end ∘ mk_pattern(ident, pat, mod)
                             end
                      end
                  end
@@ -110,7 +110,7 @@ function data(typ, def_variants, qualifier, mod)
 
         end
 
-        defAppPattern(mod,
+        def_app_pattern(mod,
                       predicate = (hd_obj, args) -> hd_obj === ctor,
                       rewrite   = (tag, hd_obj, destruct_fields, mod) -> begin
                         TARGET, match_fields = mk_match(tag, hd_obj, destruct_fields, mod)
@@ -120,7 +120,7 @@ function data(typ, def_variants, qualifier, mod)
 
 
         # GADT syntax support!!!
-        defGAppPattern(mod,
+        def_gapp_pattern(mod,
                       predicate = (spec_vars, hd_obj, args) -> hd_obj === ctor,
                       rewrite   = (tag, forall, spec_vars, hd_obj, destruct_fields, mod) -> begin
                         hd = :($hd_obj{$(spec_vars...)})
@@ -173,8 +173,8 @@ function impl(t, variants :: Expr, mod :: Module)
 
               pairs = map(enumerate(params)) do (i, each)
                  @match each begin
-                    :($(a::Symbol && function (x) !isSymCap(x) end)) => (a, Any, Any)
-                    :($(a && function isSymCap  end)) => (Symbol("_$i"), a, render(a, config))
+                    :($(a::Symbol && function (x) !is_symbol_capitalized(x) end)) => (a, Any, Any)
+                    :($(a && function is_symbol_capitalized  end)) => (Symbol("_$i"), a, render(a, config))
                     :($field :: $ty)                => (field, ty, render(ty, config))
                  end
               end

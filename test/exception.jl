@@ -23,5 +23,11 @@ using MLStyle.Extension
     @test_throws LoadError macroexpand(MODULE, :(@match $Test_Ext_Data_1(1) begin
         Test_Ext_Data_1(b, c=a) => 1
     end))
+
+    @test_throws LoadError macroexpand(MODULE, :(
+        @match 1 begin
+            Int(x) => x
+        end 
+    ))
 end
 
