@@ -12,6 +12,9 @@ macro format(args, template)
     esc(format(args, template))
 end
 
+macro format(template)
+    esc(format(template))
+end
 
 export @typed_as
 """
@@ -40,7 +43,7 @@ macro typed_as(t)
                 end
 
                 @inline __L__ function NAME(TARGET)
-                    $failed
+                    failed
                 end
 
                 NAME(tag)
@@ -48,8 +51,6 @@ macro typed_as(t)
         end
     end
 end
-
-
 
 export patternAnd, patternOr
 patternAnd = ∘

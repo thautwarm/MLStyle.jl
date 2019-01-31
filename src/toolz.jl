@@ -41,7 +41,7 @@ combine(ma, mb) = bind( _ -> mb, ma)
 forMM(k, ms) =
    State $ s ->
    begin
-        v = nil(State)
+        v = nil()
         for m in ms
           (a, s) = runState(bind(k, m))(s)
           v = cons(a, v)

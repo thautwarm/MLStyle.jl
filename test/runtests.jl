@@ -1,5 +1,9 @@
+module TestModule
+
 using Test
 using MLStyle
+
+MODULE = TestModule
 
 @use GADT
 
@@ -16,3 +20,4 @@ include("adt.jl")
 include("typelevel.jl")
 include("untyped_lam.jl")
 
+end

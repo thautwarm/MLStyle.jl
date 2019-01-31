@@ -1,4 +1,4 @@
-using MLStyle.MatchCore
+using MLStyle
 
 # @testset "base" begin
 # @test @match Expr(:call, :f, :a) begin

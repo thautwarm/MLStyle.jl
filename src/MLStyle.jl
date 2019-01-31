@@ -3,19 +3,19 @@ module MLStyle
 # export Feature , @case, @data, @def, @match, Fun, (⇒), Pattern, Case, Failed, failed, PatternDef, pattern_match, app_pattern_match, (..), enum_next
 export @match, Many, PushTo, Push, Seq, Do, @data, @use, use, @used
 export defPattern, defAppPattern, defGAppPattern, mkPattern, mkAppPattern, mkGAppPattern
-export PatternUnsolvedException, InternalException, SyntaxError
+export PatternUnsolvedException, InternalException, SyntaxError, UnknownExtension, @syntax_err
 export Atom, Rule, Parserc
 export @active
-
-include("Extension.jl")
-using MLStyle.Extension
 
 include("Err.jl")
 using MLStyle.Err
 
+include("Extension.jl")
+using MLStyle.Extension
+
 include("toolz.jl")
 
-include("render.jl")
+include("Render.jl")
 
 include("MatchCore.jl")
 using MLStyle.MatchCore
@@ -42,7 +42,6 @@ macro λ(cases)
                     function ($TARGET, )
                         @match $TARGET begin
                             $a => begin $(b...) end
-                            _ => @error "syntax error in lambda case definition."
                         end
                     end
                 end)
@@ -59,7 +58,7 @@ macro λ(cases)
                     end
                 end
             end)
-        _ => @error "syntax error in lambda case definition."
+        _ => @syntax_err "syntax error in lambda case definition."
     end
 end
 

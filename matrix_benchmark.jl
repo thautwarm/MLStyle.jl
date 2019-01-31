@@ -1,11 +1,10 @@
 # If you want to run this matrix-benchmarks, you should install
 # a dependency `Benchmarkplotting` which is not registered on JuliaRegistries.
 #    pkg> add https://github.com/thautwarm/Benchmarkplotting.jl
-include("src/MLStyle.jl")
 using MLStyle
 using ArgParse
 
-versus_items = ("hw-tuple", "macrotools", "match")
+versus_items = ("hw-tuple", "hw-array", "macrotools", "match", "match-datatype")
 
 function parse_cmd()
     s = ArgParseSettings()
@@ -19,7 +18,7 @@ function parse_cmd()
     parse_args(ARGS, s)
 end
 
-check_versus(x) = x in ("hw-tuple", "macrotools", "match")
+check_versus(x) = x in versus_items
 
 function benchmark(x)
     filename = "matrix-benchmark/versus-$x.jl"

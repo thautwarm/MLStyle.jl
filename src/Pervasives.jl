@@ -21,8 +21,11 @@ defPattern(Pervasives,
 )
 
 defPattern(Pervasives,
-        predicate = x -> x isa Union{Number, AbstractString, QuoteNode},
-        rewrite   = mk_pat_by(==)
+        predicate = x -> x isa Union{Number, AbstractString, AbstractChar, AbstractFloat, QuoteNode},
+        rewrite   = (tag, case, mod) ->
+        let f = isimmutable(case) ? mk_pat_by(===) : mk_pat_by(==)
+            f(tag, case, mod)
+        end
 )
 
 defPattern(Pervasives,
@@ -182,9 +185,9 @@ defPattern(Pervasives,
         VALUE = mangle(mod)
         access_value(body) =
                 @format [body, TARGET, VALUE] quote
-                        (@inline __L__ function (VALUE)
-                                body
-                        end)(TARGET.value)
+                    let VALUE = TARGET.value
+                        body
+                    end
                 end
         (@typed_as QuoteNode) ∘  access_value ∘ mkPattern(VALUE ,expr, mod)
        end
@@ -297,10 +300,27 @@ defAppPattern(Pervasives,
 
 # arbitray ordered sequential patterns match
 function orderedSeqMatch(tag, elts, mod)
+        
         TARGET = mangle(mod)
+        NAME = mangle(mod)
+        function check_generic_array(body)
+            @format [AbstractArray] quote
+
+                @inline __L__ function NAME(TARGET :: AbstractArray{T, 1}) where {T}
+                    body
+                end
+
+                @inline __L__ function NAME(_)
+                    nothing
+                end
+
+                NAME(tag)
+
+            end
+        end
         length(elts) == 0 ?
         (
-            (@typed_as AbstractArray) ∘
+            check_generic_array ∘
             function (body)
                 @format [isempty, body, tag] quote
                     isempty(tag) ? body : failed
@@ -324,7 +344,6 @@ function orderedSeqMatch(tag, elts, mod)
                 else
                     atleast_element_count = atleast_element_count + 1
                     IDENT = mangle(mod)
-                    perf_match = mkPattern(IDENT, elt, mod)
                     index = unpack_begin === nothing ?
                         begin
                             :($TARGET[$atleast_element_count])
@@ -335,17 +354,22 @@ function orderedSeqMatch(tag, elts, mod)
                                 exp
                             end
                         end
-                    push!(
-                        unpack,
-                        let IDENT = IDENT, index = index
-                            function (body)
-                                @format [IDENT, body, index] quote
-                                    IDENT = index
-                                    body
-                                end
-                            end ∘ perf_match
-                        end
-                    )
+                    if elt === :_
+                        push!(unpack, identity)
+                    else
+                        perf_match = mkPattern(IDENT, elt, mod)
+                        push!(
+                            unpack,
+                            let IDENT = IDENT, index = index
+                                function (body)
+                                    @format [IDENT, body, index] quote
+                                        IDENT = index
+                                        body
+                                    end
+                                end ∘ perf_match
+                            end
+                        )
+                    end
                 end
             end
             if unpack_begin !== nothing
@@ -354,18 +378,22 @@ function orderedSeqMatch(tag, elts, mod)
                     length(TARGET) >= atleast_element_count ? body : failed
                 end
                 elt = unpack[unpack_begin]
-                unpack[unpack_begin] = function (body)
-                    @format [body, IDENT, TARGET, unpack_begin, unpack_end, length] quote
-                        IDENT = view(TARGET, unpack_begin: (length(TARGET) - unpack_end))
-                        body
-                    end
-                end ∘ mkPattern(IDENT, elt, mod)
+                if elt === :_
+                    unpack[unpack_begin] = identity
+                else
+                    unpack[unpack_begin] = function (body)
+                        @format [body, IDENT, TARGET, unpack_begin, unpack_end, length] quote
+                            IDENT = view(TARGET, unpack_begin: (length(TARGET) - unpack_end))
+                            body
+                        end
+                    end ∘ mkPattern(IDENT, elt, mod)
+                end
             else
                 check_len = body -> @format [body, TARGET, length, atleast_element_count] quote
-                    length(TARGET) == atleast_element_count ? body : failed
+                    length(TARGET) === atleast_element_count ? body : failed
                 end
             end
-            (@typed_as AbstractArray) ∘ check_len ∘ foldr(patternAnd, unpack)
+            check_generic_array ∘ check_len ∘ foldr(patternAnd, unpack)
 
         end
 end
@@ -429,7 +457,7 @@ defPattern(Pervasives,
         rewrite = (tag, case, mod) ->
         begin
             if !used(:GADT, mod)
-                throw $ SyntaxError("GADT extension hasn't been enabled. Try `@use GADT` and run your codes again.")
+                @syntax_err "GADT extension hasn't been enabled. Try `@use GADT` and run your codes again."
             end
             # Not sure about if there's any other references of `where`,
             # but GADT is particularly important,
@@ -437,7 +465,7 @@ defPattern(Pervasives,
             @match case begin
                 :($hd($(tl...)) where {$(forall...)}) => mkGAppPattern(tag, forall, hd, tl, mod)
                 _ =>
-                    @error "Unknown usage of `where` in pattern region. Current `where` is used for only GADT syntax."
+                    @syntax_err "Unknown usage of `where` in pattern region. Currently `where` is used for only GADT syntax."
             end
         end
 )
