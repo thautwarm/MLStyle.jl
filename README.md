@@ -143,7 +143,7 @@ The benchmark results in dataframe format are available at [this directory](http
 
 - [matrix-benchmark/versus-hw-array.jl](https://github.com/thautwarm/MLStyle.jl/blob/base-2/matrix-benchmark/versus-hw-array.jl)
 
-There is some performamce issues with array patterns.
+There are still some performamce issues with array patterns.
 
 1. Time
 
