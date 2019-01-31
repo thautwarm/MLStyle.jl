@@ -177,7 +177,7 @@ There are still some performamce issues with array patterns.
 [![macrotools](https://github.com/thautwarm/MLStyle.jl/blob/base-2/stats/vs-macrotools(ast)-on-allocs.svg)](https://github.com/thautwarm/MLStyle.jl/blob/base-2/stats/vs-macrotools(ast).txt)
 
 
-- [matrix-benchmark/versus-match.jl](https://github.com/thautwarm/MLStyle.jl/blob/base-2/matrix-benchmark/versus-match(expr).jl)
+- [matrix-benchmark/versus-match.jl](https://github.com/thautwarm/MLStyle.jl/blob/base-2/matrix-benchmark/versus-match.jl)
 
 1. Time
 
@@ -192,7 +192,7 @@ There are still some performamce issues with array patterns.
 
 
 
-- [matrix-benchmark/versus-match.jl](https://github.com/thautwarm/MLStyle.jl/blob/base-2/matrix-benchmark/versus-match(datatype).jl)
+- [matrix-benchmark/versus-match-datatype.jl](https://github.com/thautwarm/MLStyle.jl/blob/base-2/matrix-benchmark/versus-match-datatype.jl)
 
 1. Time
 
