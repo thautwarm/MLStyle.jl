@@ -379,7 +379,7 @@ function orderedSeqMatch(tag, elts, mod)
         function check_generic_array(body)
             @format [AbstractArray] quote
 
-                @inline __L__ function NAME(TARGET :: A) where {N, T, A <: AbstractArray{T, N}}
+                @inline __L__ function NAME(TARGET :: A) where {T, A <: AbstractArray{T}}
                     body
                 end
 

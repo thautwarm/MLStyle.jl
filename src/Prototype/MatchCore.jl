@@ -274,10 +274,9 @@ function mkMatchBody(target, tag_sym, cbl, mod)
               result === nothing ? last : distinguish_unwrap(result)
            end
        end  # end 2
-    return! $
-    quote
-       let $tag_sym = $target
-           $main_logic
+    return! $ @format quote
+       let tag_sym = target
+           main_logic
        end
     end
     end # end 1
@@ -293,8 +292,5 @@ function mkPattern(tag_sym, case :: Any, mod :: Module)
     case = string(case)
     throw $ PatternUnsolvedException("invalid usage or unknown case $case")
 end
-
-
-
 
 end # module end
