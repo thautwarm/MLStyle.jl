@@ -70,7 +70,7 @@ implementations = [
         @capture(ex, struct T_ fields__ end)
         (T, fields)
     end
-    
+
 ]
 
 criterion(x) = (meantime = mean(x.times), allocs = 1 + x.allocs)

@@ -16,13 +16,22 @@ For installation, open package manager mode in Julia shell and `add MLStyle`.
 pkg> add MLStyle#master
 ```
 
+## Index
+- [Preview](#preview)
 
+    - [Homoiconic pattern matching for Julia ASTs](#homoiconic-pattern-matching-for-julia-asts)
+    - [Generalized Algebraic Data Types](#generalized-algebraic-data-types)
+    - [Active Patterns](#active-patterns)
 
+- [Benchmark](#benchmark)
 
+    - [Prerequisite](#prerequisite)
 
+    - [Visualization](#visualization)
 
-
-
+        - [Time Overhead](#time-overhead)
+        - [Allocation](#allocation)
+        - [Gallery](#gallery)
 
 ## Preview
 
@@ -94,6 +103,8 @@ end # RegexMatch("123")
 
 ## Benchmark
 
+### Prerequisite
+
 Recently the rudimentary benchmarks have been finished, which turns out that MLStyle.jl could be extremely fast
 when matching cases are complicated, while in terms of some very simple cases(straightforward destruct shallow tuples, arrays and datatypes without recursive invocations), Match.jl could be faster.
 
@@ -108,7 +119,7 @@ To run these cross-implementation benchmarks, some extra dependencies should be 
 
 - `(v1.1) pkg> add MLStyle#base` for a specific version of MLStyle.jl is required.
 
-After installing dependencies, you can directly benchmark them with `julia matrix_benchmark.jl hw-tuple hw-array match macrotools match-datatype` at the root directory. 
+After installing dependencies, you can directly benchmark them with `julia matrix_benchmark.jl hw-tuple hw-array match macrotools match-datatype` at the root directory.
 
 
 ### Visualization
@@ -130,7 +141,9 @@ The y-label is the ratio of  the implementation's allocation cost to that of the
 
 The benchmark results in dataframe format are available at [this directory](https://github.com/thautwarm/MLStyle.jl/tree/master/stats).
 
-- [matrix-benchmark/versus-hw-array.jl](https://github.com/thautwarm/MLStyle.jl/blob/master/matrix-benchmark/versus-hw-array.jl)
+- [matrix-benchmark/versus-hw-array.jl](https://github.com/thautwarm/MLStyle.jl/blob/base-2/matrix-benchmark/versus-hw-array.jl)
+
+There is some performamce issues with array patterns.
 
 1. Time
 
@@ -141,44 +154,53 @@ The benchmark results in dataframe format are available at [this directory](http
 [![hw-array](https://github.com/thautwarm/MLStyle.jl/blob/base-2/stats/vs-hw(array)-on-allocs.svg)](https://github.com/thautwarm/MLStyle.jl/blob/base-2/stats/vs-hw(array).txt)
 
 
-- [matrix-benchmark/versus-hw-tuple.jl](https://github.com/thautwarm/MLStyle.jl/blob/master/matrix-benchmark/versus-hw-tuple.jl)
+- [matrix-benchmark/versus-hw-tuple.jl](https://github.com/thautwarm/MLStyle.jl/blob/base-2/matrix-benchmark/versus-hw-tuple.jl)
 
 1. Time
 
-[![hw-tuple]()]()
+[![hw-tuple](https://github.com/thautwarm/MLStyle.jl/blob/base-2/stats/vs-hw(tuple)-on-time.svg)](https://github.com/thautwarm/MLStyle.jl/blob/base-2/stats/vs-hw().txt)
 
 2. Allocation
 
-[![hw-tuple]()]()
+[![hw-tuple](https://github.com/thautwarm/MLStyle.jl/blob/base-2/stats/vs-hw(tuple)-on-allocs.svg)](https://github.com/thautwarm/MLStyle.jl/blob/base-2/stats/vs-hw(tuple).txt)
 
-- [matrix-benchmark/versus-macrotools.jl](https://github.com/thautwarm/MLStyle.jl/blob/master/matrix-benchmark/versus-macrotools.jl)
+
+- [matrix-benchmark/versus-macrotools.jl](https://github.com/thautwarm/MLStyle.jl/blob/base-2/matrix-benchmark/versus-macrotools.jl)
 
 1. Time
 
-[![macrotools]()]()
+[![macrotools](https://github.com/thautwarm/MLStyle.jl/blob/base-2/stats/vs-macrotools(ast)-on-time.svg)](https://github.com/thautwarm/MLStyle.jl/blob/base-2/stats/vs-macrotools(ast).txt)
+
 
 2. Allocation
 
-[![macrotools]()]()
+[![macrotools](https://github.com/thautwarm/MLStyle.jl/blob/base-2/stats/vs-macrotools(ast)-on-allocs.svg)](https://github.com/thautwarm/MLStyle.jl/blob/base-2/stats/vs-macrotools(ast).txt)
 
 
-- [matrix-benchmark/versus-match.jl](https://github.com/thautwarm/MLStyle.jl/blob/master/matrix-benchmark/versus-match.jl)
+- [matrix-benchmark/versus-match.jl](https://github.com/thautwarm/MLStyle.jl/blob/base-2/matrix-benchmark/versus-match(expr).jl)
 
 1. Time
 
-[![match.jl]()]()
+
+[![match.jl](https://github.com/thautwarm/MLStyle.jl/blob/base-2/stats/vs-match(expr)-on-time.svg)](https://github.com/thautwarm/MLStyle.jl/blob/base-2/stats/vs-match(expr).txt)
+
+
 
 2. Allocation
 
-[![match.jl]()]()
+[![match.jl](https://github.com/thautwarm/MLStyle.jl/blob/base-2/stats/vs-match(expr)-on-allocs.svg)](https://github.com/thautwarm/MLStyle.jl/blob/base-2/stats/vs-match(expr).txt)
 
 
-- [matrix-benchmark/versus-match-datatype.jl](https://github.com/thautwarm/MLStyle.jl/blob/master/matrix-benchmark/versus-match-datatype.jl)
+
+- [matrix-benchmark/versus-match.jl](https://github.com/thautwarm/MLStyle.jl/blob/base-2/matrix-benchmark/versus-match(datatype).jl)
 
 1. Time
 
-[![datatype]()]()
+
+[![match.jl](https://github.com/thautwarm/MLStyle.jl/blob/base-2/stats/vs-match(datatype)-on-time.svg)](https://github.com/thautwarm/MLStyle.jl/blob/base-2/stats/vs-match(datatype).txt)
+
+
 
 2. Allocation
 
-[![datatype]()]()
+[![match.jl](https://github.com/thautwarm/MLStyle.jl/blob/base-2/stats/vs-match(datatype)-on-allocs.svg)](https://github.com/thautwarm/MLStyle.jl/blob/base-2/stats/vs-match(datatype).txt)

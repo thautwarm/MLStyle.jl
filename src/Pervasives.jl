@@ -300,7 +300,7 @@ defAppPattern(Pervasives,
 
 # arbitray ordered sequential patterns match
 function orderedSeqMatch(tag, elts, mod)
-        
+
         TARGET = mangle(mod)
         NAME = mangle(mod)
         function check_generic_array(body)

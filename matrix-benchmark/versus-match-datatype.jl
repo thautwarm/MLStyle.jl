@@ -38,9 +38,9 @@ data = [
     Symbol("ok1") => Normal1(2, 3, 1.0),
 
     Symbol("fail1") => Normal1(2, 3, ()),
-    
+
     Symbol("ok2") => Normal1(2, 3, Normal2(1)),
-    
+
     Symbol("fail2") => Normal1(2, 3, Normal2(3)),
 
     Symbol("ok3") => Generic1(3, 3),
@@ -63,7 +63,7 @@ implementations = [
         Generic1(a = 3, b = 3) -> 3
         Generic2((1, 2)) -> 4
         ::GenericData{String} -> 5
-        _ -> 0 
+        _ -> 0
     end),
     Symbol("Match.jl") => function (x)
         Match.@match x begin
@@ -72,7 +72,7 @@ implementations = [
             Generic1(3, 3) => 3
             Generic2((1, 2)) => 4
             _ :: GenericData{String} => 5
-            _ => 0 
+            _ => 0
         end
     end
 ]
