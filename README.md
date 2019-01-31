@@ -16,49 +16,13 @@ For installation, open package manager mode in Julia shell and `add MLStyle`.
 pkg> add MLStyle#master
 ```
 
-## Benchmark
-
-Recently the rudimentary benchmarks have been finished, which turns out that MLStyle.jl could be extremely fast
-when matching cases are complicated, while in terms of some very simple cases(straightforward destruct shallow tuples, arrays and datatypes without recursive invocations), Match.jl could be faster.
-
-All benchmark scripts are provided at directory [Matrix-Benchmark](https://github.com/thautwarm/MLStyle.jl/blob/master/matrix-benchmark).
-
-
-To run these cross-implementation benchmarks, some extra dependencies should be installed:
-
-- `(v1.1) pkg> add https://github.com/thautwarm/Benchmarkplotting.jl#master` for making cross-implementation benchmark methods and plotting.
-
-- `(v1.1) pkg> add Gadfly MacroTools Match BenchmarkTools StatsBase Statistics ArgParse DataFrames`.
-
-- `(v1.1) pkg> add MLStyle#base` for a specific version of MLStyle.jl is required.
-
-After installing dependencies, you can directly benchmark them with `julia matrix_benchmark.jl hw-tuple hw-array match macrotools match-datatype` at the root directory. 
-
-
-### Visualization
-
-- Time Overhead
-
-In x-axis, after the name of test-case is the least time-consuming one's index, the unit is `ns`).
-
-The y-label is the ratio of the implementation's time cost to that of the least time-consuming.
-
-
-- Allocation
-
-In x-axis, after the name of test-case is the least allocted one's index, the unit is `_ -> (_ + 1) bytes`).
-
-The y-label is the ratio of  the implementation's allocation cost to that of the least allocted.
-
-- Gallery
-
-Check directory [stats](https://github.com/thautwarm/MLStyle.jl/tree/master/stats).
 
 
 
-### Compare With Other Languages
 
-Benchmark scripts for any other language are welcome. We're curious about the actual performance ranking of MLStyle.jl.
+
+
+
 
 ## Preview
 
@@ -127,3 +91,94 @@ end
     _ => @error ""
 end # RegexMatch("123")
 ```
+
+## Benchmark
+
+Recently the rudimentary benchmarks have been finished, which turns out that MLStyle.jl could be extremely fast
+when matching cases are complicated, while in terms of some very simple cases(straightforward destruct shallow tuples, arrays and datatypes without recursive invocations), Match.jl could be faster.
+
+All benchmark scripts are provided at directory [Matrix-Benchmark](https://github.com/thautwarm/MLStyle.jl/blob/master/matrix-benchmark).
+
+
+To run these cross-implementation benchmarks, some extra dependencies should be installed:
+
+- `(v1.1) pkg> add https://github.com/thautwarm/Benchmarkplotting.jl#master` for making cross-implementation benchmark methods and plotting.
+
+- `(v1.1) pkg> add Gadfly MacroTools Match BenchmarkTools StatsBase Statistics ArgParse DataFrames`.
+
+- `(v1.1) pkg> add MLStyle#base` for a specific version of MLStyle.jl is required.
+
+After installing dependencies, you can directly benchmark them with `julia matrix_benchmark.jl hw-tuple hw-array match macrotools match-datatype` at the root directory. 
+
+
+### Visualization
+
+#### Time Overhead
+
+In x-axis, after the name of test-case is the least time-consuming one's index, the unit is `ns`).
+
+The y-label is the ratio of the implementation's time cost to that of the least time-consuming.
+
+
+#### Allocation
+
+In x-axis, after the name of test-case is the least allocted one's index, the unit is `_ -> (_ + 1) bytes`).
+
+The y-label is the ratio of  the implementation's allocation cost to that of the least allocted.
+
+#### Gallery
+
+The benchmark results in dataframe format are available at [this directory](https://github.com/thautwarm/MLStyle.jl/tree/master/stats).
+
+- [matrix-benchmark/versus-hw-array.jl](https://github.com/thautwarm/MLStyle.jl/blob/master/matrix-benchmark/versus-hw-array.jl)
+
+1. Time
+
+[![hw-array]()]()
+
+2. Allocation:
+
+[![hw-array]()]()
+
+
+- [matrix-benchmark/versus-hw-tuple.jl](https://github.com/thautwarm/MLStyle.jl/blob/master/matrix-benchmark/versus-hw-tuple.jl)
+
+1. Time
+
+[![hw-tuple]()]()
+
+2. Allocation
+
+[![hw-tuple]()]()
+
+- [matrix-benchmark/versus-macrotools.jl](https://github.com/thautwarm/MLStyle.jl/blob/master/matrix-benchmark/versus-macrotools.jl)
+
+1. Time
+
+[![macrotools]()]()
+
+2. Allocation
+
+[![macrotools]()]()
+
+
+- [matrix-benchmark/versus-match.jl](https://github.com/thautwarm/MLStyle.jl/blob/master/matrix-benchmark/versus-match.jl)
+
+1. Time
+
+[![match.jl]()]()
+
+2. Allocation
+
+[![match.jl]()]()
+
+
+- [matrix-benchmark/versus-match-datatype.jl](https://github.com/thautwarm/MLStyle.jl/blob/master/matrix-benchmark/versus-match-datatype.jl)
+
+1. Time
+
+[![datatype]()]()
+
+2. Allocation
+
+[![datatype]()]()
