@@ -134,11 +134,11 @@ The benchmark results in dataframe format are available at [this directory](http
 
 1. Time
 
-[![hw-array]()]()
+[![hw-array](https://github.com/thautwarm/MLStyle.jl/blob/base-2/stats/vs-hw(array)-on-time.svg)](https://github.com/thautwarm/MLStyle.jl/blob/base-2/stats/vs-hw(array).txt)
 
 2. Allocation:
 
-[![hw-array]()]()
+[![hw-array](https://github.com/thautwarm/MLStyle.jl/blob/base-2/stats/vs-hw(array)-on-allocs.svg)](https://github.com/thautwarm/MLStyle.jl/blob/base-2/stats/vs-hw(array).txt)
 
 
 - [matrix-benchmark/versus-hw-tuple.jl](https://github.com/thautwarm/MLStyle.jl/blob/master/matrix-benchmark/versus-hw-tuple.jl)
