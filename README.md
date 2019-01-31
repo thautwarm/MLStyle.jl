@@ -149,7 +149,7 @@ There are still some performamce issues with array patterns.
 
 [![hw-array](https://github.com/thautwarm/MLStyle.jl/blob/base-2/stats/vs-hw(array)-on-time.svg)](https://github.com/thautwarm/MLStyle.jl/blob/base-2/stats/vs-hw(array).txt)
 
-2. Allocation:
+2. Allocation
 
 [![hw-array](https://github.com/thautwarm/MLStyle.jl/blob/base-2/stats/vs-hw(array)-on-allocs.svg)](https://github.com/thautwarm/MLStyle.jl/blob/base-2/stats/vs-hw(array).txt)
 
