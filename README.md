@@ -12,6 +12,9 @@ Rich features are provided by MLStyle.jl and you can check [documents](https://t
 
 For installation, open package manager mode in Julia shell and `add MLStyle`.
 
+For more examples, check [this project](https://github.com/thautwarm/MLStyle-Playground) which will be frequently updated to present some interesting uses of MLStyle.jl.
+
+
 ```
 pkg> add MLStyle#master
 ```
