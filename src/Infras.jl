@@ -12,10 +12,6 @@ macro format(args, template)
     esc(format(args, template))
 end
 
-macro format(template)
-    esc(format(template))
-end
-
 export @typed_as
 """
 this macro provide a convenient and type-stable way to generate

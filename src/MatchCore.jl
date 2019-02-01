@@ -223,9 +223,9 @@ end
 function mk_match_body(target, tag_sym, cbl, mod)
     bind(getBy $ loc) do loc # start 1
     final =
-        @format [loc] quote
+        @format [loc, throw, InternalException] quote
             loc
-            throw(($InternalException)("Non-exhaustive pattern found!"))
+            throw(InternalException("Non-exhaustive pattern found!"))
         end
     result = mangle(mod)
     cbl = collect(cbl)
@@ -244,7 +244,7 @@ function mk_match_body(target, tag_sym, cbl, mod)
               result === failed ? last : result
            end
        end  # end 2
-    return! $ @format quote
+    return! $ @format [tag_sym, target, main_logic] quote
        let tag_sym = target
            main_logic
        end

@@ -305,8 +305,9 @@ function ordered_seq_match(tag, elts, mod)
 
         TARGET = mangle(mod)
         NAME = mangle(mod)
+        T = mangle(mod)
         function check_generic_array(body)
-            @format [AbstractArray] quote
+            @format [AbstractArray, NAME, TARGET, body, T, tag] quote
 
                 @inline __L__ function NAME(TARGET :: AbstractArray{T, 1}) where {T}
                     body

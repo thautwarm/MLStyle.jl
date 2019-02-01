@@ -52,10 +52,13 @@ function format(args, template)
     function  dispatch(_)
         throw("Unknown argtype")
     end
+    
     constlist = map(dispatch, args.args)
     constlist = Expr(:vect, constlist...)
     config = Expr(:call, Dict{Symbol, Any}, constlist)
-    Expr(:call, render, template, Expr(:call, merge, :(Base.@locals), config))
+    
+    wrap = @static VERSION < v"1.1.0" ? (x -> x) : (x -> Expr(:call, merge, :(Base.@locals), x)) 
+    Expr(:call, render, template, wrap(config))
 end
 
 function format(template)
