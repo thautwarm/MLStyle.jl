@@ -1,0 +1,12 @@
+8×4 DataFrames.DataFrame
+│ Row │ implementation │ case           │ allocs  │ meantime │
+│     │ Symbol         │ Symbol         │ Float64 │ Float64  │
+├─────┼────────────────┼────────────────┼─────────┼──────────┤
+│ 1   │ MLStyle        │ simple1        │ 1.0     │ 1.0      │
+│ 2   │ MLStyle        │ simple2        │ 1.0     │ 1.0      │
+│ 3   │ MLStyle        │ N(fields) = 5  │ 1.0     │ 1.0      │
+│ 4   │ MLStyle        │ N(fields) = 10 │ 1.0     │ 1.0      │
+│ 5   │ MacroTools     │ simple1        │ 7.8     │ 37.3973  │
+│ 6   │ MacroTools     │ simple2        │ 7.8     │ 23.8783  │
+│ 7   │ MacroTools     │ N(fields) = 5  │ 4.8     │ 12.4946  │
+│ 8   │ MacroTools     │ N(fields) = 10 │ 3.0     │ 6.6777   │

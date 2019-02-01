@@ -1,0 +1,25 @@
+21×4 DataFrames.DataFrame
+│ Row │ implementation │ case     │ allocs  │ meantime │
+│     │ Symbol         │ Symbol   │ Float64 │ Float64  │
+├─────┼────────────────┼──────────┼─────────┼──────────┤
+│ 1   │ MLStyle        │ ok_case1 │ 1.0     │ 1.0      │
+│ 2   │ MLStyle        │ ok_case2 │ 1.0     │ 1.00375  │
+│ 3   │ MLStyle        │ ok_case3 │ 1.0     │ 1.20515  │
+│ 4   │ MLStyle        │ ok_case4 │ 1.0     │ 1.0      │
+│ 5   │ MLStyle        │ fail1    │ 1.0     │ 1.0      │
+│ 6   │ MLStyle        │ fail2    │ 1.0     │ 1.01041  │
+│ 7   │ MLStyle        │ fail3    │ 1.0     │ 1.15981  │
+│ 8   │ Match.jl       │ ok_case1 │ 1.0     │ 1.03127  │
+│ 9   │ Match.jl       │ ok_case2 │ 1.0     │ 1.0      │
+│ 10  │ Match.jl       │ ok_case3 │ 1.0     │ 1.25064  │
+│ 11  │ Match.jl       │ ok_case4 │ 1.0     │ 1.10591  │
+│ 12  │ Match.jl       │ fail1    │ 1.0     │ 1.06803  │
+│ 13  │ Match.jl       │ fail2    │ 1.0     │ 1.0      │
+│ 14  │ Match.jl       │ fail3    │ 1.0     │ 1.19618  │
+│ 15  │ HandWritten    │ ok_case1 │ 1.0     │ 1.00103  │
+│ 16  │ HandWritten    │ ok_case2 │ 1.0     │ 1.02906  │
+│ 17  │ HandWritten    │ ok_case3 │ 1.0     │ 1.0      │
+│ 18  │ HandWritten    │ ok_case4 │ 2.5     │ 3.74331  │
+│ 19  │ HandWritten    │ fail1    │ 1.0     │ 1.04387  │
+│ 20  │ HandWritten    │ fail2    │ 1.0     │ 1.03181  │
+│ 21  │ HandWritten    │ fail3    │ 1.0     │ 1.0      │
