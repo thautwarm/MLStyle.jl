@@ -1,0 +1,154 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Algebraic Data Types · MLStyle.jl</title><script>(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-89508993-1', 'auto');
+ga('send', 'pageview');
+</script><link href="https://cdnjs.cloudflare.com/ajax/libs/normalize/4.2.0/normalize.min.css" rel="stylesheet" type="text/css"/><link href="https://fonts.googleapis.com/css?family=Lato|Roboto+Mono" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.2.0/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link href="../../assets/documenter.css" rel="stylesheet" type="text/css"/></head><body><nav class="toc"><h1>MLStyle.jl</h1><select id="version-selector" onChange="window.location.href=this.value" style="visibility: hidden"></select><form class="search" id="search-form" action="../../search/"><input id="search-query" name="q" type="text" placeholder="Search docs"/></form><ul><li><a class="toctext" href="../../">Home</a></li><li><span class="toctext">Syntax</span><ul><li class="current"><a class="toctext" href>Algebraic Data Types</a><ul class="internal"><li><a class="toctext" href="#Syntax-1">Syntax</a></li><li><a class="toctext" href="#Qualifier-1">Qualifier</a></li><li><a class="toctext" href="#Example:-Describe-arithmetic-operations-1">Example: Describe arithmetic operations</a></li><li><a class="toctext" href="#Generalized-ADT-1">Generalized ADT</a></li></ul></li><li><a class="toctext" href="../pattern/">Pattern</a></li><li><a class="toctext" href="../pattern-function/">Pattern function</a></li></ul></li></ul></nav><article id="docs"><header><nav><ul><li>Syntax</li><li><a href>Algebraic Data Types</a></li></ul><a class="edit-page" href="https://github.com/thautwarm/MLStyle.jl/blob/master/docs/src/syntax/adt.md"><span class="fa"></span> Edit on GitHub</a></nav><hr/><div id="topbar"><span>Algebraic Data Types</span><a class="fa fa-bars" href="#"></a></div></header><h1><a class="nav-anchor" id="Algebraic-Data-Types-1" href="#Algebraic-Data-Types-1">Algebraic Data Types</a></h1><h2><a class="nav-anchor" id="Syntax-1" href="#Syntax-1">Syntax</a></h2><pre><code class="language-none">
+&lt;Seq&gt; a         = a (&#39;,&#39; a)*
+&lt;TypeName&gt;      = %Uppercase identifier%
+&lt;fieldname&gt;     = %Lowercase identifier%
+&lt;TVar&gt;          = %Uppercase identifier%
+&lt;ConsName&gt;      = %Uppercase identifier%
+&lt;ImplicitTVar&gt;  = %Uppercase identifier%
+&lt;Type&gt;          = &lt;TypeName&gt; [ &#39;{&#39; &lt;Seq TVar&gt; &#39;}&#39; ]
+&lt;Module&gt;        = %Uppercase identifier%
+
+&lt;ADT&gt;           =
+    &#39;@data&#39; [&#39;public&#39; | &#39;internal&#39; | &#39;visible&#39; &#39;in&#39; &lt;Seq Module&gt;] &lt;Type&gt; &#39;begin&#39;
+
+        (&lt;ConsName&gt;[{&lt;Seq TVar&gt;}] (
+            &lt;Seq fieldname&gt; | &lt;Seq Type&gt; | &lt;Seq (&lt;fieldname&gt; :: &lt;Type&gt;)&gt;
+        ))*
+
+    &#39;end&#39;
+
+&lt;GADT&gt;           =
+    &#39;@data&#39; [&#39;public&#39; | &#39;internal&#39;] &lt;Type&gt; &#39;begin&#39;
+
+        (&lt;ConsName&gt;[{&lt;Seq TVar&gt;}] &#39;::&#39;
+           ( &#39;(&#39;
+                (&lt;Seq fieldname&gt; | &lt;Seq Type&gt; | &lt;Seq (&lt;fieldname&gt; :: &lt;Type&gt;)&gt;)
+             &#39;)&#39;
+              | &lt;fieldname&gt;
+              | &lt;Type&gt;
+           )
+           &#39;=&gt;&#39; &lt;Type&gt; [&#39;where&#39; &#39;{&#39; &lt;Seq ImplicitTvar&gt; &#39;}&#39;]
+        )*
+
+    &#39;end&#39;
+</code></pre><h2><a class="nav-anchor" id="Qualifier-1" href="#Qualifier-1">Qualifier</a></h2><p>There are 3 default qualifiers for ADT definition:</p><ul><li><code>internal</code>: The pattern created by the ADT can only be used in the module it&#39;s defined in.</li><li><code>public</code>: If the constructor is imported into current module, the corresponding pattern will be available.</li><li><code>visible in [mod...]</code>: Define a set of modules where the pattern is available.</li></ul><h2><a class="nav-anchor" id="Example:-Describe-arithmetic-operations-1" href="#Example:-Describe-arithmetic-operations-1">Example: Describe arithmetic operations</a></h2><pre><code class="language-julia">using MLStyle
+@data internal Arith begin
+    Number(Int)
+    Minus(Arith, Arith)
+    Mult(Arith, Arith)
+    Divide(Arith, Arith)
+end</code></pre><p>Above codes makes a clarified description about <code>Arithmetic</code> and provides a corresponding implementation.</p><p>If you want to transpile above ADTs to some specific language, there is a clear step:</p><pre><code class="language-julia">
+eval_arith(arith :: Arith) =
+    let wrap_op(op)  = (a, b) -&gt; op(eval_arith(a), eval_arith(b)),
+        (+, -, *, /) = map(wrap_op, (+, -, *, /))
+        @match arith begin
+            Number(v)       =&gt; v
+            Minus(fst, snd) =&gt; fst - snd
+            Mult(fst, snd)   =&gt; fst * snd
+            Divide(fst, snd) =&gt; fst / snd
+        end
+    end
+
+eval_arith(
+    Minus(
+        Number(2),
+        Divide(Number(20),
+               Mult(Number(2),
+                    Number(5)))))
+# =&gt; 0</code></pre><h2><a class="nav-anchor" id="Generalized-ADT-1" href="#Generalized-ADT-1">Generalized ADT</a></h2><p>Note that, for GADTs would use <code>where</code> syntax as a pattern, it means that you cannot use GADTs and your custom <code>where</code> patterns at the same time. To resolve this, we introduce the extension system like Haskell here.</p><p>Since that you can define your own <code>where</code> pattern and export it to any modules. Given an arbitrary Julia module, if you don&#39;t use <code>@use GADT</code> to enable GADT extensions and, the qualifier of the your <code>where</code> pattern makes it visible here(current module), your own <code>where</code> pattern could work here.</p><p>Here&#39;s a simple intepreter implemented using GADTs.</p><p>Firstly, enable GADT extension.</p><pre><code class="language-julia">using MLStyle
+@use GADT</code></pre><p>Then define the function type.</p><pre><code class="language-julia">import Base: convert
+
+struct Fun{T, R}
+    fn :: Function
+end
+
+function (typed_fn :: Fun{T, R})(arg :: T) :: R where {T, R}
+    typed_fn.fn(arg)
+end
+
+function convert(::Type{Fun{T, R}}, fn :: Function) where {T, R}
+    Fun{T, R}(fn)
+end
+
+function convert(::Type{Fun{T, R}}, fn :: Fun{C, D}) where{T, R, C &lt;: T, D &lt;: R}
+    Fun{T, R}(fn.fn)
+end
+
+⇒(::Type{A}, ::Type{B}) where {A, B} = Fun{A, B}</code></pre><p>And now let&#39;s define the operators of our abstract machine.</p><pre><code class="language-julia">
+@data public Exp{T} begin
+
+    # The symbol referes to some variable in current context.
+    Sym       :: Symbol =&gt; Exp{A} where {A}
+
+    # Value.
+    Val{A}    :: A =&gt; Exp{A}
+
+    # Function application.
+    # add constraints to implicit tvars to get covariance
+    App{A, B} :: (Exp{Fun{A, B}}, Exp{A_}) =&gt; Exp{B} where {A_ &lt;: A}
+
+    # Lambda/Anonymous function.
+    Lam{A, B} :: (Symbol, Exp{B}) =&gt; Exp{Fun{A, B}}
+
+    # If expression
+    If{A}     :: (Exp{Bool}, Exp{A}, Exp{A}) =&gt; Exp{A}
+end</code></pre><p>Something deserved to be remark here: when using this GADT syntax like</p><pre><code class="language-none">    ConsName{TVars1...} :: ... =&gt; Exp{TVars2...} where {TVar3...}</code></pre><p>You can add constraints to both <code>TVars1</code> and <code>TVars3</code>, and <code>TVars2</code> should be always empty or a sequence of <code>Symbol</code>s. Furthermore, <code>TVars3</code> are the so-called implicit type variables, and <code>TVars1</code> are the normal generic type variables.</p><p>Let&#39;s back to our topic.</p><p>To make function abstractions, we need a <code>substitute</code> operation.</p><pre><code class="language-julia">
+&quot;&quot;&quot;
+e.g: substitute(some_exp, :a =&gt; another_exp)
+&quot;&quot;&quot;
+function substitute(template :: Exp{T}, pair :: Tuple{Symbol, Exp{G}}) where {T, G}
+    (sym, exp) = pair
+    @match template begin
+        Sym(&amp;sym) =&gt; exp
+        Val(_) =&gt; template
+        App(f, a) =&gt; App(substitute(f, pair), substitute(a, pair)) :: Exp{T}
+        Lam(&amp;sym, exp) =&gt; template
+        If(cond, exp1, exp2) =&gt;
+            let (cond, exp1, exp2) = map(substitute, (cond, exp1, exp2))
+                If(cond, exp1, exp2) :: Exp{T}
+            end
+    end
+end</code></pre><p>Then we could write how to execute our abstract machine.</p><pre><code class="language-julia">function eval_exp(exp :: Exp{T}, ctx :: Dict{Symbol, Any}) where T
+    @match exp begin
+        Sym(a) =&gt; (ctx[a] :: T, ctx)
+        Val(a :: T) =&gt; (a, ctx)
+        App{A, T, A_}(f :: Exp{Fun{A, T}}, arg :: Exp{A_}) where {A, A_ &lt;: A} =&gt;
+            let (f, ctx) = eval_exp(f, ctx),
+                (arg, ctx) = eval_exp(arg, ctx)
+                (f(arg), ctx)
+            end
+        Lam{A, B}(sym, exp::Exp{B}) where {A, B} =&gt;
+            let f(x :: A) = begin
+                    A
+                    eval_exp(substitute(exp, sym =&gt; Val(x)), ctx)[1]
+                end
+
+                (f, ctx)
+            end
+        If(cond, exp1, exp2) =&gt;
+            let (cond, ctx) = eval_exp(cond, ctx)
+                eval_exp(cond ? exp1 : exp2, ctx)
+            end
+    end
+end</code></pre><p>This <code>eval_exp</code> takes 2 arguments, one of which is an <code>Exp{T}</code>, while another is the store(you can regard it as the scope), the return is a tuple, the first of which is a value typed <code>T</code> and the second is the new store after the execution.</p><p>Following codes are about how to use this abstract machine.</p><pre><code class="language-julia">add = Val{Number ⇒ Number ⇒ Number}(x -&gt; y -&gt; x + y)
+sub = Val{Number ⇒ Number ⇒ Number}(x -&gt; y -&gt; x - y)
+gt = Val{Number ⇒ Number ⇒ Bool}(x -&gt; y -&gt; x &gt; y)
+ctx = Dict{Symbol, Any}()
+
+@assert 3 == eval_exp(App(App(add, Val(1)), Val(2)), ctx)[1]
+@assert -1 == eval_exp(App(App(sub, Val(1)), Val(2)), ctx)[1]
+@assert 1 == eval_exp(
+    If(
+        App(App(gt, Sym{Int}(:x)), Sym{Int}(:y)),
+        App(App(sub, Sym{Int}(:x)), Sym{Int}(:y)),
+        App(App(sub, Sym{Int}(:y)), Sym{Int}(:x))
+    ), Dict{Symbol, Any}(:x =&gt; 1, :y =&gt; 2))[1]
+</code></pre><footer><hr/><a class="previous" href="../../"><span class="direction">Previous</span><span class="title">Home</span></a><a class="next" href="../pattern/"><span class="direction">Next</span><span class="title">Pattern</span></a></footer></article></body></html>
