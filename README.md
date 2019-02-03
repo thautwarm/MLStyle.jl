@@ -36,6 +36,8 @@ pkg> add MLStyle
         - [Time Overhead](#time-overhead)
         - [Allocation](#allocation)
         - [Gallery](#gallery)
+        
+- [Contributing to MLStyle](https://github.com/thautwarm/MLStyle.jl#contributing-to-mlstyle)
 
 ## Preview
 
@@ -212,7 +214,7 @@ There are still some performamce issues with array patterns.
 
 ## Contributing to MLStyle
 
-Thanks to all individuals referred in [Acknowledgements](./acknowledgements.txt).
+Thanks to all individuals referred in [Acknowledgements](./acknowledgements.txt)!
 
 
 Feel free to ask questions about usage, development or extensions about MLStyle at [Gitter Room](https://gitter.im/MLStyle-jl/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge).
