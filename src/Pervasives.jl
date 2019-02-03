@@ -16,7 +16,7 @@ function mk_pat_by(f)
 end
 
 def_pattern(Pervasives,
-        predicate = x -> x isa Int,
+        predicate = x -> x isa Union{Int, String, Nothing},
         rewrite = mk_pat_by(===)
 )
 
@@ -60,6 +60,10 @@ def_pattern(Pervasives,
         rewrite = (_, _, _) -> identity
 )
 
+def_pattern(Pervasives,
+        predicate = x -> x isa Symbol && x == :nothing,
+        rewrite = mk_pat_by(===)
+)
 
 to_capture(s)::Bool = !isempty(s) && islowercase(s[1])
 

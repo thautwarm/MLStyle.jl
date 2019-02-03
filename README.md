@@ -207,3 +207,4 @@ There are still some performamce issues with array patterns.
 2. Allocation
 
 [![match.jl](https://github.com/thautwarm/MLStyle.jl/blob/base-2/stats/vs-match(datatype)-on-allocs.svg)](https://github.com/thautwarm/MLStyle.jl/blob/base-2/stats/vs-match(datatype).txt)
+
