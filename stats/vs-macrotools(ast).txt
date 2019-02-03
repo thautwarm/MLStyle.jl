@@ -6,7 +6,7 @@
 │ 2   │ MLStyle        │ simple2        │ 1.0     │ 1.0      │
 │ 3   │ MLStyle        │ N(fields) = 5  │ 1.0     │ 1.0      │
 │ 4   │ MLStyle        │ N(fields) = 10 │ 1.0     │ 1.0      │
-│ 5   │ MacroTools     │ simple1        │ 7.3125  │ 30.4274  │
-│ 6   │ MacroTools     │ simple2        │ 6.88235 │ 19.9241  │
-│ 7   │ MacroTools     │ N(fields) = 5  │ 4.0     │ 9.836    │
-│ 8   │ MacroTools     │ N(fields) = 10 │ 2.41176 │ 5.49335  │
+│ 5   │ MacroTools     │ simple1        │ 7.8     │ 33.7361  │
+│ 6   │ MacroTools     │ simple2        │ 7.8     │ 21.9787  │
+│ 7   │ MacroTools     │ N(fields) = 5  │ 4.8     │ 11.478   │
+│ 8   │ MacroTools     │ N(fields) = 10 │ 3.0     │ 6.29458  │

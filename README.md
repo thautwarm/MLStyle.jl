@@ -127,6 +127,7 @@ To run these cross-implementation benchmarks, some extra dependencies should be 
 
 After installing dependencies, you can directly benchmark them with `julia matrix_benchmark.jl hw-tuple hw-array match macrotools match-datatype` at the root directory.
 
+The benchmarks presented here are made by Julia **v1.1** on **Fedora 28**. For reports made on **Win10**, check [stats/windows/](https://github.com/thautwarm/MLStyle.jl/tree/master/stats/windows) directory.
 
 ### Visualization
 
@@ -164,7 +165,7 @@ There are still some performamce issues with array patterns.
 
 1. Time
 
-[![hw-tuple](https://github.com/thautwarm/MLStyle.jl/blob/base-2/stats/vs-hw(tuple)-on-time.svg)](https://github.com/thautwarm/MLStyle.jl/blob/base-2/stats/vs-hw().txt)
+[![hw-tuple](https://github.com/thautwarm/MLStyle.jl/blob/base-2/stats/vs-hw(tuple)-on-time.svg)](https://github.com/thautwarm/MLStyle.jl/blob/base-2/stats/vs-hw(tuple).txt)
 
 2. Allocation
 
