@@ -4,6 +4,7 @@ using MLStyle.Infras
 using MLStyle.Extension
 using MLStyle.Err
 using MLStyle.toolz: ($), isCase
+
 import MLStyle.Infras: mk_gapp_pattern
 
 @use GADT
@@ -15,8 +16,10 @@ function mk_pat_by(f)
      end
 end
 
+const strict_eq_types = @static VERSION < v"1.1.0" ? Union{Int, Nothing} : Union{Int, String, Nothing}
+
 def_pattern(Pervasives,
-        predicate = x -> x isa Union{Int, String, Nothing},
+        predicate = x -> x isa strict_eq_types,
         rewrite = mk_pat_by(===)
 )
 
