@@ -2,19 +2,22 @@ using MLStyle
 using DataFrames
 
 ARG = Symbol("MQuery.ARG") # we just need limited mangled symbols here.
+TYPE = Symbol("MQuery.TYPE")
+TYPE_ROOT = Symbol("MQuery.TYPE_ROOT")
+
 IN_FIELDS = Symbol("MQuery.IN.FIELDS")
 IN_SOURCE = Symbol("MQuery.IN.SOURCE")
 ELT = Symbol("MQuery.ELT")
 N = Symbol("MQuery.N")
 GROUPS = Symbol("MQuery.GROUPS")
 GROUP_KEY = Symbol("MQuery.GROUP_KEY")
-AGG_RANK = Symbol("MQuery.AGG_RANK")
+GROUP_FN = Symbol("MQuery.GROUP_FN")
 AGG = Symbol("MQuery.AGG")
-
 _gen_sym_count = 0
 
+const MAX_FIELDS = 10
 function gen_sym()
-    global _gen_sym_count 
+    global _gen_sym_count
     let sym = Symbol("MQuery.TMP.", _gen_sym_count)
         _gen_sym_count = _gen_sym_count  + 1
         sym
@@ -24,37 +27,79 @@ end
 ismacro(x :: Expr) = Meta.isexpr(x, :macrocall)
 ismacro(_) = false
 
-function codegen(node :: Expr)
-    (generate, args) = @match node begin
-        :(@select $(::LineNumberNode) $args) || :(@select $args) => 
-            (generate_select, args)
+function get_fields
+end
 
-        :(@where $(::LineNumberNode) $args) || :(@where $args)=> 
-            (generate_where, args)
-        
-        :(@groupby $(::LineNumberNode) $args) || :(@groupby $args) => 
-            (generate_groupby, args)
+function get_records
+end
 
-        :(@orderby $(::LineNumberNode) $args) || :(@orderby $args) => 
-            (generate_orderby, args)
-            
-        :(@having $(::LineNumberNode) $args) || :(@having $args) => 
-            (generate_having, args)
-           
-        :(@limit $(::LineNumberNode) $args) || :(@limit $args) => 
-            (generate_limit, args)
+function build_result
+end
+
+function return_type(f, t)
+    ts = Base.return_types(f, (t,))
+    if length(ts) === 1
+        ts[1]
+    else
+        Union{ts...}
     end
+end
 
-    args = @match args begin
-        Expr(:tuple, args...) => args
-        a => [a]
+for i = 1:MAX_FIELDS
+    types = [Symbol("T", j) for j = 1:i]
+    inp = :(Type{Tuple{$(types...)}})
+    out = Expr(:vect, [:(Vector{$t}) for t in types]...)
+    @eval type_aggregate(n::Int, ::$inp) where {$(types...)} = $out
+end
+
+type_aggregate(n::Int, ::Type{Any}) = fill(Vector{Any}, n)
+
+@inline function infer(::Type{T}, fields :: NTuple{N, Symbol}, gen :: Base.Generator) where {N, T}
+    out_t = return_type(gen.f, T)
+    (fields, out_t, gen)
+end
+
+for i = 1:MAX_FIELDS
+    types = [Symbol("T", j) for j = 1:i]
+    inp = :(Type{Tuple{$(types...)}})
+    out = Expr(:vect, types...)
+    @eval type_unpack(n::Int, ::$inp) where {$(types...)} = $out
+end
+
+function type_unpack(n::Int, x :: Type{Any})
+    fill(Any, n)
+end
+
+function query_routine(assigns, result)
+    inner_expr ->
+    Expr(:let,
+         Expr(:block,
+              Expr(:(=), Expr(:tuple, IN_FIELDS, TYPE, IN_SOURCE), inner_expr),
+              assigns...
+          ),
+         result
+     )
+end
+
+function flatten_macros(node :: Expr)
+    @match node begin
+    Expr(:macrocall, op :: Symbol, ::LineNumberNode, arg) ||
+    Expr(:macrocall, op :: Symbol, arg) =>
+
+    @match arg begin
+    Expr(:tuple, args...) || a && Do(args = [a]) =>
+
+    @match args begin
+    [args..., function ismacro end && tl] => [(op |> get_op, args), flatten_macros(tl)]
+    _ => [(op |> get_op, args)]
+
     end
-
-    ast_makers = @match args begin
-        [args..., function ismacro end && tl] => [(generate, args), codegen(tl)...]
-        _ => [(generate, args)]
     end
+    end
+end
 
+function codegen(node)
+    ops = flatten_macros(node)
     let rec(vec) =
         @match vec begin
             [] => []
@@ -62,41 +107,34 @@ function codegen(node :: Expr)
                 [generate_groupby(args1, args2), rec(tl)...]
             [(hd, args), tl...] =>
                 [hd(args), rec(tl)...]
-        end        
+        end
         init = quote
-            # TODO: get AGG_RANK from input_data         
-            (0, $names($ARG), zip($(DataFrames.columns)($ARG)...))
-        end 
-        fn_body = foldl(rec(ast_makers), init = init) do last, mk
+            let iter = $get_records($ARG),
+                fields = $get_fields($ARG),
+                typ = $eltype(iter)
+
+                (fields, typ, iter)
+            end
+        end
+        fn_body = foldl(rec(ops), init = init) do last, mk
             mk(last)
         end
         quote
-            @inline function ($ARG :: $DataFrame, )
-                $fn_body
+            @inline function ($ARG :: $TYPE_ROOT, ) where {$TYPE_ROOT}
+                let (fields, typ, source) = $fn_body
+                    build_result(
+                        $TYPE_ROOT,
+                        fields,
+                        $type_unpack($length(fields), typ),
+                        source
+                    )
+                end
             end
         end
     end
 end
 
-function generate_select
-end    
-
-function generate_where
-end
-
-function generate_groupby
-end
-
-function generate_orderby
-end
-
-function generate_having
-end
-
-function generate_limit
-end
-
-# visitor to process the pattern `_.x, _,"x", _.(1)` inside an expression 
+# visitor to process the pattern `_.x, _,"x", _.(1)` inside an expression
 function mk_visit(field_getted, assign)
         visit = expr ->
         @match expr begin
@@ -105,7 +143,7 @@ function mk_visit(field_getted, assign)
                     @match a begin
                         Expr(:tuple, a :: Int) => Expr(:ref, ELT, a)
                         ::String && Do(b = Symbol(a)) || b::Symbol =>
-                        Expr(:ref, 
+                        Expr(:ref,
                             ELT,
                             get!(field_getted, a) do
                                 idx_sym = gen_sym()
@@ -114,19 +152,19 @@ function mk_visit(field_getted, assign)
                                     assign,
                                     Expr(:(=),
                                         idx_sym,
-                                        Expr(:call, 
+                                        Expr(:call,
                                             findfirst,
                                             x -> x === a,
                                             IN_FIELDS
                                         )
                                     )
                                 )
-                                idx_sym           
+                                idx_sym
                             end
                         )
-                            
+
                     end
-                end            
+                end
             Expr(head, args...) => Expr(head, map(visit, args)...)
             a => a
         end
@@ -143,12 +181,12 @@ function generate_select(args :: AbstractArray)
     # process selectors
     foreach(args) do arg
         @match arg begin
-            :_ => 
+            :_ =>
                 begin
                     push!(value_result, Expr(:..., ELT))
                     push!(field_result, Expr(:..., IN_FIELDS))
                 end
-            
+
             :(_.(! $pred( $ (args...))))  =>
                 let new_field_pack = gen_sym()
                     new_index_pack = gen_sym()
@@ -159,7 +197,7 @@ function generate_select(args :: AbstractArray)
                     push!(value_result, Expr(:...,  :($ELT[$new_index_pack])))
 
                 end
-            :(_.($pred( $ (args...))))  => 
+            :(_.($pred( $ (args...))))  =>
                 let new_field_pack = gen_sym()
                     new_index_pack = gen_sym()
                     push!(Expr(:(=), new_field_pack, :[$ELT for $ELT in $IN_FIELDS if ($pred($ELT, $ (args...)))]))
@@ -169,28 +207,25 @@ function generate_select(args :: AbstractArray)
                     push!(value_result, Expr(:...,  :($ELT[$new_index_pack])))
                 end
 
-           :($new_field = $a) || a && Do(new_field = Symbol(string(a))) => 
+           :($a => $new_field) || a && Do(new_field = Symbol(string(a))) =>
                 begin
                     new_value = visit(a)
                     push!(field_result, QuoteNode(new_field))
                     push!(value_result, new_value)
-                end                        
+                end
         end
     end
 
     # select expression generation
-    inner_expr ->
-    Expr(:let,
-        Expr(:block, 
-            Expr(:(=), Expr(:tuple, AGG_RANK, IN_FIELDS, IN_SOURCE), inner_expr),
-            assign...
-        ),
-        Expr(:tuple,
-            AGG_RANK,
-            Expr(:tuple, field_result...),
-            let v = Expr(:tuple, value_result...)
-                :[$v for $ELT in $IN_SOURCE]
-            end    
+    query_routine(
+        assign,
+        Expr(:call,
+             infer,
+              TYPE,
+              Expr(:tuple, field_result...),
+              let v = Expr(:tuple, value_result...)
+                  :($v for $ELT in $IN_SOURCE)
+              end
         )
     )
 end
@@ -216,16 +251,12 @@ function generate_where(args :: AbstractArray)
     end
 
     # where expression generation
-    inner_expr ->
-    Expr(:let,
-        Expr(:block, 
-            Expr(:(=), Expr(:tuple, AGG_RANK, IN_FIELDS, IN_SOURCE), inner_expr),
-            assign...
-        ),
+    query_routine(
+        assign,
         Expr(:tuple,
-            AGG_RANK,
-            IN_FIELDS,
-            :[$ELT for $ELT in $IN_SOURCE if $pred]
+             IN_FIELDS,
+             TYPE,
+             :($ELT for $ELT in $IN_SOURCE if $pred)
         )
     )
 end
@@ -241,54 +272,58 @@ function generate_groupby(args :: AbstractArray, having_args :: Union{Nothing, A
 
     fields_gkeys = map(args) do arg
         @match arg begin
-            :($a = $b) || b && Do(a = Symbol(string(b))) =>
+            :($b => $a) || b && Do(a = Symbol(string(b))) =>
                 let field = a
-                    (field, Expr(:(=), field, visit(b)))
+                    (field, visit(b))
                 end
         end
     end
-    
-    group_key = Expr(:tuple, map(x -> x[1], fields_gkeys)...)
-    mk_keys = Expr(:block, map(x -> x[2], fields_gkeys)...)
 
+    group_key = map(x -> x[1], fields_gkeys)
+    ngroup_key = length(fields_gkeys)
+    group_key_values = Expr(:tuple, map(x -> x[2], fields_gkeys)...)
+    group_key_fields = map(QuoteNode ∘ Symbol ∘ string, group_key)
     cond_expr = having_args === nothing ? nothing :
         let cond =
             foldl(having_args) do last, arg
                 Expr(:&&, last, visit(arg))
             end
-            
+
             quote
                 if $cond
                     continue
                 end
-            end 
+            end
         end
-    # where expression generation
-    inner_expr ->
-    Expr(:let,
-        Expr(:block, 
-            Expr(:(=), Expr(:tuple, AGG_RANK, IN_FIELDS, IN_SOURCE), inner_expr),
-            assign...
-        ),
-        Expr(:tuple,
-            Expr(:call, (+), AGG_RANK, 1),
-            Expr(:tuple, QuoteNode(Symbol(string(group_key))), Expr(:..., IN_FIELDS)),
+
+    # groupby expression generation
+    query_routine(
+        assign,
+        let out_fields = Expr(:tuple, Expr(:..., group_key_fields), Expr(:..., IN_FIELDS))
             quote
                 $GROUPS = $Dict{$Tuple, $Vector}()
                 $N = $length($IN_FIELDS,)
+                @inline function $GROUP_FN($ELT :: $TYPE, )
+                    $group_key_values
+                end
                 for $ELT in $IN_SOURCE
-                    $mk_keys
+                    $group_key = $GROUP_FN($ELT, )
                     $GROUP_KEY = $group_key
                     $cond_expr
-                    $AGG = 
+                    $AGG =
                         $get!($GROUPS, $GROUP_KEY) do
-                            [[] for i = 1:$N]
+                            [[] for _ = 1:$N]
                         end
-                    ($append!).($AGG, $ELT,)
+                    ($push!).($AGG, $ELT,)
                 end
-                [(k, v...) for (k, v) in $GROUPS]
+                (
+                    $out_fields,
+                    ($type_unpack($ngroup_key, $return_type($GROUP_FN, $TYPE))...,
+                     $type_aggregate($N, $TYPE)...),
+                    ((k..., v...) for (k, v) in $GROUPS)
+                )
             end
-        )
+        end
     )
 end
 
@@ -310,9 +345,43 @@ macro limit(node)
     codegen(Expr(:macrocall, Symbol("@limit"), __source__, node)) |> esc
 end
 
-df = DataFrame(foo=[1,2,3], bar=[3.,2.,1.], bat=["a","b","c"])
+function generate_select
+end
 
-@select _.foo + 1, _.foo * 2
+function generate_where
+end
 
+function generate_groupby
+end
 
+function generate_orderby
+end
 
+function generate_having
+end
+
+function generate_limit
+end
+
+const registered_ops = Dict{Symbol, Any}(
+    Symbol("@select") => generate_select,
+    Symbol("@where") => generate_where,
+    Symbol("@groupby") => generate_groupby,
+    Symbol("@having") => generate_having,
+    Symbol("@limit") => generate_limit,
+    Symbol("@orderby") => generate_orderby
+)
+
+function get_op(op_name)
+    registered_ops[op_name]
+end
+
+get_fields(df :: DataFrame) = names(df)
+get_records(df :: DataFrame) = zip(DataFrames.columns(df)...)
+function build_result(::Type{DataFrame}, fields, typs, source :: Base.Generator)
+    res = Tuple(typ[] for typ in typs)
+    for each in source
+        push!.(res, each)
+    end
+    DataFrame(collect(res), collect(fields))
+end

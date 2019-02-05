@@ -3,7 +3,7 @@ Implement You A Query Language
 
 You may have heard of LINQ or extension methods before, and they're all embedded query langauges.
 
-In Julia ecosystem, there're Query.jl, LightQuery.jl, DataFramesMeta.jl, etc., each of which reaches the partial or full features of a query language. 
+In Julia ecosystem, there're Query.jl, LightQuery.jl, DataFramesMeta.jl, etc., each of which reaches the partial or full features of a query language.
 
 This document is provided for you to create a concise and efficient implementation of query langauge,
 which is a way for me to exhibit the power of MLStyle.jl on AST manipulations. Additionally, I think this tutorial can be also
@@ -31,39 +31,39 @@ A `selector` could be one of the following cases.
 
 1. select the field `x` / select the 1-fst field.
 
-    ```    
+    ```
     _.x
     _.(1)
     ```
 
 2. select the field `x`
 
-    ```    
+    ```
     _."x"
     ```
 
 3. select the fields that're not `x` / select the fields that're not the first.
-    
+
     ```
     _.(!x)
     _.(!1)
     ```
 
 4.  select an expression binded as `x + _.x`, where `x` is from current scope
-    
+
     ```
     x + _.x
     ```
 
 5.  select something and bind it to symbol `a`
-    
+
     ```
     a = <selector 1-4>
     "a" = <selector 1-4>
     ```
 
 6. select any the field `col` when `predicate(col, args...)` is true.
-    
+
     ```
     _.(predicate(args...))
     ```
@@ -142,20 +142,20 @@ P.S: The quoted expressions are not their actual values. No mangling here for re
 
 queries = [
     Select(sym ->
-        quote     
-            let (source, fields) = $sym, 
+        quote
+            let (source, fields) = $sym,
                 i_x = at(fields, :x),
                 i_y = at(fields, :y)
-                
+
                 (Symbol("_.x + 1"), :a), ((record[i_x] + 1, record[i_y] * 2) for record in sym)
             end
         end),
-        
+
     Where(sym ->
         quote
-            let (source, fields) = $sym, 
+            let (source, fields) = $sym,
                 i_a = at(fields, :a)
-               
+
                 fields, (record for record in sym if record[i_a] < 2)
             end
         end)
@@ -168,17 +168,17 @@ queries = [
 @inline function (mangled1 :: DataFrame)
     source = columns(mangled1)
     fields = names(mangled1)
-    let (source, fields) = 
-        let (fields, source) = (fields, source) , 
+    let (source, fields) =
+        let (fields, source) = (fields, source) ,
             i_x = at(fields, :x),
             i_y = at(fields, :y)
-             
+
             (Symbol("_.x + 1"), :a), ((record[i_x] + 1, record[i_y] * 2) for record in sym)
         end
-        
-        i_a = at(fields, :a)      
+
+        i_a = at(fields, :a)
         fields, (record for record in sym if record[i_a] < 2)
-        
+
     end |> to_dataframe
 end
 ```
@@ -199,7 +199,7 @@ ELT = Symbol("MQuery.ELT")
 _gen_sym_count = 0
 
 function gen_sym()
-    global _gen_sym_count 
+    global _gen_sym_count
     let sym = Symbol("MQuery.TMP.", _gen_sym_count)
         _gen_sym_count = _gen_sym_count  + 1
         sym
@@ -211,27 +211,27 @@ ismacro(_) = false
 
 function codegen(node :: Expr)
     (generate, args) = @match node begin
-        :(@select $(::LineNumberNode) $args) || :(@select $args) => 
+        :(@select $(::LineNumberNode) $args) || :(@select $args) =>
             (generate_select, args)
-        :(@where $(::LineNumberNode) $args) || :(@where $args)=> 
+        :(@where $(::LineNumberNode) $args) || :(@where $args)=>
             (generate_where, args)
-        :(@groupby $(::LineNumberNode) $args) || :(@groupby $args) => 
+        :(@groupby $(::LineNumberNode) $args) || :(@groupby $args) =>
             (generate_groupby, args)
-        :(@orderby $(::LineNumberNode) $args) || :(@orderby $args) => 
+        :(@orderby $(::LineNumberNode) $args) || :(@orderby $args) =>
             (generate_orderby, args)
-            
-        :(@having $(::LineNumberNode) $args) || :(@having $args) => 
+
+        :(@having $(::LineNumberNode) $args) || :(@having $args) =>
             (generate_having, args)
-           
-        :(@limit $(::LineNumberNode) $args) || :(@limit $args) => 
+
+        :(@limit $(::LineNumberNode) $args) || :(@limit $args) =>
             (generate_limit, args)
     end
-    
+
     ast_makers = @match args begin
         [args..., function ismacro end && tl] => [generate(args), codegen(tl)...]
         _ => [generate(args)]
     end
-    init = quote         
+    init = quote
          ($names($ARG), $(DataFrames.columns)($ARG))
     end
     fn_body = foldl(ast_makers, init = init) do last, mk
@@ -246,14 +246,14 @@ end
 ```
 
 Since we perform AST pattern matching here, the problem is then divided into 6 parts, and then
-we can smoothly make the solution via finishing these 6 functions, `generate_select, 
+we can smoothly make the solution via finishing these 6 functions, `generate_select,
 generate_where, generate_groupby, generate_orderby`, `generate_having` , and `generate_limit`.
 
 ```Julia
 
 function generate_select(args :: Vector) :: Select
     not_impl
-end    
+end
 
 function generate_where(args :: Vector) :: Where
     not_impl
@@ -287,7 +287,7 @@ function generate_select(args :: Vector)
     value_result :: Vector{Any} = []
     field_result :: Vector{Any} = []
 
-    # visitor to process the pattern `_.x, _,"x", _.(1)` inside an expression 
+    # visitor to process the pattern `_.x, _,"x", _.(1)` inside an expression
     visit(expr) =
         @match expr begin
             Expr(:. , :_, a) end =>
@@ -302,31 +302,31 @@ function generate_select(args :: Vector)
                                     assign,
                                     Expr(:(=),
                                         idx_sym,
-                                        Expr(:call, 
+                                        Expr(:call,
                                             findfirst,
                                             x -> x === a,
                                             IN_FIELDS
                                         )
                                     )
                                 )
-                                idx_sym           
+                                idx_sym
                             end |>
                             idx_sym -> Expr(:ref, ELT, idx_sym)
                     end
-                end            
+                end
             Expr(head, args) => Expr(head, map(visit, args))
             a => a
         end
-    
+
     # process selectors
     foreach(args) do arg
         @match arg begin
-            :_ => 
+            :_ =>
                 begin
                     push!(value_result, Expr(:..., ELT))
                     push!(field_result, Expr(:..., IN_FIELDS))
                 end
-            
+
             :(_.(! $pred( $ (args...))))  =>
                 let new_field_pack = gen_sym()
                     new_index_pack = gen_sym()
@@ -337,7 +337,7 @@ function generate_select(args :: Vector)
                     push!(value_result, Expr(:...,  :($ELT[$new_index_pack])))
 
                 end
-            :(_.($pred( $ (args...))))  => 
+            :(_.($pred( $ (args...))))  =>
                 let new_field_pack = gen_sym()
                     new_index_pack = gen_sym()
                     push!(Expr(:(=), new_field_pack, :[$ELT for $ELT in $IN_FIELDS if ($pred($ELT, $ (args...)))]))
@@ -347,18 +347,18 @@ function generate_select(args :: Vector)
                     push!(value_result, Expr(:...,  :($ELT[$new_index_pack])))
                 end
 
-           :($new_field = $a) || a && Do(new_field = Symbol(string(a))) => 
+           :($new_field = $a) || a && Do(new_field = Symbol(string(a))) =>
                 let new_value = visit(a)
                     push!(field_result, new_field)
                     push!(value_result, new_value)
-                end                        
+                end
         end
     end
 
     # select expression generation
     inner_expr ->
     Expr(:let,
-        Expr(:block, 
+        Expr(:block,
             Expr(:(=), Expr(:tuple, IN_FIELDS, IN_SOURCE), inner_expr),
             assign...
         ),
@@ -366,10 +366,9 @@ function generate_select(args :: Vector)
             Expr(:tuple, field_result...),
             let v = Expr(:tuple, value_result...)
                 :[$v for $ELT in $IN_SOURCE]
-            end    
+            end
         )
     )
 end
 
 ```
-
