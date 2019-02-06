@@ -1,23 +1,21 @@
-Implement You A Query Language
+Write You A Query Language
 ===============================================
 
 You may have heard of LINQ or extension methods before, and they're all embedded query langauges.
 
-In Julia ecosystem, there're Query.jl, LightQuery.jl, DataFramesMeta.jl, etc., each of which reaches the partial or full features of a query language.
+In terms of Julia ecosystem, there're Query.jl, LightQuery.jl, DataFramesMeta.jl, etc., each of which reaches the partial or full features of a query language.
 
 This document is provided for you to create a concise and efficient implementation of query langauge,
-which is a way for me to exhibit the power of MLStyle.jl on AST manipulations. Additionally, I think this tutorial can be also
-extremely helpful to those who're developing query languages for Julia.
-
+which is a way for me to exhibit the power of MLStyle.jl on AST manipulations. Additionally, I think this tutorial can be also extremely helpful to those who're developing query languages for Julia.
 
 Definition of Syntaxes
 ------------------------------
 
-Firstly, we can refer to the the T-SQL syntaxes and introduce the basic syntaxes into Julia.
+Firstly, we can refer to the the T-SQL syntax and, introduce it into Julia.
 
 ```Julia
 
-df                   |>
+df |>
 @select selectors...,
 @where predicates...,
 @groupby mappings...,
@@ -36,7 +34,7 @@ A `selector` could be one of the following cases.
     _.(1)
     ```
 
-2. select the field `x`
+2. select the field `x`(to support field name that're not an identifier)
 
     ```
     _."x"
@@ -58,131 +56,333 @@ A `selector` could be one of the following cases.
 5.  select something and bind it to symbol `a`
 
     ```
-    a = <selector 1-4>
-    "a" = <selector 1-4>
+    <selector 1-4> => a
+    <selector 1-4> => "a"
     ```
-
-6. select any the field `col` when `predicate(col, args...)` is true.
+6. select any field `col` that `predicate(col, args...)` is true.
 
     ```
     _.(predicate(args...))
     ```
 
-7. select any the field `col` when `predicate(col, args...)` is false.
+7. select any field `col` that `predicate(col, args...)` is false.
 
     ```
     _.(!predicate(args...))
     ```
 
-With E-BNF, we can formalize the synaxes,
+With E-BNF notation, we can formalize the synax,
 
 ```
 
-FieldPredicate ::= QueryExpr '(' QueryExprList ')'
+FieldPredicate ::= ['!'] QueryExpr '(' QueryExprList ')'
+
 Field          ::=  ['!'] (Symbol | String | Int)
 
-selectorExpr   ::=  '_' '.' Field
-                  | QueryExpr(QueryExprList)
-                  | QueryExpr Operator QueryExpr
 
-selector       ::= '_' '.' FieldPredicate
-                  | selectorExpr
-QueryExpr      ::= selectorExpr | JuliaExpr
+QueryExpr      ::=  '_' '.' Field
+                  | <substitute QueryExpr in for JuliaExpr>
+
 QueryExprList  ::= [ QueryExpr (',' QueryExpr)* ]
 
+selector       ::= '_' '.' FieldPredicate
+                  | QueryExpr
+
 ```
 
-A `predicate` is a `selectorExpr`, but shouldn't be evaluated to a boolean.
+A `predicate` is a `QueryExpr`, but shouldn't be evaluated to a boolean.
 
-A `mapping`  is ap `selectorExpr`, but shouldn't be evaluated to a nothing.
+A `mapping`  is ap `QueryExpr`, but shouldn't be evaluated to a nothing.
 
+FYI, here're some instances about `selector`.
+```
+_.foo,
+_.(!1),
+_.(startswith("bar")),
+_.(!startswith("bar")),
+x + _.foo,
+let y = _.foo + y; y + _.(2) end
+```
 
-Structured Notation
+Codegen Target
 --------------------------------
 
-Before codegen we might not have a clear blueprint about the implementation, but anyway,
-build the structures of your syntaxes would help you with the comprehension of the problem.
+Before implementing code generation, we should have a sketch about the target. The **target** here means the final shape of the code generated from query sentences.
 
-```Julia
-Option{T} = Union{Nothing, T} where T
 
-@data Query begin
-    # predicate : Symbol -> AST(evalued to boolean)
-    Where(predicate :: Function)
-    Having(predicate :: Function)
-    # selector :: Symbol -> AST
-    Select(selector :: Function)
-    # mapping :: Symbol -> AST
-    GroupBy(mapping :: Function)
-    OrderBy(mapping :: Function)
-    # take :: Symbol-> AST
-    Limit(take :: Function)
-    Combine(Query, Query)
+'ll take you to the travel within the inference about the final shape of code generation.
+
+Firstly, for we want this:
+
+```julia
+df |>
+@select _.foo + x, _.bar
+```
+
+We can infer out that the generated code is an anonymous function which takes only one argument.
+
+Okay, cool. We've known that the final shape of generated code should be:
+
+```julia
+function (ARG)
+    # implementations
 end
 ```
 
-Intuitively, I make such a design, which could be illustrated in following steps:
+Then, let's think about the `select` clause. You might find it's a `map`(if we don't take aggregrate function into consideration). However, for we don't want to
+make redundant allocations when executing the queries, so we should use `Base.Generator` as the data representation.
 
-1. Original Julia macrocalls.
+For `@select _.foo + x, _.bar`, it should be generated to something like
 
-We can get started with a simple expressione.
+```julia
+((RECORD[:foo] + x, RECORD[:bar])   for RECORD in SOURCE)
+```
 
-```Julia
+Where `SOURCE` is the data representation, `RECORD` is the record(row) of SOURCE, and `x` is the variable captured by the closure.
 
-@select _.x + 1, a = _.y * 2,
-@where _.a < 2
+Now, a smart reader might observe that there's a trick for optimization! If we can have the actual indices of the fields `foo` and `bar` in the record(each row of `SOURCE`), then they can be indexed via integers, which could avoid reflections in some degree.
+
+I don't have much knowledge about NamedTuple's implementation, but indexing via names on unknown datatypes cannot be faster than simply indexing via integers.
+
+So, the generated code of `select` could be
+```julia
+
+let idx_of_foo = findfirst(==(:foo), IN_FIELDS),
+    idx_of_bar = findfirst(==(:bar), IN_FIELDS),
+    ((RECORD[idx_of_foo] + x, RECORD[idx_of_bar]) for RECORD in SOURCE)
+end
 
 ```
 
-2. Query Transformation
+Where we introduce a new requirement of the query's code generation: the field names of input `SOURCE`, `IN_FIELDS`.
 
-P.S: The quoted expressions are not their actual values. No mangling here for readability.
+Now, to have a consistent code generation, let's think about the stacked `select` clauses.
 
-```Julia
-
-queries = [
-    Select(sym ->
-        quote
-            let (source, fields) = $sym,
-                i_x = at(fields, :x),
-                i_y = at(fields, :y)
-
-                (Symbol("_.x + 1"), :a), ((record[i_x] + 1, record[i_y] * 2) for record in sym)
-            end
-        end),
-
-    Where(sym ->
-        quote
-            let (source, fields) = $sym,
-                i_a = at(fields, :a)
-
-                fields, (record for record in sym if record[i_a] < 2)
-            end
-        end)
-]
+```julia
+df |>
+@select _, _.foo + 1, => foo1,
+# `select _` here means `SELECT *` in T-SQL.
+@select _.foo1 + 2 => foo2
 ```
 
-3. Code(AST) Generation
+I don't know how to explain the iteration in my mind, but I've figured out such a way.
 
-```Julia
-@inline function (mangled1 :: DataFrame)
-    source = columns(mangled1)
-    fields = names(mangled1)
-    let (source, fields) =
-        let (fields, source) = (fields, source) ,
-            i_x = at(fields, :x),
-            i_y = at(fields, :y)
+```julia
+let (IN_FIELDS, SOURCE) =
+    let (IN_FIELDS, SOURCE) = process(df),
+        idx_of_foo = findfirst(==(:foo),  IN_FIELDS)
+        (IN_FIELDS..., :foo1), ((RECORD..., RECORD[idx_of_foo] + 1) for RECORD in SOURCE)
+    end,
+    idx_of_foo1 = findfirst(==(:foo1), IN_FIELDS)
+    (:foo2, ), ((RECORD[idx_of_foo1] + 2, ) for RECORD in SOURCE)
+end
+```
+Oh, perfect! I'm so excited! That's so beautiful!
 
-            (Symbol("_.x + 1"), :a), ((record[i_x] + 1, record[i_y] * 2) for record in sym)
+If the output field names are a list of meta variables `(:foo2, )`, then output expression inside the comprehension should be a list of terms `(foo2, )`. For `foo2 = _.foo1 + 2` which is generated as `RECORD[idx_of_foo1] + 2`, so it comes to the above code snippet.
+
+Let's think about the `where` clause.
+
+If we want this:
+```julia
+df |>
+@where _.foo < 2
+```
+
+That's similar to `select`:
+
+```julia
+let (IN_FIELDS, SOURCE) = process(df),
+    idx_of_foo = findfirst(==(:foo), IN_FIELDS)
+    (IN_FIELDS, (RECORD for RECORD in SOURCE if RECORD[idx_of_foo] < 2))
+end
+```
+
+Obviously that `where` clauses generated in this way could be stacked.
+
+
+Next, it's the turn of `groupby`. It could be much more complex, for we should make it consistent with code generation
+for `select` and `where`.
+
+Let's think about the case below.
+
+```julia
+df |>
+@groupby startswith(_.name, "Ruby")  => is_ruby
+```
+
+Yep, we want to group data frames(of course, any other datatypes that can be processed via this pipeline) by whether its field `name` starts with a string "Ruby", like "Ruby Rose".
+
+Ha, I'd like to use a dictionary to group it here.
+
+```julia
+let IN_FIELDS, SOURCE = process(df)
+    @inline function GROUP_FN(RECORD)
+        (startswith(_.name, "Ruby"), )
+    end
+    GROUPS = Dict() # the type issues will be discussed later.
+    for RECORD in SOURCE
+        GROUP_KEY = (is_ruby, ) = GROUP_FN(RECORD)
+        AGGREGATES = get!(GROUPS, GROUP_KEY) do
+            [[] for _ in IN_FIELDS]
         end
-
-        i_a = at(fields, :a)
-        fields, (record for record in sym if record[i_a] < 2)
-
-    end |> to_dataframe
+        push!.(AGGREGATES, RECORD)
+    end
+    # then output fields and source here
 end
 ```
 
+I think it perfect, so let's go ahead. The reason why we make an inline function would be given
+later, I'd disclosed that it's for type inference.
+
+So, what should the output field names and the source be?
+
+An implementation is,
+
+```julia
+IN_FIELD, values(GROUPS)
+```
+
+But if so, we will lose the information of group keys, that's bad.
+
+So, if we want to persist the group keys, we can do this:
+
+```julia
+((:is_ruby, )..., IN_FIELDS...), ((k..., v...) for (k, v) in GROUPS)
+```
+I think the later could be sufficiently powerful, although it might not be that efficient. You can have
+different implementations of `groupby` if you have more specific use cases, just use the extensible system
+which will be introduced later.
+
+So, the code generation of `groupby` could be:
+
+```julia
+let IN_FIELDS, SOURCE = process(df)
+    @inline function GROUP_FN(RECORD)
+        (startswith(_.name, "Ruby"), )
+    end
+    GROUPS = Dict() # the type issues will be discussed later.
+    for RECORD in SOURCE
+        GROUP_KEY = (is_ruby, ) = GROUP_FN(RECORD)
+        AGGREGATES = get!(GROUPS, GROUP_KEY) do
+            [[] for _ in IN_FIELDS]
+        end
+        push!.(AGGREGATES, RECORD)
+    end
+    ((:is_ruby, ), IN_FIELDS...), ((k..., v...) for (k, v) in SOURCE)
+end
+```
+
+However, subsequently, we comes to the `having` clause, in fact, I think it's a subclause of
+`groupby` clause, which means it cannot take place indenpendently, but co-appear with a `groupby`.
+
+Given such a case:
+```julia
+df |>
+@groupby startswith(_.name, "Ruby")  => is_ruby
+@having is_ruby || _.is_rose
+```
+The generated code should be:
+
+```julia
+let IN_FIELDS, SOURCE = process(df),
+    idx_of_is_rose = findfirst(==(:is_rose), IN_FIELDS)
+
+    @inline function GROUP_FN(RECORD)
+        (startswith(_.name, "Ruby"), )
+    end
+    GROUPS = Dict() # the type issues will be discussed later.
+    for RECORD in SOURCE
+        GROUP_KEY = (is_ruby, ) = GROUP_FN(RECORD)
+        if is_ruby || RECORD[idx_is_rose]
+            continue
+        end
+        AGGREGATES = get!(GROUPS, GROUP_KEY) do
+            [[] for _ in IN_FIELDS]
+        end
+        push!.(AGGREGATES, RECORD)
+    end
+    ((:is_ruby, ), IN_FIELDS...), ((k..., v...) for (k, v) in SOURCE)
+end
+```
+
+That could be achieved very concisely, we'll refer to this later.
+
+After introducing the generation for above 4 clauses, `orderby` and `limit` then become trivial, I don't want to repeat
+myself if not necessary.
+
+Now we know that mulitiple clauses could be generated to give a `Tuple` result, first of which is the field names, the
+second is the lazy computation of the query. We can resume it to the corresponding types, for instance,
+
+```julia
+function (ARG :: DataFrame)
+    (IN_FIELDS, SOURCE) = let IN_FIELDS, SOURCE = ...
+        ...
+    end
+
+    res = Tuple([] for _ in IN_FIELDS)
+    for each in SOURCE
+        push!.(res, each)
+    end
+    DataFrame(collect(res), collect(IN_FIELDS))
+end
+```
+
+Refinement of Codegen: Typed Columns
+---------------------------------------------
+
+Last section introduce a framework of code generation for query langauge, but in Julia, there's problem.
+
+Look at the value to be return(when input is a `DataFrame`):
+
+```julia
+res = Tuple([] for _ in IN_FIELDS)
+for each in SOURCE
+    push!.(res, each)
+end
+DataFrame(collect(res), collect(IN_FIELDS))
+```
+
+I can promise you that, each column of your dataframes is a `Vector{Any`, yes, not its actual type.
+You may prefer to calculate the type of a column using the common super type of all elements, but there're
+2 problems if you try this:
+
+- If the column is empty, emmmm...
+- Calculating the super type of all elements does cost much!
+
+So, I'll introduce a new requirement `TYPE` of the query's code generation.
+
+Let's have a look at code generation for `select` after introducing the `TYPE`.
+
+Given that
+```julia
+@select _, _.foo + 1
+```
+
+```julia
+return_type(f, t) =
+    let ts = Base.return_types(f, (t,))
+        length(ts) === 1 ?
+            ts[1]        :
+            Union{ts...}
+    end
+
+infer(TYPE, IN_FIELDS, gen)
+    let TYPE_ = return_type(gen.f, TYPE)
+        IN_FIELDS, TYPE_, gen
+    end
+
+let (IN_FIELDS, TYPE, SOURCE) = process(df),
+    idx_of_foo = findfirst(==(:foo),  IN_FIELDS)
+    infer(
+        TYPE,
+        (IN_FIELDS..., :foo1),
+        ((RECORD..., RECORD[idx_of_foo] + 1) for RECORD in SOURCE)
+    )
+end
+```
+
+For `groupby`, it could be a bit more complex, but it does nothing new towards what `select` does.
 
 Implementation
 ------------------------

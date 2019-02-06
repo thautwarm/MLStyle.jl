@@ -6,8 +6,8 @@ TYPE = Symbol("MQuery.TYPE")
 TYPE_ROOT = Symbol("MQuery.TYPE_ROOT")
 
 IN_FIELDS = Symbol("MQuery.IN.FIELDS")
-IN_SOURCE = Symbol("MQuery.IN.SOURCE")
-ELT = Symbol("MQuery.ELT")
+SOURCE = Symbol("MQuery.IN.SOURCE")
+RECORD = Symbol("MQuery.RECORD")
 N = Symbol("MQuery.N")
 GROUPS = Symbol("MQuery.GROUPS")
 GROUP_KEY = Symbol("MQuery.GROUP_KEY")
@@ -74,7 +74,7 @@ function query_routine(assigns, result)
     inner_expr ->
     Expr(:let,
          Expr(:block,
-              Expr(:(=), Expr(:tuple, IN_FIELDS, TYPE, IN_SOURCE), inner_expr),
+              Expr(:(=), Expr(:tuple, IN_FIELDS, TYPE, SOURCE), inner_expr),
               assigns...
           ),
          result
@@ -141,10 +141,10 @@ function mk_visit(field_getted, assign)
             Expr(:. , :_, a) =>
                 let a = a isa QuoteNode ? a.value : a
                     @match a begin
-                        Expr(:tuple, a :: Int) => Expr(:ref, ELT, a)
+                        Expr(:tuple, a :: Int) => Expr(:ref, RECORD, a)
                         ::String && Do(b = Symbol(a)) || b::Symbol =>
                         Expr(:ref,
-                            ELT,
+                            RECORD,
                             get!(field_getted, a) do
                                 idx_sym = gen_sym()
                                 field_getted[a] = idx_sym
@@ -183,28 +183,28 @@ function generate_select(args :: AbstractArray)
         @match arg begin
             :_ =>
                 begin
-                    push!(value_result, Expr(:..., ELT))
+                    push!(value_result, Expr(:..., RECORD))
                     push!(field_result, Expr(:..., IN_FIELDS))
                 end
 
             :(_.(! $pred( $ (args...))))  =>
                 let new_field_pack = gen_sym()
                     new_index_pack = gen_sym()
-                    push!(Expr(:(=), new_field_pack, :[$ELT for $ELT in $IN_FIELDS if !($pred($ELT, $ (args...)))]))
+                    push!(Expr(:(=), new_field_pack, :[$RECORD for $RECORD in $IN_FIELDS if !($pred($RECORD, $ (args...)))]))
                     push!(Expr(:(=), new_index_pack, Expr(:call, indexin, new_field_pack, IN_FIELDS)))
 
                     push!(field_result, Expr(:...,  new_field_pack))
-                    push!(value_result, Expr(:...,  :($ELT[$new_index_pack])))
+                    push!(value_result, Expr(:...,  :($RECORD[$new_index_pack])))
 
                 end
             :(_.($pred( $ (args...))))  =>
                 let new_field_pack = gen_sym()
                     new_index_pack = gen_sym()
-                    push!(Expr(:(=), new_field_pack, :[$ELT for $ELT in $IN_FIELDS if ($pred($ELT, $ (args...)))]))
+                    push!(Expr(:(=), new_field_pack, :[$RECORD for $RECORD in $IN_FIELDS if ($pred($RECORD, $ (args...)))]))
                     push!(Expr(:(=), new_index_pack, Expr(:call, indexin, new_field_pack, IN_FIELDS)))
 
                     push!(field_result, Expr(:...,  new_field_pack))
-                    push!(value_result, Expr(:...,  :($ELT[$new_index_pack])))
+                    push!(value_result, Expr(:...,  :($RECORD[$new_index_pack])))
                 end
 
            :($a => $new_field) || a && Do(new_field = Symbol(string(a))) =>
@@ -224,7 +224,7 @@ function generate_select(args :: AbstractArray)
               TYPE,
               Expr(:tuple, field_result...),
               let v = Expr(:tuple, value_result...)
-                  :($v for $ELT in $IN_SOURCE)
+                  :($v for $RECORD in $SOURCE)
               end
         )
     )
@@ -256,7 +256,7 @@ function generate_where(args :: AbstractArray)
         Expr(:tuple,
              IN_FIELDS,
              TYPE,
-             :($ELT for $ELT in $IN_SOURCE if $pred)
+             :($RECORD for $RECORD in $SOURCE if $pred)
         )
     )
 end
@@ -303,18 +303,18 @@ function generate_groupby(args :: AbstractArray, having_args :: Union{Nothing, A
             quote
                 $GROUPS = $Dict{$Tuple, $Vector}()
                 $N = $length($IN_FIELDS,)
-                @inline function $GROUP_FN($ELT :: $TYPE, )
+                @inline function $GROUP_FN($RECORD :: $TYPE, )
                     $group_key_values
                 end
-                for $ELT in $IN_SOURCE
-                    $group_key = $GROUP_FN($ELT, )
+                for $RECORD in $SOURCE
+                    $group_key = $GROUP_FN($RECORD, )
                     $GROUP_KEY = $group_key
                     $cond_expr
                     $AGG =
                         $get!($GROUPS, $GROUP_KEY) do
                             [[] for _ = 1:$N]
                         end
-                    ($push!).($AGG, $ELT,)
+                    ($push!).($AGG, $RECORD,)
                 end
                 (
                     $out_fields,
