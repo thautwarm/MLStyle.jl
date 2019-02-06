@@ -40,32 +40,25 @@ A `selector` could be one of the following cases.
     _."x"
     ```
 
-3. select the fields that're not `x` / select the fields that're not the first.
-
-    ```
-    _.(!x)
-    _.(!1)
-    ```
-
-4.  select an expression binded as `x + _.x`, where `x` is from current scope
+3.  select an expression binded as `x + _.x`, where `x` is from current scope
 
     ```
     x + _.x
     ```
 
-5.  select something and bind it to symbol `a`
+4.  select something and bind it to symbol `a`
 
     ```
-    <selector 1-4> => a
-    <selector 1-4> => "a"
+    <selector 1-3> => a
+    <selector 1-3> => "a"
     ```
-6. select any field `col` that `predicate(col, args...)` is true.
+5. select any field `col` that `predicate(col, args...)` is true.
 
     ```
     _.(predicate(args...))
     ```
 
-7. select any field `col` that `predicate(col, args...)` is false.
+6. select any field `col` that `predicate(col, args...)` is false.
 
     ```
     _.(!predicate(args...))
@@ -74,10 +67,9 @@ A `selector` could be one of the following cases.
 With E-BNF notation, we can formalize the synax,
 
 ```
-
 FieldPredicate ::= ['!'] QueryExpr '(' QueryExprList ')'
 
-Field          ::=  ['!'] (Symbol | String | Int)
+Field          ::= (Symbol | String | Int)
 
 
 QueryExpr      ::=  '_' '.' Field
@@ -87,7 +79,6 @@ QueryExprList  ::= [ QueryExpr (',' QueryExpr)* ]
 
 selector       ::= '_' '.' FieldPredicate
                   | QueryExpr
-
 ```
 
 A `predicate` is a `QueryExpr`, but shouldn't be evaluated to a boolean.
@@ -582,23 +573,26 @@ Then, we need a visitor to transform the patterns shaped as `_.foo` inside an ex
 function mk_visit(field_getted, assign)
         visit = expr ->
         @match expr begin
-            :(_.$a) =>
-                let a = a isa QuoteNode ? a.value : a
-                    @match a begin
-                        Expr(:tuple, a :: Int) => Expr(:ref, RECORD, a)
-                        ::String && Do(b = Symbol(a)) || b::Symbol =>
+            Expr(:. , :_, q :: QuoteNode) && Do(a = q.value) ||
+            Expr(:., :_, Expr(:tuple, a)) =>
+                @match a begin
+                    a :: Int => Expr(:ref, RECORD, a)
+
+                    ::String && Do(b = Symbol(a)) ||
+                    b::Symbol =>
+
                         Expr(:ref,
                             RECORD,
-                            get!(field_getted, a) do
+                            get!(field_getted, b) do
                                 idx_sym = gen_sym()
-                                field_getted[a] = idx_sym
+                                field_getted[b] = idx_sym
                                 push!(
                                     assign,
                                     Expr(:(=),
                                         idx_sym,
                                         Expr(:call,
                                             findfirst,
-                                            x -> x === a,
+                                            x -> x === b,
                                             IN_FIELDS
                                         )
                                     )
@@ -606,8 +600,6 @@ function mk_visit(field_getted, assign)
                                 idx_sym
                             end
                         )
-
-                    end
                 end
             Expr(head, args...) => Expr(head, map(visit, args)...)
             a => a
@@ -632,7 +624,7 @@ You might not know what's the meanings of `field_getted` and `assign`, I'm to ex
     a `let` sentence.
 
 
-Now, following previous discussions, we can firstly implement the easiest one, `where` clause.
+Now, following previous discussions, we can implement the easiest one, codegen for `where` clause.
 
 ```julia
 function generate_where(args :: AbstractArray)
@@ -668,10 +660,15 @@ function generate_select(args :: AbstractArray)
 
     field_getted = Dict{Symbol, Symbol}()
     assign       :: Vector{Any} = []
+
     value_result :: Vector{Any} = []
     field_result :: Vector{Any} = []
     visit = mk_visit(field_getted, assign)
+```
 
+`value_result` will be finally used to generate the next `SOURCE` with `:($(Expr(:tuple, value_result...)) for $RECORD in $SOURCE)`, while `field_result` will be finally used to generate the next `IN_FIELDS` with `Expr(:tuple, field_result...)`.
+
+```julia
     # process selectors
     foreach(args) do arg
         @match arg begin
@@ -681,7 +678,13 @@ function generate_select(args :: AbstractArray)
                     push!(field_result, Expr(:..., IN_FIELDS))
                 end
 
-            :(_.(! $pred( $ (args...))))  =>
+```
+
+We've said that `@select _` here is equivalent to `SELECT *` in T-SQL.
+
+The remaining is also implemented with concise case splitting via pattern matchings on ASTs.
+```julia
+            :(_.(! $pred( $(args...) )))  =>
                 let new_field_pack = gen_sym()
                     new_index_pack = gen_sym()
                     push!(Expr(:(=), new_field_pack, :[$RECORD for $RECORD in $IN_FIELDS if !($pred($RECORD, $ (args...)))]))
@@ -691,7 +694,8 @@ function generate_select(args :: AbstractArray)
                     push!(value_result, Expr(:...,  :($RECORD[$new_index_pack])))
 
                 end
-            :(_.($pred( $ (args...))))  =>
+
+            :(_.($pred( $(args...) )))  =>
                 let new_field_pack = gen_sym()
                     new_index_pack = gen_sym()
                     push!(Expr(:(=), new_field_pack, :[$RECORD for $RECORD in $IN_FIELDS if ($pred($RECORD, $ (args...)))]))
@@ -723,4 +727,103 @@ function generate_select(args :: AbstractArray)
         )
     )
 end
+```
+
+If you have problems with `$` in AST patterns, just remember that,
+inside a `quote ... end` or `:(...)`, ASTs/Expressions are compared by literal, except for `$(...)` things are matched
+via normal patterns, for instance, `:($(a :: Symbol) = 1)` can match `:($a = 1)` if the available variable `a` has type
+`Symbol`.
+
+
+Finally, it's for `groupby` and `having`.
+
+```julia
+function generate_groupby(args :: AbstractArray, having_args :: Union{Nothing, AbstractArray} = nothing)
+    field_getted = Dict{Symbol, Symbol}()
+    assign       :: Vector{Any} = []
+    visit = mk_visit(field_getted, assign)
+
+    fields_gkeys = map(args) do arg
+        @match arg begin
+            :($b => $a) || b && Do(a = Symbol(string(b))) =>
+                let field = a
+                    (field, visit(b))
+                end
+        end
+    end
+
+    group_keys = map(x -> x[1], fields_gkeys)
+    ngroup_key = length(fields_gkeys)
+    group_key_rhs = Expr(:tuple, map(x -> x[2], fields_gkeys)...)
+    group_key_lhs = Expr(:tuple, group_keys...)
+
+    group_key_fields = map(QuoteNode ∘ Symbol ∘ string, group_keys)
+    cond_expr = having_args === nothing ? nothing :
+        let cond =
+            foldl(having_args) do last, arg
+                Expr(:&&, last, visit(arg))
+            end
+
+            quote
+                if $cond
+                    continue
+                end
+            end
+        end
+
+    # groupby expression generation
+    query_routine(
+        assign,
+        let out_fields = Expr(:tuple, group_key_fields..., Expr(:..., IN_FIELDS))
+            quote
+                $GROUPS = $Dict{$Tuple, $Vector}()
+                $N = $length($IN_FIELDS,)
+                @inline function $GROUP_FN($RECORD, )
+                    $group_key_rhs
+                end
+                for $RECORD in $SOURCE
+                    $group_key_lhs = $GROUP_FN($RECORD, )
+                    $GROUP_KEY = $group_key_lhs
+                    $cond_expr
+                    $AGG =
+                        $get!($GROUPS, $GROUP_KEY) do
+                            [[] for _ = 1:$N]
+                        end
+                    ($push!).($AGG, $RECORD,)
+                end
+                (
+                    $out_fields,
+                    Tuple{
+                        $type_unpack($ngroup_key, $return_type($GROUP_FN, $TYPE))...,
+                        $type_aggregate($N, $TYPE)...
+                    },
+                    ((k..., v...) for (k, v) in $GROUPS)
+                )
+            end
+        end
+    )
+end
+```
+
+Enjoy You A Query Language
+-------------------------------------
+
+```julia
+using Enums
+@enum TypeChecking Dynamic Static
+
+include("MQuery.jl")
+df = DataFrame(
+        Symbol("Type checking") =>
+            [Dynamic, Static, Static, Dynamic, Static, Dynamic, Dynamic, Static],
+        :name =>
+            ["Julia", "C#", "F#", "Ruby", "Java", "JavaScript", "Python", "Haskell"]),
+        :year => [2012, 2000, 2005, 1995, 1995, 1995, 1990, 1990]
+)
+
+df |>
+@where !startswith(_.name, "Java")
+@groupby _."Type checking" => TC
+@where TC === Dynamic || endswith(_.name, "#")
+@select join(_.name, " and ") => result
 ```

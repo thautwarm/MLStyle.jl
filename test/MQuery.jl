@@ -138,23 +138,26 @@ end
 function mk_visit(field_getted, assign)
         visit = expr ->
         @match expr begin
-            Expr(:. , :_, a) =>
-                let a = a isa QuoteNode ? a.value : a
-                    @match a begin
-                        Expr(:tuple, a :: Int) => Expr(:ref, RECORD, a)
-                        ::String && Do(b = Symbol(a)) || b::Symbol =>
+            Expr(:. , :_, q :: QuoteNode) && Do(a = q.value) ||
+            Expr(:., :_, Expr(:tuple, a)) =>
+                @match a begin
+                    a :: Int => Expr(:ref, RECORD, a)
+
+                    ::String && Do(b = Symbol(a)) ||
+                    b::Symbol =>
+
                         Expr(:ref,
                             RECORD,
-                            get!(field_getted, a) do
+                            get!(field_getted, b) do
                                 idx_sym = gen_sym()
-                                field_getted[a] = idx_sym
+                                field_getted[b] = idx_sym
                                 push!(
                                     assign,
                                     Expr(:(=),
                                         idx_sym,
                                         Expr(:call,
                                             findfirst,
-                                            x -> x === a,
+                                            x -> x === b,
                                             IN_FIELDS
                                         )
                                     )
@@ -162,8 +165,6 @@ function mk_visit(field_getted, assign)
                                 idx_sym
                             end
                         )
-
-                    end
                 end
             Expr(head, args...) => Expr(head, map(visit, args)...)
             a => a
@@ -279,10 +280,12 @@ function generate_groupby(args :: AbstractArray, having_args :: Union{Nothing, A
         end
     end
 
-    group_key = map(x -> x[1], fields_gkeys)
+    group_keys = map(x -> x[1], fields_gkeys)
     ngroup_key = length(fields_gkeys)
-    group_key_values = Expr(:tuple, map(x -> x[2], fields_gkeys)...)
-    group_key_fields = map(QuoteNode ∘ Symbol ∘ string, group_key)
+    group_key_rhs = Expr(:tuple, map(x -> x[2], fields_gkeys)...)
+    group_key_lhs = Expr(:tuple, group_keys...)
+
+    group_key_fields = map(QuoteNode ∘ Symbol ∘ string, group_keys)
     cond_expr = having_args === nothing ? nothing :
         let cond =
             foldl(having_args) do last, arg
@@ -299,16 +302,17 @@ function generate_groupby(args :: AbstractArray, having_args :: Union{Nothing, A
     # groupby expression generation
     query_routine(
         assign,
-        let out_fields = Expr(:tuple, Expr(:..., group_key_fields), Expr(:..., IN_FIELDS))
+        let out_fields = Expr(:tuple, group_key_fields..., Expr(:..., IN_FIELDS))
             quote
                 $GROUPS = $Dict{$Tuple, $Vector}()
                 $N = $length($IN_FIELDS,)
-                @inline function $GROUP_FN($RECORD :: $TYPE, )
-                    $group_key_values
+                @inline function $GROUP_FN($RECORD, )
+                    $group_key_rhs
                 end
+                @info $return_type($GROUP_FN, $TYPE)
                 for $RECORD in $SOURCE
-                    $group_key = $GROUP_FN($RECORD, )
-                    $GROUP_KEY = $group_key
+                    $group_key_lhs = $GROUP_FN($RECORD, )
+                    $GROUP_KEY = $group_key_lhs
                     $cond_expr
                     $AGG =
                         $get!($GROUPS, $GROUP_KEY) do
@@ -318,8 +322,10 @@ function generate_groupby(args :: AbstractArray, having_args :: Union{Nothing, A
                 end
                 (
                     $out_fields,
-                    ($type_unpack($ngroup_key, $return_type($GROUP_FN, $TYPE))...,
-                     $type_aggregate($N, $TYPE)...),
+                    Tuple{
+                        $type_unpack($ngroup_key, $return_type($GROUP_FN, $TYPE))...,
+                        $type_aggregate($N, $TYPE)...
+                    },
                     ((k..., v...) for (k, v) in $GROUPS)
                 )
             end
@@ -385,3 +391,22 @@ function build_result(::Type{DataFrame}, fields, typs, source :: Base.Generator)
     end
     DataFrame(collect(res), collect(fields))
 end
+
+
+using Base.Enums
+@enum TypeChecking Dynamic Static
+df = DataFrame(
+        Symbol("Type checking") =>
+            [Dynamic, Static, Static, Dynamic, Static, Dynamic, Dynamic, Static],
+        :name =>
+            ["Julia", "C#", "F#", "Ruby", "Java", "JavaScript", "Python", "Haskell"],
+        :year =>
+            [2012, 2000, 2005, 1995, 1995, 1995, 1990, 1990]
+)
+
+df |>
+@where !startswith(_.name, "Java"),
+@groupby _."Type checking" => TC
+
+# @where TC === Dynamic || endswith(_.name, "#")
+# @select join(_.name, " and ") => result
