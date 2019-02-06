@@ -387,17 +387,28 @@ For `groupby`, it could be a bit more complex, but it does nothing new towards w
 Implementation
 ------------------------
 
-It's obviously observed that a sequence of query macros should return a function which takes
-one argument(object that's able to be queried), so let's think about how to implement code generation.
+Firstly, we should define the constants and help functions, you can jump over here, and when you have
+problems with your following reading, you can go back and refer to what you want.
 
 ```Julia
+using MLStyle
 using DataFrames
+
 ARG = Symbol("MQuery.ARG") # we just need limited mangled symbols here.
+TYPE = Symbol("MQuery.TYPE")
+TYPE_ROOT = Symbol("MQuery.TYPE_ROOT")
+
 IN_FIELDS = Symbol("MQuery.IN.FIELDS")
-IN_SOURCE = Symbol("MQuery.IN.SOURCE")
-ELT = Symbol("MQuery.ELT")
+SOURCE = Symbol("MQuery.IN.SOURCE")
+RECORD = Symbol("MQuery.RECORD")
+N = Symbol("MQuery.N")
+GROUPS = Symbol("MQuery.GROUPS")
+GROUP_KEY = Symbol("MQuery.GROUP_KEY")
+GROUP_FN = Symbol("MQuery.GROUP_FN")
+AGG = Symbol("MQuery.AGG")
 _gen_sym_count = 0
 
+const MAX_FIELDS = 10
 function gen_sym()
     global _gen_sym_count
     let sym = Symbol("MQuery.TMP.", _gen_sym_count)
@@ -406,96 +417,179 @@ function gen_sym()
     end
 end
 
+function return_type(f, t)
+    ts = Base.return_types(f, (t,))
+    if length(ts) === 1
+        ts[1]
+    else
+        Union{ts...}
+    end
+end
+
+for i = 1:MAX_FIELDS
+    types = [Symbol("T", j) for j = 1:i]
+    inp = :(Type{Tuple{$(types...)}})
+    out = Expr(:vect, [:(Vector{$t}) for t in types]...)
+    @eval type_aggregate(n::Int, ::$inp) where {$(types...)} = $out
+end
+
+type_aggregate(n::Int, ::Type{Any}) = fill(Vector{Any}, n)
+
+@inline function infer(::Type{T}, fields :: NTuple{N, Symbol}, gen :: Base.Generator) where {N, T}
+    out_t = return_type(gen.f, T)
+    (fields, out_t, gen)
+end
+
+for i = 1:MAX_FIELDS
+    types = [Symbol("T", j) for j = 1:i]
+    inp = :(Type{Tuple{$(types...)}})
+    out = Expr(:vect, types...)
+    @eval type_unpack(n::Int, ::$inp) where {$(types...)} = $out
+end
+
+function type_unpack(n::Int, x :: Type{Any})
+    fill(Any, n)
+end
+
+function query_routine(assigns, result)
+    inner_expr ->
+    Expr(:let,
+         Expr(:block,
+              Expr(:(=), Expr(:tuple, IN_FIELDS, TYPE, SOURCE), inner_expr),
+              assigns...
+          ),
+         result
+     )
+end
+```
+
+Then we should extract all clauses from a piece of given julia codes.
+
+Given following codes,
+```julia
+@select args1,
+@where args2,
+@select args3
+```
+, we transform them into
+
+```julia
+[(generate_select, args), (generate_where, args2), (generate_select, args3)]
+```
+
+
+
+```julia
 ismacro(x :: Expr) = Meta.isexpr(x, :macrocall)
 ismacro(_) = false
 
-function codegen(node :: Expr)
-    (generate, args) = @match node begin
-        :(@select $(::LineNumberNode) $args) || :(@select $args) =>
-            (generate_select, args)
-        :(@where $(::LineNumberNode) $args) || :(@where $args)=>
-            (generate_where, args)
-        :(@groupby $(::LineNumberNode) $args) || :(@groupby $args) =>
-            (generate_groupby, args)
-        :(@orderby $(::LineNumberNode) $args) || :(@orderby $args) =>
-            (generate_orderby, args)
+function generate_select
+end
+function generate_where
+end
+function generate_groupby
+end
+function generate_orderby
+end
+function generate_having
+end
+function generate_limit
+end
 
-        :(@having $(::LineNumberNode) $args) || :(@having $args) =>
-            (generate_having, args)
+const registered_ops = Dict{Symbol, Any}(
+    Symbol("@select") => generate_select,
+    Symbol("@where") => generate_where,
+    Symbol("@groupby") => generate_groupby,
+    Symbol("@having") => generate_having,
+    Symbol("@limit") => generate_limit,
+    Symbol("@orderby") => generate_orderby
+)
 
-        :(@limit $(::LineNumberNode) $args) || :(@limit $args) =>
-            (generate_limit, args)
-    end
+function get_op(op_name)
+    registered_ops[op_name]
+end
 
-    ast_makers = @match args begin
-        [args..., function ismacro end && tl] => [generate(args), codegen(tl)...]
-        _ => [generate(args)]
+ismacro(x :: Expr) = Meta.isexpr(x, :macrocall)
+ismacro(_) = false
+
+function flatten_macros(node :: Expr)
+    @match node begin
+    Expr(:macrocall, op :: Symbol, ::LineNumberNode, arg) ||
+    Expr(:macrocall, op :: Symbol, arg) =>
+
+    @match arg begin
+    Expr(:tuple, args...) || a && Do(args = [a]) =>
+
+    @match args begin
+    [args..., tl && if ismacro(tl) end] => [(op |> get_op, args), flatten_macros(tl)...]
+    _ => [(op |> get_op, args)]
     end
-    init = quote
-         ($names($ARG), $(DataFrames.columns)($ARG))
     end
-    fn_body = foldl(ast_makers, init = init) do last, mk
-        mk(last)
     end
-    quote
-        @inline function ($ARG :: $DataFrame)
-            $fn_body
-        end
-    end |> esc
 end
 ```
 
-Since we perform AST pattern matching here, the problem is then divided into 6 parts, and then
-we can smoothly make the solution via finishing these 6 functions, `generate_select,
-generate_where, generate_groupby, generate_orderby`, `generate_having` , and `generate_limit`.
+Then, we should generate the final code from such a sequence given as the return of `flatten_macros`.
 
-```Julia
-
-function generate_select(args :: Vector) :: Select
-    not_impl
-end
-
-function generate_where(args :: Vector) :: Where
-    not_impl
-end
-
-function generate_groupby(args :: Vector) :: GroupBy
-    not_impl
-end
-
-function generate_orderby(args :: Vector) :: OrderBy
-    not_impl
-end
-
-function generate_having(args :: Vector) :: Having
-    not_impl
-end
-
-function generate_limit(args :: Vector) :: Limit
-    not_impl
-end
-```
-
-The `select` could be the most difficult, so we can start with the easier ones, for examplem, `where`:
+Note that `get_records`, `get_fields` and `build_result` should be implemented by your own to support
+the datatype you want to query on.
 
 ```julia
+function codegen(node)
+    ops = flatten_macros(node)
 
-function generate_select(args :: Vector)
+    let rec(vec) =
+        @match vec begin
+            [] => []
+            # we should mark it as a corner case for
+            # where a `groupby` clause is followed by a `having` clause.
+            [(&generate_groupby, args1), &(generate_having, args2), tl...] =>
+                [generate_groupby(args1, args2), rec(tl)...]
+            [(hd, args), tl...] =>
+                [hd(args), rec(tl)...]
+        end
+        init = quote
+            let iter = $get_records($ARG),
+                fields = $get_fields($ARG),
+                typ = $eltype(iter)
 
-    field_getted = Dict{Symbol, Symbol}()
-    assign       :: Vector{Any} = []
-    value_result :: Vector{Any} = []
-    field_result :: Vector{Any} = []
+                (fields, typ, iter)
+            end
+        end
+        fn_body = foldl(rec(ops), init = init) do last, mk
+            mk(last)
+        end
+        quote
+            @inline function ($ARG :: $TYPE_ROOT, ) where {$TYPE_ROOT}
+                let (fields, typ, source) = $fn_body
+                    build_result(
+                        $TYPE_ROOT,
+                        fields,
+                        $type_unpack($length(fields), typ),
+                        source
+                    )
+                end
+            end
+        end
+    end
+end
+```
 
-    # visitor to process the pattern `_.x, _,"x", _.(1)` inside an expression
-    visit(expr) =
+Then, we need a visitor to transform the patterns shaped as `_.foo` inside an expression to `RECORD[idx_of_foo]`:
+
+```julia
+# visitor to process the pattern `_.x, _,"x", _.(1)` inside an expression
+function mk_visit(field_getted, assign)
+        visit = expr ->
         @match expr begin
-            Expr(:. , :_, a) end =>
+            :(_.$a) =>
                 let a = a isa QuoteNode ? a.value : a
                     @match a begin
-                        Expr(:tuple, a :: Int) => Expr(:ref, ELT, idx_sym)
+                        Expr(:tuple, a :: Int) => Expr(:ref, RECORD, a)
                         ::String && Do(b = Symbol(a)) || b::Symbol =>
-                            get!(idx, a) do
+                        Expr(:ref,
+                            RECORD,
+                            get!(field_getted, a) do
                                 idx_sym = gen_sym()
                                 field_getted[a] = idx_sym
                                 push!(
@@ -510,65 +604,123 @@ function generate_select(args :: Vector)
                                     )
                                 )
                                 idx_sym
-                            end |>
-                            idx_sym -> Expr(:ref, ELT, idx_sym)
+                            end
+                        )
+
                     end
                 end
-            Expr(head, args) => Expr(head, map(visit, args))
+            Expr(head, args...) => Expr(head, map(visit, args)...)
             a => a
         end
+end
+```
+
+You might not know what's the meanings of `field_getted` and `assign`, I'm to explain it for you.
+
+- `field_getted : Dict{Symbol, Symbol}`
+
+    Think about you want such a query `@select _.foo * 2, _.foo + 2`, the `foo` field is referred twice, but you
+    shouldn't make 2 symbols to represent the index of `foo` field. So I introduce a dictionary `field_getted` here to
+    avoid re-calculation.
+
+- `assign : Vector{Expr}`
+
+    When you want to bind the index of `foo` to a given symbol `idx_of_foo`, you should push an expressison
+    `$idx_of_foo = $findfirst(==(:foo), $IN_FIELDS)` to `assign`.
+
+    Finally, `assign` would be generated to the binding section of
+    a `let` sentence.
+
+
+Now, following previous discussions, we can firstly implement the easiest one, `where` clause.
+
+```julia
+function generate_where(args :: AbstractArray)
+    field_getted = Dict{Symbol, Symbol}()
+    assign       :: Vector{Any} = []
+    visit = mk_visit(field_getted, assign)
+
+    pred = foldl(args, init=true) do last, arg
+        boolean = visit(arg)
+        if last === true
+            boolean
+        else
+            Expr(:&&, last, boolean)
+        end
+    end
+
+    # where expression generation
+    query_routine(
+        assign,
+        Expr(:tuple,
+             IN_FIELDS,
+             TYPE,
+             :($RECORD for $RECORD in $SOURCE if $pred)
+        )
+    )
+end
+```
+
+Then `select`:
+
+```julia
+function generate_select(args :: AbstractArray)
+
+    field_getted = Dict{Symbol, Symbol}()
+    assign       :: Vector{Any} = []
+    value_result :: Vector{Any} = []
+    field_result :: Vector{Any} = []
+    visit = mk_visit(field_getted, assign)
 
     # process selectors
     foreach(args) do arg
         @match arg begin
             :_ =>
                 begin
-                    push!(value_result, Expr(:..., ELT))
+                    push!(value_result, Expr(:..., RECORD))
                     push!(field_result, Expr(:..., IN_FIELDS))
                 end
 
             :(_.(! $pred( $ (args...))))  =>
                 let new_field_pack = gen_sym()
                     new_index_pack = gen_sym()
-                    push!(Expr(:(=), new_field_pack, :[$ELT for $ELT in $IN_FIELDS if !($pred($ELT, $ (args...)))]))
+                    push!(Expr(:(=), new_field_pack, :[$RECORD for $RECORD in $IN_FIELDS if !($pred($RECORD, $ (args...)))]))
                     push!(Expr(:(=), new_index_pack, Expr(:call, indexin, new_field_pack, IN_FIELDS)))
 
                     push!(field_result, Expr(:...,  new_field_pack))
-                    push!(value_result, Expr(:...,  :($ELT[$new_index_pack])))
+                    push!(value_result, Expr(:...,  :($RECORD[$new_index_pack])))
 
                 end
             :(_.($pred( $ (args...))))  =>
                 let new_field_pack = gen_sym()
                     new_index_pack = gen_sym()
-                    push!(Expr(:(=), new_field_pack, :[$ELT for $ELT in $IN_FIELDS if ($pred($ELT, $ (args...)))]))
+                    push!(Expr(:(=), new_field_pack, :[$RECORD for $RECORD in $IN_FIELDS if ($pred($RECORD, $ (args...)))]))
                     push!(Expr(:(=), new_index_pack, Expr(:call, indexin, new_field_pack, IN_FIELDS)))
 
                     push!(field_result, Expr(:...,  new_field_pack))
-                    push!(value_result, Expr(:...,  :($ELT[$new_index_pack])))
+                    push!(value_result, Expr(:...,  :($RECORD[$new_index_pack])))
                 end
 
-           :($new_field = $a) || a && Do(new_field = Symbol(string(a))) =>
-                let new_value = visit(a)
-                    push!(field_result, new_field)
+           :($a => $new_field) || a && Do(new_field = Symbol(string(a))) =>
+                begin
+                    new_value = visit(a)
+                    push!(field_result, QuoteNode(new_field))
                     push!(value_result, new_value)
                 end
         end
     end
 
     # select expression generation
-    inner_expr ->
-    Expr(:let,
-        Expr(:block,
-            Expr(:(=), Expr(:tuple, IN_FIELDS, IN_SOURCE), inner_expr),
-            assign...
-        ),
-        Expr(:tuple,
-            Expr(:tuple, field_result...),
-            let v = Expr(:tuple, value_result...)
-                :[$v for $ELT in $IN_SOURCE]
-            end
+    query_routine(
+        assign,
+        Expr(:call,
+             infer,
+              TYPE,
+              Expr(:tuple, field_result...),
+              let v = Expr(:tuple, value_result...)
+                  :($v for $RECORD in $SOURCE)
+              end
         )
     )
 end
-
 ```

@@ -24,18 +24,6 @@ function gen_sym()
     end
 end
 
-ismacro(x :: Expr) = Meta.isexpr(x, :macrocall)
-ismacro(_) = false
-
-function get_fields
-end
-
-function get_records
-end
-
-function build_result
-end
-
 function return_type(f, t)
     ts = Base.return_types(f, (t,))
     if length(ts) === 1
@@ -81,6 +69,18 @@ function query_routine(assigns, result)
      )
 end
 
+function get_fields
+end
+
+function get_records
+end
+
+function build_result
+end
+
+ismacro(x :: Expr) = Meta.isexpr(x, :macrocall)
+ismacro(_) = false
+
 function flatten_macros(node :: Expr)
     @match node begin
     Expr(:macrocall, op :: Symbol, ::LineNumberNode, arg) ||
@@ -90,7 +90,7 @@ function flatten_macros(node :: Expr)
     Expr(:tuple, args...) || a && Do(args = [a]) =>
 
     @match args begin
-    [args..., function ismacro end && tl] => [(op |> get_op, args), flatten_macros(tl)]
+    [args..., function ismacro end && tl] => [(op |> get_op, args), flatten_macros(tl)...]
     _ => [(op |> get_op, args)]
 
     end
