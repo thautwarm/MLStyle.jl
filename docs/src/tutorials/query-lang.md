@@ -3,7 +3,7 @@ Write You A Query Language
 
 You may have heard of LINQ or extension methods before, and they're all embedded query langauges.
 
-In terms of Julia ecosystem, there're Query.jl, LightQuery.jl, DataFramesMeta.jl, etc., each of which reaches the partial or full features of a query language.
+In terms of Julia ecosystem, there're already Query.jl, LightQuery.jl, DataFramesMeta.jl, etc., each of which reaches the partial or full features of a query language.
 
 This document is provided for you to create a concise and efficient implementation of query langauge,
 which is a way for me to exhibit the power of MLStyle.jl on AST manipulations. Additionally, I think this tutorial can be also extremely helpful to those who're developing query languages for Julia.
@@ -422,7 +422,7 @@ Given following codes,
 [(generate_select, args), (generate_where, args2), (generate_select, args3)]
 ```
 
-FYI, Some constants and interfaces are defined at [MQuery.ConstantNames](https://github.com/thautwarm/MLStyle-Playground/blob/master/MQuery/MQuery.ConstantNames.jl)
+FYI, Some constants and interfaces are defined at [MQuery.ConstantNames.jl](https://github.com/thautwarm/MLStyle-Playground/blob/master/MQuery/MQuery.ConstantNames.jl)
 and [MQuery.Interfaces.jl](https://github.com/thautwarm/MLStyle-Playground/blob/master/MQuery/MQuery.Interfaces.jl),
 you might want to refer to them if any unknown symbol prevent you from understanding this sketch.
 
@@ -760,7 +760,7 @@ Above case is for handling with field filters, like
 end
 ```
 
-Above case is for handling with regular expression which might contains something like `_.x`, `_.(1)` or `_."is ruby"`.
+Above case is for handling with regular expressions which might contain something like `_.x`, `_.(1)` or `_."is ruby"`.
 
 Meanwhile, `=>` allows you to alias the expression with the name you prefer. Note that, in terms of `@select (_.foo => :a) => a`, the first `=>` is a normal infix operator, which denotes the built-in object `Pair`, but the second is *alias*.
 
