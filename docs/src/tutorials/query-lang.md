@@ -406,56 +406,7 @@ repo for codes.
 Implementation
 ------------------------
 
-Firstly, we should define the constants and help functions, you can jump over here, and when you have
-problems with your following reading, you can go back and refer to what you want.
-
-```Julia
-using MLStyle
-using DataFrames
-if isdefined(@__MODULE__, :DEBUG)
-    MQuerySymbol(x...) = Symbol(join(["MQuery", x...], "_"))
-else
-    MQuerySymbol(x...) = Symbol(join(["MQuery", x...], "."))
-end
-
-ARG = MQuerySymbol("ARG") # we just need limited mangled symbols here.
-TYPE_ROOT = MQuerySymbol("TYPE_ROOT")
-
-IN_TYPES = MQuerySymbol("IN", "TYPES")
-IN_FIELDS = MQuerySymbol("IN", "FIELDS")
-IN_SOURCE = MQuerySymbol("IN", "SOURCE")
-
-OUT_TYPES = MQuerySymbol("OUT", "TYPES")
-OUT_FIELDS = MQuerySymbol("MQuery", "OUT.FIELDS")
-OUT_SOURCE = MQuerySymbol("MQuery", "OUT.SOURCE")
-RECORD = MQuerySymbol("RECORD")
-
-N = MQuerySymbol("N")
-GROUPS = MQuerySymbol("GROUPS")
-GROUP_KEY = MQuerySymbol("GROUP_KEY")
-
-FN = MQuerySymbol("FN")
-FN_RETURN_TYPES = MQuerySymbol("FN", "RETURN_TYPES")
-FN_OUT_FIELDS = MQuerySymbol("FN", "OUT_FIELDS")
-
-AGG = MQuerySymbol("AGG")
-AGG_TYPES = MQuerySymbol("AGG", "TYPES")
-
-_gen_sym_count = 0
-
-function gen_sym()
-    global _gen_sym_count
-    let sym = MQuerySymbol("TMP", _gen_sym_count)
-        _gen_sym_count = _gen_sym_count  + 1
-        sym
-    end
-end
-
-function gen_sym(a :: Union{Symbol, Int, String})
-    global _gen_sym_count
-    MQuerySymbol("Symbol", a)
-end
-```
+Firstly, we should define the constants and help functions, you can jump over here, and when you have problems with your following reading, you can go back and refer to what you want.
 
 Then we should extract all clauses from a piece of given julia codes.
 
@@ -471,10 +422,11 @@ Given following codes,
 [(generate_select, args), (generate_where, args2), (generate_select, args3)]
 ```
 
-```julia
-ismacro(x :: Expr) = Meta.isexpr(x, :macrocall)
-ismacro(_) = false
+FYI, Some constants and interfaces are defined here at [MQuery.ConstantNames](https://github.com/thautwarm/MLStyle-Playground/blob/master/MQuery/MQuery.ConstantNames.jl)
+and [MQuery.Interfaces.jl](https://github.com/thautwarm/MLStyle-Playground/blob/master/MQuery/MQuery.Interfaces.jl),
+you might want to refer to them if any unknown symbol prevent you from understanding this sketch.
 
+```julia
 function generate_select
 end
 function generate_where
@@ -776,6 +728,12 @@ The remaining is also implemented with a concise case splitting via pattern matc
                         nothing
                     end
                 end
+```
+
+Above case is for handling with field filters, like
+`@select _.(!startswith("Java"), endswith("#"))`.
+
+```julia
            :($a => $new_field) || a && Do(new_field = Symbol(string(a))) =>
                 let new_value = visit(a)
                     push!(fn_return_fields, QuoteNode(new_field))
@@ -802,96 +760,13 @@ The remaining is also implemented with a concise case splitting via pattern matc
 end
 ```
 
-If you have problems with `$` in AST patterns, just remember that,
-inside a `quote ... end` or `:(...)`, ASTs/Expressions are compared by literal, except for `$(...)` things are matched
-via normal patterns, for instance, `:($(a :: Symbol) = 1)` can match `:($a = 1)` if the available variable `a` has type
-`Symbol`.
+Above case is for handling with regular expression which might contains something like `_.x`, `_.(1)` or `_."is ruby"`.
 
+Meanwhile, `=>` allows you to alias the expression with the name you prefer. Note that, in terms of `@select (_.foo => :a) => a`, the first `=>` is a normal infix operator, which denotes the built-in object `Pair`, but the second is *alias*.
 
-Finally, it's for `groupby` and `having`.
+If you have problems with `$` in AST patterns, just remember that, inside a `quote ... end` or `:(...)`, ASTs/Expressions are compared by literal, except for `$(...)` things are matched via normal patterns, for instance, `:($(a :: Symbol) = 1)` can match `:($a = 1)` if the available variable `a` has type `Symbol`.
 
-```julia
-function generate_groupby(args :: AbstractArray, having_args :: Union{Nothing, AbstractArray} = nothing)
-    group_in_fields = Dict{Any, Field}()
-    having_in_fields = Dict{Any, Field}()
-    assigns = OrderedDict{Symbol, Any}()
-    visit_group_fn = mk_visit(group_in_fields, assigns)
-    visit_having = mk_visit(having_in_fields, assigns)
-
-    group_fn_return_vars = []
-    group_fn_return_elts = []
-
-    foreach(args) do arg
-        @match arg begin
-            :($b => $a) || b && Do(a = Symbol(string(b))) =>
-                let field = a
-                    push!(group_fn_return_vars, a)
-                    push!(group_fn_return_elts, visit_group_fn(b))
-                    nothing
-                end
-        end
-    end
-
-    cond_expr = having_args === nothing ? nothing :
-        let cond =
-            foldl(having_args) do last, arg
-                Expr(:&&, last, visit_having(arg))
-            end
-
-            quote
-                if !($cond)
-                    continue
-                end
-            end
-        end
-
-
-    group_fn_return_fields = map(QuoteNode, group_fn_return_vars)
-    ngroup_key = length(group_fn_return_vars)
-
-    group_fields = group_in_fields |> values |> collect
-    bindings_inside_for_loop = [
-        (:($(field.var) = $(field.make)) for field in group_fields)...,
-        (:($(field.var) = $(field.make)) for (key, field) in having_in_fields if !haskey(group_in_fields, key))...
-    ]
-
-    assigns[FN_OUT_FIELDS] = Expr(:vect, group_fn_return_fields...)
-    group_fn_required_vars = [field.var for field in values(group_in_fields)]
-
-    group_key_lhs = Expr(:tuple, group_fn_return_vars...)
-    group_key_rhs = Expr(:call, FN, group_fn_required_vars...)
-
-    # groupby expression generation
-    query_routine(
-        assigns,
-        group_fields,
-        Expr(:tuple, group_fn_return_elts...),
-        let out_fields = Expr(:vcat, FN_OUT_FIELDS, IN_FIELDS),
-            out_types = Expr(:vcat, FN_RETURN_TYPES, AGG_TYPES)
-            quote
-                $AGG_TYPES = [$Vector{each} for each in $IN_TYPES]
-                $GROUPS = $Dict{$Tuple{$FN_RETURN_TYPES...}, $Tuple{$AGG_TYPES...}}()
-                $N = $length($IN_FIELDS,)
-                for $RECORD in $IN_SOURCE
-                    $(bindings_inside_for_loop...)
-                    $GROUP_KEY = $group_key_lhs = $group_key_rhs
-                    $cond_expr
-                    $AGG =
-                        $get!($GROUPS, $GROUP_KEY) do
-                            Tuple(typ[] for typ in $IN_TYPES)
-                        end
-                    ($push!).($AGG, $RECORD,)
-                end
-                (
-                    $out_fields,
-                    $out_types,
-                    ((k..., v...) for (k, v) in $GROUPS)
-                )
-            end
-        end
-    )
-end
-```
+With respect of `groupby` and `having`, they're too long to put in this article, so you might want to check them at [MQuery.Impl.jl#L217](https://github.com/thautwarm/MLStyle-Playground/blob/master/MQuery/MQuery.Impl.jl#L217).
 
 Enjoy You A Query Language
 -------------------------------------
