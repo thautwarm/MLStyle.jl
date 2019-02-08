@@ -422,7 +422,7 @@ Given following codes,
 [(generate_select, args), (generate_where, args2), (generate_select, args3)]
 ```
 
-FYI, Some constants and interfaces are defined here at [MQuery.ConstantNames](https://github.com/thautwarm/MLStyle-Playground/blob/master/MQuery/MQuery.ConstantNames.jl)
+FYI, Some constants and interfaces are defined at [MQuery.ConstantNames](https://github.com/thautwarm/MLStyle-Playground/blob/master/MQuery/MQuery.ConstantNames.jl)
 and [MQuery.Interfaces.jl](https://github.com/thautwarm/MLStyle-Playground/blob/master/MQuery/MQuery.Interfaces.jl),
 you might want to refer to them if any unknown symbol prevent you from understanding this sketch.
 
