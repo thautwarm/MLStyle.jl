@@ -786,10 +786,17 @@ df = DataFrame(
 )
 
 df |>
-@where !startswith(_.name, "Java")
-@groupby _."Type checking" => TC
-@where TC === Dynamic || endswith(_.name, "#")
-@select join(_.name, " and ") => result
+@where !startswith(_.name, "Java"),
+@groupby _."Type checking" => TC, endswith(_.name, "#") => is_sharp,
+@having TC === Dynamic || is_sharp,
+@select join(_.name, " and ") => result, _.TC => TC
+
+# 2×2 DataFrame
+# │ Row │ result                    │ TC        │
+# │     │ String                    │ TypeChec… │
+# ├─────┼───────────────────────────┼───────────┤
+# │ 1   │ Julia and Ruby and Python │ Dynamic   │
+# │ 2   │ C# and F#                 │ Static    │
 ```
 
 outputs
