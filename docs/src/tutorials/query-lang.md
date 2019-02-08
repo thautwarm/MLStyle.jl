@@ -5,8 +5,7 @@ You may have heard of LINQ or extension methods before, and they're all embedded
 
 In terms of Julia ecosystem, there're already Query.jl, LightQuery.jl, DataFramesMeta.jl, etc., each of which reaches the partial or full features of a query language.
 
-This document is provided for you to create a concise and efficient implementation of query langauge,
-which is a way for me to exhibit the power of MLStyle.jl on AST manipulations. Additionally, I think this tutorial can be also extremely helpful to those who're developing query languages for Julia.
+This document is provided for you to create a concise and efficient implementation of query language, which is a way for me to exhibit the power of MLStyle.jl on AST manipulations. Additionally, I think this tutorial can be also extremely helpful to those who're developing query languages for Julia.
 
 Definition of Syntaxes
 ------------------------------
@@ -25,7 +24,6 @@ df |>
 ```
 
 A `selector` could be one of the following cases.
-
 1. select the field `x` / select the 1-fst field
 
     `_.x / _.(1)`
@@ -66,7 +64,7 @@ selector       ::= '_' '.' FieldPredicate
 
 A `predicate` is a `QueryExpr`, but shouldn't be evaluated to a boolean.
 
-A `mapping`  is ap `QueryExpr`, but shouldn't be evaluated to a nothing.
+A `mapping`  is a `QueryExpr`, but shouldn't be evaluated to a nothing.
 
 FYI, here're some valid instances about `selector`.
 
@@ -81,8 +79,7 @@ let y = _.foo + y; y + _.(2) end
 Codegen Target
 --------------------------------
 
-Before implementing code generation, we should have a sketch about the target. The **target** here means the final shape of the code generated from query sentences.
-
+Before implementing code generation, we should have a sketch about the target. The **target** here means the final shape of the code generated from a sequence of query clauses.
 
 I'll take you to the travel within the inference about the final shape of code generation.
 
@@ -320,12 +317,12 @@ second is the lazy computation of the query. We can resume this tuple to the cor
 
 ```julia
 function (ARG :: DataFrame)
-    (IN_FIELDS, SOURCE) = let IN_FIELDS, SOURCE = ...
+    (IN_FIELDS, IN_SOURCE) = let IN_FIELDS, IN_SOURCE = ...
         ...
     end
 
     res = Tuple([] for _ in IN_FIELDS)
-    for each in SOURCE
+    for each in IN_SOURCE
         push!.(res, each)
     end
     DataFrame(collect(res), IN_FIELDS)
@@ -354,7 +351,7 @@ You may prefer to calculate the type of a column using the common super type of 
 - If the column is empty, emmmm...
 - Calculating the super type of all elements causes unaffordable cost!
 
-So, I'll introduce a new requirement `IN_TYPES` of the query's code generation.
+Yet, I'll introduce a new requirement `IN_TYPES` of the query's code generation, which perfectly solves problems of column types.
 
 Let's have a look at code generation for `select` after introducing the `IN_TYPES`.
 
@@ -389,13 +386,16 @@ let (IN_FIELDS, IN_TYPES, SOURCE) = process(df),
 end
 ```
 
-For `groupby`, it could be a bit more complex, but it does nothing new towards what `select` does. You can check the
-repo for codes.
+For `groupby`, it could be a bit more complex, but it does nothing new towards what `select` does. You can check [the repo](https://github.com/thautwarm/MLStyle-Playground/tree/master/MQuery) for codes.
 
 Implementation
 ------------------------
 
-Firstly, we should define the constants and help functions, you can jump over here, and when you have problems with your following reading, you can go back and refer to what you want.
+Firstly, we should define something like constants and helper functions.
+
+FYI, some constants and interfaces are defined at [MQuery.ConstantNames.jl](https://github.com/thautwarm/MLStyle-Playground/blob/master/MQuery/MQuery.ConstantNames.jl)
+and [MQuery.Interfaces.jl](https://github.com/thautwarm/MLStyle-Playground/blob/master/MQuery/MQuery.Interfaces.jl),
+you might want to refer to them if any unknown symbol prevents you from understanding this sketch.
 
 Then we should extract all clauses from a piece of given julia codes.
 
@@ -410,10 +410,6 @@ Given following codes,
 ```julia
 [(generate_select, args), (generate_where, args2), (generate_select, args3)]
 ```
-
-FYI, some constants and interfaces are defined at [MQuery.ConstantNames.jl](https://github.com/thautwarm/MLStyle-Playground/blob/master/MQuery/MQuery.ConstantNames.jl)
-and [MQuery.Interfaces.jl](https://github.com/thautwarm/MLStyle-Playground/blob/master/MQuery/MQuery.Interfaces.jl),
-you might want to refer to them if any unknown symbol prevent you from understanding this sketch.
 
 ```julia
 function generate_select
@@ -460,6 +456,20 @@ function flatten_macros(node :: Expr)
     end
     end
 end
+```
+
+The core is `flatten_macros`, it destructures `macrocall` expressions and then we can simply flatten the `macrocall`s.
+
+Next, we could have a common behaviour of code generation.
+
+```julia
+
+struct Field
+    name      :: Any    # an expr to represent the field name from IN_FIELDS.
+    make      :: Any    # an expression to assign the value into `var` like, `RECORD[idx_of_foo]`.
+    var       :: Symbol # a generated symbol via mangling
+    typ       :: Any    # an expression to get the type of the field like, `IN_TYPES[idx_of_foo]`.
+end
 
 function query_routine(assigns            :: OrderedDict{Symbol, Any},
                        fn_in_fields       :: Vector{Field},
@@ -490,13 +500,23 @@ function query_routine(assigns            :: OrderedDict{Symbol, Any},
         )
     end
 end
+```
 
+In fact, `query_routine` generates code like
+
+```julia
+let IN_FIELDS, IN_TYPES, IN_SOURCE = <inner query>,
+    idx_of_foo = ...,
+    idx_of_bar = ...,
+    @inline FN(x) = ...
+
+    ...
+end
 ```
 
 Then, we should generate the final code from such a sequence given as the return of `flatten_macros`.
 
-Note that `get_records`, `get_fields` and `build_result` should be implemented by your own to support
-the datatypes you want to query on.
+Note that `get_records`, `get_fields` and `build_result` should be implemented by your own to support datatypes that you want to query on.
 
 ```julia
 function codegen(node)
@@ -535,16 +555,9 @@ function codegen(node)
 end
 ```
 
-Then, we need a visitor to transform the patterns shaped as `_.foo` inside an expression to `RECORD[idx_of_foo]`.
+Then, we need a visitor to transform the patterns shaped as `_.foo` inside an expression to a mangled symbol whose value is `RECORD[idx_of_foo]`.
 
 ```julia
-struct Field
-    name      :: Any    # an expr to represent the field name from IN_FIELDS.
-    make      :: Any    # an expression to assign the value into `var` like, `RECORD[idx_of_foo]`.
-    var       :: Symbol # a generated symbol via mangling
-    typ       :: Any    # an expression to get the type of the field like, `IN_TYPES[idx_of_foo]`.
-end
-
 # visitor to process the pattern `_.x, _,"x", _.(1)` inside an expression
 function mk_visit(fields :: Dict{Any, Field}, assigns :: OrderedDict{Symbol, Any})
     visit = expr ->
@@ -587,7 +600,7 @@ function mk_visit(fields :: Dict{Any, Field}, assigns :: OrderedDict{Symbol, Any
 end
 ```
 
-You might not be able to understand what the meanings of `fields` and `assigns` are, and I'm to explain it for you.
+You might not be able to understand what the meanings of `fields` and `assigns` are, don't worry too much, and I'm to explain it for you.
 
 - `fields : Dict{Any, Field}`
 
