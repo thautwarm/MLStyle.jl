@@ -52,22 +52,16 @@ A `selector` could be one of the following cases.
     <selector 1-3> => a
     <selector 1-3> => "a"
     ```
-5. select any field `col` that `predicate(col, args...)` is true.
+5. select any field `col` that `predicate1(col, args1...) && !predicate2(col, args2...) && ...` is true.
 
     ```
-    _.(predicate(args...))
-    ```
-
-6. select any field `col` that `predicate(col, args...)` is false.
-
-    ```
-    _.(!predicate(args...))
+    _.(predicate1(args...), !predicate2(args2..., ), ...)
     ```
 
 With E-BNF notation, we can formalize the synax,
 
 ```
-FieldPredicate ::= ['!'] QueryExpr '(' QueryExprList ')'
+FieldPredicate ::= ['!'] QueryExpr '(' QueryExprList ')' [',' FieldPredicate]
 
 Field          ::= (Symbol | String | Int)
 
@@ -85,12 +79,11 @@ A `predicate` is a `QueryExpr`, but shouldn't be evaluated to a boolean.
 
 A `mapping`  is ap `QueryExpr`, but shouldn't be evaluated to a nothing.
 
-FYI, here're some instances about `selector`.
+FYI, here're some valid instances about `selector`.
 ```
 _.foo,
 _.(!1),
-_.(startswith("bar")),
-_.(!startswith("bar")),
+_.(startswith("bar"), !endswith("foo")),
 x + _.foo,
 let y = _.foo + y; y + _.(2) end
 ```
@@ -126,28 +119,35 @@ make redundant allocations when executing the queries, so we should use `Base.Ge
 For `@select _.foo + x, _.bar`, it should be generated to something like
 
 ```julia
-((RECORD[:foo] + x, RECORD[:bar])   for RECORD in SOURCE)
+((RECORD[:foo] + x, RECORD[:bar])   for RECORD in IN_SOURCE)
 ```
 
-Where `SOURCE` is the data representation, `RECORD` is the record(row) of SOURCE, and `x` is the variable captured by the closure.
+Where `IN_SOURCE` is the data representation, `RECORD` is the record(row) of `IN_SOURCE`, and `x` is the variable captured by the closure.
 
-Now, a smart reader might observe that there's a trick for optimization! If we can have the actual indices of the fields `foo` and `bar` in the record(each row of `SOURCE`), then they can be indexed via integers, which could avoid reflections in some degree.
+Now, a smart reader might observe that there's a trick for optimization! If we can have the actual indices of the fields `foo` and `bar` in the record(each row of `IN_SOURCE`), then they can be indexed via integers, which could avoid reflections in some degree.
 
 I don't have much knowledge about NamedTuple's implementation, but indexing via names on unknown datatypes cannot be faster than simply indexing via integers.
 
 So, the generated code of `select` could be
+
 ```julia
 
 let idx_of_foo = findfirst(==(:foo), IN_FIELDS),
     idx_of_bar = findfirst(==(:bar), IN_FIELDS),
-    ((RECORD[idx_of_foo] + x, RECORD[idx_of_bar]) for RECORD in SOURCE)
+    @inline FN(_foo, _bar) = (_foo + x, _bar)
+    (
+    let _foo = RECORD[idx_of_foo],
+        _bar = RECORD[idx_of_bar]
+        FN(_foo, _bar)
+    end
+    for RECORD in IN_SOURCE)
 end
 
 ```
 
-Where we introduce a new requirement of the query's code generation: the field names of input `SOURCE`, `IN_FIELDS`.
+Where we introduce a new requirement of the query's code generation, `IN_FIELDS`, which denotes the field names of `IN_SOURCE`.
 
-Now, to have a consistent code generation, let's think about the stacked `select` clauses.
+Now, to have a consistent code generation, let's think about stacked `select` clauses.
 
 ```julia
 df |>
@@ -159,18 +159,33 @@ df |>
 I don't know how to explain the iteration in my mind, but I've figured out such a way.
 
 ```julia
-let (IN_FIELDS, SOURCE) =
-    let (IN_FIELDS, SOURCE) = process(df),
-        idx_of_foo = findfirst(==(:foo),  IN_FIELDS)
-        (IN_FIELDS..., :foo1), ((RECORD..., RECORD[idx_of_foo] + 1) for RECORD in SOURCE)
+let (IN_FIELDS, IN_SOURCE) =
+    let (IN_FIELDS, IN_SOURCE) = process(df),
+        idx_of_foo = findfirst(==(:foo), IN_FIELDS),
+        @inline FN(_record, _foo) = (_record..., _foo + 1)
+        [IN_FIELDS..., :foo1],
+        (
+            let _foo = RECORD[idx_of_foo]
+                FN(RECORD, _foo)
+            end
+            for RECORD in IN_SOURCE
+        )
     end,
-    idx_of_foo1 = findfirst(==(:foo1), IN_FIELDS)
-    (:foo2, ), ((RECORD[idx_of_foo1] + 2, ) for RECORD in SOURCE)
+    idx_of_foo1 = findfirst(==(:foo1), IN_FIELDS),
+    @inline FN(_foo1) = (_foo1 + 2, )
+
+    [:foo2],
+    (
+        let _foo1 = RECORD[idx_of_foo1]
+            FN(_foo1)
+        end
+        for RECORD in IN_SOURCE
+    )
 end
 ```
 Oh, perfect! I'm so excited! That's so beautiful!
 
-If the output field names are a list of meta variables `(:foo2, )`, then output expression inside the comprehension should be a list of terms `(foo2, )`. For `foo2 = _.foo1 + 2` which is generated as `RECORD[idx_of_foo1] + 2`, so it comes to the above code snippet.
+If the output field names are a list of meta variables `[:foo2]`, then output expression inside the comprehension should be a list of terms `[foo2]`. For `foo2 = _.foo1 + 2` which is generated as `RECORD[idx_of_foo1] + 2`, so it comes into the shape of above code snippet.
 
 Let's think about the `where` clause.
 
@@ -183,14 +198,19 @@ df |>
 That's similar to `select`:
 
 ```julia
-let (IN_FIELDS, SOURCE) = process(df),
+let (IN_FIELDS, IN_SOURCE) = process(df),
     idx_of_foo = findfirst(==(:foo), IN_FIELDS)
-    (IN_FIELDS, (RECORD for RECORD in SOURCE if RECORD[idx_of_foo] < 2))
+    IN_FIELDS,
+    (
+        RECORD for RECORD in SOURCE
+        if  let _foo = RECORD[idx_of_foo]
+                _foo < 2
+            end
+    )
 end
 ```
 
 Obviously that `where` clauses generated in this way could be stacked.
-
 
 Next, it's the turn of `groupby`. It could be much more complex, for we should make it consistent with code generation
 for `select` and `where`.
@@ -202,20 +222,21 @@ df |>
 @groupby startswith(_.name, "Ruby")  => is_ruby
 ```
 
-Yep, we want to group data frames(of course, any other datatypes that can be processed via this pipeline) by whether its field `name` starts with a string "Ruby", like "Ruby Rose".
+Yep, we want to group data frames(of course, any other datatypes that can be processed via this pipeline) by whether its field `name` starts with a string "Ruby" like, "Ruby Rose".
 
-Ha, I'd like to use a dictionary to group it here.
+Ha, I'd like to use a dictionary here to store the groups.
 
 ```julia
-let IN_FIELDS, SOURCE = process(df)
-    @inline function GROUP_FN(RECORD)
-        (startswith(_.name, "Ruby"), )
-    end
+let IN_FIELDS, IN_SOURCE = process(df),
+    idx_of_name = findfirst(==(:name), IN_FIELDS),
+    @inline FN(_name) = (startswith(_.name, "Ruby"), )
+
     GROUPS = Dict() # the type issues will be discussed later.
-    for RECORD in SOURCE
-        GROUP_KEY = (is_ruby, ) = GROUP_FN(RECORD)
+    for RECORD in IN_SOURCE
+        _name = RECORD[idx_of_name]
+        GROUP_KEY = (is_ruby, ) = FN(_name)
         AGGREGATES = get!(GROUPS, GROUP_KEY) do
-            [[] for _ in IN_FIELDS]
+            Tuple([] for _ in IN_FIELDS)
         end
         push!.(AGGREGATES, RECORD)
     end
@@ -231,79 +252,82 @@ So, what should the output field names and the source be?
 An implementation is,
 
 ```julia
-IN_FIELD, values(GROUPS)
+IN_FIELDS, values(GROUPS)
 ```
 
-But if so, we will lose the information of group keys, that's bad.
+But if so, we will lose the information of group keys, which is not that good.
 
 So, if we want to persist the group keys, we can do this:
 
 ```julia
-((:is_ruby, )..., IN_FIELDS...), ((k..., v...) for (k, v) in GROUPS)
+[[:is_ruby]; IN_FIELDS], ((k..., v...) for (k, v) in GROUPS)
 ```
-I think the later could be sufficiently powerful, although it might not be that efficient. You can have
+
+I think the latter could be sufficiently powerful, although it might not be that efficient. You can have
 different implementations of `groupby` if you have more specific use cases, just use the extensible system
 which will be introduced later.
 
 So, the code generation of `groupby` could be:
 
 ```julia
-let IN_FIELDS, SOURCE = process(df)
-    @inline function GROUP_FN(RECORD)
-        (startswith(_.name, "Ruby"), )
-    end
+let IN_FIELDS, IN_SOURCE = process(df),
+    idx_of_name = findfirst(==(:name), IN_FIELDS),
+    @inline FN(_name) = (startswith(_.name, "Ruby"), )
+
     GROUPS = Dict() # the type issues will be discussed later.
-    for RECORD in SOURCE
-        GROUP_KEY = (is_ruby, ) = GROUP_FN(RECORD)
+    for RECORD in IN_SOURCE
+        _name = RECORD[idx_of_name]
+        GROUP_KEY = (is_ruby, ) = FN(_name)
         AGGREGATES = get!(GROUPS, GROUP_KEY) do
-            [[] for _ in IN_FIELDS]
+            Tuple([] for _ in IN_FIELDS)
         end
         push!.(AGGREGATES, RECORD)
     end
-    ((:is_ruby, ), IN_FIELDS...), ((k..., v...) for (k, v) in SOURCE)
+    [[:is_ruby]; IN_FIELDS], ((k..., v...) for (k, v) in GROUPS)
 end
+
 ```
 
-However, subsequently, we comes to the `having` clause, in fact, I think it's a subclause of
-`groupby` clause, which means it cannot take place indenpendently, but co-appear with a `groupby`.
+However, subsequently, we comes to the `having` clause, in fact, I'd regard it as a sub-clause of
+`groupby`, which means it cannot take place indenpendently, but co-appear with a `groupby` clause.
 
 Given such a case:
 ```julia
 df |>
 @groupby startswith(_.name, "Ruby")  => is_ruby
-@having is_ruby || _.is_rose
+@having is_ruby || count(_.is_rose) > 5
 ```
 The generated code should be:
 
 ```julia
-let IN_FIELDS, SOURCE = process(df),
+let IN_FIELDS, IN_SOURCE = process(df),
+    idx_of_name = findfirst(==(:name), IN_FIELDS),
     idx_of_is_rose = findfirst(==(:is_rose), IN_FIELDS)
+    @inline FN(_name) = (startswith(_name, "Ruby"), )
 
-    @inline function GROUP_FN(RECORD)
-        (startswith(_.name, "Ruby"), )
-    end
     GROUPS = Dict() # the type issues will be discussed later.
-    for RECORD in SOURCE
+    for RECORD in IN_SOURCE
+        _name = RECORD[idx_of_name]
+        _is_rose = RECORD[idx_of_rose]
         GROUP_KEY = (is_ruby, ) = GROUP_FN(RECORD)
-        if is_ruby || RECORD[idx_is_rose]
+        if !(is_ruby || count(is_rose) > 5)
             continue
         end
         AGGREGATES = get!(GROUPS, GROUP_KEY) do
-            [[] for _ in IN_FIELDS]
+            Tuple([] for _ in IN_FIELDS)
         end
         push!.(AGGREGATES, RECORD)
     end
-    ((:is_ruby, ), IN_FIELDS...), ((k..., v...) for (k, v) in SOURCE)
+    [[:is_ruby]; IN_FIELDS], ((k..., v...) for (k, v) in GROUPS)
 end
 ```
 
-That could be achieved very concisely, we'll refer to this later.
+The conditional code generation of `groupby` could be achieved very concisely via AST patterns of MLStyle, we'll refer to this later.
 
-After introducing the generation for above 4 clauses, `orderby` and `limit` then become trivial, I don't want to repeat
-myself if not necessary.
+After introducing the generation for above 4 clauses, `orderby` and `limit` then become quite trivial, and I don't want to repeat myself if not necessary.
 
-Now we know that mulitiple clauses could be generated to give a `Tuple` result, first of which is the field names, the
-second is the lazy computation of the query. We can resume it to the corresponding types, for instance,
+Now we know that mulitiple clauses could be generated to produce a `Tuple` result, first of which is the field names, the
+second is the lazy computation of the query. We can resume this tuple to the corresponding types, for instance,
 
 ```julia
 function (ARG :: DataFrame)
@@ -315,14 +339,14 @@ function (ARG :: DataFrame)
     for each in SOURCE
         push!.(res, each)
     end
-    DataFrame(collect(res), collect(IN_FIELDS))
+    DataFrame(collect(res), IN_FIELDS)
 end
 ```
 
 Refinement of Codegen: Typed Columns
 ---------------------------------------------
 
-Last section introduce a framework of code generation for query langauge, but in Julia, there's problem.
+Last section introduce a framework of code generation for implementing query langauges, but in Julia, there's still a fatal problem.
 
 Look at the value to be return(when input is a `DataFrame`):
 
@@ -334,46 +358,50 @@ end
 DataFrame(collect(res), collect(IN_FIELDS))
 ```
 
-I can promise you that, each column of your dataframes is a `Vector{Any`, yes, not its actual type.
+I can promise you that, each column of your data frames is a `Vector{Any}`, yes, not its actual type.
 You may prefer to calculate the type of a column using the common super type of all elements, but there're
 2 problems if you try this:
 
 - If the column is empty, emmmm...
-- Calculating the super type of all elements does cost much!
+- Calculating the super type of all elements causes unaffordable cost!
 
-So, I'll introduce a new requirement `TYPE` of the query's code generation.
+So, I'll introduce a new requirement `IN_TYPES` of the query's code generation.
 
-Let's have a look at code generation for `select` after introducing the `TYPE`.
+Let's have a look at code generation for `select` after introducing the `IN_TYPES`.
 
 Given that
 ```julia
 @select _, _.foo + 1
+# `@select _` is regarded as `SELECT *` in T-SQL.
 ```
 
 ```julia
-return_type(f, t) =
-    let ts = Base.return_types(f, (t,))
+return_type(f, ts) =
+    let ts = Base.return_types(f, ts)
         length(ts) === 1 ?
             ts[1]        :
             Union{ts...}
     end
+type_unpack(n, ::Type{Tuple{}}) = throw("error")
+type_unpack(n, ::Type{Tuple{T1}}) where T1 = [T1]
+type_unpack(n, ::Type{Tuple{T1, T2}}) where {T1, T2} = [T1, T2]
+# type_unpack(::Type{Tuple{T1, T2, ...}}) where {T1, T2, ...} = [T1, T2, ...]
+type_unpack(n, ::Type{Any}) = fill(Any, n)
 
-infer(TYPE, IN_FIELDS, gen)
-    let TYPE_ = return_type(gen.f, TYPE)
-        IN_FIELDS, TYPE_, gen
-    end
+let (IN_FIELDS, IN_TYPES, SOURCE) = process(df),
+    idx_of_foo = findfirst(==(:foo),  IN_FIELDS),
+    (@inline FN(_record, _foo) = (_record..., _foo)),
+    FN_OUT_FIELDS = [IN_FIELDS..., :foo1],
+    FN_OUT_TYPES = type_unpack(length(FN_OUT_FIELDS), return_type(Tuple{IN_TYPES...}, IN_TYPES[idx_of_foo]))
 
-let (IN_FIELDS, TYPE, SOURCE) = process(df),
-    idx_of_foo = findfirst(==(:foo),  IN_FIELDS)
-    infer(
-        TYPE,
-        (IN_FIELDS..., :foo1),
-        ((RECORD..., RECORD[idx_of_foo] + 1) for RECORD in SOURCE)
-    )
+    FN_OUT_FILEDS,
+    FN_OUT_TYPES,
+    (let _foo = RECORD[idx_of_foo]; FN(RECORD, _foo) end for RECORD in SOURCE)
 end
 ```
 
-For `groupby`, it could be a bit more complex, but it does nothing new towards what `select` does.
+For `groupby`, it could be a bit more complex, but it does nothing new towards what `select` does. You can check the
+repo for codes.
 
 Implementation
 ------------------------
@@ -384,73 +412,48 @@ problems with your following reading, you can go back and refer to what you want
 ```Julia
 using MLStyle
 using DataFrames
+if isdefined(@__MODULE__, :DEBUG)
+    MQuerySymbol(x...) = Symbol(join(["MQuery", x...], "_"))
+else
+    MQuerySymbol(x...) = Symbol(join(["MQuery", x...], "."))
+end
 
-ARG = Symbol("MQuery.ARG") # we just need limited mangled symbols here.
-TYPE = Symbol("MQuery.TYPE")
-TYPE_ROOT = Symbol("MQuery.TYPE_ROOT")
+ARG = MQuerySymbol("ARG") # we just need limited mangled symbols here.
+TYPE_ROOT = MQuerySymbol("TYPE_ROOT")
 
-IN_FIELDS = Symbol("MQuery.IN.FIELDS")
-SOURCE = Symbol("MQuery.IN.SOURCE")
-RECORD = Symbol("MQuery.RECORD")
-N = Symbol("MQuery.N")
-GROUPS = Symbol("MQuery.GROUPS")
-GROUP_KEY = Symbol("MQuery.GROUP_KEY")
-GROUP_FN = Symbol("MQuery.GROUP_FN")
-AGG = Symbol("MQuery.AGG")
+IN_TYPES = MQuerySymbol("IN", "TYPES")
+IN_FIELDS = MQuerySymbol("IN", "FIELDS")
+IN_SOURCE = MQuerySymbol("IN", "SOURCE")
+
+OUT_TYPES = MQuerySymbol("OUT", "TYPES")
+OUT_FIELDS = MQuerySymbol("MQuery", "OUT.FIELDS")
+OUT_SOURCE = MQuerySymbol("MQuery", "OUT.SOURCE")
+RECORD = MQuerySymbol("RECORD")
+
+N = MQuerySymbol("N")
+GROUPS = MQuerySymbol("GROUPS")
+GROUP_KEY = MQuerySymbol("GROUP_KEY")
+
+FN = MQuerySymbol("FN")
+FN_RETURN_TYPES = MQuerySymbol("FN", "RETURN_TYPES")
+FN_OUT_FIELDS = MQuerySymbol("FN", "OUT_FIELDS")
+
+AGG = MQuerySymbol("AGG")
+AGG_TYPES = MQuerySymbol("AGG", "TYPES")
+
 _gen_sym_count = 0
 
-const MAX_FIELDS = 10
 function gen_sym()
     global _gen_sym_count
-    let sym = Symbol("MQuery.TMP.", _gen_sym_count)
+    let sym = MQuerySymbol("TMP", _gen_sym_count)
         _gen_sym_count = _gen_sym_count  + 1
         sym
     end
 end
 
-function return_type(f, t)
-    ts = Base.return_types(f, (t,))
-    if length(ts) === 1
-        ts[1]
-    else
-        Union{ts...}
-    end
-end
-
-for i = 1:MAX_FIELDS
-    types = [Symbol("T", j) for j = 1:i]
-    inp = :(Type{Tuple{$(types...)}})
-    out = Expr(:vect, [:(Vector{$t}) for t in types]...)
-    @eval type_aggregate(n::Int, ::$inp) where {$(types...)} = $out
-end
-
-type_aggregate(n::Int, ::Type{Any}) = fill(Vector{Any}, n)
-
-@inline function infer(::Type{T}, fields :: NTuple{N, Symbol}, gen :: Base.Generator) where {N, T}
-    out_t = return_type(gen.f, T)
-    (fields, out_t, gen)
-end
-
-for i = 1:MAX_FIELDS
-    types = [Symbol("T", j) for j = 1:i]
-    inp = :(Type{Tuple{$(types...)}})
-    out = Expr(:vect, types...)
-    @eval type_unpack(n::Int, ::$inp) where {$(types...)} = $out
-end
-
-function type_unpack(n::Int, x :: Type{Any})
-    fill(Any, n)
-end
-
-function query_routine(assigns, result)
-    inner_expr ->
-    Expr(:let,
-         Expr(:block,
-              Expr(:(=), Expr(:tuple, IN_FIELDS, TYPE, SOURCE), inner_expr),
-              assigns...
-          ),
-         result
-     )
+function gen_sym(a :: Union{Symbol, Int, String})
+    global _gen_sym_count
+    MQuerySymbol("Symbol", a)
 end
 ```
 
@@ -467,8 +470,6 @@ Given following codes,
 ```julia
 [(generate_select, args), (generate_where, args2), (generate_select, args3)]
 ```
-
-
 
 ```julia
 ismacro(x :: Expr) = Meta.isexpr(x, :macrocall)
@@ -518,23 +519,51 @@ function flatten_macros(node :: Expr)
     end
     end
 end
+
+function query_routine(assigns            :: OrderedDict{Symbol, Any},
+                       fn_in_fields       :: Vector{Field},
+                       fn_returns         :: Any,
+                       result; infer_type = true)
+    @assert haskey(assigns, FN_OUT_FIELDS)
+
+    fn_arguments = map(x -> x.var, fn_in_fields)
+    fn_arg_types = Expr(:vect, map(x -> x.typ, fn_in_fields)...)
+
+    function (inner_expr)
+        let_seq = [
+            Expr(:(=), Expr(:tuple, IN_FIELDS, IN_TYPES, IN_SOURCE), inner_expr),
+            (:($name = $value) for (name, value) in assigns)...,
+            :(@inline $FN($(fn_arguments...)) =  $fn_returns),
+        ]
+        if infer_type
+            let type_infer = :($FN_RETURN_TYPES = $type_unpack($length($FN_OUT_FIELDS, ), $return_type($FN, $fn_arg_types)))
+                push!(let_seq, type_infer)
+            end
+        end
+        Expr(:let,
+            Expr(
+                :block,
+                let_seq...
+            ),
+            result
+        )
+    end
+end
+
 ```
 
 Then, we should generate the final code from such a sequence given as the return of `flatten_macros`.
 
 Note that `get_records`, `get_fields` and `build_result` should be implemented by your own to support
-the datatype you want to query on.
+the datatypes you want to query on.
 
 ```julia
 function codegen(node)
     ops = flatten_macros(node)
-
     let rec(vec) =
         @match vec begin
             [] => []
-            # we should mark it as a corner case for
-            # where a `groupby` clause is followed by a `having` clause.
-            [(&generate_groupby, args1), &(generate_having, args2), tl...] =>
+            [(&generate_groupby, args1), (&generate_having, args2), tl...] =>
                 [generate_groupby(args1, args2), rec(tl)...]
             [(hd, args), tl...] =>
                 [hd(args), rec(tl)...]
@@ -542,9 +571,8 @@ function codegen(node)
         init = quote
             let iter = $get_records($ARG),
                 fields = $get_fields($ARG),
-                typ = $eltype(iter)
-
-                (fields, typ, iter)
+                types =$type_unpack($length(fields), $eltype(iter))
+                (fields, types, iter)
             end
         end
         fn_body = foldl(rec(ops), init = init) do last, mk
@@ -552,12 +580,12 @@ function codegen(node)
         end
         quote
             @inline function ($ARG :: $TYPE_ROOT, ) where {$TYPE_ROOT}
-                let (fields, typ, source) = $fn_body
-                    build_result(
+                let ($IN_FIELDS, $IN_TYPES, $IN_SOURCE) = $fn_body
+                    $build_result(
                         $TYPE_ROOT,
-                        fields,
-                        $type_unpack($length(fields), typ),
-                        source
+                        $IN_FIELDS,
+                        $IN_TYPES,
+                        $IN_SOURCE
                     )
                 end
             end
@@ -566,67 +594,76 @@ function codegen(node)
 end
 ```
 
-Then, we need a visitor to transform the patterns shaped as `_.foo` inside an expression to `RECORD[idx_of_foo]`:
+Then, we need a visitor to transform the patterns shaped as `_.foo` inside an expression to `RECORD[idx_of_foo]`.
 
 ```julia
+struct Field
+    name      :: Any    # an expr to represent the field name from IN_FIELDS.
+    make      :: Any    # an expression to assign the value into `var` like, `RECORD[idx_of_foo]`.
+    var       :: Symbol # a generated symbol via mangling
+    typ       :: Any    # an expression to get the type of the field like, `IN_TYPES[idx_of_foo]`.
+end
+
 # visitor to process the pattern `_.x, _,"x", _.(1)` inside an expression
-function mk_visit(field_getted, assign)
-        visit = expr ->
-        @match expr begin
-            Expr(:. , :_, q :: QuoteNode) && Do(a = q.value) ||
-            Expr(:., :_, Expr(:tuple, a)) =>
-                @match a begin
-                    a :: Int => Expr(:ref, RECORD, a)
+function mk_visit(fields :: Dict{Any, Field}, assigns :: OrderedDict{Symbol, Any})
+    visit = expr ->
+    @match expr begin
+        Expr(:. , :_, q :: QuoteNode) && Do(a = q.value) ||
+        Expr(:., :_, Expr(:tuple, a)) =>
+            @match a begin
+                a :: Int =>
+                    let field = get!(fields, a) do
+                            var_sym = gen_sym(a)
+                            Field(
+                                a,
+                                Expr(:ref, RECORD, a),
+                                var_sym,
+                                Expr(:ref, IN_TYPES, a)
+                            )
+                        end
+                        field.var
+                    end
 
-                    ::String && Do(b = Symbol(a)) ||
-                    b::Symbol =>
-
-                        Expr(:ref,
-                            RECORD,
-                            get!(field_getted, b) do
-                                idx_sym = gen_sym()
-                                field_getted[b] = idx_sym
-                                push!(
-                                    assign,
-                                    Expr(:(=),
-                                        idx_sym,
-                                        Expr(:call,
-                                            findfirst,
-                                            x -> x === b,
-                                            IN_FIELDS
-                                        )
-                                    )
-                                )
-                                idx_sym
-                            end
-                        )
-                end
-            Expr(head, args...) => Expr(head, map(visit, args)...)
-            a => a
-        end
+                ::String && Do(b = Symbol(a)) ||
+                b::Symbol =>
+                    let field = get!(fields, b) do
+                            idx_sym = gen_sym()
+                            var_sym = gen_sym(b)
+                            assigns[idx_sym] = Expr(:call, findfirst, x -> x === b, IN_FIELDS)
+                            Field(
+                                b,
+                                Expr(:ref, RECORD, idx_sym),
+                                var_sym,
+                                Expr(:ref, IN_TYPES, idx_sym)
+                            )
+                        end
+                        field.var
+                    end
+            end
+        Expr(head, args...) => Expr(head, map(visit, args)...)
+        a => a
+    end
 end
 ```
 
-You might not know what's the meanings of `field_getted` and `assign`, I'm to explain it for you.
+You might not be able to understand what the meanings of `fields` and `assigns` are, and I'm to explain it for you.
 
-- `field_getted : Dict{Symbol, Symbol}`
+- `fields : Dict{Any, Field}`
 
-    Think about you want such a query `@select _.foo * 2, _.foo + 2`, the `foo` field is referred twice, but you
-    shouldn't make 2 symbols to represent the index of `foo` field. So I introduce a dictionary `field_getted` here to
+    Think about you want such a query `@select _.foo * 2, _.foo + 2`, you can see that field `foo` is referred twice, but you shouldn't make 2 symbols to represent the index of `foo` field. So I introduce a dictionary `fields` here to
     avoid re-calculation.
 
-- `assign : Vector{Expr}`
+- `assigns : OrderedDict{Any, Expr}`
 
-    When you want to bind the index of `foo` to a given symbol `idx_of_foo`, you should push an expressison
-    `$idx_of_foo = $findfirst(==(:foo), $IN_FIELDS)` to `assign`.
+    When you want to bind the index of `foo` to a given symbol `idx_of_foo`, you should set an expressison `$findfirst(==(:foo), $IN_FIELDS)` to `assigns` on key `idx_of_foo`. The reason why we don't use a `Vector{Expr}` to represent `assigns` is, we can avoid re-assignments in some cases(you can find an instance in `generate_groupby`).
 
-    Finally, `assign` would be generated to the binding section of
+    Finally, `assigns` would be generated to the binding section of
     a `let` sentence.
 
-
-Now, following previous discussions, we can implement the easiest one, codegen for `where` clause.
+Now, following previous discussions, we can firstly implement the easiest one, codegen method for `where` clause.
 
 ```julia
+
 function generate_where(args :: AbstractArray)
     field_getted = Dict{Symbol, Symbol}()
     assign       :: Vector{Any} = []
@@ -657,74 +694,110 @@ Then `select`:
 
 ```julia
 function generate_select(args :: AbstractArray)
-
-    field_getted = Dict{Symbol, Symbol}()
-    assign       :: Vector{Any} = []
-
-    value_result :: Vector{Any} = []
-    field_result :: Vector{Any} = []
-    visit = mk_visit(field_getted, assign)
+    map_in_fields = Dict{Any, Field}()
+    assigns = OrderedDict{Symbol, Any}()
+    fn_return_elts   :: Vector{Any} = []
+    fn_return_fields :: Vector{Any} = []
+    visit = mk_visit(map_in_fields, assigns)
+    # process selectors
+    predicate_process(arg) =
+        @match arg begin
+        :(!$pred($ (args...) )) && Do(ab=true)  ||
+        :($pred($ (args...) ))  && Do(ab=false) ||
+        :(!$pred) && Do(ab=true, args=[])       ||
+        :($pred)  && Do(ab=false, args=[])      =>
+            let idx_sym = gen_sym()
+                assigns[idx_sym] =
+                    Expr(
+                        :call,
+                        findall,
+                        ab ?
+                            :(@inline function ($ARG,) !$pred($string($ARG,), $(args...)) end) :
+                            :(@inline function ($ARG,) $pred($string($ARG,), $(args...)) end)
+                        , IN_FIELDS
+                    )
+                idx_sym
+            end
+        end
 ```
 
-`value_result` will be finally used to generate the next `SOURCE` with `:($(Expr(:tuple, value_result...)) for $RECORD in $SOURCE)`, while `field_result` will be finally used to generate the next `IN_FIELDS` with `Expr(:tuple, field_result...)`.
+`fn_return_elts` will be finally evaluated as the return of `FN`, while `FN` will be used to be generate the next `IN_SOURCE` with `:(let ... ; $FN($args...) end for
+$RECORD in $SOURCE)`, while `fn_retrun_fields` will be finally used to generate the next `IN_FIELDS` with `Expr(:vect, fn_return_fields...)`.
+
+Let's go ahead.
 
 ```julia
-    # process selectors
     foreach(args) do arg
         @match arg begin
             :_ =>
-                begin
-                    push!(value_result, Expr(:..., RECORD))
-                    push!(field_result, Expr(:..., IN_FIELDS))
+                let field = get!(map_in_fields, all) do
+                        var_sym = gen_sym()
+                        push!(fn_return_elts, Expr(:..., var_sym))
+                        push!(fn_return_fields, Expr(:..., IN_FIELDS))
+                        Field(
+                            all,
+                            RECORD,
+                            var_sym,
+                            :($Tuple{$IN_TYPES...})
+                        )
+                    end
+                    nothing
                 end
 
 ```
 
 We've said that `@select _` here is equivalent to `SELECT *` in T-SQL.
 
-The remaining is also implemented with concise case splitting via pattern matchings on ASTs.
+The remaining is also implemented with a concise case splitting via pattern matchings on ASTs.
+
 ```julia
-            :(_.(! $pred( $(args...) )))  =>
-                let new_field_pack = gen_sym()
-                    new_index_pack = gen_sym()
-                    push!(Expr(:(=), new_field_pack, :[$RECORD for $RECORD in $IN_FIELDS if !($pred($RECORD, $ (args...)))]))
-                    push!(Expr(:(=), new_index_pack, Expr(:call, indexin, new_field_pack, IN_FIELDS)))
-
-                    push!(field_result, Expr(:...,  new_field_pack))
-                    push!(value_result, Expr(:...,  :($RECORD[$new_index_pack])))
-
+            :(_.($(args...))) =>
+                let indices = map(predicate_process, args)
+                    if haskey(map_in_fields, arg)
+                        throw("The columns `$(string(arg))` are selected twice!")
+                    elseif !isempty(indices)
+                        idx_sym = gen_sym()
+                        var_sym = gen_sym()
+                        field = begin
+                            assigns[idx_sym] =
+                                length(indices) === 1 ?
+                                indices[1] :
+                                Expr(:call, intersect, indices...)
+                            push!(fn_return_elts, Expr(:..., var_sym))
+                            push!(fn_return_fields, Expr(:..., Expr(:ref, IN_FIELDS, idx_sym)))
+                            Field(
+                                arg,
+                                Expr(:ref, RECORD, idx_sym),
+                                var_sym,
+                                Expr(:curly, Tuple, Expr(:..., Expr(:ref, IN_TYPES, idx_sym)))
+                            )
+                        end
+                        map_in_fields[arg] = field
+                        nothing
+                    end
                 end
-
-            :(_.($pred( $(args...) )))  =>
-                let new_field_pack = gen_sym()
-                    new_index_pack = gen_sym()
-                    push!(Expr(:(=), new_field_pack, :[$RECORD for $RECORD in $IN_FIELDS if ($pred($RECORD, $ (args...)))]))
-                    push!(Expr(:(=), new_index_pack, Expr(:call, indexin, new_field_pack, IN_FIELDS)))
-
-                    push!(field_result, Expr(:...,  new_field_pack))
-                    push!(value_result, Expr(:...,  :($RECORD[$new_index_pack])))
-                end
-
            :($a => $new_field) || a && Do(new_field = Symbol(string(a))) =>
-                begin
-                    new_value = visit(a)
-                    push!(field_result, QuoteNode(new_field))
-                    push!(value_result, new_value)
+                let new_value = visit(a)
+                    push!(fn_return_fields, QuoteNode(new_field))
+                    push!(fn_return_elts, new_value)
+                    nothing
                 end
         end
     end
 
+    fields = map_in_fields |> values |> collect
+    assigns[FN_OUT_FIELDS] = Expr(:vect, fn_return_fields...)
     # select expression generation
     query_routine(
-        assign,
-        Expr(:call,
-             infer,
-              TYPE,
-              Expr(:tuple, field_result...),
-              let v = Expr(:tuple, value_result...)
-                  :($v for $RECORD in $SOURCE)
-              end
-        )
+        assigns,
+        fields,
+        Expr(:tuple, fn_return_elts...),
+        Expr(
+            :tuple,
+            FN_OUT_FIELDS,
+            FN_RETURN_TYPES,
+            :($(fn_apply(fields)) for $RECORD in $IN_SOURCE)
+        ); infer_type = true
     )
 end
 ```
@@ -739,64 +812,79 @@ Finally, it's for `groupby` and `having`.
 
 ```julia
 function generate_groupby(args :: AbstractArray, having_args :: Union{Nothing, AbstractArray} = nothing)
-    field_getted = Dict{Symbol, Symbol}()
-    assign       :: Vector{Any} = []
-    visit = mk_visit(field_getted, assign)
+    group_in_fields = Dict{Any, Field}()
+    having_in_fields = Dict{Any, Field}()
+    assigns = OrderedDict{Symbol, Any}()
+    visit_group_fn = mk_visit(group_in_fields, assigns)
+    visit_having = mk_visit(having_in_fields, assigns)
 
-    fields_gkeys = map(args) do arg
+    group_fn_return_vars = []
+    group_fn_return_elts = []
+
+    foreach(args) do arg
         @match arg begin
             :($b => $a) || b && Do(a = Symbol(string(b))) =>
                 let field = a
-                    (field, visit(b))
+                    push!(group_fn_return_vars, a)
+                    push!(group_fn_return_elts, visit_group_fn(b))
+                    nothing
                 end
         end
     end
 
-    group_keys = map(x -> x[1], fields_gkeys)
-    ngroup_key = length(fields_gkeys)
-    group_key_rhs = Expr(:tuple, map(x -> x[2], fields_gkeys)...)
-    group_key_lhs = Expr(:tuple, group_keys...)
-
-    group_key_fields = map(QuoteNode ∘ Symbol ∘ string, group_keys)
     cond_expr = having_args === nothing ? nothing :
         let cond =
             foldl(having_args) do last, arg
-                Expr(:&&, last, visit(arg))
+                Expr(:&&, last, visit_having(arg))
             end
 
             quote
-                if $cond
+                if !($cond)
                     continue
                 end
             end
         end
 
+
+    group_fn_return_fields = map(QuoteNode, group_fn_return_vars)
+    ngroup_key = length(group_fn_return_vars)
+
+    group_fields = group_in_fields |> values |> collect
+    bindings_inside_for_loop = [
+        (:($(field.var) = $(field.make)) for field in group_fields)...,
+        (:($(field.var) = $(field.make)) for (key, field) in having_in_fields if !haskey(group_in_fields, key))...
+    ]
+
+    assigns[FN_OUT_FIELDS] = Expr(:vect, group_fn_return_fields...)
+    group_fn_required_vars = [field.var for field in values(group_in_fields)]
+
+    group_key_lhs = Expr(:tuple, group_fn_return_vars...)
+    group_key_rhs = Expr(:call, FN, group_fn_required_vars...)
+
     # groupby expression generation
     query_routine(
-        assign,
-        let out_fields = Expr(:tuple, group_key_fields..., Expr(:..., IN_FIELDS))
+        assigns,
+        group_fields,
+        Expr(:tuple, group_fn_return_elts...),
+        let out_fields = Expr(:vcat, FN_OUT_FIELDS, IN_FIELDS),
+            out_types = Expr(:vcat, FN_RETURN_TYPES, AGG_TYPES)
             quote
-                $GROUPS = $Dict{$Tuple, $Vector}()
+                $AGG_TYPES = [$Vector{each} for each in $IN_TYPES]
+                $GROUPS = $Dict{$Tuple{$FN_RETURN_TYPES...}, $Tuple{$AGG_TYPES...}}()
                 $N = $length($IN_FIELDS,)
-                @inline function $GROUP_FN($RECORD, )
-                    $group_key_rhs
-                end
-                for $RECORD in $SOURCE
-                    $group_key_lhs = $GROUP_FN($RECORD, )
-                    $GROUP_KEY = $group_key_lhs
+                for $RECORD in $IN_SOURCE
+                    $(bindings_inside_for_loop...)
+                    $GROUP_KEY = $group_key_lhs = $group_key_rhs
                     $cond_expr
                     $AGG =
                         $get!($GROUPS, $GROUP_KEY) do
-                            [[] for _ = 1:$N]
+                            Tuple(typ[] for typ in $IN_TYPES)
                         end
                     ($push!).($AGG, $RECORD,)
                 end
                 (
                     $out_fields,
-                    Tuple{
-                        $type_unpack($ngroup_key, $return_type($GROUP_FN, $TYPE))...,
-                        $type_aggregate($N, $TYPE)...
-                    },
+                    $out_types,
                     ((k..., v...) for (k, v) in $GROUPS)
                 )
             end
@@ -826,4 +914,15 @@ df |>
 @groupby _."Type checking" => TC
 @where TC === Dynamic || endswith(_.name, "#")
 @select join(_.name, " and ") => result
+
+```
+
+outputs
+
+```
+1×1 DataFrame
+│ Row │ result                    │
+│     │ String                    │
+├─────┼───────────────────────────┤
+│ 1   │ Julia and Ruby and Python │
 ```
