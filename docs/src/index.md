@@ -15,3 +15,7 @@ Or you want some [examples](https://github.com/thautwarm/MLStyle.jl/tree/master/
 ```julia
 pkg> add MLStyle
 ```
+
+## Tutorials
+
+- [Write You A Query Language](https://thautwarm.github.io/MLStyle.jl/latest/tutorials/query-lang)

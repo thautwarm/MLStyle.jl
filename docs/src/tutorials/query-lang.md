@@ -14,7 +14,6 @@ Definition of Syntaxes
 Firstly, we can refer to the the T-SQL syntax and, introduce it into Julia.
 
 ```Julia
-
 df |>
 @select selectors...,
 @where predicates...,
@@ -27,36 +26,26 @@ df |>
 
 A `selector` could be one of the following cases.
 
-1. select the field `x` / select the 1-fst field.
+1. select the field `x` / select the 1-fst field :
 
-    ```
-    _.x
-    _.(1)
-    ```
+    _.x / _.(1)
+
 
 2. select the field `x`(to support field name that're not an identifier)
 
-    ```
     _."x"
-    ```
 
 3.  select an expression binded as `x + _.x`, where `x` is from current scope
 
-    ```
     x + _.x
-    ```
 
 4.  select something and bind it to symbol `a`
 
-    ```
-    <selector 1-3> => a
-    <selector 1-3> => "a"
-    ```
+    <selector 1-3> => a / <selector 1-3> => "a"
+
 5. select any field `col` that `predicate1(col, args1...) && !predicate2(col, args2...) && ...` is true.
 
-    ```
     _.(predicate1(args...), !predicate2(args2..., ), ...)
-    ```
 
 With E-BNF notation, we can formalize the synax,
 
@@ -80,6 +69,7 @@ A `predicate` is a `QueryExpr`, but shouldn't be evaluated to a boolean.
 A `mapping`  is ap `QueryExpr`, but shouldn't be evaluated to a nothing.
 
 FYI, here're some valid instances about `selector`.
+
 ```
 _.foo,
 _.(!1),
@@ -131,7 +121,6 @@ I don't have much knowledge about NamedTuple's implementation, but indexing via 
 So, the generated code of `select` could be
 
 ```julia
-
 let idx_of_foo = findfirst(==(:foo), IN_FIELDS),
     idx_of_bar = findfirst(==(:bar), IN_FIELDS),
     @inline FN(_foo, _bar) = (_foo + x, _bar)
@@ -422,7 +411,7 @@ Given following codes,
 [(generate_select, args), (generate_where, args2), (generate_select, args3)]
 ```
 
-FYI, Some constants and interfaces are defined at [MQuery.ConstantNames.jl](https://github.com/thautwarm/MLStyle-Playground/blob/master/MQuery/MQuery.ConstantNames.jl)
+FYI, some constants and interfaces are defined at [MQuery.ConstantNames.jl](https://github.com/thautwarm/MLStyle-Playground/blob/master/MQuery/MQuery.ConstantNames.jl)
 and [MQuery.Interfaces.jl](https://github.com/thautwarm/MLStyle-Playground/blob/master/MQuery/MQuery.Interfaces.jl),
 you might want to refer to them if any unknown symbol prevent you from understanding this sketch.
 
@@ -615,7 +604,6 @@ You might not be able to understand what the meanings of `fields` and `assigns` 
 Now, following previous discussions, we can firstly implement the easiest one, codegen method for `where` clause.
 
 ```julia
-
 function generate_where(args :: AbstractArray)
     field_getted = Dict{Symbol, Symbol}()
     assign       :: Vector{Any} = []
@@ -789,7 +777,6 @@ df |>
 @groupby _."Type checking" => TC
 @where TC === Dynamic || endswith(_.name, "#")
 @select join(_.name, " and ") => result
-
 ```
 
 outputs

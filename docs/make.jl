@@ -24,6 +24,7 @@ makedocs(
             "syntax/adt.md",
             "syntax/pattern.md",
             "syntax/pattern-function.md",
+            "tutorials/query-lang.md",
         ]
     ],
     html_prettyurls = !("local" in ARGS),
