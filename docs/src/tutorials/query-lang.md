@@ -26,26 +26,26 @@ df |>
 
 A `selector` could be one of the following cases.
 
-1. select the field `x` / select the 1-fst field :
+1. select the field `x` / select the 1-fst field
 
-    _.x / _.(1)
+    `_.x / _.(1)`
 
 
 2. select the field `x`(to support field name that're not an identifier)
 
-    _."x"
+    `_."x"`
 
 3.  select an expression binded as `x + _.x`, where `x` is from current scope
 
-    x + _.x
+    `x + _.x`
 
 4.  select something and bind it to symbol `a`
 
-    <selector 1-3> => a / <selector 1-3> => "a"
+    `<selector 1-3> => a / <selector 1-3> => "a"`
 
 5. select any field `col` that `predicate1(col, args1...) && !predicate2(col, args2...) && ...` is true.
 
-    _.(predicate1(args...), !predicate2(args2..., ), ...)
+    `_.(predicate1(args...), !predicate2(args2..., ),   ...)`
 
 With E-BNF notation, we can formalize the synax,
 
@@ -84,7 +84,7 @@ Codegen Target
 Before implementing code generation, we should have a sketch about the target. The **target** here means the final shape of the code generated from query sentences.
 
 
-'ll take you to the travel within the inference about the final shape of code generation.
+I'll take you to the travel within the inference about the final shape of code generation.
 
 Firstly, for we want this:
 
