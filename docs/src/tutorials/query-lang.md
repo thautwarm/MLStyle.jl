@@ -24,6 +24,7 @@ df |>
 ```
 
 A `selector` could be one of the following cases.
+
 1. select the field `x` / select the 1-fst field
 
     `_.x / _.(1)`
@@ -41,7 +42,7 @@ A `selector` could be one of the following cases.
 
     `<selector 1-3> => a / <selector 1-3> => "a"`
 
-5. select any field `col` that `predicate1(col, args1...) && !predicate2(col, args2...) && ...` is true.
+5. select any field `col` that `predicate1(col, args1...) && !predicate2(col, args2...) && ...` is true
 
     `_.(predicate1(args...), !predicate2(args2..., ),   ...)`
 
@@ -791,20 +792,15 @@ df |>
 @having TC === Dynamic || is_sharp,
 @select join(_.name, " and ") => result, _.TC => TC
 
-# 2×2 DataFrame
-# │ Row │ result                    │ TC        │
-# │     │ String                    │ TypeChec… │
-# ├─────┼───────────────────────────┼───────────┤
-# │ 1   │ Julia and Ruby and Python │ Dynamic   │
-# │ 2   │ C# and F#                 │ Static    │
 ```
 
 outputs
 
 ```
-1×1 DataFrame
-│ Row │ result                    │
-│     │ String                    │
-├─────┼───────────────────────────┤
-│ 1   │ Julia and Ruby and Python │
+2×2 DataFrame
+│ Row │ result                    │ TC        │
+│     │ String                    │ TypeChec… │
+├─────┼───────────────────────────┼───────────┤
+│ 1   │ Julia and Ruby and Python │ Dynamic   │
+│ 2   │ C# and F#                 │ Static    │
 ```
