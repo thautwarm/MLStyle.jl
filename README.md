@@ -9,17 +9,6 @@ MLStyle.jl
 [![Docs](https://img.shields.io/badge/docs-latest-purple.svg)](https://thautwarm.github.io/MLStyle.jl/latest/) 
 [![Join the chat at https://gitter.im/MLStyle-jl/community](https://badges.gitter.im/MLStyle-jl/community.svg)](https://gitter.im/MLStyle-jl/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
-Rich features are provided by MLStyle.jl and you can check [documents](https://thautwarm.github.io/MLStyle.jl/latest/) to get started.
-
-For installation, open package manager mode in Julia shell and `add MLStyle`.
-
-For more examples, check [this project](https://github.com/thautwarm/MLStyle-Playground) which will be frequently updated to present some interesting uses of MLStyle.jl.
-
-
-```
-pkg> add MLStyle
-```
-
 ## Index
 - [Preview](#preview)
 
@@ -38,6 +27,59 @@ pkg> add MLStyle
         - [Gallery](#gallery)
         
 - [Contributing to MLStyle](https://github.com/thautwarm/MLStyle.jl#contributing-to-mlstyle)
+
+
+## What's MLStyle.jl?
+
+MLStyle.jl is a Julia package that provides multiple productivity tools from ML([Meta Language](https://en.wikipedia.org/wiki/ML_(programming_language))) like [pattern matching](https://en.wikipedia.org/wiki/Pattern_matching) that're statically generated and extensible, ADTs/GADTs([Algebraic Data Type](https://en.wikipedia.org/wiki/Algebraic_data_type), [Generalized Algebraic Data Type](https://en.wikipedia.org/wiki/Generalized_algebraic_data_type)) and [Active Patterns](https://docs.microsoft.com/en-us/dotnet/fsharp/language-reference/active-patterns), etc.
+
+If you still have problems with the scoping of MLStyle.jl, treat it as **FP.jl**.
+
+
+## Motivation
+
+The people who're used to so-called functional programming could become retarded when there're no patterns matching and ADTs, and of course I'm one of them. However, I don't want to take a trade-off here to use some available alternatives that miss features or are not well-optimized. Just like [why those greedy people created Julia](https://julialang.org/blog/2012/02/why-we-created-julia), I'm also so greedy that **I want to integrate all those useful features into one language and, make all of them convenient, efficient and extensible**.
+
+Moreover, during recent years I'm addicted to extend Python with metaprogramming and even internal mechanisms, although I've done something interesting like [pattern-matching](https://github.com/Xython/pattern-matching), [goto](https://github.com/thautwarm/Redy/blob/master/Redy/Opt/builtin_features/_goto.py), [ADTs](https://github.com/thautwarm/Redy/tree/master/Redy/ADT), [constexpr](https://github.com/thautwarm/Redy/blob/master/Redy/Opt/builtin_features/_constexpr.py), [macros](https://github.com/thautwarm/Redy/blob/master/Redy/Opt/builtin_features/_macro.py), etc., most of which are so disgustingly evil. However, in Julia, all of them could be achieved so straightforwardly without any black magic, and some of these ideas come into the being of MLStyle.jl.
+
+Finally, we finish such a library that provides **extensible pattern matching** in such an efficient language.
+
+## Why to use MLStyle.jl
+
+Straightforward
+---------------------------------------
+
+I think there is no need for me to talk about why we should use pattern mathing instead of manually writing something like conditional branches and nested visitors for datatypes.
+
+Performance Gain
+----------------------------------
+
+When dealing with complex conditional logics and visiting nested datatypes, the codes compiled via `MLStyle.jl` could always match the handwritten. You can check [Benchmark](#benchmark) for details.
+
+Extensibility and Hygienic Scoping
+-------------------------------------------------
+
+You can define your own patterns via the interfaces `def_pattern`, `def_app_pattern` and `def_gapp_pattern`. Almost all built-in patterns are defined at [Pervasives.jl](https://github.com/thautwarm/MLStyle.jl/blob/master/src/Pervasives.jl).
+
+Once you define a pattern, you're to be asked to give some qualifiers to your own patterns to prevent visiting them from unexpected modules.
+
+
+\* Modern Ways about AST Manipulations
+-------------------------------------------
+
+MLStyle.jl is not a superset of MacroToos.jl, but it provides something useful for AST manipulations. Furthermore, In terms of extract sub-structures from a given AST, using expr patterns and AST patterns could make a orders of magnitude speed up.
+
+
+
+
+## Installation, Documentations and Tutorials
+
+
+Rich features are provided by MLStyle.jl and you can check [documents](https://thautwarm.github.io/MLStyle.jl/latest/) to get started.
+
+For installation, open package manager mode in Julia shell and `add MLStyle`.
+
+For more examples or tutorials, check [this project](https://github.com/thautwarm/MLStyle-Playground) which will be frequently updated to present some interesting uses of MLStyle.jl.
 
 ## Preview
 
