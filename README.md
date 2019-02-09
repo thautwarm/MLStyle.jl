@@ -10,13 +10,13 @@ MLStyle.jl
 [![Join the chat at https://gitter.im/MLStyle-jl/community](https://badges.gitter.im/MLStyle-jl/community.svg)](https://gitter.im/MLStyle-jl/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 ## Index
-- [What's MLStyle.jl](https://github.com/thautwarm/MLStyle.jl/tree/master#whats-mlstylejl)
+- [What's MLStyle.jl](#whats-mlstylejl)
 
-- [Motivation](https://github.com/thautwarm/MLStyle.jl/tree/master#motivation)
+- [Motivation](#motivation)
 
-- [Why to use MLStyle.jl](https://github.com/thautwarm/MLStyle.jl/tree/master#why-to-use-mlstylejl)
+- [Why to use MLStyle.jl](#why-to-use-mlstylejl)
 
-- [Installation, Documentations and Tutorials](https://github.com/thautwarm/MLStyle.jl/tree/master#installation-documentations-and-tutorials)
+- [Installation, Documentations and Tutorials](#installation-documentations-and-tutorials)
 
 - [Preview](#preview)
 
