@@ -58,7 +58,7 @@ Finally, we finish such a library that provides **extensible pattern matching** 
 
 - Straightforward
 
-    I think there is no need for me to talk about why we should use pattern mathing instead of manually writing something like conditional branches and nested visitors for datatypes.
+    I think there is no need to talk about why we should use pattern mathing instead of manually writing something like conditional branches and nested visitors for datatypes.
 
 - Performance Gain
 
@@ -73,10 +73,7 @@ Finally, we finish such a library that provides **extensible pattern matching** 
 
 - \* Modern Ways about AST Manipulations
 
-    MLStyle.jl is not a superset of MacroToos.jl, but it provides something useful for AST manipulations. Furthermore, In terms of extract sub-structures from a given AST, using expr patterns and AST patterns could make a orders of magnitude speed up.
-
-
-
+    MLStyle.jl is not a superset of MacroToos.jl, but it provides something useful for AST manipulations. Furthermore, in terms of extracting sub-structures from a given AST, using expr patterns and AST patterns could make a orders of magnitude speed up.
 
 ## Installation, Documentations and Tutorials
 
