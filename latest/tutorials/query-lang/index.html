@@ -13,7 +13,7 @@ ga('send', 'pageview');
 @orderby mappings...,
 @having mappings...,
 @limit JuliaExpr
-</code></pre><p>A <code>selector</code> could be one of the following cases.</p><ol><li><p>select the field <code>x</code> / select the 1-fst field</p><p><code>_.x / _.(1)</code></p></li></ol><ol><li><p>select the field <code>x</code>(to support field name that&#39;re not an identifier)</p><p><code>_.&quot;x&quot;</code></p></li><li><p>select an expression binded as <code>x + _.x</code>, where <code>x</code> is from current scope</p><p><code>x + _.x</code></p></li><li><p>select something and bind it to symbol <code>a</code></p><p><code>&lt;selector 1-3&gt; =&gt; a / &lt;selector 1-3&gt; =&gt; &quot;a&quot;</code></p></li><li><p>select any field <code>col</code> that <code>predicate1(col, args1...) &amp;&amp; !predicate2(col, args2...) &amp;&amp; ...</code> is true.</p><p><code>_.(predicate1(args...), !predicate2(args2..., ),   ...)</code></p></li></ol><p>With E-BNF notation, we can formalize the synax,</p><pre><code class="language-none">FieldPredicate ::= [&#39;!&#39;] QueryExpr &#39;(&#39; QueryExprList &#39;)&#39; [&#39;,&#39; FieldPredicate]
+</code></pre><p>A <code>selector</code> could be one of the following cases.</p><ol><li><p>select the field <code>x</code> / select the 1-fst field</p><p><code>_.x / _.(1)</code></p></li></ol><ol><li><p>select the field <code>x</code>(to support field name that&#39;re not an identifier)</p><p><code>_.&quot;x&quot;</code></p></li><li><p>select an expression binded as <code>x + _.x</code>, where <code>x</code> is from current scope</p><p><code>x + _.x</code></p></li><li><p>select something and bind it to symbol <code>a</code></p><p><code>&lt;selector 1-3&gt; =&gt; a / &lt;selector 1-3&gt; =&gt; &quot;a&quot;</code></p></li><li><p>select any field <code>col</code> that <code>predicate1(col, args1...) &amp;&amp; !predicate2(col, args2...) &amp;&amp; ...</code> is true</p><p><code>_.(predicate1(args...), !predicate2(args2..., ),   ...)</code></p></li></ol><p>With E-BNF notation, we can formalize the synax,</p><pre><code class="language-none">FieldPredicate ::= [&#39;!&#39;] QueryExpr &#39;(&#39; QueryExprList &#39;)&#39; [&#39;,&#39; FieldPredicate]
 
 Field          ::= (Symbol | String | Int)
 
@@ -450,14 +450,9 @@ df |&gt;
 @groupby _.&quot;Type checking&quot; =&gt; TC, endswith(_.name, &quot;#&quot;) =&gt; is_sharp,
 @having TC === Dynamic || is_sharp,
 @select join(_.name, &quot; and &quot;) =&gt; result, _.TC =&gt; TC
-
-# 2×2 DataFrame
-# │ Row │ result                    │ TC        │
-# │     │ String                    │ TypeChec… │
-# ├─────┼───────────────────────────┼───────────┤
-# │ 1   │ Julia and Ruby and Python │ Dynamic   │
-# │ 2   │ C# and F#                 │ Static    │</code></pre><p>outputs</p><pre><code class="language-none">1×1 DataFrame
-│ Row │ result                    │
-│     │ String                    │
-├─────┼───────────────────────────┤
-│ 1   │ Julia and Ruby and Python │</code></pre><footer><hr/><a class="previous" href="../../syntax/pattern-function/"><span class="direction">Previous</span><span class="title">Pattern function</span></a></footer></article></body></html>
+</code></pre><p>outputs</p><pre><code class="language-none">2×2 DataFrame
+│ Row │ result                    │ TC        │
+│     │ String                    │ TypeChec… │
+├─────┼───────────────────────────┼───────────┤
+│ 1   │ Julia and Ruby and Python │ Dynamic   │
+│ 2   │ C# and F#                 │ Static    │</code></pre><footer><hr/><a class="previous" href="../../syntax/pattern-function/"><span class="direction">Previous</span><span class="title">Pattern function</span></a></footer></article></body></html>
