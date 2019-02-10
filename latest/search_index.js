@@ -13,23 +13,127 @@ var documenterSearchIndex = {"docs": [
     "page": "Home",
     "title": "MLStyle.jl",
     "category": "section",
-    "text": "ML-style infrastructure provider for JuliaCheck out documents here:ADT\nPatterns for matching\nPattern functionOr you want some examples."
+    "text": "(Image: Build Status) (Image: codecov) (Image: License) (Image: Docs)  (Image: Join the chat at https://gitter.im/MLStyle-jl/community)"
 },
 
 {
-    "location": "#Install-1",
+    "location": "#What\'s-MLStyle.jl?-1",
     "page": "Home",
-    "title": "Install",
+    "title": "What\'s MLStyle.jl?",
     "category": "section",
-    "text": "pkg> add MLStyle"
+    "text": "MLStyle.jl is a Julia package that provides multiple productivity tools from ML(Meta Language) like pattern matching that\'re statically generated and extensible, ADTs/GADTs(Algebraic Data Type, Generalized Algebraic Data Type) and Active Patterns.If you still have problems with the scoping of MLStyle.jl, treat it as FP.jl."
 },
 
 {
-    "location": "#Tutorials-1",
+    "location": "#Motivation-1",
     "page": "Home",
-    "title": "Tutorials",
+    "title": "Motivation",
     "category": "section",
-    "text": "Write You A Query Language"
+    "text": "The people who\'re used to so-called functional programming could become retarded when there\'re no pattern matching and ADTs, and of course I\'m one of them.However, I don\'t want to take a trade-off here to use some available alternatives that miss features or are not well-optimized. Just like why those greedy people created Julia, I\'m also so greedy that I want to integrate all those useful features into one language and, make all of them convenient, efficient and extensible.On the other side, during recent years I was addicted to extend Python with metaprogramming and even internal mechanisms. Although I made something interesting like pattern-matching, goto, ADTs, constexpr, macros, etc., most of these implementations are so disgustingly evil. Furtunately, in Julia, all of them could be achieved straightforwardly without any black magic, at last, some of these ideas come into the existence of MLStyle.jl.Finally, we finish such a library that provides extensible pattern matching in such an efficient language."
+},
+
+{
+    "location": "#Why-to-use-MLStyle.jl-1",
+    "page": "Home",
+    "title": "Why to use MLStyle.jl",
+    "category": "section",
+    "text": "StraightforwardI think there is no need to talk about why we should use pattern mathing instead of manually writing something like conditional branches and nested visitors for datatypes.Performance GainWhen dealing with complex conditional logics and visiting nested datatypes, the codes compiled via `MLStyle.jl` could always match the handwritten. You can check [Benchmark](#benchmark) for details.Extensibility and Hygienic ScopingYou can define your own patterns via the interfaces `def_pattern`, `def_app_pattern` and `def_gapp_pattern`. Almost all built-in patterns are defined at [Pervasives.jl](https://github.com/thautwarm/MLStyle.jl/blob/master/src/Pervasives.jl).\r\n\nOnce you define a pattern, you\'re to be asked to give some qualifiers to your own patterns to prevent visiting them from unexpected modules.* Modern Ways about AST ManipulationsMLStyle.jl is not a superset of MacroToos.jl, but it provides something useful for AST manipulations. Furthermore, in terms of extracting sub-structures from a given AST, using expr patterns and AST patterns could make a orders of magnitude speed up."
+},
+
+{
+    "location": "#Installation,-Documentations-and-Tutorials-1",
+    "page": "Home",
+    "title": "Installation, Documentations and Tutorials",
+    "category": "section",
+    "text": "Rich features are provided by MLStyle.jl and you can check documents to get started.For installation, open package manager mode in Julia shell and add MLStyle.For more examples or tutorials, check this project which will be frequently updated to present some interesting uses of MLStyle.jl."
+},
+
+{
+    "location": "#Preview-1",
+    "page": "Home",
+    "title": "Preview",
+    "category": "section",
+    "text": "In this README I\'m glad to share some non-trivial code snippets."
+},
+
+{
+    "location": "#Homoiconic-pattern-matching-for-Julia-ASTs-1",
+    "page": "Home",
+    "title": "Homoiconic pattern matching for Julia ASTs",
+    "category": "section",
+    "text": "rmlines = @λ begin\r\n    e :: Expr           -> Expr(e.head, filter(x -> x !== nothing, map(rmlines, e.args))...)\r\n      :: LineNumberNode -> nothing\r\n    a                   -> a\r\nend\r\nexpr = quote\r\n    struct S{T}\r\n        a :: Int\r\n        b :: T\r\n    end\r\nend |> rmlines\r\n\r\n@match expr begin\r\n    quote\r\n        struct $name{$tvar}\r\n            $f1 :: $t1\r\n            $f2 :: $t2\r\n        end\r\n    end =>\r\n    quote\r\n        struct $name{$tvar}\r\n            $f1 :: $t1\r\n            $f2 :: $t2\r\n        end\r\n    end |> rmlines == expr\r\nend"
+},
+
+{
+    "location": "#Generalized-Algebraic-Data-Types-1",
+    "page": "Home",
+    "title": "Generalized Algebraic Data Types",
+    "category": "section",
+    "text": "@use GADT\r\n\r\n@data public Exp{T} begin\r\n    Sym       :: Symbol => Exp{A} where {A}\r\n    Val{A}    :: A => Exp{A}\r\n    App{A, B} :: (Exp{Fun{A, B}}, Exp{A_}) => Exp{B} where {A_ <: A}\r\n    Lam{A, B} :: (Symbol, Exp{B}) => Exp{Fun{A, B}}\r\n    If{A}     :: (Exp{Bool}, Exp{A}, Exp{A}) => Exp{A}\r\nend\r\nA simple intepreter implementation using GADTs could be found at test/untyped_lam.jl."
+},
+
+{
+    "location": "#Active-Patterns-1",
+    "page": "Home",
+    "title": "Active Patterns",
+    "category": "section",
+    "text": "Currently, in MLStyle it\'s not a full featured one, but even a subset with parametric active pattern could be super useful.@active Re{r :: Regex}(x) begin\r\n    match(r, x)\r\nend\r\n\r\n@match \"123\" begin\r\n    Re{r\"\\d+\"}(x) => x\r\n    _ => @error \"\"\r\nend # RegexMatch(\"123\")"
+},
+
+{
+    "location": "#Benchmark-1",
+    "page": "Home",
+    "title": "Benchmark",
+    "category": "section",
+    "text": ""
+},
+
+{
+    "location": "#Prerequisite-1",
+    "page": "Home",
+    "title": "Prerequisite",
+    "category": "section",
+    "text": "Recently the rudimentary benchmarks have been finished, which turns out that MLStyle.jl could be extremely fast when matching cases are complicated, while in terms of some very simple cases(straightforward destruct shallow tuples, arrays and datatypes without recursive invocations), Match.jl could be faster.All benchmark scripts are provided at directory Matrix-Benchmark.To run these cross-implementation benchmarks, some extra dependencies should be installed:(v1.1) pkg> add https://github.com/thautwarm/Benchmarkplotting.jl#master for making cross-implementation benchmark methods and plotting.(v1.1) pkg> add Gadfly MacroTools Match BenchmarkTools StatsBase Statistics ArgParse DataFrames.(v1.1) pkg> add MLStyle#base for a specific version of MLStyle.jl is required.After installing dependencies, you can directly benchmark them with julia matrix_benchmark.jl hw-tuple hw-array match macrotools match-datatype at the root directory.The benchmarks presented here are made by Julia v1.1 on Fedora 28. For reports made on Win10, check stats/windows/ directory."
+},
+
+{
+    "location": "#Visualization-1",
+    "page": "Home",
+    "title": "Visualization",
+    "category": "section",
+    "text": ""
+},
+
+{
+    "location": "#Time-Overhead-1",
+    "page": "Home",
+    "title": "Time Overhead",
+    "category": "section",
+    "text": "In x-axis, after the name of test-case is the least time-consuming one\'s index, the unit is ns).The y-label is the ratio of the implementation\'s time cost to that of the least time-consuming."
+},
+
+{
+    "location": "#Allocation-1",
+    "page": "Home",
+    "title": "Allocation",
+    "category": "section",
+    "text": "In x-axis, after the name of test-case is the least allocted one\'s index, the unit is _ -> (_ + 1) bytes).The y-label is the ratio of  the implementation\'s allocation cost to that of the least allocted."
+},
+
+{
+    "location": "#Gallery-1",
+    "page": "Home",
+    "title": "Gallery",
+    "category": "section",
+    "text": "Check https://github.com/thautwarm/MLStyle.jl/tree/master/stats."
+},
+
+{
+    "location": "#Contributing-to-MLStyle-1",
+    "page": "Home",
+    "title": "Contributing to MLStyle",
+    "category": "section",
+    "text": "Thanks to all individuals referred in Acknowledgements!Feel free to ask questions about usage, development or extensions about MLStyle at Gitter Room."
 },
 
 {
@@ -254,6 +358,70 @@ var documenterSearchIndex = {"docs": [
     "title": "Pattern function",
     "category": "section",
     "text": "Pattern function is a convenient way to define a function with multiple entries.f = @λ begin\n    # patterns here\n    x                  -> 1\n    (x, (1, 2)) &&\n        if x > 3 end   -> 5\n    (x, y)             -> 2\n    ::String           -> \"is string\"\n    _                  -> \"is any\"\nend\nf(1) # => 1\nf((4, (1, 2))) # => 5\nf((1, (1, 2))) # => 2\nf(\"\") # => \"is string\"Also, sometimes you might want to pass a single lambda which just matches the argument in one means:map((@λ [a, b, c...] -> c), [[1, 2, 3, 4], [1, 2]])\n# => 2-element Array{SubArray{Int64,1,Array{Int64,1},Tuple{UnitRange{Int64}},true},1}:\n#    [3, 4]\n#    []Functionally, A pattern function is no more than using a @match inside some anonymous function.\nfunction (x)\n    @match x begin\n        pat1 => body1\n        pat2 => body2\n    end\nend\n"
+},
+
+{
+    "location": "syntax/when/#",
+    "page": "When Destructuring",
+    "title": "When Destructuring",
+    "category": "page",
+    "text": ""
+},
+
+{
+    "location": "syntax/when/#When-Destructuring-1",
+    "page": "When Destructuring",
+    "title": "When Destructuring",
+    "category": "section",
+    "text": "The @when is introduced to work with the scenarios where @match is a bit heavy.It\'s similar to if-let construct in Rust language.There\'re two distinct syntaxes for @when."
+},
+
+{
+    "location": "syntax/when/#Allow-Destructuring-in-Let-Binding-1",
+    "page": "When Destructuring",
+    "title": "Allow Destructuring in Let-Binding",
+    "category": "section",
+    "text": "tp = (2, 3)\nx = 2\n\n@assert 5 === \n    @when let (2, a) = tp,\n                  b  = x\n        a + b\n    end\n\n@assert nothing ===\n    @when let (2, a) = 1,\n                   b = x\n        a + b\n    endNote that only the binding formed as $a = $b would be treated as destructuring.@data S begin\n    S1(Int)\n    S2(Int)\nend\n\ns = S1(5)\n\n@assert 500 === \n    @when let S1(x) = s,\n              @inline fn(x) = 100x\n        fn(x)\n    endIn above snippet, @inline fn(x) = 100x is not regarded as destructuring."
+},
+
+{
+    "location": "syntax/when/#Sole-Destructuring-1",
+    "page": "When Destructuring",
+    "title": "Sole Destructuring",
+    "category": "section",
+    "text": "However, a let-binding could be also heavy when you just want to solely destructure something.Finally, we allowed another syntax for @when.s = S1(5)\n@assert 5 === @when S1(x) = s x\n@assert 10 === @when S1(x) = s begin\n    2x\nend\n@assert nothing === @when S1(x) = S2(10) x"
+},
+
+{
+    "location": "tutorials/capture/#",
+    "page": "Static Capturing",
+    "title": "Static Capturing",
+    "category": "page",
+    "text": ""
+},
+
+{
+    "location": "tutorials/capture/#Static-Capturing-1",
+    "page": "Static Capturing",
+    "title": "Static Capturing",
+    "category": "section",
+    "text": "We know that MacroTools.jl has brought about a useful macro @capture to capture specific structures from a given AST.As the motivation of some contributors, @capture of MacroTools.jl has 3 following shortages.Use underscore to denote the structures to be captured, likestruct typename_ field__ end, which makes you have to manually number the captured variables and not that readable or consistent.Cause Side-Effect. The captured variables are entered in current scope.\nLack functionalities like conditional capturing.We can implement several new @capture via MLStyle.jl to get better in all aspects."
+},
+
+{
+    "location": "tutorials/capture/#RAII-Style-1",
+    "page": "Static Capturing",
+    "title": "RAII-Style",
+    "category": "section",
+    "text": "This implementation prevents scope leaking.\nfunction capture(template, ex, action)\n    let template = Expr(:quote, template)\n        quote\n            @match $ex begin \n                $template => $action\n                _         => nothing\n            end\n        end \n    end\nend\n\nmacro capture(template, ex, action)\n    capture(template, ex, action) |> esc\nend\n\nnode = :(f(1))\n\n@capture f($(x :: T where T <: Number)) node begin\n    @info x + 1\nend\n\n# info: 2\n\nnode2 = :(f(x))\n\n@capture f($(x :: T where T <: Number)) node2 begin\n    @info x + 1\nend\n\n# do nothing"
+},
+
+{
+    "location": "tutorials/capture/#Regex-Style-1",
+    "page": "Static Capturing",
+    "title": "Regex-Style",
+    "category": "section",
+    "text": "This implementation collects captured variables into a dictionary, just like groups in regex but more powerful.For we have to analyse which variables to be caught, this implementation could be a bit verbose(100 lines about scoping analysis) and might not work with your own patterns(application patterns/recognizers and active-patterns are okay).Check MLStyle-Playground for implementation codes.@info @capture f($x) :(f(1))\n# Dict(:x=>1)\n\ndestruct_fn = @capture function $(fname :: Symbol)(a, $(args...)) $(body...) end\n\n@info destruct_fn(:(\n    function f(a, x, y, z)\n        x + y + z\n    end\n))\n\n# Dict{Symbol,Any}(\n#     :args => Any[:x, :y, :z],\n#     :body=> Any[:(#= StaticallyCapturing.jl:93 =#), :(x + y + z)],\n#    :fname=>:f\n# )"
 },
 
 {
