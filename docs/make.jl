@@ -27,6 +27,7 @@ makedocs(
             "syntax/when.md",
         ],
         "Tutorials" => Any[
+            "tutorials/capture.md",
             "tutorials/query-lang.md",
         ]
     ],

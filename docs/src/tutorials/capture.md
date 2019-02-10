@@ -1,4 +1,4 @@
-Static-Capturing
+Static Capturing
 ================================
 
 We know that `MacroTools.jl` has brought about a useful macro
