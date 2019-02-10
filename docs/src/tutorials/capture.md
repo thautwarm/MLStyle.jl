@@ -62,10 +62,10 @@ Regex-Style
 
 This implementation collects captured variables into a dictionary, just like groups in regex but more powerful.
 
-For we have to analyse which variables to be caught, this implementation could be a bit verbose and might not work with your own patterns(application patterns/recognizers and active-patterns are okay).
+For we have to analyse which variables to be caught, this implementation could be a bit verbose(100 lines about scoping analysis) and might not work with your own patterns(application patterns/recognizers and active-patterns are okay).
 
 
-Check [MLStyle-Playground](https://github.com/thautwarm/MLStyle-Playground#statically-capturing) for implementation codes.
+Check [MLStyle-Playground](https://github.com/thautwarm/MLStyle-Playground/blob/master/StaticallyCapturing.jl) for implementation codes.
 
 ```julia
 @info @capture f($x) :(f(1))
