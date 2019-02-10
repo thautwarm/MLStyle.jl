@@ -24,6 +24,7 @@ makedocs(
             "syntax/adt.md",
             "syntax/pattern.md",
             "syntax/pattern-function.md",
+            "syntax/when"
         ],
         "Tutorials" => Any[
             "tutorials/query-lang.md",
