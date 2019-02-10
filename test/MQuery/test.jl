@@ -3,7 +3,7 @@ include("MQuery.jl")
 using Base.Enums
 
 @enum TypeChecking Dynamic Static
-df = DataFrame(
+df = Dict(
         Symbol("Type checking") => [
             Dynamic, Static, Static, Dynamic, Static, Dynamic, Dynamic, Static
         ],
@@ -21,11 +21,12 @@ res = df |>
 @having TC === Dynamic || is_sharp,
 @select join(_.name, " and ") => result, _.TC => TC
 
-@test res.result[map(==(Dynamic), res.TC)] == ["Julia and Ruby and Python"]
-@test res.result[map(==(Static), res.TC)] == ["C# and F#"]
+@info res
+@test res[:result][map(==(Dynamic), res[:TC]) ] == ["Julia and Ruby and Python"]
+@test res[:result][map(==(Static), res[:TC])  ] == ["C# and F#"]
 
 res = df |>
 @select _.(!startswith("Type"))
-@test names(res) == [:name, :year]
+@test Set(keys(res)) == Set([:name, :year])
 
 end

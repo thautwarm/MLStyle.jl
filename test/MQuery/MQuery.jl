@@ -1,5 +1,4 @@
 using MLStyle
-using DataFrames
 
 include("MQuery.ConstantNames.jl")
 include("MQuery.DynamicInfer.jl")
