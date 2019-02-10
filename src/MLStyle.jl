@@ -79,9 +79,9 @@ function when(let_expr)
        Expr(:let, Expr(:block, bindings...) ||  a && Do(bindings = [a]), ret) =>
             foldr(bindings, init=ret) do each, last
                 @match each begin
-                    :($a = $b) => 
+                    :($a = $b) =>
                         :(
-                            $MLStyle.@match $b begin 
+                            $MLStyle.@match $b begin
                                 $a =>  $last
                                 _  =>  nothing
                             end
@@ -97,10 +97,10 @@ end
 """
 
 1. Allow destructuring in binding sequences of let syntax.
-    
-In binding sequences, 
+
+In binding sequences,
 - For the bindings with the form `a = b`, you can use destructuring here.
-- For others like `@inline f(x) = 1`, it's the same as the original let binding.  
+- For others like `@inline f(x) = 1`, it's the same as the original let binding.
 
 @when let (a, 1) = x,
           [b, c, 5] = y

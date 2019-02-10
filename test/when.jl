@@ -3,28 +3,28 @@
         2
     end
     @test 2 === @when 1 = 1 2
-    
-    @test 1 === @when let a = 1 
+
+    @test 1 === @when let a = 1
         a
     end
-    
-    @test 1 === @when a = 1 a
-    
 
-    @test nothing === @when let (a, b) = 1 
+    @test 1 === @when a = 1 a
+
+
+    @test nothing === @when let (a, b) = 1
         a + b
     end
-    
+
     @test nothing === @when (a, b) = 1 a + b
-    
+
 
     ab = (2, 3)
     @test 5 === @when let (a, b) = ab
         a + b
     end
-    
+
     @test 5 === @when (a, b) = ab a + b
-    
+
     @data WhenTest begin
         WhenTest_1(Int)
         WhenTest_2(Int)
