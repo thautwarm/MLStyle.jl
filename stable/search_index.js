@@ -13,15 +13,127 @@ var documenterSearchIndex = {"docs": [
     "page": "Home",
     "title": "MLStyle.jl",
     "category": "section",
-    "text": "ML-style infrastructure provider for JuliaCheck out documents here:ADT\nPatterns for matching\nPattern functionOr you want some examples."
+    "text": "(Image: Build Status) (Image: codecov) (Image: License) (Image: Docs)  (Image: Join the chat at https://gitter.im/MLStyle-jl/community)"
 },
 
 {
-    "location": "#Install-1",
+    "location": "#What\'s-MLStyle.jl?-1",
     "page": "Home",
-    "title": "Install",
+    "title": "What\'s MLStyle.jl?",
     "category": "section",
-    "text": "pkg> add MLStyle"
+    "text": "MLStyle.jl is a Julia package that provides multiple productivity tools from ML(Meta Language) like pattern matching that\'re statically generated and extensible, ADTs/GADTs(Algebraic Data Type, Generalized Algebraic Data Type) and Active Patterns.If you still have problems with the scoping of MLStyle.jl, treat it as FP.jl."
+},
+
+{
+    "location": "#Motivation-1",
+    "page": "Home",
+    "title": "Motivation",
+    "category": "section",
+    "text": "The people who\'re used to so-called functional programming could become retarded when there\'re no pattern matching and ADTs, and of course I\'m one of them.However, I don\'t want to take a trade-off here to use some available alternatives that miss features or are not well-optimized. Just like why those greedy people created Julia, I\'m also so greedy that I want to integrate all those useful features into one language and, make all of them convenient, efficient and extensible.On the other side, during recent years I was addicted to extend Python with metaprogramming and even internal mechanisms. Although I made something interesting like pattern-matching, goto, ADTs, constexpr, macros, etc., most of these implementations are so disgustingly evil. Furtunately, in Julia, all of them could be achieved straightforwardly without any black magic, at last, some of these ideas come into the existence of MLStyle.jl.Finally, we finish such a library that provides extensible pattern matching in such an efficient language."
+},
+
+{
+    "location": "#Why-to-use-MLStyle.jl-1",
+    "page": "Home",
+    "title": "Why to use MLStyle.jl",
+    "category": "section",
+    "text": "StraightforwardI think there is no need to talk about why we\r\nshould use pattern mathing instead of manually \r\nwriting something like conditional branches and\r\nnested visitors for datatypes.Performance GainWhen dealing with complex conditional logics and\r\nvisiting nested datatypes, the codes compiled via\r\n`MLStyle.jl` could always match the handwritten.\r\n\r\nYou can check [Benchmark](#benchmark) for details.Extensibility and Hygienic ScopingYou can define your own patterns via the interfaces\r\n`def_pattern`, `def_app_pattern` and `def_gapp_pattern`.\r\n\r\nAlmost all built-in patterns are defined at [Pervasives.jl](https://github.com/thautwarm/MLStyle.jl/blob/master/src/Pervasives.jl).\r\n\nOnce you define a pattern, you\'re to be asked to give some\r\nqualifiers to your own patterns to prevent visiting them\r\nfrom unexpected modules.* Modern Ways about AST ManipulationsMLStyle.jl is not a superset of MacroToos.jl, but\r\nit provides something useful for AST manipulations.\r\n\nFurthermore, in terms of extracting sub-structures from\r\na given AST, using expr patterns and AST patterns could\r\nmake a orders of magnitude speed up."
+},
+
+{
+    "location": "#Installation,-Documentations-and-Tutorials-1",
+    "page": "Home",
+    "title": "Installation, Documentations and Tutorials",
+    "category": "section",
+    "text": "Rich features are provided by MLStyle.jl and you can check documents to get started.For installation, open package manager mode in Julia shell and add MLStyle.For more examples or tutorials, check this project which will be frequently updated to present some interesting uses of MLStyle.jl."
+},
+
+{
+    "location": "#Preview-1",
+    "page": "Home",
+    "title": "Preview",
+    "category": "section",
+    "text": "In this README I\'m glad to share some non-trivial code snippets."
+},
+
+{
+    "location": "#Homoiconic-pattern-matching-for-Julia-ASTs-1",
+    "page": "Home",
+    "title": "Homoiconic pattern matching for Julia ASTs",
+    "category": "section",
+    "text": "rmlines = @λ begin\r\n    e :: Expr           -> Expr(e.head, filter(x -> x !== nothing, map(rmlines, e.args))...)\r\n      :: LineNumberNode -> nothing\r\n    a                   -> a\r\nend\r\nexpr = quote\r\n    struct S{T}\r\n        a :: Int\r\n        b :: T\r\n    end\r\nend |> rmlines\r\n\r\n@match expr begin\r\n    quote\r\n        struct $name{$tvar}\r\n            $f1 :: $t1\r\n            $f2 :: $t2\r\n        end\r\n    end =>\r\n    quote\r\n        struct $name{$tvar}\r\n            $f1 :: $t1\r\n            $f2 :: $t2\r\n        end\r\n    end |> rmlines == expr\r\nend"
+},
+
+{
+    "location": "#Generalized-Algebraic-Data-Types-1",
+    "page": "Home",
+    "title": "Generalized Algebraic Data Types",
+    "category": "section",
+    "text": "@use GADT\r\n\r\n@data public Exp{T} begin\r\n    Sym       :: Symbol => Exp{A} where {A}\r\n    Val{A}    :: A => Exp{A}\r\n    App{A, B} :: (Exp{Fun{A, B}}, Exp{A_}) => Exp{B} where {A_ <: A}\r\n    Lam{A, B} :: (Symbol, Exp{B}) => Exp{Fun{A, B}}\r\n    If{A}     :: (Exp{Bool}, Exp{A}, Exp{A}) => Exp{A}\r\nend\r\nA simple intepreter implementation using GADTs could be found at test/untyped_lam.jl."
+},
+
+{
+    "location": "#Active-Patterns-1",
+    "page": "Home",
+    "title": "Active Patterns",
+    "category": "section",
+    "text": "Currently, in MLStyle it\'s not a full featured one, but even a subset with parametric active pattern could be super useful.@active Re{r :: Regex}(x) begin\r\n    match(r, x)\r\nend\r\n\r\n@match \"123\" begin\r\n    Re{r\"\\d+\"}(x) => x\r\n    _ => @error \"\"\r\nend # RegexMatch(\"123\")"
+},
+
+{
+    "location": "#Benchmark-1",
+    "page": "Home",
+    "title": "Benchmark",
+    "category": "section",
+    "text": ""
+},
+
+{
+    "location": "#Prerequisite-1",
+    "page": "Home",
+    "title": "Prerequisite",
+    "category": "section",
+    "text": "Recently the rudimentary benchmarks have been finished, which turns out that MLStyle.jl could be extremely fast when matching cases are complicated, while in terms of some very simple cases(straightforward destruct shallow tuples, arrays and datatypes without recursive invocations), Match.jl could be faster.All benchmark scripts are provided at directory Matrix-Benchmark.To run these cross-implementation benchmarks, some extra dependencies should be installed:(v1.1) pkg> add https://github.com/thautwarm/Benchmarkplotting.jl#master for making cross-implementation benchmark methods and plotting.(v1.1) pkg> add Gadfly MacroTools Match BenchmarkTools StatsBase Statistics ArgParse DataFrames.(v1.1) pkg> add MLStyle#base for a specific version of MLStyle.jl is required.After installing dependencies, you can directly benchmark them with julia matrix_benchmark.jl hw-tuple hw-array match macrotools match-datatype at the root directory.The benchmarks presented here are made by Julia v1.1 on Fedora 28. For reports made on Win10, check stats/windows/ directory."
+},
+
+{
+    "location": "#Visualization-1",
+    "page": "Home",
+    "title": "Visualization",
+    "category": "section",
+    "text": ""
+},
+
+{
+    "location": "#Time-Overhead-1",
+    "page": "Home",
+    "title": "Time Overhead",
+    "category": "section",
+    "text": "In x-axis, after the name of test-case is the least time-consuming one\'s index, the unit is ns).The y-label is the ratio of the implementation\'s time cost to that of the least time-consuming."
+},
+
+{
+    "location": "#Allocation-1",
+    "page": "Home",
+    "title": "Allocation",
+    "category": "section",
+    "text": "In x-axis, after the name of test-case is the least allocted one\'s index, the unit is _ -> (_ + 1) bytes).The y-label is the ratio of  the implementation\'s allocation cost to that of the least allocted."
+},
+
+{
+    "location": "#Gallery-1",
+    "page": "Home",
+    "title": "Gallery",
+    "category": "section",
+    "text": "Check https://github.com/thautwarm/MLStyle.jl/tree/master/stats."
+},
+
+{
+    "location": "#Contributing-to-MLStyle-1",
+    "page": "Home",
+    "title": "Contributing to MLStyle",
+    "category": "section",
+    "text": "Thanks to all individuals referred in Acknowledgements!Feel free to ask questions about usage, development or extensions about MLStyle at Gitter Room."
 },
 
 {
@@ -246,6 +358,126 @@ var documenterSearchIndex = {"docs": [
     "title": "Pattern function",
     "category": "section",
     "text": "Pattern function is a convenient way to define a function with multiple entries.f = @λ begin\n    # patterns here\n    x                  -> 1\n    (x, (1, 2)) &&\n        if x > 3 end   -> 5\n    (x, y)             -> 2\n    ::String           -> \"is string\"\n    _                  -> \"is any\"\nend\nf(1) # => 1\nf((4, (1, 2))) # => 5\nf((1, (1, 2))) # => 2\nf(\"\") # => \"is string\"Also, sometimes you might want to pass a single lambda which just matches the argument in one means:map((@λ [a, b, c...] -> c), [[1, 2, 3, 4], [1, 2]])\n# => 2-element Array{SubArray{Int64,1,Array{Int64,1},Tuple{UnitRange{Int64}},true},1}:\n#    [3, 4]\n#    []Functionally, A pattern function is no more than using a @match inside some anonymous function.\nfunction (x)\n    @match x begin\n        pat1 => body1\n        pat2 => body2\n    end\nend\n"
+},
+
+{
+    "location": "syntax/when/#",
+    "page": "When Destructuring",
+    "title": "When Destructuring",
+    "category": "page",
+    "text": ""
+},
+
+{
+    "location": "syntax/when/#When-Destructuring-1",
+    "page": "When Destructuring",
+    "title": "When Destructuring",
+    "category": "section",
+    "text": "The @when is introduced to work with the scenarios where @match is a bit heavy.It\'s similar to if-let construct in Rust language.There\'re two distinct syntaxes for @when."
+},
+
+{
+    "location": "syntax/when/#Allow-Destructuring-in-Let-Binding-1",
+    "page": "When Destructuring",
+    "title": "Allow Destructuring in Let-Binding",
+    "category": "section",
+    "text": "tp = (2, 3)\nx = 2\n\n@assert 5 === \n    @when let (2, a) = tp,\n                  b  = x\n        a + b\n    end\n\n@assert nothing ===\n    @when let (2, a) = 1,\n                   b = x\n        a + b\n    endNote that only the binding formed as $a = $b would be treated as destructuring.@data S begin\n    S1(Int)\n    S2(Int)\nend\n\ns = S1(5)\n\n@assert 500 === \n    @when let S1(x) = s,\n              @inline fn(x) = 100x\n        fn(x)\n    endIn above snippet, @inline fn(x) = 100x is not regarded as destructuring."
+},
+
+{
+    "location": "syntax/when/#Sole-Destructuring-1",
+    "page": "When Destructuring",
+    "title": "Sole Destructuring",
+    "category": "section",
+    "text": "However, a let-binding could be also heavy when you just want to solely destructure something.Finally, we allowed another syntax for @when.s = S1(5)\n@assert 5 === @when S1(x) = s x\n@assert 10 === @when S1(x) = s begin\n    2x\nend\n@assert nothing === @when S1(x) = S2(10) x"
+},
+
+{
+    "location": "tutorials/capture/#",
+    "page": "Static Capturing",
+    "title": "Static Capturing",
+    "category": "page",
+    "text": ""
+},
+
+{
+    "location": "tutorials/capture/#Static-Capturing-1",
+    "page": "Static Capturing",
+    "title": "Static Capturing",
+    "category": "section",
+    "text": "We know that MacroTools.jl has brought about a useful macro @capture to capture specific structures from a given AST.As the motivation of some contributors, @capture of MacroTools.jl has 3 following shortages.Use underscore to denote the structures to be captured, like struct typename_ field__ end, which makes you have to manually number the captured variables and not that readable or consistent.\nCause Side-Effect. The captured variables are entered in current scope.\nLack functionalities like conditional capturing.We can implement several new @capture via MLStyle.jl to get better in all aspects."
+},
+
+{
+    "location": "tutorials/capture/#RAII-Style-1",
+    "page": "Static Capturing",
+    "title": "RAII-Style",
+    "category": "section",
+    "text": "This implementation prevents scope leaking.\nfunction capture(template, ex, action)\n    let template = Expr(:quote, template)\n        quote\n            @match $ex begin \n                $template => $action\n                _         => nothing\n            end\n        end \n    end\nend\n\nmacro capture(template, ex, action)\n    capture(template, ex, action) |> esc\nend\n\nnode = :(f(1))\n\n@capture f($(x :: T where T <: Number)) node begin\n    @info x + 1\nend\n\n# info: 2\n\nnode2 = :(f(x))\n\n@capture f($(x :: T where T <: Number)) node2 begin\n    @info x + 1\nend\n\n# do nothing"
+},
+
+{
+    "location": "tutorials/capture/#Regex-Style-1",
+    "page": "Static Capturing",
+    "title": "Regex-Style",
+    "category": "section",
+    "text": "This implementation collects captured variables into a dictionary, just like groups in regex but more powerful.For we have to analyse which variables to be caught, this implementation could be a bit verbose(100 lines about scoping analysis) and might not work with your own patterns(application patterns/recognizers and active-patterns are okay).Check MLStyle-Playground for implementation codes.@info @capture f($x) :(f(1))\n# Dict(:x=>1)\n\ndestruct_fn = @capture function $(fname :: Symbol)(a, $(args...)) $(body...) end\n\n@info destruct_fn(:(\n    function f(a, x, y, z)\n        x + y + z\n    end\n))\n\n# Dict{Symbol,Any}(\n#     :args => Any[:x, :y, :z],\n#     :body=> Any[:(#= StaticallyCapturing.jl:93 =#), :(x + y + z)],\n#    :fname=>:f\n# )"
+},
+
+{
+    "location": "tutorials/query-lang/#",
+    "page": "Write You A Query Language",
+    "title": "Write You A Query Language",
+    "category": "page",
+    "text": ""
+},
+
+{
+    "location": "tutorials/query-lang/#Write-You-A-Query-Language-1",
+    "page": "Write You A Query Language",
+    "title": "Write You A Query Language",
+    "category": "section",
+    "text": "You may have heard of LINQ or extension methods before, and they\'re all embedded query langauges.In terms of Julia ecosystem, there\'re already Query.jl, LightQuery.jl, DataFramesMeta.jl, etc., each of which reaches the partial or full features of a query language.This document is provided for you to create a concise and efficient implementation of query language, which is a way for me to exhibit the power of MLStyle.jl on AST manipulations. Additionally, I think this tutorial can be also extremely helpful to those who\'re developing query languages for Julia."
+},
+
+{
+    "location": "tutorials/query-lang/#Definition-of-Syntaxes-1",
+    "page": "Write You A Query Language",
+    "title": "Definition of Syntaxes",
+    "category": "section",
+    "text": "Firstly, we can refer to the the T-SQL syntax and, introduce it into Julia.df |>\n@select selectors...,\n@where predicates...,\n@groupby mappings...,\n@orderby mappings...,\n@having mappings...,\n@limit JuliaExpr\nA selector could be one of the following cases.select the field x / select the 1-fst field\n_.x / _.(1)select the field x(to support field name that\'re not an identifier)\n_.\"x\"\nselect an expression binded as x + _.x, where x is from current scope\nx + _.x\nselect something and bind it to symbol a\n<selector 1-3> => a / <selector 1-3> => \"a\"\nselect any field col that predicate1(col, args1...) && !predicate2(col, args2...) && ... is true\n_.(predicate1(args...), !predicate2(args2..., ),   ...)With E-BNF notation, we can formalize the synax,FieldPredicate ::= [\'!\'] QueryExpr \'(\' QueryExprList \')\' [\',\' FieldPredicate]\n\nField          ::= (Symbol | String | Int)\n\n\nQueryExpr      ::=  \'_\' \'.\' Field\n                  | <substitute QueryExpr in for JuliaExpr>\n\nQueryExprList  ::= [ QueryExpr (\',\' QueryExpr)* ]\n\nselector       ::= \'_\' \'.\' FieldPredicate\n                  | QueryExprA predicate is a QueryExpr, but shouldn\'t be evaluated to a boolean.A mapping  is a QueryExpr, but shouldn\'t be evaluated to a nothing.FYI, here\'re some valid instances about selector._.foo,\n_.(!1),\n_.(startswith(\"bar\"), !endswith(\"foo\")),\nx + _.foo,\nlet y = _.foo + y; y + _.(2) end"
+},
+
+{
+    "location": "tutorials/query-lang/#Codegen-Target-1",
+    "page": "Write You A Query Language",
+    "title": "Codegen Target",
+    "category": "section",
+    "text": "Before implementing code generation, we should have a sketch about the target. The target here means the final shape of the code generated from a sequence of query clauses.I\'ll take you to the travel within the inference about the final shape of code generation.Firstly, for we want this:df |>\n@select _.foo + x, _.barWe can infer out that the generated code is an anonymous function which takes only one argument.Okay, cool. We\'ve known that the final shape of generated code should be:function (ARG)\n    # implementations\nendThen, let\'s think about the select clause. You might find it\'s a map(if we don\'t take aggregrate function into consideration). However, for we don\'t want to make redundant allocations when executing the queries, so we should use Base.Generator as the data representation.For @select _.foo + x, _.bar, it should be generated to something like((RECORD[:foo] + x, RECORD[:bar])   for RECORD in IN_SOURCE)Where IN_SOURCE is the data representation, RECORD is the record(row) of IN_SOURCE, and x is the variable captured by the closure.Now, a smart reader might observe that there\'s a trick for optimization! If we can have the actual indices of the fields foo and bar in the record(each row of IN_SOURCE), then they can be indexed via integers, which could avoid reflections in some degree.I don\'t have much knowledge about NamedTuple\'s implementation, but indexing via names on unknown datatypes cannot be faster than simply indexing via integers.So, the generated code of select could belet idx_of_foo = findfirst(==(:foo), IN_FIELDS),\n    idx_of_bar = findfirst(==(:bar), IN_FIELDS),\n    @inline FN(_foo, _bar) = (_foo + x, _bar)\n    (\n    let _foo = RECORD[idx_of_foo],\n        _bar = RECORD[idx_of_bar]\n        FN(_foo, _bar)\n    end\n    for RECORD in IN_SOURCE)\nend\nWhere we introduce a new requirement of the query\'s code generation, IN_FIELDS, which denotes the field names of IN_SOURCE.Now, to have a consistent code generation, let\'s think about stacked select clauses.df |>\n@select _, _.foo + 1, => foo1,\n# `select _` here means `SELECT *` in T-SQL.\n@select _.foo1 + 2 => foo2I don\'t know how to explain the iteration in my mind, but I\'ve figured out such a way.let (IN_FIELDS, IN_SOURCE) =\n    let (IN_FIELDS, IN_SOURCE) = process(df),\n        idx_of_foo = findfirst(==(:foo), IN_FIELDS),\n        @inline FN(_record, _foo) = (_record..., _foo + 1)\n        [IN_FIELDS..., :foo1],\n        (\n            let _foo = RECORD[idx_of_foo]\n                FN(RECORD, _foo)\n            end\n            for RECORD in IN_SOURCE\n        )\n    end,\n    idx_of_foo1 = findfirst(==(:foo1), IN_FIELDS),\n    @inline FN(_foo1) = (_foo1 + 2, )\n\n    [:foo2],\n    (\n        let _foo1 = RECORD[idx_of_foo1]\n            FN(_foo1)\n        end\n        for RECORD in IN_SOURCE\n    )\nendOh, perfect! I\'m so excited! That\'s so beautiful!If the output field names are a list of meta variables [:foo2], then output expression inside the comprehension should be a list of terms [foo2]. For foo2 = _.foo1 + 2 which is generated as RECORD[idx_of_foo1] + 2, so it comes into the shape of above code snippet.Let\'s think about the where clause.If we want this:df |>\n@where _.foo < 2That\'s similar to select:let (IN_FIELDS, IN_SOURCE) = process(df),\n    idx_of_foo = findfirst(==(:foo), IN_FIELDS)\n    IN_FIELDS,\n    (\n        RECORD for RECORD in SOURCE\n        if  let _foo = RECORD[idx_of_foo]\n                _foo < 2\n            end\n    )\nendObviously that where clauses generated in this way could be stacked.Next, it\'s the turn of groupby. It could be much more complex, for we should make it consistent with code generation for select and where.Let\'s think about the case below.df |>\n@groupby startswith(_.name, \"Ruby\")  => is_rubyYep, we want to group data frames(of course, any other datatypes that can be processed via this pipeline) by whether its field name starts with a string \"Ruby\" like, \"Ruby Rose\".Ha, I\'d like to use a dictionary here to store the groups.let IN_FIELDS, IN_SOURCE = process(df),\n    idx_of_name = findfirst(==(:name), IN_FIELDS),\n    @inline FN(_name) = (startswith(_.name, \"Ruby\"), )\n\n    GROUPS = Dict() # the type issues will be discussed later.\n    for RECORD in IN_SOURCE\n        _name = RECORD[idx_of_name]\n        GROUP_KEY = (is_ruby, ) = FN(_name)\n        AGGREGATES = get!(GROUPS, GROUP_KEY) do\n            Tuple([] for _ in IN_FIELDS)\n        end\n        push!.(AGGREGATES, RECORD)\n    end\n    # then output fields and source here\nendI think it perfect, so let\'s go ahead. The reason why we make an inline function would be given later, I\'d disclosed that it\'s for type inference.So, what should the output field names and the source be?An implementation is,IN_FIELDS, values(GROUPS)But if so, we will lose the information of group keys, which is not that good.So, if we want to persist the group keys, we can do this:[[:is_ruby]; IN_FIELDS], ((k..., v...) for (k, v) in GROUPS)I think the latter could be sufficiently powerful, although it might not be that efficient. You can have different implementations of groupby if you have more specific use cases, just use the extensible system which will be introduced later.So, the code generation of groupby could be:let IN_FIELDS, IN_SOURCE = process(df),\n    idx_of_name = findfirst(==(:name), IN_FIELDS),\n    @inline FN(_name) = (startswith(_.name, \"Ruby\"), )\n\n    GROUPS = Dict() # the type issues will be discussed later.\n    for RECORD in IN_SOURCE\n        _name = RECORD[idx_of_name]\n        GROUP_KEY = (is_ruby, ) = FN(_name)\n        AGGREGATES = get!(GROUPS, GROUP_KEY) do\n            Tuple([] for _ in IN_FIELDS)\n        end\n        push!.(AGGREGATES, RECORD)\n    end\n    [[:is_ruby]; IN_FIELDS], ((k..., v...) for (k, v) in GROUPS)\nend\nHowever, subsequently, we comes to the having clause, in fact, I\'d regard it as a sub-clause of groupby, which means it cannot take place indenpendently, but co-appear with a groupby clause.Given such a case:df |>\n@groupby startswith(_.name, \"Ruby\")  => is_ruby\n@having is_ruby || count(_.is_rose) > 5The generated code should be:let IN_FIELDS, IN_SOURCE = process(df),\n    idx_of_name = findfirst(==(:name), IN_FIELDS),\n    idx_of_is_rose = findfirst(==(:is_rose), IN_FIELDS)\n    @inline FN(_name) = (startswith(_name, \"Ruby\"), )\n\n    GROUPS = Dict() # the type issues will be discussed later.\n    for RECORD in IN_SOURCE\n        _name = RECORD[idx_of_name]\n        _is_rose = RECORD[idx_of_rose]\n        GROUP_KEY = (is_ruby, ) = GROUP_FN(RECORD)\n        if !(is_ruby || count(is_rose) > 5)\n            continue\n        end\n        AGGREGATES = get!(GROUPS, GROUP_KEY) do\n            Tuple([] for _ in IN_FIELDS)\n        end\n        push!.(AGGREGATES, RECORD)\n    end\n    [[:is_ruby]; IN_FIELDS], ((k..., v...) for (k, v) in GROUPS)\nendThe conditional code generation of groupby could be achieved very concisely via AST patterns of MLStyle, we\'ll refer to this later.After introducing the generation for above 4 clauses, orderby and limit then become quite trivial, and I don\'t want to repeat myself if not necessary.Now we know that mulitiple clauses could be generated to produce a Tuple result, first of which is the field names, the second is the lazy computation of the query. We can resume this tuple to the corresponding types, for instance,function (ARG :: DataFrame)\n    (IN_FIELDS, IN_SOURCE) = let IN_FIELDS, IN_SOURCE = ...\n        ...\n    end\n\n    res = Tuple([] for _ in IN_FIELDS)\n    for each in IN_SOURCE\n        push!.(res, each)\n    end\n    DataFrame(collect(res), IN_FIELDS)\nend"
+},
+
+{
+    "location": "tutorials/query-lang/#Refinement-of-Codegen:-Typed-Columns-1",
+    "page": "Write You A Query Language",
+    "title": "Refinement of Codegen: Typed Columns",
+    "category": "section",
+    "text": "Last section introduce a framework of code generation for implementing query langauges, but in Julia, there\'s still a fatal problem.Look at the value to be return(when input is a DataFrame):res = Tuple([] for _ in IN_FIELDS)\nfor each in SOURCE\n    push!.(res, each)\nend\nDataFrame(collect(res), collect(IN_FIELDS))I can promise you that, each column of your data frames is a Vector{Any}, yes, not its actual type. You may prefer to calculate the type of a column using the common super type of all elements, but there\'re 2 problems if you try this:If the column is empty, emmmm...\nCalculating the super type of all elements causes unaffordable cost!Yet, I\'ll introduce a new requirement IN_TYPES of the query\'s code generation, which perfectly solves problems of column types.Let\'s have a look at code generation for select after introducing the IN_TYPES.Given that@select _, _.foo + 1\n# `@select _` is regarded as `SELECT *` in T-SQL.return_type(f, ts) =\n    let ts = Base.return_types(f, ts)\n        length(ts) === 1 ?\n            ts[1]        :\n            Union{ts...}\n    end\ntype_unpack(n, ::Type{Tuple{}}) = throw(\"error\")\ntype_unpack(n, ::Type{Tuple{T1}}) where T1 = [T1]\ntype_unpack(n, ::Type{Tuple{T1, T2}}) where {T1, T2} = [T1, T2]\n# type_unpack(::Type{Tuple{T1, T2, ...}}) where {T1, T2, ...} = [T1, T2, ...]\ntype_unpack(n, ::Type{Any}) = fill(Any, n)\n\nlet (IN_FIELDS, IN_TYPES, SOURCE) = process(df),\n    idx_of_foo = findfirst(==(:foo),  IN_FIELDS),\n    (@inline FN(_record, _foo) = (_record..., _foo)),\n    FN_OUT_FIELDS = [IN_FIELDS..., :foo1],\n    FN_OUT_TYPES = type_unpack(length(FN_OUT_FIELDS), return_type(Tuple{IN_TYPES...}, IN_TYPES[idx_of_foo]))\n\n    FN_OUT_FILEDS,\n    FN_OUT_TYPES,\n    (let _foo = RECORD[idx_of_foo]; FN(RECORD, _foo) end for RECORD in SOURCE)\nendFor groupby, it could be a bit more complex, but it does nothing new towards what select does. You can check the repo for codes."
+},
+
+{
+    "location": "tutorials/query-lang/#Implementation-1",
+    "page": "Write You A Query Language",
+    "title": "Implementation",
+    "category": "section",
+    "text": "Firstly, we should define something like constants and helper functions.FYI, some constants and interfaces are defined at MQuery.ConstantNames.jl and MQuery.Interfaces.jl, you might want to refer to them if any unknown symbol prevents you from understanding this sketch.Then we should extract all clauses from a piece of given julia codes.Given following codes,@select args1,\n@where args2,\n@select args3, we transform them into[(generate_select, args), (generate_where, args2), (generate_select, args3)]function generate_select\nend\nfunction generate_where\nend\nfunction generate_groupby\nend\nfunction generate_orderby\nend\nfunction generate_having\nend\nfunction generate_limit\nend\n\nconst registered_ops = Dict{Symbol, Any}(\n    Symbol(\"@select\") => generate_select,\n    Symbol(\"@where\") => generate_where,\n    Symbol(\"@groupby\") => generate_groupby,\n    Symbol(\"@having\") => generate_having,\n    Symbol(\"@limit\") => generate_limit,\n    Symbol(\"@orderby\") => generate_orderby\n)\n\nfunction get_op(op_name)\n    registered_ops[op_name]\nend\n\nismacro(x :: Expr) = Meta.isexpr(x, :macrocall)\nismacro(_) = false\n\nfunction flatten_macros(node :: Expr)\n    @match node begin\n    Expr(:macrocall, op :: Symbol, ::LineNumberNode, arg) ||\n    Expr(:macrocall, op :: Symbol, arg) =>\n\n    @match arg begin\n    Expr(:tuple, args...) || a && Do(args = [a]) =>\n\n    @match args begin\n    [args..., tl && if ismacro(tl) end] => [(op |> get_op, args), flatten_macros(tl)...]\n    _ => [(op |> get_op, args)]\n    end\n    end\n    end\nendThe core is flatten_macros, it destructures macrocall expressions and then we can simply flatten the macrocalls.Next, we could have a common behaviour of code generation.\nstruct Field\n    name      :: Any    # an expr to represent the field name from IN_FIELDS.\n    make      :: Any    # an expression to assign the value into `var` like, `RECORD[idx_of_foo]`.\n    var       :: Symbol # a generated symbol via mangling\n    typ       :: Any    # an expression to get the type of the field like, `IN_TYPES[idx_of_foo]`.\nend\n\nfunction query_routine(assigns            :: OrderedDict{Symbol, Any},\n                       fn_in_fields       :: Vector{Field},\n                       fn_returns         :: Any,\n                       result; infer_type = true)\n    @assert haskey(assigns, FN_OUT_FIELDS)\n\n    fn_arguments = map(x -> x.var, fn_in_fields)\n    fn_arg_types = Expr(:vect, map(x -> x.typ, fn_in_fields)...)\n\n    function (inner_expr)\n        let_seq = [\n            Expr(:(=), Expr(:tuple, IN_FIELDS, IN_TYPES, IN_SOURCE), inner_expr),\n            (:($name = $value) for (name, value) in assigns)...,\n            :(@inline $FN($(fn_arguments...)) =  $fn_returns),\n        ]\n        if infer_type\n            let type_infer = :($FN_RETURN_TYPES = $type_unpack($length($FN_OUT_FIELDS, ), $return_type($FN, $fn_arg_types)))\n                push!(let_seq, type_infer)\n            end\n        end\n        Expr(:let,\n            Expr(\n                :block,\n                let_seq...\n            ),\n            result\n        )\n    end\nendIn fact, query_routine generates code likelet IN_FIELDS, IN_TYPES, IN_SOURCE = <inner query>,\n    idx_of_foo = ...,\n    idx_of_bar = ...,\n    @inline FN(x) = ...\n\n    ...\nendThen, we should generate the final code from such a sequence given as the return of flatten_macros.Note that get_records, get_fields and build_result should be implemented by your own to support datatypes that you want to query on.function codegen(node)\n    ops = flatten_macros(node)\n    let rec(vec) =\n        @match vec begin\n            [] => []\n            [(&generate_groupby, args1), (&generate_having, args2), tl...] =>\n                [generate_groupby(args1, args2), rec(tl)...]\n            [(hd, args), tl...] =>\n                [hd(args), rec(tl)...]\n        end\n        init = quote\n            let iter = $get_records($ARG),\n                fields = $get_fields($ARG),\n                types =$type_unpack($length(fields), $eltype(iter))\n                (fields, types, iter)\n            end\n        end\n        fn_body = foldl(rec(ops), init = init) do last, mk\n            mk(last)\n        end\n        quote\n            @inline function ($ARG :: $TYPE_ROOT, ) where {$TYPE_ROOT}\n                let ($IN_FIELDS, $IN_TYPES, $IN_SOURCE) = $fn_body\n                    $build_result(\n                        $TYPE_ROOT,\n                        $IN_FIELDS,\n                        $IN_TYPES,\n                        $IN_SOURCE\n                    )\n                end\n            end\n        end\n    end\nendThen, we need a visitor to transform the patterns shaped as _.foo inside an expression to a mangled symbol whose value is RECORD[idx_of_foo].# visitor to process the pattern `_.x, _,\"x\", _.(1)` inside an expression\nfunction mk_visit(fields :: Dict{Any, Field}, assigns :: OrderedDict{Symbol, Any})\n    visit = expr ->\n    @match expr begin\n        Expr(:. , :_, q :: QuoteNode) && Do(a = q.value) ||\n        Expr(:., :_, Expr(:tuple, a)) =>\n            @match a begin\n                a :: Int =>\n                    let field = get!(fields, a) do\n                            var_sym = gen_sym(a)\n                            Field(\n                                a,\n                                Expr(:ref, RECORD, a),\n                                var_sym,\n                                Expr(:ref, IN_TYPES, a)\n                            )\n                        end\n                        field.var\n                    end\n\n                ::String && Do(b = Symbol(a)) ||\n                b::Symbol =>\n                    let field = get!(fields, b) do\n                            idx_sym = gen_sym()\n                            var_sym = gen_sym(b)\n                            assigns[idx_sym] = Expr(:call, findfirst, x -> x === b, IN_FIELDS)\n                            Field(\n                                b,\n                                Expr(:ref, RECORD, idx_sym),\n                                var_sym,\n                                Expr(:ref, IN_TYPES, idx_sym)\n                            )\n                        end\n                        field.var\n                    end\n            end\n        Expr(head, args...) => Expr(head, map(visit, args)...)\n        a => a\n    end\nendYou might not be able to understand what the meanings of fields and assigns are, don\'t worry too much, and I\'m to explain it for you.fields : Dict{Any, Field}\nThink about you want such a query @select _.foo * 2, _.foo + 2, you can see that field foo is referred twice, but you shouldn\'t make 2 symbols to represent the index of foo field. So I introduce a dictionary fields here to   avoid re-calculation.\nassigns : OrderedDict{Any, Expr}\nWhen you want to bind the index of foo to a given symbol idx_of_foo, you should set an expressison $findfirst(==(:foo), $IN_FIELDS) to assigns on key idx_of_foo. The reason why we don\'t use a Vector{Expr} to represent assigns is, we can avoid re-assignments in some cases(you can find an instance in generate_groupby).\nFinally, assigns would be generated to the binding section of   a let sentence.Now, following previous discussions, we can firstly implement the easiest one, codegen method for where clause.function generate_where(args :: AbstractArray)\n    field_getted = Dict{Symbol, Symbol}()\n    assign       :: Vector{Any} = []\n    visit = mk_visit(field_getted, assign)\n\n    pred = foldl(args, init=true) do last, arg\n        boolean = visit(arg)\n        if last === true\n            boolean\n        else\n            Expr(:&&, last, boolean)\n        end\n    end\n\n    # where expression generation\n    query_routine(\n        assign,\n        Expr(:tuple,\n             IN_FIELDS,\n             TYPE,\n             :($RECORD for $RECORD in $SOURCE if $pred)\n        )\n    )\nendThen select:function generate_select(args :: AbstractArray)\n    map_in_fields = Dict{Any, Field}()\n    assigns = OrderedDict{Symbol, Any}()\n    fn_return_elts   :: Vector{Any} = []\n    fn_return_fields :: Vector{Any} = []\n    visit = mk_visit(map_in_fields, assigns)\n    # process selectors\n    predicate_process(arg) =\n        @match arg begin\n        :(!$pred($ (args...) )) && Do(ab=true)  ||\n        :($pred($ (args...) ))  && Do(ab=false) ||\n        :(!$pred) && Do(ab=true, args=[])       ||\n        :($pred)  && Do(ab=false, args=[])      =>\n            let idx_sym = gen_sym()\n                assigns[idx_sym] =\n                    Expr(\n                        :call,\n                        findall,\n                        ab ?\n                            :(@inline function ($ARG,) !$pred($string($ARG,), $(args...)) end) :\n                            :(@inline function ($ARG,) $pred($string($ARG,), $(args...)) end)\n                        , IN_FIELDS\n                    )\n                idx_sym\n            end\n        endfn_return_elts will be finally evaluated as the return of FN, while FN will be used to be generate the next IN_SOURCE with :(let ... ; $FN($args...) end for $RECORD in $SOURCE), while fn_retrun_fields will be finally used to generate the next IN_FIELDS with Expr(:vect, fn_return_fields...).Let\'s go ahead.    foreach(args) do arg\n        @match arg begin\n            :_ =>\n                let field = get!(map_in_fields, all) do\n                        var_sym = gen_sym()\n                        push!(fn_return_elts, Expr(:..., var_sym))\n                        push!(fn_return_fields, Expr(:..., IN_FIELDS))\n                        Field(\n                            all,\n                            RECORD,\n                            var_sym,\n                            :($Tuple{$IN_TYPES...})\n                        )\n                    end\n                    nothing\n                end\nWe\'ve said that @select _ here is equivalent to SELECT * in T-SQL.The remaining is also implemented with a concise case splitting via pattern matchings on ASTs.            :(_.($(args...))) =>\n                let indices = map(predicate_process, args)\n                    if haskey(map_in_fields, arg)\n                        throw(\"The columns `$(string(arg))` are selected twice!\")\n                    elseif !isempty(indices)\n                        idx_sym = gen_sym()\n                        var_sym = gen_sym()\n                        field = begin\n                            assigns[idx_sym] =\n                                length(indices) === 1 ?\n                                indices[1] :\n                                Expr(:call, intersect, indices...)\n                            push!(fn_return_elts, Expr(:..., var_sym))\n                            push!(fn_return_fields, Expr(:..., Expr(:ref, IN_FIELDS, idx_sym)))\n                            Field(\n                                arg,\n                                Expr(:ref, RECORD, idx_sym),\n                                var_sym,\n                                Expr(:curly, Tuple, Expr(:..., Expr(:ref, IN_TYPES, idx_sym)))\n                            )\n                        end\n                        map_in_fields[arg] = field\n                        nothing\n                    end\n                endAbove case is for handling with field filters, like @select _.(!startswith(\"Java\"), endswith(\"#\")).           :($a => $new_field) || a && Do(new_field = Symbol(string(a))) =>\n                let new_value = visit(a)\n                    push!(fn_return_fields, QuoteNode(new_field))\n                    push!(fn_return_elts, new_value)\n                    nothing\n                end\n        end\n    end\n\n    fields = map_in_fields |> values |> collect\n    assigns[FN_OUT_FIELDS] = Expr(:vect, fn_return_fields...)\n    # select expression generation\n    query_routine(\n        assigns,\n        fields,\n        Expr(:tuple, fn_return_elts...),\n        Expr(\n            :tuple,\n            FN_OUT_FIELDS,\n            FN_RETURN_TYPES,\n            :($(fn_apply(fields)) for $RECORD in $IN_SOURCE)\n        ); infer_type = true\n    )\nendAbove case is for handling with regular expressions which might contain something like _.x, _.(1) or _.\"is ruby\".Meanwhile, => allows you to alias the expression with the name you prefer. Note that, in terms of @select (_.foo => :a) => a, the first => is a normal infix operator, which denotes the built-in object Pair, but the second is alias.If you have problems with $ in AST patterns, just remember that, inside a quote ... end or :(...), ASTs/Expressions are compared by literal, except for $(...) things are matched via normal patterns, for instance, :($(a :: Symbol) = 1) can match :($a = 1) if the available variable a has type Symbol.With respect of groupby and having, they\'re too long to put in this article, so you might want to check them at MQuery.Impl.jl#L217."
+},
+
+{
+    "location": "tutorials/query-lang/#Enjoy-You-A-Query-Language-1",
+    "page": "Write You A Query Language",
+    "title": "Enjoy You A Query Language",
+    "category": "section",
+    "text": "using Enums\n@enum TypeChecking Dynamic Static\n\ninclude(\"MQuery.jl\")\ndf = DataFrame(\n        Symbol(\"Type checking\") =>\n            [Dynamic, Static, Static, Dynamic, Static, Dynamic, Dynamic, Static],\n        :name =>\n            [\"Julia\", \"C#\", \"F#\", \"Ruby\", \"Java\", \"JavaScript\", \"Python\", \"Haskell\"]),\n        :year => [2012, 2000, 2005, 1995, 1995, 1995, 1990, 1990]\n)\n\ndf |>\n@where !startswith(_.name, \"Java\"),\n@groupby _.\"Type checking\" => TC, endswith(_.name, \"#\") => is_sharp,\n@having TC === Dynamic || is_sharp,\n@select join(_.name, \" and \") => result, _.TC => TC\noutputs2×2 DataFrame\n│ Row │ result                    │ TC        │\n│     │ String                    │ TypeChec… │\n├─────┼───────────────────────────┼───────────┤\n│ 1   │ Julia and Ruby and Python │ Dynamic   │\n│ 2   │ C# and F#                 │ Static    │"
 },
 
 ]}

@@ -1,0 +1,458 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Write You A Query Language · MLStyle.jl</title><script>(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-89508993-1', 'auto');
+ga('send', 'pageview');
+</script><link href="https://cdnjs.cloudflare.com/ajax/libs/normalize/4.2.0/normalize.min.css" rel="stylesheet" type="text/css"/><link href="https://fonts.googleapis.com/css?family=Lato|Roboto+Mono" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.2.0/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link href="../../assets/documenter.css" rel="stylesheet" type="text/css"/></head><body><nav class="toc"><h1>MLStyle.jl</h1><select id="version-selector" onChange="window.location.href=this.value" style="visibility: hidden"></select><form class="search" id="search-form" action="../../search/"><input id="search-query" name="q" type="text" placeholder="Search docs"/></form><ul><li><a class="toctext" href="../../">Home</a></li><li><span class="toctext">Syntax</span><ul><li><a class="toctext" href="../../syntax/adt/">Algebraic Data Types</a></li><li><a class="toctext" href="../../syntax/pattern/">Pattern</a></li><li><a class="toctext" href="../../syntax/pattern-function/">Pattern function</a></li><li><a class="toctext" href="../../syntax/when/">When Destructuring</a></li></ul></li><li><span class="toctext">Tutorials</span><ul><li><a class="toctext" href="../capture/">Static Capturing</a></li><li class="current"><a class="toctext" href>Write You A Query Language</a><ul class="internal"><li><a class="toctext" href="#Definition-of-Syntaxes-1">Definition of Syntaxes</a></li><li><a class="toctext" href="#Codegen-Target-1">Codegen Target</a></li><li><a class="toctext" href="#Refinement-of-Codegen:-Typed-Columns-1">Refinement of Codegen: Typed Columns</a></li><li><a class="toctext" href="#Implementation-1">Implementation</a></li><li><a class="toctext" href="#Enjoy-You-A-Query-Language-1">Enjoy You A Query Language</a></li></ul></li></ul></li></ul></nav><article id="docs"><header><nav><ul><li>Tutorials</li><li><a href>Write You A Query Language</a></li></ul><a class="edit-page" href="https://github.com/thautwarm/MLStyle.jl/blob/master/docs/src/tutorials/query-lang.md"><span class="fa"></span> Edit on GitHub</a></nav><hr/><div id="topbar"><span>Write You A Query Language</span><a class="fa fa-bars" href="#"></a></div></header><h1><a class="nav-anchor" id="Write-You-A-Query-Language-1" href="#Write-You-A-Query-Language-1">Write You A Query Language</a></h1><p>You may have heard of LINQ or extension methods before, and they&#39;re all embedded query langauges.</p><p>In terms of Julia ecosystem, there&#39;re already Query.jl, LightQuery.jl, DataFramesMeta.jl, etc., each of which reaches the partial or full features of a query language.</p><p>This document is provided for you to create a concise and efficient implementation of query language, which is a way for me to exhibit the power of MLStyle.jl on AST manipulations. Additionally, I think this tutorial can be also extremely helpful to those who&#39;re developing query languages for Julia.</p><h2><a class="nav-anchor" id="Definition-of-Syntaxes-1" href="#Definition-of-Syntaxes-1">Definition of Syntaxes</a></h2><p>Firstly, we can refer to the the T-SQL syntax and, introduce it into Julia.</p><pre><code class="language-Julia">df |&gt;
+@select selectors...,
+@where predicates...,
+@groupby mappings...,
+@orderby mappings...,
+@having mappings...,
+@limit JuliaExpr
+</code></pre><p>A <code>selector</code> could be one of the following cases.</p><ol><li><p>select the field <code>x</code> / select the 1-fst field</p><p><code>_.x / _.(1)</code></p></li></ol><ol><li><p>select the field <code>x</code>(to support field name that&#39;re not an identifier)</p><p><code>_.&quot;x&quot;</code></p></li><li><p>select an expression binded as <code>x + _.x</code>, where <code>x</code> is from current scope</p><p><code>x + _.x</code></p></li><li><p>select something and bind it to symbol <code>a</code></p><p><code>&lt;selector 1-3&gt; =&gt; a / &lt;selector 1-3&gt; =&gt; &quot;a&quot;</code></p></li><li><p>select any field <code>col</code> that <code>predicate1(col, args1...) &amp;&amp; !predicate2(col, args2...) &amp;&amp; ...</code> is true</p><p><code>_.(predicate1(args...), !predicate2(args2..., ),   ...)</code></p></li></ol><p>With E-BNF notation, we can formalize the synax,</p><pre><code class="language-none">FieldPredicate ::= [&#39;!&#39;] QueryExpr &#39;(&#39; QueryExprList &#39;)&#39; [&#39;,&#39; FieldPredicate]
+
+Field          ::= (Symbol | String | Int)
+
+
+QueryExpr      ::=  &#39;_&#39; &#39;.&#39; Field
+                  | &lt;substitute QueryExpr in for JuliaExpr&gt;
+
+QueryExprList  ::= [ QueryExpr (&#39;,&#39; QueryExpr)* ]
+
+selector       ::= &#39;_&#39; &#39;.&#39; FieldPredicate
+                  | QueryExpr</code></pre><p>A <code>predicate</code> is a <code>QueryExpr</code>, but shouldn&#39;t be evaluated to a boolean.</p><p>A <code>mapping</code>  is a <code>QueryExpr</code>, but shouldn&#39;t be evaluated to a nothing.</p><p>FYI, here&#39;re some valid instances about <code>selector</code>.</p><pre><code class="language-none">_.foo,
+_.(!1),
+_.(startswith(&quot;bar&quot;), !endswith(&quot;foo&quot;)),
+x + _.foo,
+let y = _.foo + y; y + _.(2) end</code></pre><h2><a class="nav-anchor" id="Codegen-Target-1" href="#Codegen-Target-1">Codegen Target</a></h2><p>Before implementing code generation, we should have a sketch about the target. The <strong>target</strong> here means the final shape of the code generated from a sequence of query clauses.</p><p>I&#39;ll take you to the travel within the inference about the final shape of code generation.</p><p>Firstly, for we want this:</p><pre><code class="language-julia">df |&gt;
+@select _.foo + x, _.bar</code></pre><p>We can infer out that the generated code is an anonymous function which takes only one argument.</p><p>Okay, cool. We&#39;ve known that the final shape of generated code should be:</p><pre><code class="language-julia">function (ARG)
+    # implementations
+end</code></pre><p>Then, let&#39;s think about the <code>select</code> clause. You might find it&#39;s a <code>map</code>(if we don&#39;t take aggregrate function into consideration). However, for we don&#39;t want to make redundant allocations when executing the queries, so we should use <code>Base.Generator</code> as the data representation.</p><p>For <code>@select _.foo + x, _.bar</code>, it should be generated to something like</p><pre><code class="language-julia">((RECORD[:foo] + x, RECORD[:bar])   for RECORD in IN_SOURCE)</code></pre><p>Where <code>IN_SOURCE</code> is the data representation, <code>RECORD</code> is the record(row) of <code>IN_SOURCE</code>, and <code>x</code> is the variable captured by the closure.</p><p>Now, a smart reader might observe that there&#39;s a trick for optimization! If we can have the actual indices of the fields <code>foo</code> and <code>bar</code> in the record(each row of <code>IN_SOURCE</code>), then they can be indexed via integers, which could avoid reflections in some degree.</p><p>I don&#39;t have much knowledge about NamedTuple&#39;s implementation, but indexing via names on unknown datatypes cannot be faster than simply indexing via integers.</p><p>So, the generated code of <code>select</code> could be</p><pre><code class="language-julia">let idx_of_foo = findfirst(==(:foo), IN_FIELDS),
+    idx_of_bar = findfirst(==(:bar), IN_FIELDS),
+    @inline FN(_foo, _bar) = (_foo + x, _bar)
+    (
+    let _foo = RECORD[idx_of_foo],
+        _bar = RECORD[idx_of_bar]
+        FN(_foo, _bar)
+    end
+    for RECORD in IN_SOURCE)
+end
+</code></pre><p>Where we introduce a new requirement of the query&#39;s code generation, <code>IN_FIELDS</code>, which denotes the field names of <code>IN_SOURCE</code>.</p><p>Now, to have a consistent code generation, let&#39;s think about stacked <code>select</code> clauses.</p><pre><code class="language-julia">df |&gt;
+@select _, _.foo + 1, =&gt; foo1,
+# `select _` here means `SELECT *` in T-SQL.
+@select _.foo1 + 2 =&gt; foo2</code></pre><p>I don&#39;t know how to explain the iteration in my mind, but I&#39;ve figured out such a way.</p><pre><code class="language-julia">let (IN_FIELDS, IN_SOURCE) =
+    let (IN_FIELDS, IN_SOURCE) = process(df),
+        idx_of_foo = findfirst(==(:foo), IN_FIELDS),
+        @inline FN(_record, _foo) = (_record..., _foo + 1)
+        [IN_FIELDS..., :foo1],
+        (
+            let _foo = RECORD[idx_of_foo]
+                FN(RECORD, _foo)
+            end
+            for RECORD in IN_SOURCE
+        )
+    end,
+    idx_of_foo1 = findfirst(==(:foo1), IN_FIELDS),
+    @inline FN(_foo1) = (_foo1 + 2, )
+
+    [:foo2],
+    (
+        let _foo1 = RECORD[idx_of_foo1]
+            FN(_foo1)
+        end
+        for RECORD in IN_SOURCE
+    )
+end</code></pre><p>Oh, perfect! I&#39;m so excited! That&#39;s so beautiful!</p><p>If the output field names are a list of meta variables <code>[:foo2]</code>, then output expression inside the comprehension should be a list of terms <code>[foo2]</code>. For <code>foo2 = _.foo1 + 2</code> which is generated as <code>RECORD[idx_of_foo1] + 2</code>, so it comes into the shape of above code snippet.</p><p>Let&#39;s think about the <code>where</code> clause.</p><p>If we want this:</p><pre><code class="language-julia">df |&gt;
+@where _.foo &lt; 2</code></pre><p>That&#39;s similar to <code>select</code>:</p><pre><code class="language-julia">let (IN_FIELDS, IN_SOURCE) = process(df),
+    idx_of_foo = findfirst(==(:foo), IN_FIELDS)
+    IN_FIELDS,
+    (
+        RECORD for RECORD in SOURCE
+        if  let _foo = RECORD[idx_of_foo]
+                _foo &lt; 2
+            end
+    )
+end</code></pre><p>Obviously that <code>where</code> clauses generated in this way could be stacked.</p><p>Next, it&#39;s the turn of <code>groupby</code>. It could be much more complex, for we should make it consistent with code generation for <code>select</code> and <code>where</code>.</p><p>Let&#39;s think about the case below.</p><pre><code class="language-julia">df |&gt;
+@groupby startswith(_.name, &quot;Ruby&quot;)  =&gt; is_ruby</code></pre><p>Yep, we want to group data frames(of course, any other datatypes that can be processed via this pipeline) by whether its field <code>name</code> starts with a string &quot;Ruby&quot; like, &quot;Ruby Rose&quot;.</p><p>Ha, I&#39;d like to use a dictionary here to store the groups.</p><pre><code class="language-julia">let IN_FIELDS, IN_SOURCE = process(df),
+    idx_of_name = findfirst(==(:name), IN_FIELDS),
+    @inline FN(_name) = (startswith(_.name, &quot;Ruby&quot;), )
+
+    GROUPS = Dict() # the type issues will be discussed later.
+    for RECORD in IN_SOURCE
+        _name = RECORD[idx_of_name]
+        GROUP_KEY = (is_ruby, ) = FN(_name)
+        AGGREGATES = get!(GROUPS, GROUP_KEY) do
+            Tuple([] for _ in IN_FIELDS)
+        end
+        push!.(AGGREGATES, RECORD)
+    end
+    # then output fields and source here
+end</code></pre><p>I think it perfect, so let&#39;s go ahead. The reason why we make an inline function would be given later, I&#39;d disclosed that it&#39;s for type inference.</p><p>So, what should the output field names and the source be?</p><p>An implementation is,</p><pre><code class="language-julia">IN_FIELDS, values(GROUPS)</code></pre><p>But if so, we will lose the information of group keys, which is not that good.</p><p>So, if we want to persist the group keys, we can do this:</p><pre><code class="language-julia">[[:is_ruby]; IN_FIELDS], ((k..., v...) for (k, v) in GROUPS)</code></pre><p>I think the latter could be sufficiently powerful, although it might not be that efficient. You can have different implementations of <code>groupby</code> if you have more specific use cases, just use the extensible system which will be introduced later.</p><p>So, the code generation of <code>groupby</code> could be:</p><pre><code class="language-julia">let IN_FIELDS, IN_SOURCE = process(df),
+    idx_of_name = findfirst(==(:name), IN_FIELDS),
+    @inline FN(_name) = (startswith(_.name, &quot;Ruby&quot;), )
+
+    GROUPS = Dict() # the type issues will be discussed later.
+    for RECORD in IN_SOURCE
+        _name = RECORD[idx_of_name]
+        GROUP_KEY = (is_ruby, ) = FN(_name)
+        AGGREGATES = get!(GROUPS, GROUP_KEY) do
+            Tuple([] for _ in IN_FIELDS)
+        end
+        push!.(AGGREGATES, RECORD)
+    end
+    [[:is_ruby]; IN_FIELDS], ((k..., v...) for (k, v) in GROUPS)
+end
+</code></pre><p>However, subsequently, we comes to the <code>having</code> clause, in fact, I&#39;d regard it as a sub-clause of <code>groupby</code>, which means it cannot take place indenpendently, but co-appear with a <code>groupby</code> clause.</p><p>Given such a case:</p><pre><code class="language-julia">df |&gt;
+@groupby startswith(_.name, &quot;Ruby&quot;)  =&gt; is_ruby
+@having is_ruby || count(_.is_rose) &gt; 5</code></pre><p>The generated code should be:</p><pre><code class="language-julia">let IN_FIELDS, IN_SOURCE = process(df),
+    idx_of_name = findfirst(==(:name), IN_FIELDS),
+    idx_of_is_rose = findfirst(==(:is_rose), IN_FIELDS)
+    @inline FN(_name) = (startswith(_name, &quot;Ruby&quot;), )
+
+    GROUPS = Dict() # the type issues will be discussed later.
+    for RECORD in IN_SOURCE
+        _name = RECORD[idx_of_name]
+        _is_rose = RECORD[idx_of_rose]
+        GROUP_KEY = (is_ruby, ) = GROUP_FN(RECORD)
+        if !(is_ruby || count(is_rose) &gt; 5)
+            continue
+        end
+        AGGREGATES = get!(GROUPS, GROUP_KEY) do
+            Tuple([] for _ in IN_FIELDS)
+        end
+        push!.(AGGREGATES, RECORD)
+    end
+    [[:is_ruby]; IN_FIELDS], ((k..., v...) for (k, v) in GROUPS)
+end</code></pre><p>The conditional code generation of <code>groupby</code> could be achieved very concisely via AST patterns of MLStyle, we&#39;ll refer to this later.</p><p>After introducing the generation for above 4 clauses, <code>orderby</code> and <code>limit</code> then become quite trivial, and I don&#39;t want to repeat myself if not necessary.</p><p>Now we know that mulitiple clauses could be generated to produce a <code>Tuple</code> result, first of which is the field names, the second is the lazy computation of the query. We can resume this tuple to the corresponding types, for instance,</p><pre><code class="language-julia">function (ARG :: DataFrame)
+    (IN_FIELDS, IN_SOURCE) = let IN_FIELDS, IN_SOURCE = ...
+        ...
+    end
+
+    res = Tuple([] for _ in IN_FIELDS)
+    for each in IN_SOURCE
+        push!.(res, each)
+    end
+    DataFrame(collect(res), IN_FIELDS)
+end</code></pre><h2><a class="nav-anchor" id="Refinement-of-Codegen:-Typed-Columns-1" href="#Refinement-of-Codegen:-Typed-Columns-1">Refinement of Codegen: Typed Columns</a></h2><p>Last section introduce a framework of code generation for implementing query langauges, but in Julia, there&#39;s still a fatal problem.</p><p>Look at the value to be return(when input is a <code>DataFrame</code>):</p><pre><code class="language-julia">res = Tuple([] for _ in IN_FIELDS)
+for each in SOURCE
+    push!.(res, each)
+end
+DataFrame(collect(res), collect(IN_FIELDS))</code></pre><p>I can promise you that, each column of your data frames is a <code>Vector{Any}</code>, yes, not its actual type. You may prefer to calculate the type of a column using the common super type of all elements, but there&#39;re 2 problems if you try this:</p><ul><li>If the column is empty, emmmm...</li><li>Calculating the super type of all elements causes unaffordable cost!</li></ul><p>Yet, I&#39;ll introduce a new requirement <code>IN_TYPES</code> of the query&#39;s code generation, which perfectly solves problems of column types.</p><p>Let&#39;s have a look at code generation for <code>select</code> after introducing the <code>IN_TYPES</code>.</p><p>Given that</p><pre><code class="language-julia">@select _, _.foo + 1
+# `@select _` is regarded as `SELECT *` in T-SQL.</code></pre><pre><code class="language-julia">return_type(f, ts) =
+    let ts = Base.return_types(f, ts)
+        length(ts) === 1 ?
+            ts[1]        :
+            Union{ts...}
+    end
+type_unpack(n, ::Type{Tuple{}}) = throw(&quot;error&quot;)
+type_unpack(n, ::Type{Tuple{T1}}) where T1 = [T1]
+type_unpack(n, ::Type{Tuple{T1, T2}}) where {T1, T2} = [T1, T2]
+# type_unpack(::Type{Tuple{T1, T2, ...}}) where {T1, T2, ...} = [T1, T2, ...]
+type_unpack(n, ::Type{Any}) = fill(Any, n)
+
+let (IN_FIELDS, IN_TYPES, SOURCE) = process(df),
+    idx_of_foo = findfirst(==(:foo),  IN_FIELDS),
+    (@inline FN(_record, _foo) = (_record..., _foo)),
+    FN_OUT_FIELDS = [IN_FIELDS..., :foo1],
+    FN_OUT_TYPES = type_unpack(length(FN_OUT_FIELDS), return_type(Tuple{IN_TYPES...}, IN_TYPES[idx_of_foo]))
+
+    FN_OUT_FILEDS,
+    FN_OUT_TYPES,
+    (let _foo = RECORD[idx_of_foo]; FN(RECORD, _foo) end for RECORD in SOURCE)
+end</code></pre><p>For <code>groupby</code>, it could be a bit more complex, but it does nothing new towards what <code>select</code> does. You can check <a href="https://github.com/thautwarm/MLStyle-Playground/tree/master/MQuery">the repo</a> for codes.</p><h2><a class="nav-anchor" id="Implementation-1" href="#Implementation-1">Implementation</a></h2><p>Firstly, we should define something like constants and helper functions.</p><p>FYI, some constants and interfaces are defined at <a href="https://github.com/thautwarm/MLStyle-Playground/blob/master/MQuery/MQuery.ConstantNames.jl">MQuery.ConstantNames.jl</a> and <a href="https://github.com/thautwarm/MLStyle-Playground/blob/master/MQuery/MQuery.Interfaces.jl">MQuery.Interfaces.jl</a>, you might want to refer to them if any unknown symbol prevents you from understanding this sketch.</p><p>Then we should extract all clauses from a piece of given julia codes.</p><p>Given following codes,</p><pre><code class="language-julia">@select args1,
+@where args2,
+@select args3</code></pre><p>, we transform them into</p><pre><code class="language-julia">[(generate_select, args), (generate_where, args2), (generate_select, args3)]</code></pre><pre><code class="language-julia">function generate_select
+end
+function generate_where
+end
+function generate_groupby
+end
+function generate_orderby
+end
+function generate_having
+end
+function generate_limit
+end
+
+const registered_ops = Dict{Symbol, Any}(
+    Symbol(&quot;@select&quot;) =&gt; generate_select,
+    Symbol(&quot;@where&quot;) =&gt; generate_where,
+    Symbol(&quot;@groupby&quot;) =&gt; generate_groupby,
+    Symbol(&quot;@having&quot;) =&gt; generate_having,
+    Symbol(&quot;@limit&quot;) =&gt; generate_limit,
+    Symbol(&quot;@orderby&quot;) =&gt; generate_orderby
+)
+
+function get_op(op_name)
+    registered_ops[op_name]
+end
+
+ismacro(x :: Expr) = Meta.isexpr(x, :macrocall)
+ismacro(_) = false
+
+function flatten_macros(node :: Expr)
+    @match node begin
+    Expr(:macrocall, op :: Symbol, ::LineNumberNode, arg) ||
+    Expr(:macrocall, op :: Symbol, arg) =&gt;
+
+    @match arg begin
+    Expr(:tuple, args...) || a &amp;&amp; Do(args = [a]) =&gt;
+
+    @match args begin
+    [args..., tl &amp;&amp; if ismacro(tl) end] =&gt; [(op |&gt; get_op, args), flatten_macros(tl)...]
+    _ =&gt; [(op |&gt; get_op, args)]
+    end
+    end
+    end
+end</code></pre><p>The core is <code>flatten_macros</code>, it destructures <code>macrocall</code> expressions and then we can simply flatten the <code>macrocall</code>s.</p><p>Next, we could have a common behaviour of code generation.</p><pre><code class="language-julia">
+struct Field
+    name      :: Any    # an expr to represent the field name from IN_FIELDS.
+    make      :: Any    # an expression to assign the value into `var` like, `RECORD[idx_of_foo]`.
+    var       :: Symbol # a generated symbol via mangling
+    typ       :: Any    # an expression to get the type of the field like, `IN_TYPES[idx_of_foo]`.
+end
+
+function query_routine(assigns            :: OrderedDict{Symbol, Any},
+                       fn_in_fields       :: Vector{Field},
+                       fn_returns         :: Any,
+                       result; infer_type = true)
+    @assert haskey(assigns, FN_OUT_FIELDS)
+
+    fn_arguments = map(x -&gt; x.var, fn_in_fields)
+    fn_arg_types = Expr(:vect, map(x -&gt; x.typ, fn_in_fields)...)
+
+    function (inner_expr)
+        let_seq = [
+            Expr(:(=), Expr(:tuple, IN_FIELDS, IN_TYPES, IN_SOURCE), inner_expr),
+            (:($name = $value) for (name, value) in assigns)...,
+            :(@inline $FN($(fn_arguments...)) =  $fn_returns),
+        ]
+        if infer_type
+            let type_infer = :($FN_RETURN_TYPES = $type_unpack($length($FN_OUT_FIELDS, ), $return_type($FN, $fn_arg_types)))
+                push!(let_seq, type_infer)
+            end
+        end
+        Expr(:let,
+            Expr(
+                :block,
+                let_seq...
+            ),
+            result
+        )
+    end
+end</code></pre><p>In fact, <code>query_routine</code> generates code like</p><pre><code class="language-julia">let IN_FIELDS, IN_TYPES, IN_SOURCE = &lt;inner query&gt;,
+    idx_of_foo = ...,
+    idx_of_bar = ...,
+    @inline FN(x) = ...
+
+    ...
+end</code></pre><p>Then, we should generate the final code from such a sequence given as the return of <code>flatten_macros</code>.</p><p>Note that <code>get_records</code>, <code>get_fields</code> and <code>build_result</code> should be implemented by your own to support datatypes that you want to query on.</p><pre><code class="language-julia">function codegen(node)
+    ops = flatten_macros(node)
+    let rec(vec) =
+        @match vec begin
+            [] =&gt; []
+            [(&amp;generate_groupby, args1), (&amp;generate_having, args2), tl...] =&gt;
+                [generate_groupby(args1, args2), rec(tl)...]
+            [(hd, args), tl...] =&gt;
+                [hd(args), rec(tl)...]
+        end
+        init = quote
+            let iter = $get_records($ARG),
+                fields = $get_fields($ARG),
+                types =$type_unpack($length(fields), $eltype(iter))
+                (fields, types, iter)
+            end
+        end
+        fn_body = foldl(rec(ops), init = init) do last, mk
+            mk(last)
+        end
+        quote
+            @inline function ($ARG :: $TYPE_ROOT, ) where {$TYPE_ROOT}
+                let ($IN_FIELDS, $IN_TYPES, $IN_SOURCE) = $fn_body
+                    $build_result(
+                        $TYPE_ROOT,
+                        $IN_FIELDS,
+                        $IN_TYPES,
+                        $IN_SOURCE
+                    )
+                end
+            end
+        end
+    end
+end</code></pre><p>Then, we need a visitor to transform the patterns shaped as <code>_.foo</code> inside an expression to a mangled symbol whose value is <code>RECORD[idx_of_foo]</code>.</p><pre><code class="language-julia"># visitor to process the pattern `_.x, _,&quot;x&quot;, _.(1)` inside an expression
+function mk_visit(fields :: Dict{Any, Field}, assigns :: OrderedDict{Symbol, Any})
+    visit = expr -&gt;
+    @match expr begin
+        Expr(:. , :_, q :: QuoteNode) &amp;&amp; Do(a = q.value) ||
+        Expr(:., :_, Expr(:tuple, a)) =&gt;
+            @match a begin
+                a :: Int =&gt;
+                    let field = get!(fields, a) do
+                            var_sym = gen_sym(a)
+                            Field(
+                                a,
+                                Expr(:ref, RECORD, a),
+                                var_sym,
+                                Expr(:ref, IN_TYPES, a)
+                            )
+                        end
+                        field.var
+                    end
+
+                ::String &amp;&amp; Do(b = Symbol(a)) ||
+                b::Symbol =&gt;
+                    let field = get!(fields, b) do
+                            idx_sym = gen_sym()
+                            var_sym = gen_sym(b)
+                            assigns[idx_sym] = Expr(:call, findfirst, x -&gt; x === b, IN_FIELDS)
+                            Field(
+                                b,
+                                Expr(:ref, RECORD, idx_sym),
+                                var_sym,
+                                Expr(:ref, IN_TYPES, idx_sym)
+                            )
+                        end
+                        field.var
+                    end
+            end
+        Expr(head, args...) =&gt; Expr(head, map(visit, args)...)
+        a =&gt; a
+    end
+end</code></pre><p>You might not be able to understand what the meanings of <code>fields</code> and <code>assigns</code> are, don&#39;t worry too much, and I&#39;m to explain it for you.</p><ul><li><p><code>fields : Dict{Any, Field}</code></p><p>Think about you want such a query <code>@select _.foo * 2, _.foo + 2</code>, you can see that field <code>foo</code> is referred twice, but you shouldn&#39;t make 2 symbols to represent the index of <code>foo</code> field. So I introduce a dictionary <code>fields</code> here to   avoid re-calculation.</p></li><li><p><code>assigns : OrderedDict{Any, Expr}</code></p><p>When you want to bind the index of <code>foo</code> to a given symbol <code>idx_of_foo</code>, you should set an expressison <code>$findfirst(==(:foo), $IN_FIELDS)</code> to <code>assigns</code> on key <code>idx_of_foo</code>. The reason why we don&#39;t use a <code>Vector{Expr}</code> to represent <code>assigns</code> is, we can avoid re-assignments in some cases(you can find an instance in <code>generate_groupby</code>).</p><p>Finally, <code>assigns</code> would be generated to the binding section of   a <code>let</code> sentence.</p></li></ul><p>Now, following previous discussions, we can firstly implement the easiest one, codegen method for <code>where</code> clause.</p><pre><code class="language-julia">function generate_where(args :: AbstractArray)
+    field_getted = Dict{Symbol, Symbol}()
+    assign       :: Vector{Any} = []
+    visit = mk_visit(field_getted, assign)
+
+    pred = foldl(args, init=true) do last, arg
+        boolean = visit(arg)
+        if last === true
+            boolean
+        else
+            Expr(:&amp;&amp;, last, boolean)
+        end
+    end
+
+    # where expression generation
+    query_routine(
+        assign,
+        Expr(:tuple,
+             IN_FIELDS,
+             TYPE,
+             :($RECORD for $RECORD in $SOURCE if $pred)
+        )
+    )
+end</code></pre><p>Then <code>select</code>:</p><pre><code class="language-julia">function generate_select(args :: AbstractArray)
+    map_in_fields = Dict{Any, Field}()
+    assigns = OrderedDict{Symbol, Any}()
+    fn_return_elts   :: Vector{Any} = []
+    fn_return_fields :: Vector{Any} = []
+    visit = mk_visit(map_in_fields, assigns)
+    # process selectors
+    predicate_process(arg) =
+        @match arg begin
+        :(!$pred($ (args...) )) &amp;&amp; Do(ab=true)  ||
+        :($pred($ (args...) ))  &amp;&amp; Do(ab=false) ||
+        :(!$pred) &amp;&amp; Do(ab=true, args=[])       ||
+        :($pred)  &amp;&amp; Do(ab=false, args=[])      =&gt;
+            let idx_sym = gen_sym()
+                assigns[idx_sym] =
+                    Expr(
+                        :call,
+                        findall,
+                        ab ?
+                            :(@inline function ($ARG,) !$pred($string($ARG,), $(args...)) end) :
+                            :(@inline function ($ARG,) $pred($string($ARG,), $(args...)) end)
+                        , IN_FIELDS
+                    )
+                idx_sym
+            end
+        end</code></pre><p><code>fn_return_elts</code> will be finally evaluated as the return of <code>FN</code>, while <code>FN</code> will be used to be generate the next <code>IN_SOURCE</code> with <code>:(let ... ; $FN($args...) end for $RECORD in $SOURCE)</code>, while <code>fn_retrun_fields</code> will be finally used to generate the next <code>IN_FIELDS</code> with <code>Expr(:vect, fn_return_fields...)</code>.</p><p>Let&#39;s go ahead.</p><pre><code class="language-julia">    foreach(args) do arg
+        @match arg begin
+            :_ =&gt;
+                let field = get!(map_in_fields, all) do
+                        var_sym = gen_sym()
+                        push!(fn_return_elts, Expr(:..., var_sym))
+                        push!(fn_return_fields, Expr(:..., IN_FIELDS))
+                        Field(
+                            all,
+                            RECORD,
+                            var_sym,
+                            :($Tuple{$IN_TYPES...})
+                        )
+                    end
+                    nothing
+                end
+</code></pre><p>We&#39;ve said that <code>@select _</code> here is equivalent to <code>SELECT *</code> in T-SQL.</p><p>The remaining is also implemented with a concise case splitting via pattern matchings on ASTs.</p><pre><code class="language-julia">            :(_.($(args...))) =&gt;
+                let indices = map(predicate_process, args)
+                    if haskey(map_in_fields, arg)
+                        throw(&quot;The columns `$(string(arg))` are selected twice!&quot;)
+                    elseif !isempty(indices)
+                        idx_sym = gen_sym()
+                        var_sym = gen_sym()
+                        field = begin
+                            assigns[idx_sym] =
+                                length(indices) === 1 ?
+                                indices[1] :
+                                Expr(:call, intersect, indices...)
+                            push!(fn_return_elts, Expr(:..., var_sym))
+                            push!(fn_return_fields, Expr(:..., Expr(:ref, IN_FIELDS, idx_sym)))
+                            Field(
+                                arg,
+                                Expr(:ref, RECORD, idx_sym),
+                                var_sym,
+                                Expr(:curly, Tuple, Expr(:..., Expr(:ref, IN_TYPES, idx_sym)))
+                            )
+                        end
+                        map_in_fields[arg] = field
+                        nothing
+                    end
+                end</code></pre><p>Above case is for handling with field filters, like <code>@select _.(!startswith(&quot;Java&quot;), endswith(&quot;#&quot;))</code>.</p><pre><code class="language-julia">           :($a =&gt; $new_field) || a &amp;&amp; Do(new_field = Symbol(string(a))) =&gt;
+                let new_value = visit(a)
+                    push!(fn_return_fields, QuoteNode(new_field))
+                    push!(fn_return_elts, new_value)
+                    nothing
+                end
+        end
+    end
+
+    fields = map_in_fields |&gt; values |&gt; collect
+    assigns[FN_OUT_FIELDS] = Expr(:vect, fn_return_fields...)
+    # select expression generation
+    query_routine(
+        assigns,
+        fields,
+        Expr(:tuple, fn_return_elts...),
+        Expr(
+            :tuple,
+            FN_OUT_FIELDS,
+            FN_RETURN_TYPES,
+            :($(fn_apply(fields)) for $RECORD in $IN_SOURCE)
+        ); infer_type = true
+    )
+end</code></pre><p>Above case is for handling with regular expressions which might contain something like <code>_.x</code>, <code>_.(1)</code> or <code>_.&quot;is ruby&quot;</code>.</p><p>Meanwhile, <code>=&gt;</code> allows you to alias the expression with the name you prefer. Note that, in terms of <code>@select (_.foo =&gt; :a) =&gt; a</code>, the first <code>=&gt;</code> is a normal infix operator, which denotes the built-in object <code>Pair</code>, but the second is <em>alias</em>.</p><p>If you have problems with <code>$</code> in AST patterns, just remember that, inside a <code>quote ... end</code> or <code>:(...)</code>, ASTs/Expressions are compared by literal, except for <code>$(...)</code> things are matched via normal patterns, for instance, <code>:($(a :: Symbol) = 1)</code> can match <code>:($a = 1)</code> if the available variable <code>a</code> has type <code>Symbol</code>.</p><p>With respect of <code>groupby</code> and <code>having</code>, they&#39;re too long to put in this article, so you might want to check them at <a href="https://github.com/thautwarm/MLStyle-Playground/blob/master/MQuery/MQuery.Impl.jl#L217">MQuery.Impl.jl#L217</a>.</p><h2><a class="nav-anchor" id="Enjoy-You-A-Query-Language-1" href="#Enjoy-You-A-Query-Language-1">Enjoy You A Query Language</a></h2><pre><code class="language-julia">using Enums
+@enum TypeChecking Dynamic Static
+
+include(&quot;MQuery.jl&quot;)
+df = DataFrame(
+        Symbol(&quot;Type checking&quot;) =&gt;
+            [Dynamic, Static, Static, Dynamic, Static, Dynamic, Dynamic, Static],
+        :name =&gt;
+            [&quot;Julia&quot;, &quot;C#&quot;, &quot;F#&quot;, &quot;Ruby&quot;, &quot;Java&quot;, &quot;JavaScript&quot;, &quot;Python&quot;, &quot;Haskell&quot;]),
+        :year =&gt; [2012, 2000, 2005, 1995, 1995, 1995, 1990, 1990]
+)
+
+df |&gt;
+@where !startswith(_.name, &quot;Java&quot;),
+@groupby _.&quot;Type checking&quot; =&gt; TC, endswith(_.name, &quot;#&quot;) =&gt; is_sharp,
+@having TC === Dynamic || is_sharp,
+@select join(_.name, &quot; and &quot;) =&gt; result, _.TC =&gt; TC
+</code></pre><p>outputs</p><pre><code class="language-none">2×2 DataFrame
+│ Row │ result                    │ TC        │
+│     │ String                    │ TypeChec… │
+├─────┼───────────────────────────┼───────────┤
+│ 1   │ Julia and Ruby and Python │ Dynamic   │
+│ 2   │ C# and F#                 │ Static    │</code></pre><footer><hr/><a class="previous" href="../capture/"><span class="direction">Previous</span><span class="title">Static Capturing</span></a></footer></article></body></html>

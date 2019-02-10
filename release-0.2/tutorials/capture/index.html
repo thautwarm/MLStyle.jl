@@ -1,0 +1,54 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Static Capturing · MLStyle.jl</title><script>(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-89508993-1', 'auto');
+ga('send', 'pageview');
+</script><link href="https://cdnjs.cloudflare.com/ajax/libs/normalize/4.2.0/normalize.min.css" rel="stylesheet" type="text/css"/><link href="https://fonts.googleapis.com/css?family=Lato|Roboto+Mono" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.2.0/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link href="../../assets/documenter.css" rel="stylesheet" type="text/css"/></head><body><nav class="toc"><h1>MLStyle.jl</h1><select id="version-selector" onChange="window.location.href=this.value" style="visibility: hidden"></select><form class="search" id="search-form" action="../../search/"><input id="search-query" name="q" type="text" placeholder="Search docs"/></form><ul><li><a class="toctext" href="../../">Home</a></li><li><span class="toctext">Syntax</span><ul><li><a class="toctext" href="../../syntax/adt/">Algebraic Data Types</a></li><li><a class="toctext" href="../../syntax/pattern/">Pattern</a></li><li><a class="toctext" href="../../syntax/pattern-function/">Pattern function</a></li><li><a class="toctext" href="../../syntax/when/">When Destructuring</a></li></ul></li><li><span class="toctext">Tutorials</span><ul><li class="current"><a class="toctext" href>Static Capturing</a><ul class="internal"><li class="toplevel"><a class="toctext" href="#RAII-Style-1">RAII-Style</a></li><li class="toplevel"><a class="toctext" href="#Regex-Style-1">Regex-Style</a></li></ul></li><li><a class="toctext" href="../query-lang/">Write You A Query Language</a></li></ul></li></ul></nav><article id="docs"><header><nav><ul><li>Tutorials</li><li><a href>Static Capturing</a></li></ul><a class="edit-page" href="https://github.com/thautwarm/MLStyle.jl/blob/master/docs/src/tutorials/capture.md"><span class="fa"></span> Edit on GitHub</a></nav><hr/><div id="topbar"><span>Static Capturing</span><a class="fa fa-bars" href="#"></a></div></header><h1><a class="nav-anchor" id="Static-Capturing-1" href="#Static-Capturing-1">Static Capturing</a></h1><p>We know that <code>MacroTools.jl</code> has brought about a useful macro <code>@capture</code> to capture specific structures from a given AST.</p><p>As the motivation of some contributors, <code>@capture</code> of <code>MacroTools.jl</code> has 3 following shortages.</p><ul><li><p>Use underscore to denote the structures to be captured, like <code>struct typename_ field__ end</code>, which makes you have to manually number the captured variables and not that readable or consistent.</p></li><li><p>Cause Side-Effect. The captured variables are entered in current scope.</p></li><li><p>Lack functionalities like conditional capturing.</p></li></ul><p>We can implement several new <code>@capture</code> via MLStyle.jl to get better in all aspects.</p><h1><a class="nav-anchor" id="RAII-Style-1" href="#RAII-Style-1">RAII-Style</a></h1><p>This implementation prevents scope leaking.</p><pre><code class="language-julia">
+function capture(template, ex, action)
+    let template = Expr(:quote, template)
+        quote
+            @match $ex begin 
+                $template =&gt; $action
+                _         =&gt; nothing
+            end
+        end 
+    end
+end
+
+macro capture(template, ex, action)
+    capture(template, ex, action) |&gt; esc
+end
+
+node = :(f(1))
+
+@capture f($(x :: T where T &lt;: Number)) node begin
+    @info x + 1
+end
+
+# info: 2
+
+node2 = :(f(x))
+
+@capture f($(x :: T where T &lt;: Number)) node2 begin
+    @info x + 1
+end
+
+# do nothing</code></pre><h1><a class="nav-anchor" id="Regex-Style-1" href="#Regex-Style-1">Regex-Style</a></h1><p>This implementation collects captured variables into a dictionary, just like groups in regex but more powerful.</p><p>For we have to analyse which variables to be caught, this implementation could be a bit verbose(100 lines about scoping analysis) and might not work with your own patterns(application patterns/recognizers and active-patterns are okay).</p><p>Check <a href="https://github.com/thautwarm/MLStyle-Playground/blob/master/StaticallyCapturing.jl">MLStyle-Playground</a> for implementation codes.</p><pre><code class="language-julia">@info @capture f($x) :(f(1))
+# Dict(:x=&gt;1)
+
+destruct_fn = @capture function $(fname :: Symbol)(a, $(args...)) $(body...) end
+
+@info destruct_fn(:(
+    function f(a, x, y, z)
+        x + y + z
+    end
+))
+
+# Dict{Symbol,Any}(
+#     :args =&gt; Any[:x, :y, :z],
+#     :body=&gt; Any[:(#= StaticallyCapturing.jl:93 =#), :(x + y + z)],
+#    :fname=&gt;:f
+# )</code></pre><footer><hr/><a class="previous" href="../../syntax/when/"><span class="direction">Previous</span><span class="title">When Destructuring</span></a><a class="next" href="../query-lang/"><span class="direction">Next</span><span class="title">Write You A Query Language</span></a></footer></article></body></html>
