@@ -3,7 +3,7 @@ When Destructuring
 
 The `@when` is introduced to work with the scenarios where `@match` is a bit heavy.
 
-It's similar to [if-let](https://doc.rust-lang.org/rust-by-example/flow_control/if_let.html) constructs in Rust language.
+It's similar to [if-let](https://doc.rust-lang.org/rust-by-example/flow_control/if_let.html) construct in Rust language.
 
 
 There're two distinct syntaxes for `@when`.
@@ -53,7 +53,7 @@ Sole Destructuring
 
 However, a let-binding could be also heavy when you just want to solely destructure something.
 
-Finally, We allowed another syntax for `@when`.
+Finally, we allowed another syntax for `@when`.
 
 ```julia
 s = S1(5)
