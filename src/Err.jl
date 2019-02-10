@@ -24,7 +24,7 @@ struct UnknownExtension <: Exception
 end
 
 macro syntax_err(msg)
-    :($throw($SyntaxError($msg)))
+    esc(:($throw($SyntaxError($msg))))
 end
 
 end
