@@ -24,7 +24,7 @@ QueryExpr      ::=  &#39;_&#39; &#39;.&#39; Field
 QueryExprList  ::= [ QueryExpr (&#39;,&#39; QueryExpr)* ]
 
 selector       ::= &#39;_&#39; &#39;.&#39; FieldPredicate
-                  | QueryExpr</code></pre><p>A <code>predicate</code> is a <code>QueryExpr</code>, but shouldn&#39;t be evaluated to a boolean.</p><p>A <code>mapping</code>  is a <code>QueryExpr</code>, but shouldn&#39;t be evaluated to a nothing.</p><p>FYI, here&#39;re some valid instances about <code>selector</code>.</p><pre><code class="language-none">_.foo,
+                  | QueryExpr</code></pre><p>A <code>predicate</code> is a <code>QueryExpr</code>, but should be evaluated to a boolean.</p><p>A <code>mapping</code>  is a <code>QueryExpr</code>, but shouldn&#39;t be evaluated to a nothing.</p><p>FYI, here&#39;re some valid instances about <code>selector</code>.</p><pre><code class="language-none">_.foo,
 _.(!1),
 _.(startswith(&quot;bar&quot;), !endswith(&quot;foo&quot;)),
 x + _.foo,
