@@ -1,9 +1,23 @@
 module MLStyle
 
-export @match, Many, Do, @data, @use, use, @used
-export def_pattern_def_app_pattern_def_gapp_pattern_mk_pattern_mk_app_pattern_mk_gapp_pattern
-export PatternUnsolvedException, InternalException, SyntaxError, UnknownExtension, @syntax_err
+# Flags
+export @use, use, @used
+# Match Implementation
+export @match, gen_match
+# DataTypes
+export @data
+# Pervasive Patterns
+export Many, Do
+# Active Patterns
 export @active
+# Extensibilities
+export def_pattern_def_app_pattern_def_gapp_pattern_mk_pattern_mk_app_pattern_mk_gapp_pattern
+# Exceptions
+export PatternUnsolvedException, InternalException, SyntaxError, UnknownExtension, @syntax_err
+# Syntax Sugars
+export @λ, gen_lambda
+export @when, gen_when
+
 
 include("Err.jl")
 using MLStyle.Err
@@ -31,71 +45,70 @@ using MLStyle.StandardPatterns
 include("DataType.jl")
 using MLStyle.DataType
 
-export @λ
 """
-Lambda cases.
-e.g.
-map((@λ (1, x) -> x), xs)
-
-(2, 3) |> @λ begin
-    1 -> 2
-    2 -> 7
-    (a, b) -> a + b
-end
-
-# 5
+Code generation for `@λ`.
+The first argument must be something like
+- `a -> b`
+- `begin a -> b; (c -> d)... end`
 """
-macro λ(cases)
-    TARGET = mangle(__module__)
+function gen_lambda(cases, source :: LineNumberNode, _ :: Module)
+    TARGET = gensym("λ")
     @match cases begin
         :($a -> $(b...)) =>
-                esc(quote
-                    function ($TARGET, )
-                        @match $TARGET begin
-                            $a => begin $(b...) end
+                @format [TARGET, source, case=a, body=Expr(:block, b...)] quote
+                    source
+                    function (TARGET)
+                        $MLStyle.@match source TARGET begin
+                            case => body
                         end
                     end
-                end)
+                end
 
         Do(stmts=[]) &&
-        :(begin $(Many(:($a -> $(b...)) && Do(push!(stmts, :($a => begin $(b...) end))) ||
-                       (a :: LineNumberNode) && Do(push!(stmts , a))
-                       )...)
+        :(begin
+            $(Many(:($a -> $(b...)) &&
+            Do(push!(stmts, :($a => begin $(b...) end))) ||
+
+            (a :: LineNumberNode) && Do(push!(stmts , a))
+            )...)
           end) =>
-            esc(quote
-                function ($TARGET, )
-                    @match $TARGET begin
-                        $(stmts...)
-                    end
+            @format [TARGET, source, cases = Expr(:block, stmts...)] quote
+                source
+                function (TARGET)
+                    $MLStyle.@match source TARGET cases
                 end
-            end)
+            end
         _ => @syntax_err "Syntax error in lambda case definition. Check if your arrow is `->` but not `=>`!"
+
     end
 end
 
-export @when
-function when(let_expr)
+"""
+Code generation for `@when`.
+You should pass an `Expr(:let, ...)` as the first argument.
+"""
+function gen_when(let_expr, source :: LineNumberNode, mod :: Module)
     @match let_expr begin
-       Expr(:let, Expr(:block, bindings...) ||  a && Do(bindings = [a]), ret) =>
+        Expr(:let, Expr(:block, bindings...) ||  a && Do(bindings = [a]), ret) =>
             foldr(bindings, init=ret) do each, last
                 @match each begin
                     :($a = $b) =>
-                        :(
-                            $MLStyle.@match $b begin
-                                $a =>  $last
-                                _  =>  nothing
+                        @format [a, b, last, source] quote
+                            $MLStyle.@match source b begin
+                                a => last
+                                _ => nothing
                             end
-                        )
+                        end
                     a => :(let $a; $last end)
                 end
             end
-       Expr(a, _...) => @syntax_err "Expect a let-binding, but found a `$a` expression."
-       _ => @syntax_err "Expect a let-binding."
+
+        Expr(a, _...) => @syntax_err "Expect a let-binding, but found a `$a` expression."
+        _ => @syntax_err "Expect a let-binding."
     end
 end
 
 """
-
 1. Allow destructuring in binding sequences of let syntax.
 
 In binding sequences,
@@ -122,19 +135,39 @@ end
 ```
 """
 macro when(let_expr)
-    when(let_expr) |> esc
+    gen_when(let_expr, __source__, __module__) |> esc
 end
 
 macro when(assignment, ret)
     @match assignment begin
         :($_ = $_) =>
-            when(Expr(:let, Expr(:block, assignment), ret)) |> esc
+            let let_expr = Expr(:let, Expr(:block, assignment), ret)
+                gen_when(let_expr, __source__, __module__) |> esc
+            end
         _ => @syntax_err "Not match the form of `@when a = b expr`"
     end
+end
+
+"""
+Lambda cases.
+e.g.
+map((@λ (1, x) -> x), xs)
+
+(2, 3) |> @λ begin
+    1 -> 2
+    2 -> 7
+    (a, b) -> a + b
+end
+
+# 5
+"""
+macro λ(cases)
+    gen_lambda(cases, __source__, __module__) |> esc
 end
 
 macro stagedexpr(exp)
     __module__.eval(exp)
 end
+
 
 end # module

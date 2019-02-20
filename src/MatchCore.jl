@@ -88,13 +88,13 @@ struct PDesc
 
     predicate  :: Function
 
-    # for gapp: 
-    #    (to_match : Symbol, 
-    #     forall :: Vector{Any}, 
+    # for gapp:
+    #    (to_match : Symbol,
+    #     forall :: Vector{Any},
     #     spec_vars :: Vector{Any},
     #     appobject :: Object,
     #     args :: Vector{AST},
-    #     mod :: Module) -> (AST -> AST) 
+    #     mod :: Module) -> (AST -> AST)
     # for app: (to_match  : Symbol, appobject: Object, args::Vector{AST}, mod::Module) -> (AST -> AST)
     # general: (to_match  : Symbol, case:AST, mod :: Module) -> (AST -> AST)
     rewrite    :: Function
@@ -210,14 +210,20 @@ end
 # @match begin
 #     ...
 # end
-export @match
+
+export @match, gen_match
+
+function gen_match(target, cbl, mod)
+    (a, s) = runState $ match_impl(target, cbl, mod) $ init_state
+    if isempty(s.errs)
+        a
+    else
+        throw_from(s.errs)
+    end
+end
+
 macro match(target, cbl)
-   (a, s) = runState $ match_impl(target, cbl, __module__) $ init_state
-   if isempty(s.errs)
-       esc $ a
-   else
-       throw_from(s.errs)
-   end
+    gen_match(target, cbl, __module__) |> esc
 end
 
 function mk_match_body(target, tag_sym, cbl, mod)
