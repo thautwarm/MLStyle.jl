@@ -63,7 +63,7 @@ selector       ::= '_' '.' FieldPredicate
                   | QueryExpr
 ```
 
-A `predicate` is a `QueryExpr`, but shouldn't be evaluated to a boolean.
+A `predicate` is a `QueryExpr`, but should be evaluated to a boolean.
 
 A `mapping`  is a `QueryExpr`, but shouldn't be evaluated to a nothing.
 
