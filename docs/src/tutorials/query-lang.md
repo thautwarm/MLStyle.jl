@@ -63,7 +63,7 @@ selector       ::= '_' '.' FieldPredicate
                   | QueryExpr
 ```
 
-A `predicate` is a `QueryExpr`, but shouldn be evaluated to a boolean.
+A `predicate` is a `QueryExpr`, but should be evaluated to a boolean.
 
 A `mapping`  is a `QueryExpr`, but shouldn't be evaluated to a nothing.
 
@@ -71,7 +71,7 @@ FYI, here're some valid instances about `selector`.
 
 ```
 _.foo,
-_.(!1),
+_.1,
 _.(startswith("bar"), !endswith("foo")),
 x + _.foo,
 let y = _.foo + y; y + _.(2) end
