@@ -244,3 +244,15 @@ struct TestGH end
     end
 
 end
+
+module TestUppercaseCapturing
+    using Test
+    using MLStyle
+    @testset "UppercaseCapturing" begin
+        @use UppercaseCapturing
+
+        @test 2 === @match 1 begin
+            A => A + 1
+        end
+    end
+end

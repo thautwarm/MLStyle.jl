@@ -84,6 +84,7 @@ function def_app_pattern(mod; predicate, rewrite, qualifiers=nothing)
     register_app_pattern(desc, mod)
 end
 
+export mk_app_pattern
 function mk_app_pattern(tag, hd, tl, use_mod)
     if isdefined(use_mod, hd)
         hd = getfield(use_mod, hd)

@@ -1,3 +1,20 @@
+
+module ADTSubTyping
+    using MLStyle
+    using Test
+    abstract type A{a} end
+    abstract type B{a} <: A{a} end
+
+    @testset "adt subtying" begin
+        @data C{A} <: B{A} begin
+            C1(A, Int)
+        end
+
+        @test C1(1, 2) isa C{Int}
+
+    end
+
+end
 @testset "adt" begin
     @testset "adt List" begin
         # 1. define List
@@ -25,7 +42,7 @@
             Divide(fst :: Arith, snd :: Arith)
         end
         # 2. define interfaces
-        function eval_arith(arith :: Arith) 
+        function eval_arith(arith :: Arith)
             @match arith begin
                 Num(v)       => v
                 Add(fst, snd) => eval_arith(fst) + eval_arith(snd)

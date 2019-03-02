@@ -34,4 +34,36 @@
             _ => @error ""
         end
     end
+
+    @testset "custom pattern for given structs" begin
+        struct Interval
+        end
+
+        @active Interval{a, b}(arg) begin
+            a <= arg <= b
+        end
+
+        @use Enum
+
+        @active IsEven(a) begin
+            a % 2 === 0
+        end
+
+        function parity(x)
+            @match x begin
+                IsEven => :even
+                _ => :odd
+            end
+        end
+        @test :even === parity(4)
+        @test :odd === parity(3)
+
+        @test 2 == @match 3 begin
+            Interval{1, 2} => 1
+            Interval{3, 4} => 2
+            Interval{5, 6} => 3
+            Interval{7, 8} => 4
+        end
+
+    end
 end

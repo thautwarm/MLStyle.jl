@@ -3,11 +3,9 @@ uuid = "d8e11817-5142-5d16-987a-aa16d5891078"
 authors = ["thautwarm <twshere@outlook.com>"]
 version = "0.2.7"
 
-[deps]
-
 [extras]
-Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 DataStructures = "864edb3b-99cc-5e75-8d2d-829cb0a9cfe8"
+Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [targets]
 test = ["Test", "DataStructures"]

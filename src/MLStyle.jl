@@ -11,7 +11,7 @@ export Many, Do
 # Active Patterns
 export @active
 # Extensibilities
-export def_pattern_def_app_pattern_def_gapp_pattern_mk_pattern_mk_app_pattern_mk_gapp_pattern
+export def_pattern, def_app_pattern, def_gapp_pattern, mk_pattern, mk_app_pattern, mk_gapp_pattern
 # Exceptions
 export PatternUnsolvedException, InternalException, SyntaxError, UnknownExtension, @syntax_err
 # Syntax Sugars

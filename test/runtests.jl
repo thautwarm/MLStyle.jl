@@ -7,6 +7,7 @@ MODULE = TestModule
 
 @use GADT
 
+include("adt.jl")
 include("MQuery/test.jl")
 include("when.jl")
 include("active_patterns.jl")
@@ -18,7 +19,6 @@ include("gallery/simple.jl")
 include("match.jl")
 include("pattern.jl")
 include("dot_expression.jl")
-include("adt.jl")
 include("typelevel.jl")
 include("untyped_lam.jl")
 include("nothing.jl")

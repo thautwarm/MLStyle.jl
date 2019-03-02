@@ -36,8 +36,8 @@ function data(typ, def_variants, qualifier, mod)
         @match typ begin
            :($typename{$(a...)})       => typename
            :($typename{$(a...)} <: $b) => typename
-           :($typename)                => typename
            :($typename <: $b)          => typename
+           :($(typename :: Symbol))    => typename
         end
 
     mod.eval(:(abstract type $typ end))
@@ -190,24 +190,26 @@ function impl(t, variants :: Expr, mod :: Module)
                         inp_tvars    = [tvars..., fill(nothing, length(gtvars))...] => Vector{Any}
                         fresh_tvars1 = fill(nothing, length(gtvars)) => Vector{Any}
                         fresh_tvars2 = fill(nothing, length(gtvars)) => Vector{Any}
-
+                        tcovs = []
                         for (i, _) in enumerate(gtvars)
                             TAny = mangle(mod)
                             TCov = mangle(mod)
+                            push!(tcovs, TCov)
                             fresh_tvars2[end-i + 1] = :($TCov <: $TAny)
                             fresh_tvars1[end-i + 1] = TAny
                             inp_tvars[end-i + 1] = TAny
                             out_tvars[end-i + 1] = TCov
                         end
-
-                        arg1 = :($Type{$case{$(out_tvars...)}})
+                        tcovs = reverse(tcovs)
                         arg2 = :($VAR :: $case{$(inp_tvars...)})
-                        specialized = :($case{$(out_tvars...)}($(getfields...)))
+                        arg1_cov = :($Type{$case{$(out_tvars...)}})
+                        arg1_abs = :($Type{$t{$(tcovs...)}})
+                        casted = :($case{$(out_tvars...)}($(getfields...)))
                         quote
-                            $Base.convert(::$arg1, $arg2) where {$(tvars...), $(fresh_tvars1...), $(fresh_tvars2...)} = $specialized
+                            $Base.convert(::$arg1_cov, $arg2) where {$(tvars...), $(fresh_tvars1...), $(fresh_tvars2...)} = $casted
+                            $Base.convert(::$arg1_abs, $arg2) where {$(tvars...), $(fresh_tvars1...), $(fresh_tvars2...)} = $casted
                         end
                     end
-
 
             definition_head = :($case{$(tvars...), $(gtvars...)})
             def_cons =

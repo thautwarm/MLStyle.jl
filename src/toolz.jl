@@ -47,9 +47,4 @@ forM(k, xs) =
 
 # AST manipulation
 isCapitalized(s :: AbstractString) :: Bool = !isempty(s) && isuppercase(s[1])
-
-isCase(sym  :: Symbol) = isCapitalized ∘ string $ sym
-isCase(expr :: Expr)   = expr.head === :(curly) && isCase(expr.args[1])
-isCase(_) = false
-
 end

@@ -51,6 +51,19 @@ end
 # => 2
 ```
 
+Note that, by default only symbols given in lower case could be used as capturing.
+
+If you prefer to capture via upper case symbols, you can enable this feature via
+
+```julia
+@use UppercaseCapturing
+```
+
+Extension `UppercaseCapturing` conflicts with `Enum`.
+
+Any questions about `Enum`, check [Active Patterns](#Active-Pattern-1).
+
+
 Type Pattern
 -----------------
 
@@ -369,13 +382,56 @@ The second is the parametric version.
 
 ```julia
 @active Re{r :: Regex}(x) begin
-    match(r, x)
+    res = match(r, x)
+    if res !== nothing
+        # use explicit `if-else` to emphasize the return should be Union{T, Nothing}.
+        res
+    else
+        nothing
+    end
 end
 
 @match "123" begin
     Re{r"\d+"}(x) => x
     _ => @error ""
 end # RegexMatch("123")
+
+
+@active IsEven(x) begin
+    if x % 2 === 0
+        # use explicit `if-else` to emphasize the return should be true/false.
+        true
+    else
+        false
+    end
+end
+
+@match 4 begin
+    IsEven() => :even
+    _ => :odd
+end # :even
+
+@match 3 begin
+    IsEven() => :even
+    _ => :odd
+end # :odd
+```
+
+Note that the pattern `A{a, b, c}` is equivalent to `A{a, b, c}()`.
+
+When enabling the extension `Enum` with `@use Enum`, the pattern `A` is equivalent to `A()`:
+
+```julia
+@use Enum
+@match 4 begin
+    IsEven => :even
+    _ => :odd
+end # :even
+
+@match 3 begin
+    IsEven => :even
+    _ => :odd
+end # :odd
 ```
 
 Expr Pattern

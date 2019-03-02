@@ -122,30 +122,44 @@ macro active(case, active_body)
         :($(case_name :: Symbol){$(idents...)}($param)) => (case_name, idents, param)
     end
     TARGET = mangle(mod)
-    mod.eval(quote struct $case_name end end)
+
+    if !isdefined(mod, case_name)
+        mod.eval(quote struct $case_name end end)
+    end
+
     case_obj = getfield(mod, case_name)
     if IDENTS === nothing
         def_app_pattern(mod,
             predicate = (hd_obj, args) -> hd_obj === case_obj,
             rewrite = (tag, hd_obj, args, mod) -> begin
-                arg = length(args) == 1 ? args[1] : Expr(:tuple, args...)
+
+                (test_var, pat) = @match length(args) begin
+                    0 => (false, true)
+                    1 => (nothing, args[1])
+                    _ => (nothing, Expr(:tuple, args...))
+                end
+
                 function (body)
-                    @format [tag, param, TARGET, active_body, body] quote
+                    @format [tag, test_var, param, TARGET, active_body, body] quote
                         let  TARGET =
                             let param = tag
                                 active_body
                             end
-                            TARGET === nothing ?  failed : body
+                            TARGET === test_var ?  failed : body
                         end
                     end
-                end ∘ mk_pattern(TARGET, arg, mod)
+                end ∘ mk_pattern(TARGET, pat, mod)
         end)
     else
         n_idents = length(IDENTS)
         def_gapp_pattern(mod,
             predicate = (spec_vars, hd_obj, args) -> hd_obj === case_obj && length(spec_vars) === n_idents,
             rewrite   = (tag, forall, spec_vars, hd_obj, args, mod) -> begin
-                arg = length(args) == 1 ? args[1] : Expr(:tuple, args...)
+                (test_var, pat) = @match length(args) begin
+                    0 => (false, true)
+                    1 => (nothing, args[1])
+                    _ => (nothing, Expr(:tuple, args...))
+                end
                 assign_elts_and_active_body =
                     let arr = [:($IDENT = $(spec_vars[i]))
                                 for (i, IDENT)
@@ -153,15 +167,15 @@ macro active(case, active_body)
                         Expr(:let, Expr(:block, arr...), Expr(:block, active_body))
                     end
                 function (body)
-                    @format [tag, param, TARGET, assign_elts_and_active_body, body] quote
+                    @format [tag, test_var, param, TARGET, assign_elts_and_active_body, body] quote
                         let TARGET =
                             let param = tag
                                 assign_elts_and_active_body
                             end
-                            TARGET === nothing ?  failed : body
+                            TARGET === test_var ?  failed : body
                         end
                     end
-                end ∘ mk_pattern(TARGET, arg, mod)
+                end ∘ mk_pattern(TARGET, pat, mod)
         end)
     end
     nothing

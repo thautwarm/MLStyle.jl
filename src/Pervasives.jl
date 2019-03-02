@@ -3,7 +3,7 @@ using MLStyle.MatchCore
 using MLStyle.Infras
 using MLStyle.Extension
 using MLStyle.Err
-using MLStyle.toolz: ($), isCase
+using MLStyle.toolz: ($)
 
 import MLStyle.Infras: mk_gapp_pattern
 
@@ -68,10 +68,11 @@ def_pattern(Pervasives,
         rewrite = mk_pat_by(===)
 )
 
-to_capture(s)::Bool = !isempty(s) && islowercase(s[1])
+islower(s)::Bool = !isempty(s) && islowercase(s[1])
+isupper(s)::Bool = !isempty(s) && isuppercase(s[1])
 
 def_pattern(Pervasives,
-        predicate = x -> x isa Symbol && to_capture ∘ string $ x,
+        predicate = x -> x isa Symbol && islower ∘ string $ x,
         rewrite = (tag, case, mod) -> body ->
         @format [case, tag, body] quote
             let case = tag
@@ -82,10 +83,25 @@ def_pattern(Pervasives,
 
 # Not decided yet about capitalized symbol's semantics, for generic enum is impossible in Julia.
 def_pattern(Pervasives,
-        predicate = isCase,
-        rewrite = (tag, case, mod) -> begin
-            @error "Uppercase symbol is reserved for further usage(mainly for generic enum types)."
+        predicate = x -> x isa Symbol && isupper ∘ string $ x,
+        rewrite = (tag, case, mod) ->
+        if used(:Enum, mod)
+            mk_app_pattern(tag, case, [], mod)
+        elseif used(:UppercaseCapturing, mod)
+            body ->
+            @format [case, tag, body] quote
+                let case = tag
+                    body
+                end
+            end
+        else
+            @syntax_err "You should use extension `Enum` or `UppercaseCapturing` to specify the behaviour of $(string(case))."
         end
+)
+
+def_pattern(Pervasives,
+    predicate = x -> x isa Expr && x.head === :curly,
+    rewrite = (tag, case, mod) -> mk_gapp_pattern(tag, [], case, [], mod)
 )
 
 def_pattern(Pervasives,
