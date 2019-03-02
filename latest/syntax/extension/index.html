@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>MLStyle Extension List · MLStyle.jl</title><script>(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-89508993-1', 'auto');
+ga('send', 'pageview');
+</script><link href="https://cdnjs.cloudflare.com/ajax/libs/normalize/4.2.0/normalize.min.css" rel="stylesheet" type="text/css"/><link href="https://fonts.googleapis.com/css?family=Lato|Roboto+Mono" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.2.0/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link href="../../assets/documenter.css" rel="stylesheet" type="text/css"/></head><body><nav class="toc"><h1>MLStyle.jl</h1><select id="version-selector" onChange="window.location.href=this.value" style="visibility: hidden"></select><form class="search" id="search-form" action="../../search/"><input id="search-query" name="q" type="text" placeholder="Search docs"/></form><ul><li><a class="toctext" href="../../">Home</a></li><li><span class="toctext">Syntax</span><ul><li><a class="toctext" href="../adt/">Algebraic Data Types</a></li><li><a class="toctext" href="../pattern/">Pattern</a></li><li><a class="toctext" href="../pattern-function/">Pattern function</a></li><li><a class="toctext" href="../when/">When Destructuring</a></li><li class="current"><a class="toctext" href>MLStyle Extension List</a><ul class="internal"><li><a class="toctext" href="#GADT-1">GADT</a></li><li><a class="toctext" href="#UppercaseCapturing-1">UppercaseCapturing</a></li><li><a class="toctext" href="#Enum-1">Enum</a></li></ul></li></ul></li><li><span class="toctext">Tutorials</span><ul><li><a class="toctext" href="../../tutorials/capture/">Static Capturing</a></li><li><a class="toctext" href="../../tutorials/query-lang/">Write You A Query Language</a></li></ul></li></ul></nav><article id="docs"><header><nav><ul><li>Syntax</li><li><a href>MLStyle Extension List</a></li></ul><a class="edit-page" href="https://github.com/thautwarm/MLStyle.jl/blob/master/docs/src/syntax/extension.md"><span class="fa"></span> Edit on GitHub</a></nav><hr/><div id="topbar"><span>MLStyle Extension List</span><a class="fa fa-bars" href="#"></a></div></header><h1><a class="nav-anchor" id="MLStyle-Extension-List-1" href="#MLStyle-Extension-List-1">MLStyle Extension List</a></h1><h2><a class="nav-anchor" id="GADT-1" href="#GADT-1">GADT</a></h2><ul><li><p>Description: Introduce generic(and implicit) type variables in pattern matching when destructuring data types.</p></li><li><p>Conflicts: nothing</p></li><li><p>Example:</p></li></ul><pre><code class="language-julia">@use GADT
+
+@data S{G} begin
+    S1{T} :: T =&gt; S{G} where G
+end
+
+let x :: S{String} = S1(2)
+    @match x begin
+        S1{T}(a) where T &lt;: Number =&gt; show(a + 1)
+        _ =&gt; show(&quot;failed&quot;)
+    end
+end</code></pre><p>outputs</p><pre><code class="language-none">3</code></pre><h2><a class="nav-anchor" id="UppercaseCapturing-1" href="#UppercaseCapturing-1">UppercaseCapturing</a></h2><ul><li><p>Description: By default, uppercase symbols cannot be used as patterns for its ambiguous semantics. If you prefer capturing via uppercase symbols, use <code>UppercaseCapturing</code>.</p></li><li><p>Conflicts: <code>Enum</code></p></li><li><p>Example:</p></li></ul><pre><code class="language-julia">@use UppercaseCapturing
+
+@match 1 begin
+    A =&gt; A + 1
+end</code></pre><p>outputs:</p><pre><code class="language-none">2</code></pre><h2><a class="nav-anchor" id="Enum-1" href="#Enum-1">Enum</a></h2><ul><li>Description: By default, uppercase symbols cannot be used as patterns for its ambiguous semantics. If you prefer replacing patterns like <code>S()</code> with <code>S</code>, use <code>Enum</code>.</li></ul><ul><li>Conflicts: <code>UppercaseCapturing</code></li><li>Example:</li></ul><pre><code class="language-julia">@use Enum
+@data A begin
+    A1()
+    A2()
+end
+
+@match A1() begin
+    A1 =&gt; 1
+    _ =&gt; 2
+end
+# output: 1
+
+@active IsEven(x) begin
+    x % 2 === 0
+end
+@match 4 begin
+    IsEven =&gt; :ok
+    _ =&gt; :err
+end
+# output: :ok</code></pre><footer><hr/><a class="previous" href="../when/"><span class="direction">Previous</span><span class="title">When Destructuring</span></a><a class="next" href="../../tutorials/capture/"><span class="direction">Next</span><span class="title">Static Capturing</span></a></footer></article></body></html>
