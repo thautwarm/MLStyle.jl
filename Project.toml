@@ -1,7 +1,7 @@
 name = "MLStyle"
 uuid = "d8e11817-5142-5d16-987a-aa16d5891078"
 authors = ["thautwarm <twshere@outlook.com>"]
-version = "0.2.7"
+version = "0.2.8"
 
 [extras]
 DataStructures = "864edb3b-99cc-5e75-8d2d-829cb0a9cfe8"
