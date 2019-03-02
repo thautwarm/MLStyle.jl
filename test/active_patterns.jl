@@ -36,8 +36,8 @@
     end
 
     @testset "custom pattern for given structs" begin
-        struct Interval
-        end
+        
+        @eval struct Interval end
 
         @active Interval{a, b}(arg) begin
             a <= arg <= b
