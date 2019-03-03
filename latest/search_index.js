@@ -21,7 +21,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Home",
     "title": "What\'s MLStyle.jl?",
     "category": "section",
-    "text": "MLStyle.jl is a Julia package that provides multiple productivity tools from ML(Meta Language) like pattern matching that\'re statically generated and extensible, ADTs/GADTs(Algebraic Data Type, Generalized Algebraic Data Type) and Active Patterns.If you still have problems with the scoping of MLStyle.jl, treat it as FP.jl."
+    "text": "MLStyle.jl is a Julia package that provides multiple productivity tools from ML(Meta Language) like statically generated and extensible pattern matching, ADTs/GADTs(Algebraic Data Type, Generalized Algebraic Data Type) and Active Patterns.If you still have problems with the scoping of MLStyle.jl, treat it as FP.jl."
 },
 
 {
@@ -357,7 +357,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Pattern function",
     "title": "Pattern function",
     "category": "section",
-    "text": "Pattern function is a convenient way to define a function with multiple entries.f = @λ begin\r\n    # patterns here\r\n    x                  -> 1\r\n    (x, (1, 2)) &&\r\n        if x > 3 end   -> 5\r\n    (x, y)             -> 2\r\n    ::String           -> \"is string\"\r\n    _                  -> \"is any\"\r\nend\r\nf(1) # => 1\r\nf((4, (1, 2))) # => 5\r\nf((1, (1, 2))) # => 2\r\nf(\"\") # => \"is string\"Also, sometimes you might want to pass a single lambda which just matches the argument in one means:map((@λ [a, b, c...] -> c), [[1, 2, 3, 4], [1, 2]])\r\n# => 2-element Array{SubArray{Int64,1,Array{Int64,1},Tuple{UnitRange{Int64}},true},1}:\r\n#    [3, 4]\r\n#    []Functionally, A pattern function is no more than using a @match inside some anonymous function.\r\nfunction (x)\r\n    @match x begin\r\n        pat1 => body1\r\n        pat2 => body2\r\n    end\r\nend\r\n"
+    "text": "Pattern function is a convenient way to define a function with multiple entries.f = @λ begin\r\n    # patterns here\r\n    x                  -> 1\r\n    ((x, (1, 2)) &&\r\n        if x > 3 end)  -> 5\r\n    (x, y)             -> 2\r\n    ::String           -> \"is string\"\r\n    _                  -> \"is any\"\r\nend\r\nf(1) # => 1\r\nf((4, (1, 2))) # => 5\r\nf((1, (1, 2))) # => 2\r\nf(\"\") # => \"is string\"Also, sometimes you might want to pass a single lambda which just matches the argument in one means:map((@λ [a, b, c...] -> c), [[1, 2, 3, 4], [1, 2]])\r\n# => 2-element Array{SubArray{Int64,1,Array{Int64,1},Tuple{UnitRange{Int64}},true},1}:\r\n#    [3, 4]\r\n#    []Functionally, A pattern function is no more than using a @match inside some anonymous function.\r\nfunction (x)\r\n    @match x begin\r\n        pat1 => body1\r\n        pat2 => body2\r\n    end\r\nend\r\n"
 },
 
 {
