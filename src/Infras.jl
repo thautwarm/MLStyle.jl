@@ -1,4 +1,5 @@
 module Infras
+using MLStyle
 using MLStyle.MatchCore
 using MLStyle.Extension
 using MLStyle.Err
@@ -8,7 +9,7 @@ using MLStyle.Render: render, format
 export @format
 macro format(args, template)
     __L__ = @__LINE__
-    args = Expr(:vect, :__L__ => __L__, :failed => failed, args.args...)
+    args = Expr(:vect, :__L__ => __L__, :failed => :($MLStyle.failed), args.args...)
     esc(format(args, template))
 end
 

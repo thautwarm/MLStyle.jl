@@ -9,7 +9,7 @@ MLStyle.jl
 
 ## What's MLStyle.jl?
 
-MLStyle.jl is a Julia package that provides multiple productivity tools from ML([Meta Language](https://en.wikipedia.org/wiki/ML_(programming_language))) like [pattern matching](https://en.wikipedia.org/wiki/Pattern_matching) that're statically generated and extensible, ADTs/GADTs([Algebraic Data Type](https://en.wikipedia.org/wiki/Algebraic_data_type), [Generalized Algebraic Data Type](https://en.wikipedia.org/wiki/Generalized_algebraic_data_type)) and [Active Patterns](https://docs.microsoft.com/en-us/dotnet/fsharp/language-reference/active-patterns).
+MLStyle.jl is a Julia package that provides multiple productivity tools from ML([Meta Language](https://en.wikipedia.org/wiki/ML_(programming_language))) like statically generated and extensible [pattern matching](https://en.wikipedia.org/wiki/Pattern_matching), ADTs/GADTs([Algebraic Data Type](https://en.wikipedia.org/wiki/Algebraic_data_type), [Generalized Algebraic Data Type](https://en.wikipedia.org/wiki/Generalized_algebraic_data_type)) and [Active Patterns](https://docs.microsoft.com/en-us/dotnet/fsharp/language-reference/active-patterns).
 
 If you still have problems with the scoping of MLStyle.jl, treat it as **FP.jl**.
 
