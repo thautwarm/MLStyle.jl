@@ -1,19 +1,30 @@
 using MLStyle
 
-# @testset "base" begin
-# @test @match Expr(:call, :f, :a) begin
-#     Expr(:call, tail...) => collect(tail) == [:f, :a]
-# end
-# end
 
-# @testset "expr template" begin
-# ast = :(f(a, b))
+rmlines = @λ begin
+    e :: Expr           -> Expr(e.head, filter(x -> x !== nothing, map(rmlines, e.args))...)
+      :: LineNumberNode -> nothing
+    a                   -> a
+end
 
-# @test @match Expr(:call, :f, :a, :b) begin
-#   esc($f($a, $b)) => (a, b) == (:a, :b)
-# end
-# end
+macroexpand(@__MODULE__, :(@match 1 begin
+        1 => 1
+end)) |> rmlines
 
+
+@testset "call / expr" begin
+@test @match Expr(:call, :f, :a) begin
+    Expr(:call, tail...) => collect(tail) == [:f, :a]
+end
+end
+
+@testset "call / ast" begin
+ast = :(f(a, b))
+
+@test @match Expr(:call, :f, :a, :b) begin
+  :($f($a, $b)) => (a, b) == (:a, :b)
+end
+end
 
 
 @testset "Ast Pattern" begin

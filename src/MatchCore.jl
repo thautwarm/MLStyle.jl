@@ -242,12 +242,12 @@ function mk_match_body(target, tag_sym, cbl, mod)
                result,
                expr,
                loc,
-               failed,
+               MatchCore,
                last
            ] quote
               loc
               result = expr
-              result === failed ? last : result
+              result === $MatchCore.failed ? last : result
            end
        end  # end 2
     return! $ @format [tag_sym, target, main_logic] quote
