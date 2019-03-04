@@ -434,6 +434,8 @@ end # :even
 end # :odd
 ```
 
+Finally, you can customize the visibility of your own active patterns by giving it a qualifier.
+
 Expr Pattern
 -------------------
 

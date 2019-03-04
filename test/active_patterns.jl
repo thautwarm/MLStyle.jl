@@ -36,16 +36,15 @@
     end
 
     @testset "custom pattern for given structs" begin
-        
         @eval struct Interval end
 
-        @active Interval{a, b}(arg) begin
+        @active internal Interval{a, b}(arg) begin
             a <= arg <= b
         end
 
         @use Enum
 
-        @active IsEven(a) begin
+        @active visible in (@__MODULE__) IsEven(a) begin
             a % 2 === 0
         end
 

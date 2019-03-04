@@ -1,11 +1,14 @@
 module Qualification
 using MLStyle.MatchCore
+using MLStyle.Pervasives
 
-export get_qualifier 
-get_qualifier(node, mod) =
+export get_qualifier
+get_qualifier(node, curmod) =
     @match node begin
         :public   => invasive
         :internal => internal
-        :(visible in [$(mods...)]) => share_with(Set(map(mod.eval, mods)))
+        :(visible in [$(mods...)]) ||
+        :(visible in $mod) && Do(mods = [mod]) =>
+            share_with(Set(map(curmod.eval, mods)))
     end
 end

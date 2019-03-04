@@ -26,6 +26,7 @@ makedocs(
             "syntax/pattern-function.md",
             "syntax/when.md",
             "syntax/extension.md",
+            "syntax/qualifier.md"
         ],
         "Tutorials" => Any[
             "tutorials/capture.md",
