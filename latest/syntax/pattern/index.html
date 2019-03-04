@@ -114,7 +114,18 @@ function my_data_query(data_lst :: Vector{Cutural})
     end
 end
 my_data_query([神农架, Yellostone])
-...</code></pre><ul><li>About GADTs</li></ul><pre><code class="language-julia">@use GADT
+...</code></pre><ul><li>Support destructuring Julia types defined regularly</li></ul><pre><code class="language-julia">struct A
+    a
+    b
+    c
+end
+
+# allow `A` to be destructured as datatypes in current module.
+@as_record internal A
+
+@match A(1, 2, 3) begin
+    A(1, 2, 3) =&gt; ...
+end</code></pre><ul><li>About GADTs</li></ul><pre><code class="language-julia">@use GADT
 
 @data internal Example{T} begin
     A{T} :: (Int, T) =&gt; Example{Tuple{Int, T}}
@@ -301,4 +312,4 @@ end
               :other_bindings =&gt; other_bindings,
               :app_fn         =&gt; app_fn,
               :app_arg        =&gt; app_arg)
-end</code></pre><p>Here is an article about this <a href="https://discourse.julialang.org/t/an-elegant-and-efficient-way-to-extract-something-from-asts/19123">Ast Pattern</a>.</p><footer><hr/><a class="previous" href="../adt/"><span class="direction">Previous</span><span class="title">Algebraic Data Types</span></a><a class="next" href="../pattern-function/"><span class="direction">Next</span><span class="title">Pattern function</span></a></footer></article></body></html>
+end</code></pre><p>Here is several articles about Ast Patterns.</p><ul><li><a href="https://www.reddit.com/r/Julia/comments/ap4xwr/mlstylejl_a_modern_way_to_manipulate_asts/">A Modern Way to Manipulate ASTs</a>.</li></ul><ul><li><a href="https://discourse.julialang.org/t/an-elegant-and-efficient-way-to-extract-something-from-asts/19123">An Elegant and Efficient Way to Extract Something from ASTs</a>.</li></ul><footer><hr/><a class="previous" href="../adt/"><span class="direction">Previous</span><span class="title">Algebraic Data Types</span></a><a class="next" href="../pattern-function/"><span class="direction">Next</span><span class="title">Pattern function</span></a></footer></article></body></html>
