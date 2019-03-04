@@ -38,6 +38,7 @@ using MLStyle.Infras
 include("Pervasives.jl")
 using MLStyle.Pervasives
 
+include("Qualification.jl")
 
 include("StandardPatterns.jl")
 using MLStyle.StandardPatterns

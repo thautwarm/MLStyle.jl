@@ -2,6 +2,7 @@ module DataType
 using MLStyle
 using MLStyle.Toolz: isCapitalized, ($), cons, nil
 using MLStyle.MatchCore
+using MLStyle.Qualification
 using MLStyle.Infras
 using MLStyle.Pervasives
 using MLStyle.Render: render
@@ -31,7 +32,7 @@ function get_tvars(t :: Union)
    nil()
 end
 
-function data(typ, def_variants, qualifier, mod)
+function data(typ, def_variants, qualifier_ast, mod)
     typename =
         @match typ begin
            :($typename{$(a...)})       => typename
@@ -48,17 +49,7 @@ function data(typ, def_variants, qualifier, mod)
     for (ctor_name, pairs, each) in impl(original_ty, def_variants, mod)
         mod.eval(each)
         ctor = getfield(mod, ctor_name)
-        export_anchor_var = Symbol("MLStyle.ADTConstructor.", ctor_name)
-        mod.eval(@format [export_anchor_var] quote
-                     export export_anchor_var
-                     export_anchor_var = true
-                 end)
-        qualifier_ =
-            @match qualifier begin
-                :public   => share_through(export_anchor_var, true)
-                :internal => internal
-                :(visible in [$(mods...)]) => share_with(Set(map(mod.eval, mods)))
-            end
+        qualifier = get_qualifier(qualifier_ast, mod)
         n_destructor_args = length(pairs)
 
         mk_match(tag, hd_obj, destruct_fields, mod) = begin
@@ -116,7 +107,7 @@ function data(typ, def_variants, qualifier, mod)
                         TARGET, match_fields = mk_match(tag, hd_obj, destruct_fields, mod)
                         (@typed_as hd_obj) ∘ match_fields
                       end,
-                      qualifiers = Set([qualifier_]))
+                      qualifiers = Set([qualifier]))
 
 
         # GADT syntax support!!!
@@ -142,7 +133,7 @@ function data(typ, def_variants, qualifier, mod)
                             end
                         end ∘ match_fields
                       end,
-                      qualifiers = Set([qualifier_]))
+                      qualifiers = Set([qualifier]))
     end
     nothing
 end

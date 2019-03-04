@@ -71,7 +71,6 @@ export internal, invasive, share_with, share_through
 internal = (my_mod, umod) -> my_mod === umod
 invasive = (my_mod, umod) -> true
 share_with(ms::Set{Module}) = (_, umod) -> umod in ms
-share_through(symbol, value) = (_, umod) -> isdefined(umod, symbol) && getfield(umod, symbol) === true
 
 export qualifier_test
 function qualifier_test(qualifiers :: Set{Qualifier}, use_mod, def_mod)
