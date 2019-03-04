@@ -11,10 +11,11 @@ export Many, Do
 # Active Patterns
 export @active
 # Extensibilities
-export def_pattern, def_app_pattern, def_gapp_pattern, mk_pattern, mk_app_pattern, mk_gapp_pattern
+export def_pattern, def_app_pattern, def_gapp_pattern, mk_pattern, mk_app_pattern, mk_gapp_pattern, def_record, def_active_pattern
 # Exceptions
 export PatternUnsolvedException, InternalException, SyntaxError, UnknownExtension, @syntax_err
 # Syntax Sugars
+export @as_record
 export @λ, gen_lambda
 export @when, gen_when
 
@@ -42,6 +43,9 @@ include("Qualification.jl")
 
 include("StandardPatterns.jl")
 using MLStyle.StandardPatterns
+
+include("Record.jl")
+using MLStyle.Record
 
 include("DataType.jl")
 using MLStyle.DataType

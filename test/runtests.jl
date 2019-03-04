@@ -7,6 +7,7 @@ MODULE = TestModule
 
 @use GADT
 
+include("as_record.jl")
 include("adt.jl")
 include("MQuery/test.jl")
 include("when.jl")

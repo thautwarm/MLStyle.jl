@@ -269,6 +269,23 @@ my_data_query([神农架, Yellostone])
 ...
 ```
 
+- Support destructuring Julia types defined regularly
+
+```julia
+struct A
+    a
+    b
+    c
+end
+
+# allow `A` to be destructured as datatypes in current module.
+@as_record internal A
+
+@match A(1, 2, 3) begin
+    A(1, 2, 3) => ...
+end
+```
+
 - About GADTs
 
 ```julia
@@ -549,4 +566,10 @@ end
 ```
 
 
-Here is an article about this [Ast Pattern](https://discourse.julialang.org/t/an-elegant-and-efficient-way-to-extract-something-from-asts/19123).
+Here is several articles about Ast Patterns.
+
+- [A Modern Way to Manipulate ASTs](https://www.reddit.com/r/Julia/comments/ap4xwr/mlstylejl_a_modern_way_to_manipulate_asts/).
+
+- [An Elegant and Efficient Way to Extract Something from ASTs](https://discourse.julialang.org/t/an-elegant-and-efficient-way-to-extract-something-from-asts/19123).
+
+
