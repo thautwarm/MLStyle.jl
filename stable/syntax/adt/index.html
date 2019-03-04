@@ -6,7 +6,7 @@ m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
 
 ga('create', 'UA-89508993-1', 'auto');
 ga('send', 'pageview');
-</script><link href="https://cdnjs.cloudflare.com/ajax/libs/normalize/4.2.0/normalize.min.css" rel="stylesheet" type="text/css"/><link href="https://fonts.googleapis.com/css?family=Lato|Roboto+Mono" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.2.0/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link href="../../assets/documenter.css" rel="stylesheet" type="text/css"/></head><body><nav class="toc"><h1>MLStyle.jl</h1><select id="version-selector" onChange="window.location.href=this.value" style="visibility: hidden"></select><form class="search" id="search-form" action="../../search/"><input id="search-query" name="q" type="text" placeholder="Search docs"/></form><ul><li><a class="toctext" href="../../">Home</a></li><li><span class="toctext">Syntax</span><ul><li class="current"><a class="toctext" href>Algebraic Data Types</a><ul class="internal"><li><a class="toctext" href="#Syntax-1">Syntax</a></li><li><a class="toctext" href="#Qualifier-1">Qualifier</a></li><li><a class="toctext" href="#Example:-Describe-arithmetic-operations-1">Example: Describe arithmetic operations</a></li><li><a class="toctext" href="#Generalized-ADT-1">Generalized ADT</a></li></ul></li><li><a class="toctext" href="../pattern/">Pattern</a></li><li><a class="toctext" href="../pattern-function/">Pattern function</a></li><li><a class="toctext" href="../when/">When Destructuring</a></li></ul></li><li><span class="toctext">Tutorials</span><ul><li><a class="toctext" href="../../tutorials/capture/">Static Capturing</a></li><li><a class="toctext" href="../../tutorials/query-lang/">Write You A Query Language</a></li></ul></li></ul></nav><article id="docs"><header><nav><ul><li>Syntax</li><li><a href>Algebraic Data Types</a></li></ul><a class="edit-page" href="https://github.com/thautwarm/MLStyle.jl/blob/master/docs/src/syntax/adt.md"><span class="fa"></span> Edit on GitHub</a></nav><hr/><div id="topbar"><span>Algebraic Data Types</span><a class="fa fa-bars" href="#"></a></div></header><h1><a class="nav-anchor" id="Algebraic-Data-Types-1" href="#Algebraic-Data-Types-1">Algebraic Data Types</a></h1><h2><a class="nav-anchor" id="Syntax-1" href="#Syntax-1">Syntax</a></h2><pre><code class="language-none">
+</script><link href="https://cdnjs.cloudflare.com/ajax/libs/normalize/4.2.0/normalize.min.css" rel="stylesheet" type="text/css"/><link href="https://fonts.googleapis.com/css?family=Lato|Roboto+Mono" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.2.0/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link href="../../assets/documenter.css" rel="stylesheet" type="text/css"/></head><body><nav class="toc"><h1>MLStyle.jl</h1><select id="version-selector" onChange="window.location.href=this.value" style="visibility: hidden"></select><form class="search" id="search-form" action="../../search/"><input id="search-query" name="q" type="text" placeholder="Search docs"/></form><ul><li><a class="toctext" href="../../">Home</a></li><li><span class="toctext">Syntax</span><ul><li class="current"><a class="toctext" href>Algebraic Data Types</a><ul class="internal"><li><a class="toctext" href="#Syntax-1">Syntax</a></li><li><a class="toctext" href="#Qualifier-1">Qualifier</a></li><li><a class="toctext" href="#Example:-Describe-arithmetic-operations-1">Example: Describe arithmetic operations</a></li><li><a class="toctext" href="#Generalized-ADT-1">Generalized ADT</a></li><li><a class="toctext" href="#Implicit-Type-Variables-of-Generalized-ADT-1">Implicit Type Variables of Generalized ADT</a></li></ul></li><li><a class="toctext" href="../pattern/">Pattern</a></li><li><a class="toctext" href="../pattern-function/">Pattern function</a></li><li><a class="toctext" href="../when/">When Destructuring</a></li><li><a class="toctext" href="../extension/">MLStyle Extension List</a></li><li><a class="toctext" href="../qualifier/">Pattern Scoping Qualifier</a></li></ul></li><li><span class="toctext">Tutorials</span><ul><li><a class="toctext" href="../../tutorials/capture/">Static Capturing</a></li><li><a class="toctext" href="../../tutorials/query-lang/">Write You A Query Language</a></li></ul></li></ul></nav><article id="docs"><header><nav><ul><li>Syntax</li><li><a href>Algebraic Data Types</a></li></ul><a class="edit-page" href="https://github.com/thautwarm/MLStyle.jl/blob/master/docs/src/syntax/adt.md"><span class="fa"></span> Edit on GitHub</a></nav><hr/><div id="topbar"><span>Algebraic Data Types</span><a class="fa fa-bars" href="#"></a></div></header><h1><a class="nav-anchor" id="Algebraic-Data-Types-1" href="#Algebraic-Data-Types-1">Algebraic Data Types</a></h1><h2><a class="nav-anchor" id="Syntax-1" href="#Syntax-1">Syntax</a></h2><pre><code class="language-none">
 &lt;Seq&gt; a         = a (&#39;,&#39; a)*
 &lt;TypeName&gt;      = %Uppercase identifier%
 &lt;fieldname&gt;     = %Lowercase identifier%
@@ -26,7 +26,7 @@ ga('send', 'pageview');
     &#39;end&#39;
 
 &lt;GADT&gt;           =
-    &#39;@data&#39; [&#39;public&#39; | &#39;internal&#39;] &lt;Type&gt; &#39;begin&#39;
+    &#39;@data&#39; [&#39;public&#39; | &#39;internal&#39; | &#39;visible&#39; &#39;in&#39; &lt;Seq Module&gt;] &lt;Type&gt; &#39;begin&#39;
 
         (&lt;ConsName&gt;[{&lt;Seq TVar&gt;}] &#39;::&#39;
            ( &#39;(&#39;
@@ -39,7 +39,29 @@ ga('send', 'pageview');
         )*
 
     &#39;end&#39;
-</code></pre><h2><a class="nav-anchor" id="Qualifier-1" href="#Qualifier-1">Qualifier</a></h2><p>There are 3 default qualifiers for ADT definition:</p><ul><li><code>internal</code>: The pattern created by the ADT can only be used in the module it&#39;s defined in.</li><li><code>public</code>: If the constructor is imported into current module, the corresponding pattern will be available.</li><li><code>visible in [mod...]</code>: Define a set of modules where the pattern is available.</li></ul><h2><a class="nav-anchor" id="Example:-Describe-arithmetic-operations-1" href="#Example:-Describe-arithmetic-operations-1">Example: Describe arithmetic operations</a></h2><pre><code class="language-julia">using MLStyle
+</code></pre><p>Examples:</p><pre><code class="language-julia">
+@data internal A begin
+    A1(Int, Int)
+    A2(a :: Int, b :: Int)
+    A3(a, b) # equals to `A3(a::Any, b::Any)`
+end
+
+@data B{T} begin
+    B1(T, Int)
+    B2(a :: T)
+end
+
+@data visible in MyModule C{T} begin
+    C1(T)
+    C2{A} :: Vector{A} =&gt; C{A}
+end
+
+abstract type DD end
+@data visible in [Main, Base, Core] D{T} &lt;: DD begin
+    D1 :: Int =&gt; D{T} where T # implicit type vars
+    D2{A, B} :: (A, B, Int) =&gt; D{Tuple{A, B}}
+    D3{A} :: A =&gt; D{Array{A, N}} where N # implicit type vars
+end</code></pre><h2><a class="nav-anchor" id="Qualifier-1" href="#Qualifier-1">Qualifier</a></h2><p>There are 3 default qualifiers for ADT definition:</p><ul><li><code>internal</code>: The pattern created by the ADT can only be used in the module it&#39;s defined in.</li><li><code>public</code>: If the constructor is imported into current module, the corresponding pattern will be available.</li><li><code>visible in [mod...]</code>: Define a set of modules where the pattern is available.</li></ul><h2><a class="nav-anchor" id="Example:-Describe-arithmetic-operations-1" href="#Example:-Describe-arithmetic-operations-1">Example: Describe arithmetic operations</a></h2><pre><code class="language-julia">using MLStyle
 @data internal Arith begin
     Number(Int)
     Minus(Arith, Arith)
@@ -63,7 +85,7 @@ eval_arith(
         Divide(Number(20),
                Mult(Number(2),
                     Number(5)))))
-# =&gt; 0</code></pre><h2><a class="nav-anchor" id="Generalized-ADT-1" href="#Generalized-ADT-1">Generalized ADT</a></h2><p>Note that, for GADTs would use <code>where</code> syntax as a pattern, it means that you cannot use GADTs and your custom <code>where</code> patterns at the same time. To resolve this, we introduce the extension system like Haskell here.</p><p>Since that you can define your own <code>where</code> pattern and export it to any modules. Given an arbitrary Julia module, if you don&#39;t use <code>@use GADT</code> to enable GADT extensions and, the qualifier of the your <code>where</code> pattern makes it visible here(current module), your own <code>where</code> pattern could work here.</p><p>Here&#39;s a simple intepreter implemented using GADTs.</p><p>Firstly, enable GADT extension.</p><pre><code class="language-julia">using MLStyle
+# =&gt; 0</code></pre><h2><a class="nav-anchor" id="Generalized-ADT-1" href="#Generalized-ADT-1">Generalized ADT</a></h2><p>Note that, for GADTs would use <code>where</code> syntax as a pattern, it means that you cannot use GADTs and your custom <code>where</code> patterns at the same time. To resolve this, we introduce the extension system like Haskell here.</p><p>Since that you can define your own <code>where</code> pattern and export it to any modules. Given an arbitrary Julia module, if you don&#39;t use <code>@use GADT</code> to enable GADT extensions and, your own <code>where</code> pattern just works here.</p><p>Here&#39;s a simple intepreter implemented using GADTs.</p><p>Firstly, enable GADT extension.</p><pre><code class="language-julia">using MLStyle
 @use GADT</code></pre><p>Then define the function type.</p><pre><code class="language-julia">import Base: convert
 
 struct Fun{T, R}
@@ -86,21 +108,20 @@ end
 @data public Exp{T} begin
 
     # The symbol referes to some variable in current context.
-    Sym       :: Symbol =&gt; Exp{A} where {A}
+    Sym{A}    :: Symbol =&gt; Exp{A}
 
     # Value.
     Val{A}    :: A =&gt; Exp{A}
 
     # Function application.
-    # add constraints to implicit tvars to get covariance
-    App{A, B} :: (Exp{Fun{A, B}}, Exp{A_}) =&gt; Exp{B} where {A_ &lt;: A}
+    App{A, B, A_ &lt;: A} :: (Exp{Fun{A, B}}, Exp{A_}) =&gt; Exp{B}
 
     # Lambda/Anonymous function.
     Lam{A, B} :: (Symbol, Exp{B}) =&gt; Exp{Fun{A, B}}
 
     # If expression
     If{A}     :: (Exp{Bool}, Exp{A}, Exp{A}) =&gt; Exp{A}
-end</code></pre><p>Something deserved to be remark here: when using this GADT syntax like</p><pre><code class="language-none">    ConsName{TVars1...} :: ... =&gt; Exp{TVars2...} where {TVar3...}</code></pre><p>You can add constraints to both <code>TVars1</code> and <code>TVars3</code>, and <code>TVars2</code> should be always empty or a sequence of <code>Symbol</code>s. Furthermore, <code>TVars3</code> are the so-called implicit type variables, and <code>TVars1</code> are the normal generic type variables.</p><p>Let&#39;s back to our topic.</p><p>To make function abstractions, we need a <code>substitute</code> operation.</p><pre><code class="language-julia">
+end</code></pre><p>To make function abstractions, we need a <code>substitute</code> operation.</p><pre><code class="language-julia">
 &quot;&quot;&quot;
 e.g: substitute(some_exp, :a =&gt; another_exp)
 &quot;&quot;&quot;
@@ -151,4 +172,16 @@ ctx = Dict{Symbol, Any}()
         App(App(sub, Sym{Int}(:x)), Sym{Int}(:y)),
         App(App(sub, Sym{Int}(:y)), Sym{Int}(:x))
     ), Dict{Symbol, Any}(:x =&gt; 1, :y =&gt; 2))[1]
-</code></pre><footer><hr/><a class="previous" href="../../"><span class="direction">Previous</span><span class="title">Home</span></a><a class="next" href="../pattern/"><span class="direction">Next</span><span class="title">Pattern</span></a></footer></article></body></html>
+</code></pre><h2><a class="nav-anchor" id="Implicit-Type-Variables-of-Generalized-ADT-1" href="#Implicit-Type-Variables-of-Generalized-ADT-1">Implicit Type Variables of Generalized ADT</a></h2><p>Sometimes you might want this:</p><pre><code class="language-julia">@use GADT
+
+@data A{T} begin
+    A1 :: Int =&gt; A{T} where T
+end</code></pre><p>It means that for all <code>T</code>, we have <code>A{T} &gt;: A1</code>, where <code>A1</code> is a case class and could be used as a constructor.</p><p>You can work with them in this way:</p><pre><code class="language-julia">function string_A() :: A{String}
+    A1(2)
+end
+
+@assert String == @match string_A() begin
+    A{T} where T =&gt; T
+end</code></pre><p>Currently, there&#39;re several limitations with implicit type variables, say, you&#39;re not expected to use implicit type variables in the argument types of constructors, like:</p><pre><code class="language-julia">@data A{T} begin
+    A1 :: T =&gt; A{T} where T # NOT EXPECTED!
+end</code></pre><p>It&#39;s possible to achieve more flexible implicit type variables, but it&#39;s quite difficult for such a package without statically type checking.</p><footer><hr/><a class="previous" href="../../"><span class="direction">Previous</span><span class="title">Home</span></a><a class="next" href="../pattern/"><span class="direction">Next</span><span class="title">Pattern</span></a></footer></article></body></html>

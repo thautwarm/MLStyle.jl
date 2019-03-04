@@ -1,0 +1,42 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>Pattern Scoping Qualifier · MLStyle.jl</title><script>(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-89508993-1', 'auto');
+ga('send', 'pageview');
+</script><link href="https://cdnjs.cloudflare.com/ajax/libs/normalize/4.2.0/normalize.min.css" rel="stylesheet" type="text/css"/><link href="https://fonts.googleapis.com/css?family=Lato|Roboto+Mono" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.2.0/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link href="../../assets/documenter.css" rel="stylesheet" type="text/css"/></head><body><nav class="toc"><h1>MLStyle.jl</h1><select id="version-selector" onChange="window.location.href=this.value" style="visibility: hidden"></select><form class="search" id="search-form" action="../../search/"><input id="search-query" name="q" type="text" placeholder="Search docs"/></form><ul><li><a class="toctext" href="../../">Home</a></li><li><span class="toctext">Syntax</span><ul><li><a class="toctext" href="../adt/">Algebraic Data Types</a></li><li><a class="toctext" href="../pattern/">Pattern</a></li><li><a class="toctext" href="../pattern-function/">Pattern function</a></li><li><a class="toctext" href="../when/">When Destructuring</a></li><li><a class="toctext" href="../extension/">MLStyle Extension List</a></li><li class="current"><a class="toctext" href>Pattern Scoping Qualifier</a><ul class="internal"><li><a class="toctext" href="#Public-1">Public</a></li><li><a class="toctext" href="#Internal-1">Internal</a></li><li><a class="toctext" href="#Visible-In-1">Visible-In</a></li></ul></li></ul></li><li><span class="toctext">Tutorials</span><ul><li><a class="toctext" href="../../tutorials/capture/">Static Capturing</a></li><li><a class="toctext" href="../../tutorials/query-lang/">Write You A Query Language</a></li></ul></li></ul></nav><article id="docs"><header><nav><ul><li>Syntax</li><li><a href>Pattern Scoping Qualifier</a></li></ul><a class="edit-page" href="https://github.com/thautwarm/MLStyle.jl/blob/master/docs/src/syntax/qualifier.md"><span class="fa"></span> Edit on GitHub</a></nav><hr/><div id="topbar"><span>Pattern Scoping Qualifier</span><a class="fa fa-bars" href="#"></a></div></header><h1><a class="nav-anchor" id="Pattern-Scoping-Qualifier-1" href="#Pattern-Scoping-Qualifier-1">Pattern Scoping Qualifier</a></h1><p>To avoid scoping pollution, we introduce a mechanism to allow customizing a pattern&#39;s visibility.</p><p>This is supported in the definitions of ADTs/GADTs and active patterns.</p><h2><a class="nav-anchor" id="Public-1" href="#Public-1">Public</a></h2><p>Unless specified otherwise, all patterns are defined with a <code>public</code> qualifier.</p><pre><code class="language-julia">@data A begin
+    ...
+end
+@active B(x) begin
+    ...
+end</code></pre><p>Above snippet is equivalent to</p><pre><code class="language-julia">@data public A begin
+    ...
+end
+@active public B(x) begin
+    ...
+end</code></pre><p><code>public</code> means that the pattern is visible once it&#39;s imported into current scope.</p><h2><a class="nav-anchor" id="Internal-1" href="#Internal-1">Internal</a></h2><p><code>internal</code> means that a pattern is only visible in the module it&#39;s defined in. In this situation, even if you export the pattern to other modules, it just won&#39;t work.</p><pre><code class="language-julia">module A
+using MLStyle
+export Data, Data1
+@data internal Data begin
+    Data1(Int)
+end
+
+@match Data1(2) begin
+    Data1(x) =&gt; @info x
+end
+
+module A2
+    using ..A
+    using MLStyle
+    @match Data1(2) begin
+        Data1(x) =&gt; @info x
+    end
+end
+end</code></pre><p>outputs:</p><pre><code class="language-none">[ Info: 2
+ERROR: LoadError: MLStyle.Err.PatternUnsolvedException(&quot;invalid usage or unknown application case Main.A.Data1(Any[:x]).&quot;)</code></pre><p>When it comes to active patterns, the behaviour is the same.</p><h2><a class="nav-anchor" id="Visible-In-1" href="#Visible-In-1">Visible-In</a></h2><p>Sometimes users need to have a more fine-grained control over the patterns&#39; visibility, thus we have provided such a way to allow patterns to be visible in several modules specified by one&#39;s own.</p><pre><code class="language-julia">@active visible in (@__MODULE__) IsEven(x) begin
+    x % 2 === 4
+end</code></pre><p>Above <code>IsEven</code> is only visible in current module.</p><pre><code class="language-julia">@active visible in [MyPack.A, MyPack.B] IsEven(x) begin
+    x % 2 === 4
+end</code></pre><p>Above <code>IsEven</code> is only visible in modules <code>MyPack.A</code> and <code>MyPack.B</code>.</p><footer><hr/><a class="previous" href="../extension/"><span class="direction">Previous</span><span class="title">MLStyle Extension List</span></a><a class="next" href="../../tutorials/capture/"><span class="direction">Next</span><span class="title">Static Capturing</span></a></footer></article></body></html>
