@@ -23,7 +23,7 @@ end
 @data public Exp{T} begin
     Sym :: Symbol => Exp{A} where {A}
     Val{A} :: A => Exp{A}
-    App{A, B} :: (Exp{Fun{A, B}}, Exp{A_}) => Exp{B} where {A_ <: A}
+    App{A, B, A_ <: A} :: (Exp{Fun{A, B}}, Exp{A_}) => Exp{B}
     Lam{A, B} :: (Symbol, Exp{B}) => Exp{Fun{A, B}}
     If{A} :: (Exp{Bool}, Exp{A}, Exp{A}) => Exp{A}
 end

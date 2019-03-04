@@ -7,6 +7,7 @@ using MLStyle.Infras
 using MLStyle.Pervasives
 using MLStyle.Render: render
 using MLStyle.Record: def_record
+using MLStyle.TypeVarExtraction
 
 export @data
 is_symbol_capitalized = isCapitalized ∘ string
@@ -59,7 +60,7 @@ end
 
 function impl(t, variants :: Expr, mod :: Module)
     l :: LineNumberNode = LineNumberNode(1)
-    abs_tvars = get_tvars(t)
+    abs_tvars = collect(get_tvars(t))
     defs = []
     abst() = isempty(abs_tvars) ? t : :($t{$(abs_tvars...)})
     VAR = mangle(mod)
@@ -67,18 +68,18 @@ function impl(t, variants :: Expr, mod :: Module)
     for each in variants.args
         @match each begin
             ::LineNumberNode => (l = each)
-            :($case{$(tvars...)} :: ($(params...), ) => $(ret_ty) where {$(gtvars...)})                          ||
-            :($case{$(tvars...)} :: ($(params...), ) => $(ret_ty && Do(gtvars=[])))                              ||
-            :($case{$(tvars...)} :: $(arg_ty && Do(params = [arg_ty])) => $ret_ty where {$(gtvars...)})          ||
-            :($case{$(tvars...)} :: $(arg_ty && Do(params = [arg_ty])) => $(ret_ty && Do(gtvars=[])))            ||
-            :($(case && Do(tvars = [])) :: ($(params...), ) => $(ret_ty) where {$(gtvars...)})                   ||
-            :($(case && Do(tvars = [])) :: ($(params...), ) => $(ret_ty && Do(gtvars=[])))                       ||
-            :($(case && Do(tvars = [])) :: $(arg_ty && Do(params = [arg_ty])) => $(ret_ty) where {$(gtvars...)}) ||
-            :($(case && Do(tvars = [])) :: $(arg_ty && Do(params = [arg_ty])) => $(ret_ty && Do(gtvars=[])))     ||
+            :($case{$(generic_tvars...)} :: ($(params...), ) => $(ret_ty) where {$(implicit_tvars...)})                          ||
+            :($case{$(generic_tvars...)} :: ($(params...), ) => $(ret_ty && Do(implicit_tvars=[])))                              ||
+            :($case{$(generic_tvars...)} :: $(arg_ty && Do(params = [arg_ty])) => $ret_ty where {$(implicit_tvars...)})          ||
+            :($case{$(generic_tvars...)} :: $(arg_ty && Do(params = [arg_ty])) => $(ret_ty && Do(implicit_tvars=[])))            ||
+            :($(case && Do(generic_tvars = [])) :: ($(params...), ) => $(ret_ty) where {$(implicit_tvars...)})                   ||
+            :($(case && Do(generic_tvars = [])) :: ($(params...), ) => $(ret_ty && Do(implicit_tvars=[])))                       ||
+            :($(case && Do(generic_tvars = [])) :: $(arg_ty && Do(params = [arg_ty])) => $(ret_ty) where {$(implicit_tvars...)}) ||
+            :($(case && Do(generic_tvars = [])) :: $(arg_ty && Do(params = [arg_ty])) => $(ret_ty && Do(implicit_tvars=[])))     ||
 
-            :($case($((params && Do(tvars=abs_tvars))...))) && Do(ret_ty = abst(), gtvars=[]) => begin
+            :($case($((params && Do(generic_tvars=abs_tvars))...))) && Do(ret_ty = abst(), implicit_tvars=[]) => begin
 
-              config = Dict{Symbol, Any}([(gtvar isa Expr ? gtvar.args[1] : gtvar) => Any for gtvar in gtvars])
+              config = Dict{Symbol, Any}([(gtvar isa Expr ? gtvar.args[1] : gtvar) => Any for gtvar in implicit_tvars])
 
               pairs = map(enumerate(params)) do (i, each)
                  @match each begin
@@ -91,38 +92,36 @@ function impl(t, variants :: Expr, mod :: Module)
               definition_body = [Expr(:(::), field, ty) for (field, ty, _) in pairs]
               constructor_args = [Expr(:(::), field, ty) for (field, _, ty) in pairs]
               arg_names = [field for (field, _, _) in pairs]
-              spec_tvars = [tvars..., [Any for _ in gtvars]...]
               getfields = [:($VAR.$field) for field in arg_names]
+              definition_head = :($case{$(generic_tvars...), $(implicit_tvars...)})
 
-              convert_fn = isempty(gtvars) ? nothing : let (=>) = (a, b) -> convert(b, a)
-                        out_tvars    = [tvars..., fill(nothing, length(gtvars))...] => Vector{Any}
-                        inp_tvars    = [tvars..., fill(nothing, length(gtvars))...] => Vector{Any}
-                        fresh_tvars1 = fill(nothing, length(gtvars)) => Vector{Any}
-                        fresh_tvars2 = fill(nothing, length(gtvars)) => Vector{Any}
-                        tcovs = []
-                        for (i, _) in enumerate(gtvars)
-                            TAny = mangle(mod)
-                            TCov = mangle(mod)
-                            push!(tcovs, TCov)
-                            fresh_tvars2[end-i + 1] = :($TCov <: $TAny)
-                            fresh_tvars1[end-i + 1] = TAny
-                            inp_tvars[end-i + 1] = TAny
-                            out_tvars[end-i + 1] = TCov
+              generic_tvars = collect(map(to_tvar, extract_tvars(generic_tvars)))
+              implicit_tvars = collect(map(to_tvar, extract_tvars(implicit_tvars)))
+
+              convert_fn = isempty(implicit_tvars) ? nothing : let (=>) = (a, b) -> convert(b, a)
+                        out_tvars    = [generic_tvars; implicit_tvars]
+                        inp_tvars    = [generic_tvars; [mangle(mod) for _ in implicit_tvars]]
+                        fresh_tvars1 = []
+                        fresh_tvars2 = []
+                        n_generic_tvars = length(generic_tvars)
+                        for i in 1 + n_generic_tvars : length(implicit_tvars) + n_generic_tvars
+                            TAny = inp_tvars[i]
+                            TCov = out_tvars[i]
+                            push!(fresh_tvars2, :($TCov <: $TAny))
+                            push!(fresh_tvars1, TAny)
                         end
-                        tcovs = reverse(tcovs)
                         arg2 = :($VAR :: $case{$(inp_tvars...)})
                         arg1_cov = :($Type{$case{$(out_tvars...)}})
-                        arg1_abs = :($Type{$t{$(tcovs...)}})
+                        arg1_abs = :($Type{$ret_ty})
                         casted = :($case{$(out_tvars...)}($(getfields...)))
                         quote
-                            $Base.convert(::$arg1_cov, $arg2) where {$(tvars...), $(fresh_tvars1...), $(fresh_tvars2...)} = $casted
-                            $Base.convert(::$arg1_abs, $arg2) where {$(tvars...), $(fresh_tvars1...), $(fresh_tvars2...)} = $casted
+                            $Base.convert(::$arg1_cov, $arg2) where {$(generic_tvars...), $(fresh_tvars1...), $(fresh_tvars2...)} = $casted
+                            $Base.convert(::$arg1_abs, $arg2) where {$(generic_tvars...), $(fresh_tvars1...), $(fresh_tvars2...)} = $casted
                         end
                     end
 
-            definition_head = :($case{$(tvars...), $(gtvars...)})
             def_cons =
-                isempty(spec_tvars) ?
+                isempty(generic_tvars) && isempty(implicit_tvars) ?
                     !isempty(constructor_args) ?
                     quote
                         function $case(;$(constructor_args...))
@@ -130,9 +129,19 @@ function impl(t, variants :: Expr, mod :: Module)
                         end
                     end                       :
                     nothing        :
-                    quote
-                        function $case($(constructor_args...), ) where {$(tvars...)}
-                            $case{$(spec_tvars...)}($(arg_names...))
+                    let spec_tvars = [generic_tvars; [Any for _ in implicit_tvars]]
+                        if isempty(generic_tvars)
+                            quote
+                                function $case($(constructor_args...), )
+                                    $case{$(spec_tvars...)}($(arg_names...))
+                                end
+                            end
+                        else
+                            quote
+                                function $case($(constructor_args...), ) where {$(generic_tvars...)}
+                                    $case{$(spec_tvars...)}($(arg_names...))
+                                end
+                            end
                         end
                     end
 

@@ -33,7 +33,7 @@ MLStyle.jl
         - [Time Overhead](#time-overhead)
         - [Allocation](#allocation)
         - [Gallery](#gallery)
-        
+
 - [Contributing to MLStyle](https://github.com/thautwarm/MLStyle.jl#contributing-to-mlstyle)
 
 
@@ -125,16 +125,16 @@ end
 @use GADT
 
 @data public Exp{T} begin
-    Sym       :: Symbol => Exp{A} where {A}
-    Val{A}    :: A => Exp{A}
-    App{A, B} :: (Exp{Fun{A, B}}, Exp{A_}) => Exp{B} where {A_ <: A}
-    Lam{A, B} :: (Symbol, Exp{B}) => Exp{Fun{A, B}}
-    If{A}     :: (Exp{Bool}, Exp{A}, Exp{A}) => Exp{A}
+    Sym{A}    :: Symbol                        => Exp{A}
+    Val{A}    :: A                             => Exp{A}
+    App{A, B, A_} :: (Exp{Fun{A, B}}, Exp{A_}) => Exp{B}
+    Lam{A, B} :: (Symbol, Exp{B})              => Exp{Fun{A, B}}
+    If{A}     :: (Exp{Bool}, Exp{A}, Exp{A})   => Exp{A}
 end
 
 ```
 
-A simple intepreter implementation using GADTs could be found at `test/untyped_lam.jl`.
+A simple intepreter implemented via GADTs could be found at `test/untyped_lam.jl`.
 
 
 ### Active Patterns
@@ -157,7 +157,7 @@ end # RegexMatch("123")
 ### Prerequisite
 
 Recently the rudimentary benchmarks have been finished, which turns out that MLStyle.jl could be extremely fast
-when matching cases are complicated, while in terms of some very simple cases(straightforward destruct shallow tuples, arrays and datatypes without recursive invocations), Match.jl could be faster.
+when matching cases are complicated, while in terms of some very simple cases(straightforwardly destructure shallow tuples, arrays and datatypes without recursive invocations), Match.jl could be faster.
 
 All benchmark scripts are provided at directory [Matrix-Benchmark](https://github.com/thautwarm/MLStyle.jl/blob/master/matrix-benchmark).
 

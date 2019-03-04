@@ -26,7 +26,7 @@ Syntax
     'end'
 
 <GADT>           =
-    '@data' ['public' | 'internal'] <Type> 'begin'
+    '@data' ['public' | 'internal' | 'visible' 'in' <Seq Module>] <Type> 'begin'
 
         (<ConsName>[{<Seq TVar>}] '::'
            ( '('
@@ -40,6 +40,34 @@ Syntax
 
     'end'
 
+```
+
+Examples:
+
+```julia
+
+@data internal A begin
+    A1(Int, Int)
+    A2(a :: Int, b :: Int)
+    A3(a, b) # equals to `A3(a::Any, b::Any)`
+end
+
+@data B{T} begin
+    B1(T, Int)
+    B2(a :: T)
+end
+
+@data visible in MyModule C{T} begin
+    C1(T)
+    C2{A} :: Vector{A} => C{A}
+end
+
+abstract type DD end
+@data visible in [Main, Base, Core] D{T} <: DD begin
+    D1 :: Int => D{T} where T # implicit type vars
+    D2{A, B} :: (A, B, Int) => D{Tuple{A, B}}
+    D3{A} :: A => D{Array{A, N}} where N # implicit type vars
+end
 ```
 
 Qualifier
@@ -105,8 +133,7 @@ the extension system like Haskell here.
 
 Since that you can define your own `where` pattern and export it to any modules.
 Given an arbitrary Julia module, if you don't use `@use GADT` to enable GADT extensions and,
-the qualifier of the your `where` pattern makes it visible here(current module),
-your own `where` pattern could work here.
+your own `where` pattern just works here.
 
 
 Here's a simple intepreter implemented using GADTs.
@@ -149,14 +176,13 @@ And now let's define the operators of our abstract machine.
 @data public Exp{T} begin
 
     # The symbol referes to some variable in current context.
-    Sym       :: Symbol => Exp{A} where {A}
+    Sym{A}    :: Symbol => Exp{A}
 
     # Value.
     Val{A}    :: A => Exp{A}
 
     # Function application.
-    # add constraints to implicit tvars to get covariance
-    App{A, B} :: (Exp{Fun{A, B}}, Exp{A_}) => Exp{B} where {A_ <: A}
+    App{A, B, A_ <: A} :: (Exp{Fun{A, B}}, Exp{A_}) => Exp{B}
 
     # Lambda/Anonymous function.
     Lam{A, B} :: (Symbol, Exp{B}) => Exp{Fun{A, B}}
@@ -165,18 +191,6 @@ And now let's define the operators of our abstract machine.
     If{A}     :: (Exp{Bool}, Exp{A}, Exp{A}) => Exp{A}
 end
 ```
-
-Something deserved to be remark here: when using this GADT syntax like
-
-```
-    ConsName{TVars1...} :: ... => Exp{TVars2...} where {TVar3...}
-```
-
-You can add constraints to both `TVars1` and `TVars3`, and `TVars2` should be
-always empty or a sequence of `Symbol`s. Furthermore, `TVars3` are the so-called
-implicit type variables, and `TVars1` are the normal generic type variables.
-
-Let's back to our topic.
 
 To make function abstractions, we need a `substitute` operation.
 
@@ -251,3 +265,39 @@ ctx = Dict{Symbol, Any}()
 ```
 
 
+Implicit Type Variables of Generalized ADT
+----------------------------------------------------
+
+
+Sometimes you might want this:
+
+```julia
+@use GADT
+
+@data A{T} begin
+    A1 :: Int => A{T} where T
+end
+```
+It means that for all `T`, we have `A{T} >: A1`, where `A1` is a case class and could be used as a constructor.
+
+You can work with them in this way:
+```julia
+function string_A() :: A{String}
+    A1(2)
+end
+
+@assert String == @match string_A() begin
+    A{T} where T => T
+end
+```
+
+Currently, there're several limitations with implicit type variables, say, you're not expected to use implicit type variables in
+the argument types of constructors, like:
+
+```julia
+@data A{T} begin
+    A1 :: T => A{T} where T # NOT EXPECTED!
+end
+```
+
+It's possible to achieve more flexible implicit type variables, but it's quite difficult for such a package without statically type checking.

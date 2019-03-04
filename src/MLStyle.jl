@@ -41,6 +41,8 @@ using MLStyle.Pervasives
 
 include("Qualification.jl")
 
+include("TypeVarExtraction.jl")
+
 include("StandardPatterns.jl")
 using MLStyle.StandardPatterns
 
