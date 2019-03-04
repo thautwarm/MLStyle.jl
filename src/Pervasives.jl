@@ -3,7 +3,7 @@ using MLStyle.MatchCore
 using MLStyle.Infras
 using MLStyle.Extension
 using MLStyle.Err
-using MLStyle.toolz: ($)
+using MLStyle.Toolz: ($)
 
 import MLStyle.Infras: mk_gapp_pattern
 

@@ -1,9 +1,9 @@
-module toolz
-include("internal_list.jl")
+module Toolz
+include("InternalList.jl")
 using .List: list, head, tail, cons, nil, reverse, linkedlist
 
 export ($), State, runState, bind, get, put, putBy, getBy,
-       return!, combine, forM, isCapitalized, isCase
+       return!, combine, forM, isCapitalized
 
 ($)(f, a) = f(a)
 

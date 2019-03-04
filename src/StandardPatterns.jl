@@ -2,7 +2,7 @@ module StandardPatterns
 # This module is designed for creating complex patterns from the primtive ones.
 
 using MLStyle
-using MLStyle.toolz.List: cons, nil
+using MLStyle.Toolz.List: cons, nil
 using MLStyle.Infras
 using MLStyle.MatchCore
 

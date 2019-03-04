@@ -25,7 +25,7 @@ using MLStyle.Err
 include("Extension.jl")
 using MLStyle.Extension
 
-include("toolz.jl")
+include("Internal/Toolz.jl")
 
 include("Render.jl")
 

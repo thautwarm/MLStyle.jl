@@ -1,7 +1,7 @@
 module MatchCore
-import MLStyle.toolz: bind
-using MLStyle.toolz.List
-using MLStyle.toolz
+using MLStyle.Toolz.List
+using MLStyle.Toolz
+using MLStyle.Toolz: bind
 using MLStyle.Err
 using MLStyle.Render
 

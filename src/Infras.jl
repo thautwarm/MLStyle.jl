@@ -2,7 +2,7 @@ module Infras
 using MLStyle.MatchCore
 using MLStyle.Extension
 using MLStyle.Err
-using MLStyle.toolz: ($)
+using MLStyle.Toolz: ($)
 using MLStyle.Render: render, format
 
 export @format

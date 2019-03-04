@@ -1,6 +1,6 @@
 module DataType
 using MLStyle
-using MLStyle.toolz: isCapitalized, ($), cons, nil
+using MLStyle.Toolz: isCapitalized, ($), cons, nil
 using MLStyle.MatchCore
 using MLStyle.Infras
 using MLStyle.Pervasives
