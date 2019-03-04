@@ -325,7 +325,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Pattern",
     "title": "Active Pattern",
     "category": "section",
-    "text": "This implementation is a subset of F# Active Patterns.There\'re 2 distinct active patterns, first of which is the normal form:@active LessThan0(x) begin\r\n    if x > 0\r\n        nothing\r\n    else\r\n        x\r\n    end\r\nend\r\n\r\n@match 15 begin\r\n    LessThan0(_) => :a\r\n    _ => :b\r\nend # :b\r\n\r\n@match -15 begin\r\n    LessThan0(a) => a\r\n    _ => 0\r\nend # -15\r\nThe second is the parametric version.@active Re{r :: Regex}(x) begin\r\n    res = match(r, x)\r\n    if res !== nothing\r\n        # use explicit `if-else` to emphasize the return should be Union{T, Nothing}.\r\n        res\r\n    else\r\n        nothing\r\n    end\r\nend\r\n\r\n@match \"123\" begin\r\n    Re{r\"\\d+\"}(x) => x\r\n    _ => @error \"\"\r\nend # RegexMatch(\"123\")\r\n\r\n\r\n@active IsEven(x) begin\r\n    if x % 2 === 0\r\n        # use explicit `if-else` to emphasize the return should be true/false.\r\n        true\r\n    else\r\n        false\r\n    end\r\nend\r\n\r\n@match 4 begin\r\n    IsEven() => :even\r\n    _ => :odd\r\nend # :even\r\n\r\n@match 3 begin\r\n    IsEven() => :even\r\n    _ => :odd\r\nend # :oddNote that the pattern A{a, b, c} is equivalent to A{a, b, c}().When enabling the extension Enum with @use Enum, the pattern A is equivalent to A():@use Enum\r\n@match 4 begin\r\n    IsEven => :even\r\n    _ => :odd\r\nend # :even\r\n\r\n@match 3 begin\r\n    IsEven => :even\r\n    _ => :odd\r\nend # :odd"
+    "text": "This implementation is a subset of F# Active Patterns.There\'re 2 distinct active patterns, first of which is the normal form:@active LessThan0(x) begin\r\n    if x > 0\r\n        nothing\r\n    else\r\n        x\r\n    end\r\nend\r\n\r\n@match 15 begin\r\n    LessThan0(_) => :a\r\n    _ => :b\r\nend # :b\r\n\r\n@match -15 begin\r\n    LessThan0(a) => a\r\n    _ => 0\r\nend # -15\r\nThe second is the parametric version.@active Re{r :: Regex}(x) begin\r\n    res = match(r, x)\r\n    if res !== nothing\r\n        # use explicit `if-else` to emphasize the return should be Union{T, Nothing}.\r\n        res\r\n    else\r\n        nothing\r\n    end\r\nend\r\n\r\n@match \"123\" begin\r\n    Re{r\"\\d+\"}(x) => x\r\n    _ => @error \"\"\r\nend # RegexMatch(\"123\")\r\n\r\n\r\n@active IsEven(x) begin\r\n    if x % 2 === 0\r\n        # use explicit `if-else` to emphasize the return should be true/false.\r\n        true\r\n    else\r\n        false\r\n    end\r\nend\r\n\r\n@match 4 begin\r\n    IsEven() => :even\r\n    _ => :odd\r\nend # :even\r\n\r\n@match 3 begin\r\n    IsEven() => :even\r\n    _ => :odd\r\nend # :oddNote that the pattern A{a, b, c} is equivalent to A{a, b, c}().When enabling the extension Enum with @use Enum, the pattern A is equivalent to A():@use Enum\r\n@match 4 begin\r\n    IsEven => :even\r\n    _ => :odd\r\nend # :even\r\n\r\n@match 3 begin\r\n    IsEven => :even\r\n    _ => :odd\r\nend # :oddFinally, you can customize the visibility of your own active patterns by giving it a qualifier."
 },
 
 {
@@ -430,6 +430,46 @@ var documenterSearchIndex = {"docs": [
     "title": "Enum",
     "category": "section",
     "text": "Description: By default, uppercase symbols cannot be used as patterns for its ambiguous semantics. If you prefer replacing patterns like S() with S, use Enum.Conflicts: UppercaseCapturing\nExample:@use Enum\n@data A begin\n    A1()\n    A2()\nend\n\n@match A1() begin\n    A1 => 1\n    _ => 2\nend\n# output: 1\n\n@active IsEven(x) begin\n    x % 2 === 0\nend\n@match 4 begin\n    IsEven => :ok\n    _ => :err\nend\n# output: :ok"
+},
+
+{
+    "location": "syntax/qualifier/#",
+    "page": "Pattern Scoping Qualifier",
+    "title": "Pattern Scoping Qualifier",
+    "category": "page",
+    "text": ""
+},
+
+{
+    "location": "syntax/qualifier/#Pattern-Scoping-Qualifier-1",
+    "page": "Pattern Scoping Qualifier",
+    "title": "Pattern Scoping Qualifier",
+    "category": "section",
+    "text": "To avoid scoping pollution, we introduce a mechanism to allow customizing a pattern\'s visibility.This is supported in the definitions of ADTs/GADTs and active patterns."
+},
+
+{
+    "location": "syntax/qualifier/#Public-1",
+    "page": "Pattern Scoping Qualifier",
+    "title": "Public",
+    "category": "section",
+    "text": "Unless specified otherwise, all patterns are defined with a public qualifier.@data A begin\n    ...\nend\n@active B(x) begin\n    ...\nendAbove snippet is equivalent to@data public A begin\n    ...\nend\n@active public B(x) begin\n    ...\nendpublic means that the pattern is visible once it\'s imported into current scope."
+},
+
+{
+    "location": "syntax/qualifier/#Internal-1",
+    "page": "Pattern Scoping Qualifier",
+    "title": "Internal",
+    "category": "section",
+    "text": "internal means that a pattern is only visible in the module it\'s defined in. In this situation, even if you export the pattern to other modules, it just won\'t work.module A\nusing MLStyle\nexport Data, Data1\n@data internal Data begin\n    Data1(Int)\nend\n\n@match Data1(2) begin\n    Data1(x) => @info x\nend\n\nmodule A2\n    using ..A\n    using MLStyle\n    @match Data1(2) begin\n        Data1(x) => @info x\n    end\nend\nendoutputs:[ Info: 2\nERROR: LoadError: MLStyle.Err.PatternUnsolvedException(\"invalid usage or unknown application case Main.A.Data1(Any[:x]).\")When it comes to active patterns, the behaviour is the same."
+},
+
+{
+    "location": "syntax/qualifier/#Visible-In-1",
+    "page": "Pattern Scoping Qualifier",
+    "title": "Visible-In",
+    "category": "section",
+    "text": "Sometimes users need to have a more fine-grained control over the patterns\' visibility, thus we have provided such a way to allow patterns to be visible in several modules specified by one\'s own.@active visible in (@__MODULE__) IsEven(x) begin\n    x % 2 === 4\nendAbove IsEven is only visible in current module.@active visible in [MyPack.A, MyPack.B] IsEven(x) begin\n    x % 2 === 4\nendAbove IsEven is only visible in modules MyPack.A and MyPack.B."
 },
 
 {
