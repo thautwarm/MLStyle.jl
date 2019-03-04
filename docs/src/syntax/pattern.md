@@ -11,7 +11,7 @@ Pattern
 - [Reference Pattern](#Reference-Pattern-1)
 - [Custom Pattern, Dict, Tuple, Array](#Custom-Pattern-1)
 - [Or Pattern](#Or-Pattern-1)
-- [ADT destructing, GADTs](#ADT-Destructing-1)
+- [ADT destructuring, GADTs](#ADT-Destructuring-1)
 - [Advanced Type Pattern](#Advanced-Type-Pattern-1)
 - [Side Effect](#Side-Effect-1)
 - [Active Pattern](#Active-Pattern-1)
@@ -227,7 +227,7 @@ test("")  # false
 
 Tips: `Or Pattern`s could nested.
 
-ADT Destructing
+ADT Destructuring
 ---------------
 
 You can match `ADT` in following 3 means:
@@ -236,7 +236,7 @@ You can match `ADT` in following 3 means:
 
 C(a, b, c) => ... # ordered arguments
 C(b = b) => ...   # record syntax
-C(_) => ...       # wildcard for destructing
+C(_) => ...       # wildcard for destructuring
 
 ```
 
