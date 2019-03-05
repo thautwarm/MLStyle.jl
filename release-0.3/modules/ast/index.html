@@ -1,0 +1,30 @@
+<!DOCTYPE html>
+<html lang="en"><head><meta charset="UTF-8"/><meta name="viewport" content="width=device-width, initial-scale=1.0"/><title>MLStyle.Modules.AST · MLStyle.jl</title><script>(function(i,s,o,g,r,a,m){i['GoogleAnalyticsObject']=r;i[r]=i[r]||function(){
+(i[r].q=i[r].q||[]).push(arguments)},i[r].l=1*new Date();a=s.createElement(o),
+m=s.getElementsByTagName(o)[0];a.async=1;a.src=g;m.parentNode.insertBefore(a,m)
+})(window,document,'script','https://www.google-analytics.com/analytics.js','ga');
+
+ga('create', 'UA-89508993-1', 'auto');
+ga('send', 'pageview');
+</script><link href="https://cdnjs.cloudflare.com/ajax/libs/normalize/4.2.0/normalize.min.css" rel="stylesheet" type="text/css"/><link href="https://fonts.googleapis.com/css?family=Lato|Roboto+Mono" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/4.6.3/css/font-awesome.min.css" rel="stylesheet" type="text/css"/><link href="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/9.12.0/styles/default.min.css" rel="stylesheet" type="text/css"/><script>documenterBaseURL="../.."</script><script src="https://cdnjs.cloudflare.com/ajax/libs/require.js/2.2.0/require.min.js" data-main="../../assets/documenter.js"></script><script src="../../siteinfo.js"></script><script src="../../../versions.js"></script><link href="../../assets/documenter.css" rel="stylesheet" type="text/css"/></head><body><nav class="toc"><h1>MLStyle.jl</h1><select id="version-selector" onChange="window.location.href=this.value" style="visibility: hidden"></select><form class="search" id="search-form" action="../../search/"><input id="search-query" name="q" type="text" placeholder="Search docs"/></form><ul><li><a class="toctext" href="../../">Home</a></li><li><span class="toctext">Syntax</span><ul><li><a class="toctext" href="../../syntax/adt/">Algebraic Data Types</a></li><li><a class="toctext" href="../../syntax/pattern/">Pattern</a></li><li><a class="toctext" href="../../syntax/pattern-function/">Pattern function</a></li><li><a class="toctext" href="../../syntax/when/">When Destructuring</a></li><li><a class="toctext" href="../../syntax/extension/">MLStyle Extension List</a></li><li><a class="toctext" href="../../syntax/qualifier/">Pattern Scoping Qualifier</a></li></ul></li><li><span class="toctext">Tutorials</span><ul><li><a class="toctext" href="../../tutorials/capture/">Static Capturing</a></li><li><a class="toctext" href="../../tutorials/query-lang/">Write You A Query Language</a></li></ul></li><li><span class="toctext">Modules</span><ul><li class="current"><a class="toctext" href>MLStyle.Modules.AST</a><ul class="internal"><li><a class="toctext" href="#@matchast-1">@matchast</a></li><li><a class="toctext" href="#@capture-1">@capture</a></li></ul></li><li><a class="toctext" href="../cond/">MLStyle.Modules.Cond</a></li></ul></li></ul></nav><article id="docs"><header><nav><ul><li>Modules</li><li><a href>MLStyle.Modules.AST</a></li></ul><a class="edit-page" href="https://github.com/thautwarm/MLStyle.jl/blob/master/docs/src/modules/ast.md"><span class="fa"></span> Edit on GitHub</a></nav><hr/><div id="topbar"><span>MLStyle.Modules.AST</span><a class="fa fa-bars" href="#"></a></div></header><h1><a class="nav-anchor" id="MLStyle.Modules.AST-1" href="#MLStyle.Modules.AST-1">MLStyle.Modules.AST</a></h1><h2><a class="nav-anchor" id="@matchast-1" href="#@matchast-1">@matchast</a></h2><ul><li>Description: Similar to <code>@match</code>, but focus on AST matching. No need to quote patterns with <code>quote ... end</code> or <code>:(...)</code>.</li><li>Usage: <code>@matchast ast_to_match (begin cases... end)</code></li><li>Examples:</li></ul><pre><code class="language-julia">@matchast :(1 + 1) quote
+    $a + 1 =&gt; a + 2
+end</code></pre><p>is equivalent to</p><pre><code class="language-julia">@match :(1 + 1) begin
+    :($a + 1) =&gt; a + 2
+end</code></pre><h2><a class="nav-anchor" id="@capture-1" href="#@capture-1">@capture</a></h2><ul><li>Description: Similar to <code>MacroTools.@capture</code>, but provided with a more regex-flavored matching.</li><li>Usage: <code>@capture template input_ast</code>,  note that <code>template</code> is purely static and cannot be a variable from current context.</li><li>Examples:</li></ul><pre><code class="language-julia">func_node = :(f(a, b, c))
+let_node = :(let a = b; a + b end)
+@info :function @capture $fn($(args...)) func_node
+@info :let @capture let $a = $b; $(stmts...) end let_node</code></pre><p>outputs</p><pre><code class="language-julia">┌ Info: function
+│   #= REPL[9]:1 =# @capture ($(Expr(:$, :fn)))($(Expr(:$, :(args...)))) func_node =
+│    Dict{Symbol,Any} with 2 entries:
+│      :args =&gt; Any[:a, :b, :c]
+└      :fn   =&gt; :f
+
+┌ Info: let
+│   #= REPL[10]:1 =# @capture let $(Expr(:$, :a)) = $(Expr(:$, :b))
+        #= REPL[10]:1 =#
+        $(Expr(:$, :(stmts...)))
+    end let_node =
+│    Dict{Symbol,Any} with 3 entries:
+│      :a     =&gt; :a
+│      :b     =&gt; :b
+└      :stmts =&gt; Any[:(#= REPL[8]:1 =#), :(a + b)]</code></pre><footer><hr/><a class="previous" href="../../tutorials/query-lang/"><span class="direction">Previous</span><span class="title">Write You A Query Language</span></a><a class="next" href="../cond/"><span class="direction">Next</span><span class="title">MLStyle.Modules.Cond</span></a></footer></article></body></html>
