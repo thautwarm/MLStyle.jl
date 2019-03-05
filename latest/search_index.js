@@ -568,4 +568,36 @@ var documenterSearchIndex = {"docs": [
     "text": "using Enums\n@enum TypeChecking Dynamic Static\n\ninclude(\"MQuery.jl\")\ndf = DataFrame(\n        Symbol(\"Type checking\") =>\n            [Dynamic, Static, Static, Dynamic, Static, Dynamic, Dynamic, Static],\n        :name =>\n            [\"Julia\", \"C#\", \"F#\", \"Ruby\", \"Java\", \"JavaScript\", \"Python\", \"Haskell\"]),\n        :year => [2012, 2000, 2005, 1995, 1995, 1995, 1990, 1990]\n)\n\ndf |>\n@where !startswith(_.name, \"Java\"),\n@groupby _.\"Type checking\" => TC, endswith(_.name, \"#\") => is_sharp,\n@having TC === Dynamic || is_sharp,\n@select join(_.name, \" and \") => result, _.TC => TC\noutputs2×2 DataFrame\n│ Row │ result                    │ TC        │\n│     │ String                    │ TypeChec… │\n├─────┼───────────────────────────┼───────────┤\n│ 1   │ Julia and Ruby and Python │ Dynamic   │\n│ 2   │ C# and F#                 │ Static    │"
 },
 
+{
+    "location": "modules/ast/#",
+    "page": "MLStyle.Modules.AST",
+    "title": "MLStyle.Modules.AST",
+    "category": "page",
+    "text": ""
+},
+
+{
+    "location": "modules/ast/#MLStyle.Modules.AST-1",
+    "page": "MLStyle.Modules.AST",
+    "title": "MLStyle.Modules.AST",
+    "category": "section",
+    "text": "@matchast: Similar to @match, but focus on AST matching. No need to quote patterns with quote ... end or :(...).@matchast :(1 + 1) quote\n    $a + 1 => a + 2\nendis equivalent to@match :(1 + 1) begin\n    :($a + 1) => a + 2\nend"
+},
+
+{
+    "location": "modules/cond/#",
+    "page": "MLStyle.Modules.Cond",
+    "title": "MLStyle.Modules.Cond",
+    "category": "page",
+    "text": ""
+},
+
+{
+    "location": "modules/cond/#MLStyle.Modules.Cond-1",
+    "page": "MLStyle.Modules.Cond",
+    "title": "MLStyle.Modules.Cond",
+    "category": "section",
+    "text": "@cond: Lisp-flavored conditional branchesusing MLStyle.Modules.Cond\n\nx = 2\n@cond begin\n    x < 0 => :lessthan0\n    x == 0 => :equal0\n    _ => :greaterthan0\nend # => :greaterthan0"
+},
+
 ]}
