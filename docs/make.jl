@@ -31,6 +31,10 @@ makedocs(
         "Tutorials" => Any[
             "tutorials/capture.md",
             "tutorials/query-lang.md",
+        ],
+        "Modules" => Any[
+            "modules/ast.md",
+            "modules/cond.md"
         ]
     ],
     html_prettyurls = !("local" in ARGS),

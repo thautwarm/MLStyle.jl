@@ -116,29 +116,34 @@ function gen_when(let_expr, source :: LineNumberNode, mod :: Module)
 end
 
 """
-1. Allow destructuring in binding sequences of let syntax.
+1. Allow destructuring in binding sequences of `let` syntax.
 
 In binding sequences,
-- For the bindings with the form `a = b`, you can use destructuring here.
-- For others like `@inline f(x) = 1`, it's the same as the original let binding.
+- For bindings in form of `a = b` and `f(x) = y`, it's regarded as pattern matching here.
+- For others like `@inline f(x) = 1`, it's the same as the original let binding(not pattern matching).
 
-@when let (a, 1) = x,
+```julia
+    @when let (a, 1) = x,
           [b, c, 5] = y
         (a, b, c)
-end
+    end
+```
 
 2. For a regular assignment, like
+
+```julia
+    @when (a, 2) = x begin
+        # dosomething
+    end
 ```
-@when (a, 2) = x begin
-    # dosomething
-end
-```
+
 It's nothing different with
-```
-@match x begin
-    (a, 2) => # dosomething
-    _ => nothing
-end
+
+```julia
+    @match x begin
+        (a, 2) => # dosomething
+        _ => nothing
+    end
 ```
 """
 macro when(let_expr)
@@ -157,16 +162,21 @@ end
 
 """
 Lambda cases.
+
 e.g.
-map((@λ (1, x) -> x), xs)
 
-(2, 3) |> @λ begin
-    1 -> 2
-    2 -> 7
-    (a, b) -> a + b
-end
+```julia
+    xs = [(1, 2), (1, 3), (1, 4)]
+    map((@λ (1, x) -> x), xs)
+    # => [2, 3, 4]
 
-# 5
+    (2, 3) |> @λ begin
+        1 -> 2
+        2 -> 7
+        (a, b) -> a + b
+    end
+    # => 5
+```
 """
 macro λ(cases)
     gen_lambda(cases, __source__, __module__) |> esc
@@ -176,5 +186,6 @@ macro stagedexpr(exp)
     __module__.eval(exp)
 end
 
+include("Modules/Modules.jl")
 
 end # module

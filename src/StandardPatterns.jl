@@ -135,9 +135,9 @@ end
 
 
 """
-Simple active pattern.
+Simple active pattern implementation.
 You can give a qualifier in the first argument of `@active` to customize its visibility in other modules.
-
+```julia
     @active F(x) begin
         if x > 0
             nothing
@@ -159,6 +159,7 @@ You can give a qualifier in the first argument of `@active` to customize its vis
         IsEven() => :ok
         _ => :err
     end # :ok
+```
 """
 macro active(qualifier, case, active_body)
    def_active_pattern(qualifier, case, active_body, __module__)

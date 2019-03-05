@@ -115,14 +115,21 @@ function register_pattern(pdesc :: PDesc, defmod :: Module)
     push!(PATTERNS, (defmod, pdesc))
 end
 
-# a simple example to define pattern `1`:
-# tp = pattern_descriptor(
-#       x -> x === 1,
-#       (s, c, m) -> quote $s == 1 end,
-#       Set([invasive])
-#      )
-# registerPattern(tp, MatchCore)
+"""
+A simple example to define pattern `1`:
 
+```julia
+    tp = PDesc(
+      x -> x === 1,
+      (tag, case, mod) -> body ->
+      @format []
+          :(\$s == 1 ? body : failed)
+      end,
+      Set([invasive])
+    )
+    register_pattern(tp, MatchCore)
+```
+"""
 function get_pattern(case, use_mod :: Module)
     for (def_mod, desc) in PATTERNS
         if qualifier_test(desc.qualifiers, use_mod, def_mod) && desc.predicate(case)
@@ -174,15 +181,17 @@ function get_name_of_module(m::Module) :: String
 end
 
 
-# allocate names for anonymous temporary variables.
 export mangle
+"""
+Allocate names for anonymous temporary variables.
+"""
 function mangle(mod::Module)
     get!(INTERNAL_COUNTER, mod) do
        0
     end |> id -> begin
     INTERNAL_COUNTER[mod] = id + 1
     mod_name = get_name_of_module(mod)
-    Symbol("$mod_name $id")
+    gensym("$mod_name $id")
     end
 
 end
@@ -205,11 +214,6 @@ throw_from(errs) = begin
     throw(SyntaxError("$s"))
 end
 
-# the form:
-# @match begin
-#     ...
-# end
-
 export @match, gen_match
 
 function gen_match(target, cbl, mod)
@@ -221,6 +225,15 @@ function gen_match(target, cbl, mod)
     end
 end
 
+"""
+```julia
+@match target begin
+   pattern1 => body1
+   pattern2 => body2
+   ...
+end
+```
+"""
 macro match(target, cbl)
     gen_match(target, cbl, __module__) |> esc
 end
