@@ -1,7 +1,14 @@
 MLStyle.Modules.Cond
 ========================
 
-- `@cond`: Lisp-flavored conditional branches
+
+@cond
+---------------
+
+
+- Description : Lisp-flavored conditional branches
+
+- Usage: `@cond begin cond1 => br1, [cond2 => br2, ...] end`
 
 ```julia
 using MLStyle.Modules.Cond

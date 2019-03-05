@@ -19,6 +19,9 @@ export @as_record
 export @λ, gen_lambda
 export @when, gen_when
 
+# convenient modules
+export Modules
+
 
 include("Err.jl")
 using MLStyle.Err

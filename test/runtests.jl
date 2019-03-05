@@ -8,7 +8,7 @@ MODULE = TestModule
 @use GADT
 
 include("modules/cond.jl")
-include("modules/matchast.jl")
+include("modules/ast.jl")
 include("as_record.jl")
 include("adt.jl")
 include("MQuery/test.jl")
