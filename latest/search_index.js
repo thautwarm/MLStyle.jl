@@ -581,7 +581,23 @@ var documenterSearchIndex = {"docs": [
     "page": "MLStyle.Modules.AST",
     "title": "MLStyle.Modules.AST",
     "category": "section",
-    "text": "@matchast: Similar to @match, but focus on AST matching. No need to quote patterns with quote ... end or :(...).@matchast :(1 + 1) quote\n    $a + 1 => a + 2\nendis equivalent to@match :(1 + 1) begin\n    :($a + 1) => a + 2\nend"
+    "text": ""
+},
+
+{
+    "location": "modules/ast/#@matchast-1",
+    "page": "MLStyle.Modules.AST",
+    "title": "@matchast",
+    "category": "section",
+    "text": "Description: Similar to @match, but focus on AST matching. No need to quote patterns with quote ... end or :(...).\nUsage: @matchast ast_to_match (begin cases... end)\nExamples:@matchast :(1 + 1) quote\n    $a + 1 => a + 2\nendis equivalent to@match :(1 + 1) begin\n    :($a + 1) => a + 2\nend"
+},
+
+{
+    "location": "modules/ast/#@capture-1",
+    "page": "MLStyle.Modules.AST",
+    "title": "@capture",
+    "category": "section",
+    "text": "Description: Similar to MacroTools.@capture, but provided with a more regex-flavored matching.\nUsage: @capture template input_ast,  note that template is purely static and cannot be a variable from current context.\nExamples:func_node = :(f(a, b, c))\nlet_node = :(let a = b; a + b end)\n@info :function @capture $fn($(args...)) func_node\n@info :let @capture let $a = $b; $(stmts...) end let_nodeoutputs┌ Info: function\n│   #= REPL[9]:1 =# @capture ($(Expr(:$, :fn)))($(Expr(:$, :(args...)))) func_node =\n│    Dict{Symbol,Any} with 2 entries:\n│      :args => Any[:a, :b, :c]\n└      :fn   => :f\n\n┌ Info: let\n│   #= REPL[10]:1 =# @capture let $(Expr(:$, :a)) = $(Expr(:$, :b))\n        #= REPL[10]:1 =#\n        $(Expr(:$, :(stmts...)))\n    end let_node =\n│    Dict{Symbol,Any} with 3 entries:\n│      :a     => :a\n│      :b     => :b\n└      :stmts => Any[:(#= REPL[8]:1 =#), :(a + b)]"
 },
 
 {
@@ -597,7 +613,15 @@ var documenterSearchIndex = {"docs": [
     "page": "MLStyle.Modules.Cond",
     "title": "MLStyle.Modules.Cond",
     "category": "section",
-    "text": "@cond: Lisp-flavored conditional branchesusing MLStyle.Modules.Cond\n\nx = 2\n@cond begin\n    x < 0 => :lessthan0\n    x == 0 => :equal0\n    _ => :greaterthan0\nend # => :greaterthan0"
+    "text": ""
+},
+
+{
+    "location": "modules/cond/#@cond-1",
+    "page": "MLStyle.Modules.Cond",
+    "title": "@cond",
+    "category": "section",
+    "text": "Description : Lisp-flavored conditional branches\nUsage: @cond begin cond1 => br1, [cond2 => br2, ...] endusing MLStyle.Modules.Cond\n\nx = 2\n@cond begin\n    x < 0 => :lessthan0\n    x == 0 => :equal0\n    _ => :greaterthan0\nend # => :greaterthan0"
 },
 
 ]}
