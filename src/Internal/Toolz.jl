@@ -1,6 +1,6 @@
 module Toolz
 include("InternalList.jl")
-using .List: list, head, tail, cons, nil, reverse, linkedlist
+using .List: head, tail, cons, nil, reverse, linkedlist
 
 export ($), isCapitalized
 

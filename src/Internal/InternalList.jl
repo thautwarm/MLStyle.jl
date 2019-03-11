@@ -1,6 +1,6 @@
 module List
 import Base: length, (:), map, iterate, reverse, filter
-export list, cons, nil, linkedlist, (^)
+export cons, nil, linkedlist
 
 # if generic:
 # map(f, l :: nil{T} ) where T  = nil()
@@ -28,8 +28,6 @@ iter(f, l :: cons)  = begin f(l.head); iter(f, l.tail) end
 
 map(f, l :: nil )   = nil()
 map(f, l :: cons)   = cons(f(l.head), map(f, l.tail))
-
-(^)(hd, tl :: linkedlist) = cons(hd, tl)
 
 function filter(f :: Function, l :: linkedlist)
     l2 = nil()
