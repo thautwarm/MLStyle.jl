@@ -1,4 +1,4 @@
-# using DataFrames
+using DataFrames
 
 function get_fields
 end
@@ -24,12 +24,13 @@ end
 
 # interface for DataFrames
 
-# get_fields(df :: DataFrame) = collect(names(df))
-# get_records(df :: DataFrame) = DataFrames.columns(df)
-# function build_result(::Type{DataFrame}, fields, typs, source :: Base.Generator)
-#     res = Tuple(typ[] for typ in typs)
-#     for each in source
-#         push!.(res, each)
-#     end
-#     DataFrame(collect(res), fields)
-# end
+get_fields(df :: DataFrame) = collect(names(df))
+get_records(df :: DataFrame) = DataFrames.columns(df)
+function build_result(::Type{DataFrame}, fields, typs, source :: Base.Generator)
+    res = Tuple(typ[] for typ in typs)
+    for each in source
+        push!.(res, each)
+    end
+    DataFrame(collect(res), fields)
+end
+

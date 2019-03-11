@@ -54,14 +54,6 @@ function reverse(l :: linkedlist)
     l2
 end
 
-function list(xs...)
-    l = nil()
-    for i=length(xs):-1:1
-        l = cons(xs[i], l)
-    end
-    l
-end
-
 end
 
 
