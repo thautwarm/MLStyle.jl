@@ -6,12 +6,11 @@ using MLStyle
 MODULE = TestModule
 
 @use GADT
-
+include("MQuery/test.jl")
 include("modules/cond.jl")
 include("modules/ast.jl")
 include("as_record.jl")
 include("adt.jl")
-include("MQuery/test.jl")
 include("when.jl")
 include("active_patterns.jl")
 include("exception.jl")

@@ -1,6 +1,7 @@
 include("MQuery.jl")
 @testset "MQuery" begin
 using Base.Enums
+# using DataFrames
 
 @enum TypeChecking Dynamic Static
 df = Dict(
@@ -14,6 +15,8 @@ df = Dict(
             2012, 2000, 2005, 1995, 1995, 1995, 1990, 1990
         ]
 )
+
+@testset  "for dict" begin
 
 res = df |>
 @where !startswith(_.name, "Java"),
@@ -29,4 +32,19 @@ res = df |>
 @select _.(!startswith("Type"))
 @test Set(keys(res)) == Set([:name, :year])
 
+end
+
+
+@testset "for dataframe" begin
+
+# let df2 = DataFrame(df)
+# res = df2 |>
+#     @where !startswith(_.name, "Java"),
+#     @groupby _."Type checking" => TC, endswith(_.name, "#") => is_sharp,
+#     @having TC === Dynamic || is_sharp,
+#     @select join(_.name, " and ") => result, _.TC => TC
+#     @info res
+# end
+    
+end
 end

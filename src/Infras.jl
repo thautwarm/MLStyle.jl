@@ -5,10 +5,10 @@ using MLStyle.Err
 using MLStyle.Toolz: ($)
 using MLStyle.Render: render, format
 
+const __L__ = @__LINE__
 export @format
 macro format(args, template)
-    __L__ = @__LINE__
-    args = Expr(:vect, :__L__ => __L__, :failed => QuoteNode(:($MatchCore.failed)), args.args...)
+    args = Expr(:vect, :__L__ => LineNumberNode(__L__), :failed => QuoteNode(:($MatchCore.failed)), args.args...)
     esc(format(args, template))
 end
 

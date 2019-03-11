@@ -1,3 +1,4 @@
+# using DataFrames
 
 function get_fields
 end
@@ -19,3 +20,16 @@ function build_result(::Type{Dict{Symbol, Vector{T} where T}}, fields, typs, sou
     end
     Dict(zip(fields, res))
 end
+
+
+# interface for DataFrames
+
+# get_fields(df :: DataFrame) = collect(names(df))
+# get_records(df :: DataFrame) = DataFrames.columns(df)
+# function build_result(::Type{DataFrame}, fields, typs, source :: Base.Generator)
+#     res = Tuple(typ[] for typ in typs)
+#     for each in source
+#         push!.(res, each)
+#     end
+#     DataFrame(collect(res), fields)
+# end
