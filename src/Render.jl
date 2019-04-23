@@ -1,6 +1,6 @@
 module Render
 using Base: get
-export render, @format, format
+export render, @format, format, rmlines
 
 struct Discard end
 const discard = Discard()
@@ -8,6 +8,22 @@ const discard = Discard()
 function render(expr, pair :: Pair{Symbol, Any})
     render(expr, Dict(pair))
 end
+
+# function rmlines(expr::Expr)
+#     let args = filter(map(rmlines, expr.args)) do arg
+#             arg !== discard
+#         end
+#         Expr(expr.head, args...)
+#     end
+# end
+
+# function rmlines(::LineNumberNode)
+#     discard
+# end
+
+# function rmlines(a)
+#     a
+# end
 
 function render(expr, config :: Dict{Symbol, Any})
     function visit(expr :: Expr)

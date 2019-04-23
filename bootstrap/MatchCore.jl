@@ -125,7 +125,7 @@ module MatchCore
             begin
                 $((branches && Many(:($a => $b) || ::LineNumberNode))...)
             end => branches
-            _ => @syntax_err "Malformed syntax, expect `begin a => b; ... end` as match's branches."
+            $_ => throw(SyntaxError("Malformed syntax, expect `begin a => b; ... end` as match's branches., at " * string(init_loc)))
         end
         loc = init_loc
         branches_located = map(branches) do each
@@ -137,13 +137,16 @@ module MatchCore
                         loc = curloc
                         nothing
                     end
+                _ => throw(SyntaxError("Malformed ast template, should be formed as `a => b`, at "* string(last_lnode) * "."))
             end
         end |> xs -> filter(x -> x !== nothing, xs)
-        final =
-            @format [init_loc, throw, InternalException] quote
-                init_loc
-                throw(InternalException("Non-exhaustive pattern found!"))
-            end
+        final = let loc_str = string(init_loc),
+                    exc_throw = Expr(:call, InternalException, "Non-exhaustive pattern found, at " * loc_str * "!")
+                    @format [init_loc, throw, exc_throw] quote
+                        init_loc
+                        throw(exc_throw)
+                    end
+                end
         result = mangle(mod)  # return of pattern matching
         tag_sym = mangle(mod) # value to match
 

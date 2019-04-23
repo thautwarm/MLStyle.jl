@@ -1,28 +1,28 @@
 module AST
 using MLStyle
 using MLStyle.Render
+using MLStyle.Err
 include("AST.Compat.jl")
 export @matchast, @capture
 
-function matchast(target, actions)
-    (@match actions begin
-       Expr(:quote,
-            quote
-                $(stmts...)
-            end
-       ) => stmts
-    end) |> stmts ->
-    map(stmts) do stmt
-        @match stmt begin
-            ::LineNumberNode => stmt
-            :($a => $b) => :($(Expr(:quote, a)) => $b)
-        end
-    end |> actions ->
-    quote
-        $MLStyle.@match $target begin
-            $(actions...)
+function matchast(target, actions, source, mod::Module)
+    stmts = @match actions begin
+       Expr(:quote, quote $(stmts...) end) => stmts
+
+       _ => begin
+            msg = "Malformed ast template, the second arg should be a block with a series of pairs(`a => b`), at $(string(source))."
+            throw(SyntaxError(msg))
         end
     end
+    last_lnode = source
+    map(stmts) do stmt
+        @match stmt begin
+            ::LineNumberNode => (last_lnode = stmt)
+            :($a => $b) => :($(Expr(:quote, a)) => $b)
+            _ => throw(SyntaxError("Malformed ast template, should be formed as `a => b`, at $(string(last_lnode))."))
+        end
+    end |> actions ->
+    gen_match(target, Expr(:block, actions...), source, mod)
 end
 
 """
@@ -42,7 +42,7 @@ e.g.,
 ```
 """
 macro matchast(template, actions)
-    matchast(template, actions) |> esc
+    matchast(template, actions, __source__, __module__) |> esc
 end
 
 """
@@ -62,14 +62,14 @@ If the template doesn't match input AST, return `nothing`.
 :(@capture)
 
 macro capture(template)
-    capture(template) |> esc
+    capture(template, __source__, __module__) |> esc
 end
 
 macro capture(template, ex)
-    Expr(:call, capture(template, __source__), ex) |> esc
+    Expr(:call, capture(template, __source__, __module__), ex) |> esc
 end
 
-function capture(template, source = LineNumberNode(@__LINE__))
+function capture(template, source, mod::Module)
     out_expr = @static VERSION < v"1.1.0" ?
         begin
             syms = Set(Symbol[])
@@ -79,13 +79,12 @@ function capture(template, source = LineNumberNode(@__LINE__))
         :($Base.@locals)
 
     arg_sym = gensym()
-    let template = Expr(:quote, template)
-        @format [arg_sym, template, out_expr, source] quote
+    let template = Expr(:quote, template),
+        actions = Expr(:block, :($template => $out_expr), :(_ => nothing)),
+        match_gen = gen_match(arg_sym, actions, source, mod)
+        @format [arg_sym, match_gen] quote
             function (arg_sym)
-                $MLStyle.@match source arg_sym begin
-                    template => out_expr
-                    _ => nothing
-                end
+                match_gen
             end
         end
     end

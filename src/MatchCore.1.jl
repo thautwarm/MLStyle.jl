@@ -206,7 +206,13 @@ function gen_match(target, cbl, init_loc::LineNumberNode, mod::Module)
                             if _mangled_sym_419 === (MLStyle.MatchCore).failed
                                 begin
                                     begin
-                                        _mangled_sym_419 = throw(SyntaxError("Malformed syntax, expect `begin a => b; ... end` as match's branches., at " * string(init_loc)))
+                                        _mangled_sym_419 = begin
+                                                if (===)(_mangled_sym_420, :_)
+                                                    throw(SyntaxError("Malformed syntax, expect `begin a => b; ... end` as match's branches., at " * string(init_loc)))
+                                                else
+                                                    (MLStyle.MatchCore).failed
+                                                end
+                                            end
                                         if _mangled_sym_419 === (MLStyle.MatchCore).failed
                                             begin
                                                 begin

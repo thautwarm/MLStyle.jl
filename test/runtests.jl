@@ -3,6 +3,10 @@ module TestModule
 using Test
 using MLStyle
 
+# @match 1 begin
+#     1
+# end
+
 MODULE = TestModule
 
 @use GADT
