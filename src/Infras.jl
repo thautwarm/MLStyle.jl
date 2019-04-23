@@ -94,7 +94,7 @@ function mk_app_pattern(tag, hd, tl, use_mod)
             end
         end
     end
-    info = string(hd) * "(" * string(tl) * ")"
+    info = string(hd) * "(" * join(map(string, tl), ", ") * ")"
     throw $ PatternUnsolvedException("invalid usage or unknown application case $info.")
 end
 

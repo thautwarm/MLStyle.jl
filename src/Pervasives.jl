@@ -509,8 +509,9 @@ function mk_gapp_pattern(tag, forall, hd, tl, use_mod)
                             end
                         end
                     end
-                    info = string(hd) * string(tl)
-                    throw $ PatternUnsolvedException("invalid usage or unknown application case $info.")
+                    spec_info = isempty(spec_vars) ? "" :  ("{" *  join(map(string, spec_vars), ", ") * "}")
+                    info = string(ctor) * spec_info * "("  * join(map(string, tl), ", ") * ")"
+                    throw(PatternUnsolvedException("invalid usage or unknown application case $info."))
                 end
         end
 end

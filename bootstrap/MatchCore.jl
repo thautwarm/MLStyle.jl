@@ -179,7 +179,7 @@ module MatchCore
             return rewrite(tag_sym, case, mod)
         end
         case = string(case)
-        throw $ PatternUnsolvedException("invalid usage or unknown case $case")
+        throw(PatternUnsolvedException("invalid usage or unknown case $case"))
      end
 end)
 
