@@ -73,7 +73,7 @@ function gen_lambda(cases, source :: LineNumberNode, _ :: Module)
                             case => body
                         end
                     end
-p                end
+                end
 
         Do(stmts=[]) &&
         :(begin
