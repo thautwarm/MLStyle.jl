@@ -70,6 +70,7 @@ function gen_lambda(cases, source :: LineNumberNode, mod :: Module)
         end
     end
     @match cases begin
+        :($a => $b) && Do(bs = [b]) ||
         :($a -> $(bs...)) =>
                 let pair = make_pair_expr(a, bs),
                     cbl = Expr(:block, source, pair),
@@ -86,8 +87,9 @@ function gen_lambda(cases, source :: LineNumberNode, mod :: Module)
         Do(stmts=[]) &&
         quote
             $(Many(
-                :($a -> $(bs...)) && Do(push!(stmts, make_pair_expr(a, bs))) ||
-                (a :: LineNumberNode) && Do(push!(stmts , a))
+                (a :: LineNumberNode) && Do(push!(stmts , a)) ||
+                (:($a => $b) && Do(bs=[b]) || :($a -> $(bs...))) &&
+                Do(push!(stmts, make_pair_expr(a, bs)))
             )...)
         end =>
             let cbl = Expr(:block, source, stmts...),
@@ -101,7 +103,7 @@ function gen_lambda(cases, source :: LineNumberNode, mod :: Module)
                 end
             end
 
-        _ => @syntax_err "Syntax error in lambda case definition. Check if your arrow is `->` but not `=>`!"
+        _ => @syntax_err "Syntax error in lambda case definition!"
 
     end
 end
