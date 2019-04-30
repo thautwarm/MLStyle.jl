@@ -62,33 +62,45 @@ The first argument must be something like
 - `a -> b`
 - `begin a -> b; (c -> d)... end`
 """
-function gen_lambda(cases, source :: LineNumberNode, _ :: Module)
+function gen_lambda(cases, source :: LineNumberNode, mod :: Module)
     TARGET = gensym("λ")
+    function make_pair_expr(case, stmts)
+        let block = Expr(:block, stmts...)
+            :($case => $block)
+        end
+    end
     @match cases begin
-        :($a -> $(b...)) =>
-                @format [TARGET, source, case=a, body=Expr(:block, b...)] quote
-                    source
-                    function (TARGET)
-                        $MLStyle.@match source TARGET begin
-                            case => body
+        :($a -> $(bs...)) =>
+                let pair = make_pair_expr(a, bs),
+                    cbl = Expr(:block, source, pair),
+                    match_expr = gen_match(TARGET, cbl, source, mod)
+
+                    @format [TARGET, source, match_expr] quote
+                        source
+                        function (TARGET)
+                            match_expr
                         end
                     end
                 end
 
         Do(stmts=[]) &&
-        :(begin
-            $(Many(:($a -> $(b...)) &&
-            Do(push!(stmts, :($a => begin $(b...) end))) ||
-
-            (a :: LineNumberNode) && Do(push!(stmts , a))
+        quote
+            $(Many(
+                :($a -> $(bs...)) && Do(push!(stmts, make_pair_expr(a, bs))) ||
+                (a :: LineNumberNode) && Do(push!(stmts , a))
             )...)
-          end) =>
-            @format [TARGET, source, cases = Expr(:block, stmts...)] quote
-                source
-                function (TARGET)
-                    $MLStyle.@match source TARGET cases
+        end =>
+            let cbl = Expr(:block, source, stmts...),
+                match_expr = gen_match(TARGET, cbl, source, mod)
+
+                @format [source, match_expr, TARGET] quote
+                    source
+                    function (TARGET)
+                        match_expr
+                    end
                 end
             end
+
         _ => @syntax_err "Syntax error in lambda case definition. Check if your arrow is `->` but not `=>`!"
 
     end
@@ -104,11 +116,12 @@ function gen_when(let_expr, source :: LineNumberNode, mod :: Module)
             foldr(bindings, init=ret) do each, last
                 @match each begin
                     :($a = $b) =>
-                        @format [a, b, last, source] quote
-                            $MLStyle.@match source b begin
+                        let cbl =  @format [source, a, last] quote
+                                source
                                 a => last
                                 _ => nothing
                             end
+                            gen_match(b, cbl, source, mod)
                         end
                     a => :(let $a; $last end)
                 end
@@ -141,7 +154,7 @@ In binding sequences,
     end
 ```
 
-It's nothing different with
+It's nothing different from
 
 ```julia
     @match x begin
@@ -184,10 +197,6 @@ e.g.
 """
 macro λ(cases)
     gen_lambda(cases, __source__, __module__) |> esc
-end
-
-macro stagedexpr(exp)
-    __module__.eval(exp)
 end
 
 include("Modules/Modules.jl")

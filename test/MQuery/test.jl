@@ -35,8 +35,7 @@ res = df |>
 end
 
 
-@testset "for dataframe" begin
-
+# @testset "for dataframe" begin
 # let df2 = DataFrame(df)
 # res = df2 |>
 #     @where !startswith(_.name, "Java"),
@@ -45,6 +44,5 @@ end
 #     @select join(_.name, " and ") => result, _.TC => TC
 #     @info res
 # end
-    
-end
+# end
 end
