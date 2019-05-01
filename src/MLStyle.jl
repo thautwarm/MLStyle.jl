@@ -113,17 +113,32 @@ end
     end
 end
 
-function RecursionMatch(block, bds=[], rets=[], default=nothing)
+function RecursionMatch(block, cases=[])
+    if block isa SubArray block = Expr(:block, block...); end
     @match block begin
         # empty block
-        Expr(:block) => (bds, rets, default)
+        Expr(:block) && Do(push!(cases, :(_ => nothing))) => cases
         
+        # match `@otherwise` at end
+        Expr(:block, 
+            IsMacro{"otherwise"}(),
+            ::LineNumberNode,
+            default
+        ) && Do(push!(cases, :(_ => $default))) => cases
+          
+        # match `@when` at end
+        Expr(:block, 
+            MacroSplit{"when"}(bd),
+            ::LineNumberNode,
+            ret,
+        ) && Do(push!(cases, :($bd => $ret))) =>
+            RecursionMatch(Expr(:block), cases)
+     
         # skip `LineNumberNode`
         Expr(:block, 
             ::LineNumberNode,
             remain...
-        ) => 
-            RecursionMatch(Expr(:block, remain...), bds, rets, default)
+        ) => RecursionMatch(Expr(:block, remain...), cases)
         
         # match `@when`s at middle
         Expr(:block, 
@@ -131,32 +146,15 @@ function RecursionMatch(block, bds=[], rets=[], default=nothing)
             ::LineNumberNode,
             ret,
             remain...
-        ) && Do(push!(bds, bd)) && Do(push!(rets, ret)) => 
-            RecursionMatch(Expr(:block, remain...), bds, rets, default)
+        ) && Do(push!(cases, :($bd => $ret))) => 
+            RecursionMatch(Expr(:block, remain...), cases)
         
-        # match `@when`s at end
-        Expr(:block, 
-            MacroSplit{"when"}(bd),
-            ::LineNumberNode,
-            ret
-        ) && Do(push!(bds, bd)) && Do(push!(rets, ret)) => 
-            (bds, rets, default)
-        
-        # match `@otherwise` at end
-        Expr(:block, 
-            IsMacro{"otherwise"}(),
-            ::LineNumberNode,
-            default
-        ) => (bds, rets, default)
-
         # error handle
-        
         _ => @syntax_err "Expect a :block."
     end
 end
 
 macro otherwise() end
-
 
 
 """
@@ -165,33 +163,29 @@ You should pass an `Expr(:let, ...)` as the first argument.
 """
 function gen_when(let_expr, source :: LineNumberNode, mod :: Module)
     @match let_expr begin
-        # `@otherwise`
+        # 
         Expr(:let, 
             Expr(:block, bindings...) || a && Do(bindings = [a]),
             Expr(:block, 
                 ::LineNumberNode,
                 ret, 
-                ::LineNumberNode,
                 blocks...
             )
         ) => 
-            begin
-            bds, rets, default = RecursionMatch(Expr(:block, blocks...))
-            matching = []
-            for (bd, ret) in zip(bds, rets)
-                push!(matching, :($bd => $ret))
-            end
-            push!(matching, :(_ => $default))    
             foldr(bindings, init=ret) do each, last
                 @match each begin
                     :($a = $b) =>
-                        @format [a, b, source, cases = Expr(:block, Expr(:call,:(=>), a, last), matching...)
+                        @format [
+                            a, b, last, source,
+                            cases = Expr(:block, 
+                                Expr(:call,:(=>), a, last), 
+                                RecursionMatch(blocks)...
+                            )
                         ] quote
                             $MLStyle.@match source b cases
                         end
                     a => :(let $a; $last end)
                 end
-            end
             end
         
         # Only `@when`
