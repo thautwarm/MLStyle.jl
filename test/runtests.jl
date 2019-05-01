@@ -3,9 +3,18 @@ module TestModule
 using Test
 using MLStyle
 
-# @match 1 begin
-#     1
-# end
+macro test_macro_throws(errortype, m)
+    :(
+        @test_throws $errortype try 
+                @eval $m 
+            catch err
+                while err isa LoadError
+                    err = err.error
+                end
+                throw(err)
+            end
+    )
+end
 
 MODULE = TestModule
 

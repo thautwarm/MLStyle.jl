@@ -18,7 +18,7 @@ export PatternUnsolvedException, InternalException, SyntaxError, UnknownExtensio
 # Syntax Sugars
 export @as_record
 export @λ, gen_lambda
-export @when, gen_when
+export @when, @otherwise, gen_when
 
 # convenient modules
 export Modules
@@ -94,13 +94,108 @@ p                end
     end
 end
 
+#=
+    help functions for `@when`
+=#
+
+@active IsMacro{s::String}(x) begin
+    @match x begin
+        Expr(:macrocall, &(Symbol("@", s)), ::LineNumberNode) => true
+        Expr(:macrocall, &(Symbol("@", s)), ::LineNumberNode, arg) => true
+        _ => false
+    end
+end
+
+@active MacroSplit{s::String}(x) begin
+    @match x begin
+        Expr(:macrocall, &(Symbol("@", s)), ::LineNumberNode, arg) => arg
+        _ => nothing
+    end
+end
+
+function RecursionMatch(block, bds=[], rets=[], default=nothing)
+    @match block begin
+        # empty block
+        Expr(:block) => (bds, rets, default)
+        
+        # skip `LineNumberNode`
+        Expr(:block, 
+            ::LineNumberNode,
+            remain...
+        ) => 
+            RecursionMatch(Expr(:block, remain...), bds, rets, default)
+        
+        # match `@when`s at middle
+        Expr(:block, 
+            MacroSplit{"when"}(bd),
+            ::LineNumberNode,
+            ret,
+            remain...
+        ) && Do(push!(bds, bd)) && Do(push!(rets, ret)) => 
+            RecursionMatch(Expr(:block, remain...), bds, rets, default)
+        
+        # match `@when`s at end
+        Expr(:block, 
+            MacroSplit{"when"}(bd),
+            ::LineNumberNode,
+            ret
+        ) && Do(push!(bds, bd)) && Do(push!(rets, ret)) => 
+            (bds, rets, default)
+        
+        # match `@otherwise` at end
+        Expr(:block, 
+            IsMacro{"otherwise"}(),
+            ::LineNumberNode,
+            default
+        ) => (bds, rets, default)
+
+        # error handle
+        
+        _ => @syntax_err "Expect a :block."
+    end
+end
+
+macro otherwise() end
+
+
+
 """
 Code generation for `@when`.
 You should pass an `Expr(:let, ...)` as the first argument.
 """
 function gen_when(let_expr, source :: LineNumberNode, mod :: Module)
     @match let_expr begin
-        Expr(:let, Expr(:block, bindings...) ||  a && Do(bindings = [a]), ret) =>
+        # `@otherwise`
+        Expr(:let, 
+            Expr(:block, bindings...) || a && Do(bindings = [a]),
+            Expr(:block, 
+                ::LineNumberNode,
+                ret, 
+                ::LineNumberNode,
+                blocks...
+            )
+        ) => 
+            begin
+            bds, rets, default = RecursionMatch(Expr(:block, blocks...))
+            matching = []
+            for (bd, ret) in zip(bds, rets)
+                push!(matching, :($bd => $ret))
+            end
+            push!(matching, :(_ => $default))    
+            foldr(bindings, init=ret) do each, last
+                @match each begin
+                    :($a = $b) =>
+                        @format [a, b, source, cases = Expr(:block, Expr(:call,:(=>), a, last), matching...)
+                        ] quote
+                            $MLStyle.@match source b cases
+                        end
+                    a => :(let $a; $last end)
+                end
+            end
+            end
+        
+        # Only `@when`
+        Expr(:let, Expr(:block, bindings...) || a && Do(bindings = [a]), ret) =>
             foldr(bindings, init=ret) do each, last
                 @match each begin
                     :($a = $b) =>
@@ -113,7 +208,8 @@ function gen_when(let_expr, source :: LineNumberNode, mod :: Module)
                     a => :(let $a; $last end)
                 end
             end
-
+        
+        # Error handling
         Expr(a, _...) => @syntax_err "Expect a let-binding, but found a `$a` expression."
         _ => @syntax_err "Expect a let-binding."
     end
