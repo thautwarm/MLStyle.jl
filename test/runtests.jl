@@ -10,6 +10,7 @@ using MLStyle
 MODULE = TestModule
 
 @use GADT
+include("uncomp.jl")
 include("MQuery/test.jl")
 include("modules/cond.jl")
 include("modules/ast.jl")
