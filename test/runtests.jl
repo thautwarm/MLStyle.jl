@@ -37,5 +37,6 @@ include("dot_expression.jl")
 include("typelevel.jl")
 include("untyped_lam.jl")
 include("nothing.jl")
+include("lambda.jl")
 
 end

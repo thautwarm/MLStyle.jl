@@ -10,12 +10,12 @@ using MLStyle.Extension
     end))
 
     @test_throws LoadError macroexpand(MODULE, :(@λ begin
-        1 => 1
+        1 = 1
     end))
 
-    
+
     @test_throws UnknownExtension used(:FieldPuns, MODULE)
-    
+
     @data Test_Ext_Data begin
         Test_Ext_Data_1 :: Int => Test_Ext_Data
     end
@@ -27,7 +27,7 @@ using MLStyle.Extension
     @test_throws LoadError macroexpand(MODULE, :(
         @match 1 begin
             Int(x) => x
-        end 
+        end
     ))
 end
 
