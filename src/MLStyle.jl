@@ -189,14 +189,12 @@ function gen_when(let_expr, source :: LineNumberNode, mod :: Module)
             foldr(bindings, init=ret) do each, last
                 @match each begin
                     :($a = $b) =>
-                        @format [
-                            a, b, last, source,
-                            cases = Expr(:block, 
-                                Expr(:call,:(=>), a, last), 
-                                RecursionMatch(blocks)...
-                            )
-                        ] quote
-                            $MLStyle.@match source b cases
+                        let cbl = Expr(:block, 
+                            source,
+                            Expr(:call,:(=>), a, last), 
+                            RecursionMatch(blocks)...
+                        )
+                            gen_match(b, cbl, source, mod)
                         end
                     a => :(let $a; $last end)
                 end
@@ -207,7 +205,7 @@ function gen_when(let_expr, source :: LineNumberNode, mod :: Module)
             foldr(bindings, init=ret) do each, last
                 @match each begin
                     :($a = $b) =>
-                        let cbl =  @format [source, a, last] quote
+                        let cbl = @format [source, a, last] quote
                                 source
                                 a => last
                                 _ => nothing
