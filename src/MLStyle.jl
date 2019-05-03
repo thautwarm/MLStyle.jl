@@ -112,17 +112,10 @@ end
     help functions for `@when`
 =#
 
-@active IsMacro{s::String}(x) begin
-    @match x begin
-        Expr(:macrocall, &(Symbol("@", s)), ::LineNumberNode) => true
-        Expr(:macrocall, &(Symbol("@", s)), ::LineNumberNode, arg) => true
-        _ => false
-    end
-end
-
 @active MacroSplit{s::String}(x) begin
     @match x begin
-        Expr(:macrocall, &(Symbol("@", s)), ::LineNumberNode, arg) => arg
+        Expr(:macrocall, &(Symbol("@", s)), lnn::LineNumberNode, a) => (ln=lnn, arg=a)
+        Expr(:macrocall, &(Symbol("@", s)), lnn::LineNumberNode) => (ln=lnn, )
         _ => nothing
     end
 end
@@ -135,32 +128,48 @@ function RecursionMatch(block, cases=[])
         
         # match `@otherwise` at end
         Expr(:block, 
-            IsMacro{"otherwise"}(),
-            ::LineNumberNode,
+            MacroSplit{"otherwise"}(r),
+            ln::LineNumberNode, 
             default
-        ) && Do(push!(cases, :(_ => $default))) => cases
-          
-        # match `@when` at end
+        ) && Do(append!(cases, [r.ln, ln, :(_ => $default)])) => cases
         Expr(:block, 
-            MacroSplit{"when"}(bd),
-            ::LineNumberNode,
-            ret,
-        ) && Do(push!(cases, :($bd => $ret))) =>
-            RecursionMatch(Expr(:block), cases)
-     
-        # skip `LineNumberNode`
+            MacroSplit{"otherwise"}(r),
+            default
+        ) && Do(append!(cases, [r.ln, :(_ => $default)])) => cases
+        
+        # skip `LineNumberNode` before macro
         Expr(:block, 
             ::LineNumberNode,
             remain...
         ) => RecursionMatch(Expr(:block, remain...), cases)
         
+        # match `@when` at end
+        Expr(:block, 
+            MacroSplit{"when"}(r),
+            ln::LineNumberNode, 
+            ret
+        ) && Do(append!(cases, [r.ln, ln, :($(r.arg) => $ret)])) =>
+            RecursionMatch(Expr(:block), cases)
+        Expr(:block, 
+            MacroSplit{"when"}(r), 
+            ret
+        ) && Do(append!(cases, [r.ln, :($(r.arg) => $ret)])) =>
+            RecursionMatch(Expr(:block), cases)
+        
         # match `@when`s at middle
         Expr(:block, 
-            MacroSplit{"when"}(bd),
+            MacroSplit{"when"}(r),
+            ln::LineNumberNode,
+            ret,
             ::LineNumberNode,
+            remain...
+        ) && Do(append!(cases, [r.ln, ln, :($(r.arg) => $ret)])) => 
+            RecursionMatch(Expr(:block, remain...), cases) 
+        Expr(:block, 
+            MacroSplit{"when"}(r),
             ret,
             remain...
-        ) && Do(push!(cases, :($bd => $ret))) => 
+        ) && Do(append!(cases, [r.ln, :($(r.arg) => $ret)])) => 
             RecursionMatch(Expr(:block, remain...), cases)
         
         # error handle
