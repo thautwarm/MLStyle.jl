@@ -114,66 +114,69 @@ end
 
 @active MacroSplit{s::String}(x) begin
     @match x begin
-        Expr(:macrocall, &(Symbol("@", s)), lnn::LineNumberNode, a) => (ln=lnn, arg=a)
-        Expr(:macrocall, &(Symbol("@", s)), lnn::LineNumberNode) => (ln=lnn, )
+        Expr(:macrocall, 
+            &(Symbol("@", s)), 
+            ln::LineNumberNode, 
+            Expr(:block, bindings...) || a && Do(bindings = [a])
+        ) => (ln, bindings)
+        Expr(:macrocall, 
+            &(Symbol("@", s)), 
+            ln::LineNumberNode
+            # no args
+        ) => (ln, [:(_)])
         _ => nothing
     end
 end
 
-function RecursionMatch(block, cases=[])
-    if block isa SubArray block = Expr(:block, block...); end
+function split_case_and_block(block, cab=[]; source)
     @match block begin
-        # empty block
-        Expr(:block) && Do(push!(cases, :(_ => nothing))) => cases
-        
-        # match `@otherwise` at end
-        Expr(:block, 
-            MacroSplit{"otherwise"}(r),
-            ln::LineNumberNode, 
-            default
-        ) && Do(append!(cases, [r.ln, ln, :(_ => $default)])) => cases
-        Expr(:block, 
-            MacroSplit{"otherwise"}(r),
-            default
-        ) && Do(append!(cases, [r.ln, :(_ => $default)])) => cases
-        
-        # skip `LineNumberNode` before macro
-        Expr(:block, 
-            ::LineNumberNode,
-            remain...
-        ) => RecursionMatch(Expr(:block, remain...), cases)
+        # match biding 1
+        Expr(:let, 
+            Expr(:block, bindings...) || a && Do(bindings = [a]),
+            Expr(:block, ::LineNumberNode, _) && ret
+        ) && Do(push!(cab, 
+            ((source, bindings), ret)
+        )) && Do(push!(cab, 
+            ((source, [:(_)]), Expr(:block, source, :(nothing)))
+        )) => cab
+        Expr(:let, 
+            Expr(:block, bindings...) || a && Do(bindings = [a]),
+            Expr(:block, ln::LineNumberNode, ret, remain...)
+        ) && Do(push!(cab, 
+            ((source, bindings), Expr(:block, ln, ret))
+        )) => split_case_and_block(Expr(:block, remain...), cab, source=source)
         
         # match `@when` at end
         Expr(:block, 
-            MacroSplit{"when"}(r),
+            ::LineNumberNode, 
+            MacroSplit{"when"}(bd),
             ln::LineNumberNode, 
             ret
-        ) && Do(append!(cases, [r.ln, ln, :($(r.arg) => $ret)])) =>
-            RecursionMatch(Expr(:block), cases)
-        Expr(:block, 
-            MacroSplit{"when"}(r), 
-            ret
-        ) && Do(append!(cases, [r.ln, :($(r.arg) => $ret)])) =>
-            RecursionMatch(Expr(:block), cases)
+        ) && Do(push!(cab, (bd, Expr(:block, ln, ret)))) &&  
+        Do(push!(cab, 
+            ((ln, [:(_)]), Expr(:block, ln, :(nothing)))
+        )) => cab
         
+        # match `@otherwise` at end
+        Expr(:block, 
+            ::LineNumberNode, 
+            MacroSplit{"otherwise"}(bd),
+            ln::LineNumberNode, 
+            ret
+        ) && Do(push!(cab, (bd, Expr(:block, ln, ret)))) => cab
+            
         # match `@when`s at middle
         Expr(:block, 
-            MacroSplit{"when"}(r),
-            ln::LineNumberNode,
-            ret,
-            ::LineNumberNode,
+            ::LineNumberNode, 
+            MacroSplit{"when"}(bd),
+            ln::LineNumberNode, 
+            ret, 
             remain...
-        ) && Do(append!(cases, [r.ln, ln, :($(r.arg) => $ret)])) => 
-            RecursionMatch(Expr(:block, remain...), cases) 
-        Expr(:block, 
-            MacroSplit{"when"}(r),
-            ret,
-            remain...
-        ) && Do(append!(cases, [r.ln, :($(r.arg) => $ret)])) => 
-            RecursionMatch(Expr(:block, remain...), cases)
+        ) && Do(push!(cab, (bd, Expr(:block, ln, ret)))) =>
+            split_case_and_block(Expr(:block, remain...), cab, source=source)
         
         # error handle
-        _ => @syntax_err "Expect a :block."
+        a => @syntax_err "Expect a :block."
     end
 end
 
@@ -185,49 +188,25 @@ Code generation for `@when`.
 You should pass an `Expr(:let, ...)` as the first argument.
 """
 function gen_when(let_expr, source :: LineNumberNode, mod :: Module)
-    @match let_expr begin
-        # 
-        Expr(:let, 
-            Expr(:block, bindings...) || a && Do(bindings = [a]),
-            Expr(:block, 
-                ::LineNumberNode,
-                ret, 
-                blocks...
-            )
-        ) => 
-            foldr(bindings, init=ret) do each, last
-                @match each begin
-                    :($a = $b) =>
-                        let cbl = Expr(:block, 
-                            source,
-                            Expr(:call,:(=>), a, last), 
-                            RecursionMatch(blocks)...
-                        )
-                            gen_match(b, cbl, source, mod)
+    case_and_blocks = split_case_and_block(let_expr; source=source)   
+    default_ret = case_and_blocks[end][2]
+    cab = case_and_blocks[1:end-1]
+    
+    foldr(cab, init=default_ret) do (case, block), last_block
+        ln_bd, bindings = case
+        foldr(bindings, init=block) do each, last_ret
+            @match each begin
+                :($a = $b) =>
+                    let cbl = @format [ln_bd, a, last_ret, last_block] quote
+                            ln_bd
+                            a => last_ret
+                            _ => last_block
                         end
-                    a => :(let $a; $last end)
-                end
+                        gen_match(b, cbl, source, mod)
+                        # :(@match $b $cbl)
+                    end
             end
-        
-        # Only `@when`
-        Expr(:let, Expr(:block, bindings...) || a && Do(bindings = [a]), ret) =>
-            foldr(bindings, init=ret) do each, last
-                @match each begin
-                    :($a = $b) =>
-                        let cbl = @format [source, a, last] quote
-                                source
-                                a => last
-                                _ => nothing
-                            end
-                            gen_match(b, cbl, source, mod)
-                        end
-                    a => :(let $a; $last end)
-                end
-            end
-        
-        # Error handling
-        Expr(a, _...) => @syntax_err "Expect a let-binding, but found a `$a` expression."
-        _ => @syntax_err "Expect a let-binding."
+        end
     end
 end
 
