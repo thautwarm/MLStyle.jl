@@ -10,7 +10,12 @@ makedocs(
         MLStyle.Extension,
         MLStyle.Infras,
         MLStyle.Pervasives,
-        MLStyle.StandardPatterns,
+
+        # standard patterns
+        MLStyle.TypeVarDecons,
+        MLStyle.Active,
+        MLStyle.Uncomprehensions,
+
         MLStyle.Render
     ],
     clean = false,
