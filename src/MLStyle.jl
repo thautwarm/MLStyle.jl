@@ -114,13 +114,13 @@ end
 
 @active MacroSplit{s::String}(x) begin
     @match x begin
-        Expr(:macrocall, 
-            &(Symbol("@", s)), 
-            ln::LineNumberNode, 
+        Expr(:macrocall,
+            &(Symbol("@", s)),
+            ln::LineNumberNode,
             Expr(:block, bindings...) || a && Do(bindings = [a])
         ) => (ln, bindings)
-        Expr(:macrocall, 
-            &(Symbol("@", s)), 
+        Expr(:macrocall,
+            &(Symbol("@", s)),
             ln::LineNumberNode
             # no args
         ) => (ln, [:(_)])
@@ -131,50 +131,50 @@ end
 function split_case_and_block(block, cab=[]; source)
     @match block begin
         # match biding 1
-        Expr(:let, 
+        Expr(:let,
             Expr(:block, bindings...) || a && Do(bindings = [a]),
             Expr(:block, ::LineNumberNode, _) && ret
-        ) && Do(push!(cab, 
+        ) && Do(push!(cab,
             ((source, bindings), ret)
-        )) && Do(push!(cab, 
+        )) && Do(push!(cab,
             ((source, [:(_)]), Expr(:block, source, :(nothing)))
         )) => cab
-        Expr(:let, 
+        Expr(:let,
             Expr(:block, bindings...) || a && Do(bindings = [a]),
             Expr(:block, ln::LineNumberNode, ret, remain...)
-        ) && Do(push!(cab, 
+        ) && Do(push!(cab,
             ((source, bindings), Expr(:block, ln, ret))
         )) => split_case_and_block(Expr(:block, remain...), cab, source=source)
-        
+
         # match `@when` at end
-        Expr(:block, 
-            ::LineNumberNode, 
+        Expr(:block,
+            ::LineNumberNode,
             MacroSplit{"when"}(bd),
-            ln::LineNumberNode, 
+            ln::LineNumberNode,
             ret
-        ) && Do(push!(cab, (bd, Expr(:block, ln, ret)))) &&  
-        Do(push!(cab, 
+        ) && Do(push!(cab, (bd, Expr(:block, ln, ret)))) &&
+        Do(push!(cab,
             ((ln, [:(_)]), Expr(:block, ln, :(nothing)))
         )) => cab
-        
+
         # match `@otherwise` at end
-        Expr(:block, 
-            ::LineNumberNode, 
+        Expr(:block,
+            ::LineNumberNode,
             MacroSplit{"otherwise"}(bd),
-            ln::LineNumberNode, 
+            ln::LineNumberNode,
             ret
         ) && Do(push!(cab, (bd, Expr(:block, ln, ret)))) => cab
-            
+
         # match `@when`s at middle
-        Expr(:block, 
-            ::LineNumberNode, 
+        Expr(:block,
+            ::LineNumberNode,
             MacroSplit{"when"}(bd),
-            ln::LineNumberNode, 
-            ret, 
+            ln::LineNumberNode,
+            ret,
             remain...
         ) && Do(push!(cab, (bd, Expr(:block, ln, ret)))) =>
             split_case_and_block(Expr(:block, remain...), cab, source=source)
-        
+
         # error handle
         a => @syntax_err "Expect a :block."
     end
@@ -188,10 +188,10 @@ Code generation for `@when`.
 You should pass an `Expr(:let, ...)` as the first argument.
 """
 function gen_when(let_expr, source :: LineNumberNode, mod :: Module)
-    case_and_blocks = split_case_and_block(let_expr; source=source)   
+    case_and_blocks = split_case_and_block(let_expr; source=source)
     default_ret = case_and_blocks[end][2]
     cab = case_and_blocks[1:end-1]
-    
+
     foldr(cab, init=default_ret) do (case, block), last_block
         ln_bd, bindings = case
         foldr(bindings, init=block) do each, last_ret
