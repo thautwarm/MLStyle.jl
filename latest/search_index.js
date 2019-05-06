@@ -389,7 +389,7 @@ var documenterSearchIndex = {"docs": [
     "page": "When Destructuring",
     "title": "Allow Destructuring in Let-Binding",
     "category": "section",
-    "text": "tp = (2, 3)\nx = 2\n\n@assert 5 === \n    @when let (2, a) = tp,\n                  b  = x\n        a + b\n    end\n\n@assert nothing ===\n    @when let (2, a) = 1,\n                   b = x\n        a + b\n    endNote that only the binding formed as $a = $b would be treated as destructuring.@data S begin\n    S1(Int)\n    S2(Int)\nend\n\ns = S1(5)\n\n@assert 500 === \n    @when let S1(x) = s,\n              @inline fn(x) = 100x\n        fn(x)\n    endIn above snippet, @inline fn(x) = 100x is not regarded as destructuring."
+    "text": "tp = (2, 3)\nx = 2\n\n@assert 5 ===\n    @when let (2, a) = tp,\n                  b  = x\n        a + b\n    end\n\n@assert nothing ===\n    @when let (2, a) = 1,\n                   b = x\n        a + b\n    endNote that only the binding formed as $a = $b would be treated as destructuring.@data S begin\n    S1(Int)\n    S2(Int)\nend\n\ns = S1(5)\n\n@assert 500 ===\n    @when let S1(x) = s,\n              @inline fn(x) = 100x\n        fn(x)\n    endIn above snippet, @inline fn(x) = 100x is not regarded as destructuring."
 },
 
 {
