@@ -3,6 +3,7 @@
         @test 2 == @when let (a, 1) = (2, 1)
             a
         end
+        @test 2 == @when (a, 1) = (2, 1) a
 
         @test 2 === @when let 1 = 1
             2
@@ -14,12 +15,10 @@
         end
         @test 1 === @when a = 1 a
 
-
         @test nothing === @when let (a, b) = 1
             a + b
         end
         @test nothing === @when (a, b) = 1 a + b
-
 
         ab = (2, 3)
         @test 5 === @when let (a, b) = ab
@@ -46,10 +45,9 @@
         end
 
         @test nothing === @when let WhenTest_1(x) = var2,
-                                   @inline WhenAction(x) = 100x
+                                    @inline WhenAction(x) = 100x
             WhenAction(x)
         end
-
     end
 
     @testset "when with predicates" begin
@@ -61,6 +59,7 @@
                 a + b
         end
     end
+
     @testset "@when in @when" begin
         function f1(args...)
             x = Tuple(args)
@@ -76,6 +75,8 @@
         # case: (2, b)
         @test f1(111, 2) == (2, 111)
         @test f1(222, 2) == (2, 222)
+        # default case
+        @test f1() == nothing
 
         function f2(args...)
             x = Tuple(args)
@@ -90,9 +91,8 @@
         @test f2(10, 1) == 10       # case: a
         @test f2(20, 2) == (:b, 20) # case: (:b, b)
         @test f2(30, 3) == (:c, 30) # case: (:c, c)
-
+        @test f2() == nothing       # default case
     end
-
 
     @testset "@when + @otherwise" begin
         function f1(args...)
@@ -103,9 +103,9 @@
                 x
             end
         end
-        @test f1(1) == (1, )    # case: x
-        @test f1(1, 2) == (1, 2)# case: x
-        @test f1(2, 1) == 2     # case: a
+        @test f1(1) == (1, )        # case: x
+        @test f1(1, 2) == (1, 2)    # case: x
+        @test f1(2, 1) == 2         # case: a
 
         function f2(args...)
             x = Tuple(args)
@@ -126,46 +126,40 @@
         @test f2(30, 3) == (:c, 30) # case: (:c, c)
 
         xy = (1, 3)
-        res = @when let (a, 1) = xy
+        @test 0 == @when let (a, 1) = xy
             a
         @otherwise
             0
         end
-        @test res == 0
 
-        res = @when let (a, 3) = xy
+        @test 1 == @when let (a, 3) = xy
             a
         @otherwise
             0
         end
-        @test res == 1
 
-        # @when let bindings...
+        # multi let bindings
         z = 5
-        res = @when let (a, 3) = xy,
-                        5 = z
+        @test 1 == @when let (a, 3) = xy,
+                             5 = z
             a
         @otherwise
             0
         end
-        @test res == 1
 
-        res = @when let (a, 1) = xy,
-                        5 = z
+        @test 0 == @when let (a, 1) = xy,
+                             5 = z
             a
         @otherwise
             0
         end
-        @test res == 0
 
-        res = @when let (a, 3) = xy,
-                        6 = z
+        @test 0 == @when let (a, 3) = xy,
+                             6 = z
             a
         @otherwise
             0
         end
-        @test res == 0
-
     end
 
     @testset "@when + @otherwise with many bidings" begin
@@ -181,6 +175,25 @@
         @test f1((123, 3), 5) == 0      # not match `(a, 1) = xy`
         @test f1((123, 1), 1) == 0      # not match `5 = z`
 
+        function f2(ab, c, d, e)
+            @when let (a, 1) = ab,
+                      5      = c
+                a, c
+            @when begin :cpp = d; 2.0 = e end
+                d, e
+            @otherwise
+                0
+            end
+        end
+        @test f2((9, 1), 5, :c, 1.0) == (9, 5)          # case: a, 5
+        @test f2((9, 1), 5, :cpp, 2.0) == (9, 5)        # case: a, 5
+        @test f2((9, 2), 5, :cpp, 2.0) == (:cpp, 2.0)   # case: d, f
+
+        @test f2((9, 0), 5, :c00, 2.0) == 0  # default case
+        @test f2((9, 1), 0, :c00, 2.0) == 0  # default case
+        @test f2((9, 0), 5, :cpp, 0.0) == 0  # default case
+        @test f2((9, 1), 0, :cpp, 0.0) == 0  # default case
+
     end
 
     @testset "error handles" begin
@@ -192,14 +205,15 @@
         @test_macro_throws SyntaxError @when x 1
         @test_macro_throws SyntaxError("Not match the form of `@when a = b expr`") @when 1 1
 
-        # gen_when
-        #   case: Expr(a, _...)
-        # @test_broken SyntaxError("Expect a let-binding, but found a `block` expression.") @when begin end
-        # @test_broken SyntaxError("Expect a let-binding, but found a `macrocall` expression.") @when @when
-        #
-        # #   case: _
-        # @test_broken SyntaxError("Expect a let-binding.") @when 1
-        # @test_broken SyntaxError("Expect a let-binding.") @when x
+        # `gen_when`
+        #   case: a
+        @test_macro_throws SyntaxError @when 1
+        @test_macro_throws SyntaxError @when x
+        @test_macro_throws SyntaxError @when @when
+        @test_macro_throws SyntaxError @when begin end
+
+        # `@otherwise`
+        @test_macro_throws SyntaxError("@otherwise is only used inside @when block, as a token to indicate default case.") @otherwise
     end
 
 end
