@@ -27,7 +27,6 @@ function split_case_and_block(stmts, first_bindings, first_source)
     current_block = []
 
     function make_block!()
-
         # avoid setting LineNumberNode in the end of block.
         block_size = length(current_block)
         take_size = block_size
@@ -37,7 +36,7 @@ function split_case_and_block(stmts, first_bindings, first_source)
                 break
             end
         end
-        # push current_block(cache) to current_block, then clear cache
+        # push current_block(cache) to blocks, then clear cache
         push!(blocks, Expr(:block, view(current_block, take_size)...))
         empty!(current_block)
         nothing
@@ -74,13 +73,15 @@ end
 """
 Used in the `@when` block:
 
-```
+```julia
 @when (a, b) = x begin
     a + b
 @otherwise
     0
 end
 ```
+
+See also: [`@when`](@ref)
 """
 macro otherwise()
     throw(SyntaxError("@otherwise is only used inside @when block, as a token to indicate default case."))
@@ -112,17 +113,19 @@ function gen_when(let_expr, source :: LineNumberNode, mod :: Module)
                                     # :(@match $b $cbl)
                                 end
 
-                            # like:
-                            # let a; a = 1; a end
                             new_source::LineNumberNode => begin
                                     source = new_source
                                     last_ret
                                 end
+                            
+                            # match `cond.?` or `if cond end`
                             :(if $a; $(_...) end) ||
                             :($a.?) => @format [source, a, last_ret, last_block] quote
                                     source
                                     a ? last_ret : last_block
                                 end
+
+                            # match something like: `let a; a = 1; a end`
                             a => @format [source, a, last_ret] quote
                                     source
                                     let a
@@ -134,7 +137,8 @@ function gen_when(let_expr, source :: LineNumberNode, mod :: Module)
                 end
             end
 
-        a => let short_msg = SubString(string(a), 1, 20)
+        a => let s = string(a), 
+                 short_msg = SubString(s, 1, min(length(s), 20))
                 throw(SyntaxError("Expected a let expression, got a `$short_msg` at $(string(source))."))
             end
     end
@@ -177,7 +181,7 @@ It's nothing different from
 x = 1
 @when let (_, _) = x
     :tuple
-@when begin ::Float = x end
+@when begin ::Float64 = x end
     :float
 @when ::Int = x
     :int
