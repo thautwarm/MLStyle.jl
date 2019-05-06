@@ -112,11 +112,7 @@ function gen_lambda(cases, source :: LineNumberNode, mod :: Module)
     end
 end
 
-#=
-    help functions for `@when`
-=#
-
-@active MacroSplit{s::String}(x) begin
+@active WhenSpliter{s::String}(x) begin
     @match x begin
         Expr(:macrocall,
             &(Symbol("@", s)),
@@ -162,13 +158,13 @@ function split_case_and_block(stmts, first_bindings, first_source)
 
     for stmt in stmts
         @match stmt begin
-            MacroSplit{"when"}(source, bindings) =>
+            WhenSpliter{"when"}(source, bindings) =>
                 begin
                     push!(binding_seqs, bindings)
                     push!(sources, source)
                     make_block!()
                 end
-            MacroSplit{"otherwise"}(source, _) =>
+            WhenSpliter{"otherwise"}(source, _) =>
                 begin
                     push!(binding_seqs, [])
                     push!(sources, source)
