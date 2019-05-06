@@ -49,8 +49,18 @@
                                    @inline WhenAction(x) = 100x
             WhenAction(x)
         end
+
     end
 
+    @testset "when with predicates" begin
+        @test 2 === @when let if 1 > 0 end
+            2
+        end
+        @test 3 === @when let (a, b) = (1, 2),
+                              if 1 > 0 end
+                a + b
+        end
+    end
     @testset "@when in @when" begin
         function f1(args...)
             x = Tuple(args)

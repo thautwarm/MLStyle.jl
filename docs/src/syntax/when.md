@@ -15,7 +15,7 @@ Allow Destructuring in Let-Binding
 tp = (2, 3)
 x = 2
 
-@assert 5 === 
+@assert 5 ===
     @when let (2, a) = tp,
                   b  = x
         a + b
@@ -38,7 +38,7 @@ end
 
 s = S1(5)
 
-@assert 500 === 
+@assert 500 ===
     @when let S1(x) = s,
               @inline fn(x) = 100x
         fn(x)
