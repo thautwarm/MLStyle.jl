@@ -18,7 +18,7 @@ export PatternUnsolvedException, InternalException, SyntaxError, UnknownExtensio
 # Syntax Sugars
 export @as_record
 export @λ, gen_lambda
-export @when, gen_when
+export @when, @otherwise, gen_when
 
 # convenient modules
 export Modules
@@ -112,29 +112,131 @@ function gen_lambda(cases, source :: LineNumberNode, mod :: Module)
     end
 end
 
+#=
+    help functions for `@when`
+=#
+
+@active MacroSplit{s::String}(x) begin
+    @match x begin
+        Expr(:macrocall,
+            &(Symbol("@", s)),
+            ln::LineNumberNode,
+            Expr(:block, elts...) || a && Do(elts = [a])
+        ) => (ln, elts)
+        Expr(:macrocall,
+            &(Symbol("@", s)),
+            ln::LineNumberNode
+            # no args
+        ) => (ln, [:(_)])
+        _ => nothing
+    end
+end
+
+function split_case_and_block(stmts, first_bindings, first_source)
+    blocks :: Vector{Any} = []
+    binding_seqs :: Vector{Any} = [first_bindings]
+    sources :: Vector{LineNumberNode} = [first_source]
+    current_block = []
+
+    function make_block!()
+
+        # avoid setting LineNumberNode in the end of block.
+        block_size = length(current_block)
+        take_size = block_size
+        for i in block_size:-1:(block_size - 1)
+            take_size = i
+            if !(current_block[i] isa LineNumberNode)
+                break
+            end
+        end
+        # push current_block(cache) to current_block, then clear cache
+        push!(blocks, Expr(:block, view(current_block, take_size)...))
+        empty!(current_block)
+        nothing
+    end
+
+    function append_block!(a)
+        push!(current_block, a)
+        nothing
+    end
+
+    for stmt in stmts
+        @match stmt begin
+            MacroSplit{"when"}(source, bindings) =>
+                begin
+                    push!(binding_seqs, bindings)
+                    push!(sources, source)
+                    make_block!()
+                end
+            MacroSplit{"otherwise"}(source, _) =>
+                begin
+                    push!(binding_seqs, [])
+                    push!(sources, source)
+                    make_block!()
+                end
+            a => append_block!(a)
+        end
+    end
+    make_block!()
+    # thus, the length of `sources`, `binding_seqs` and `blocks`
+    # are guaranteed to be the same.
+    collect(zip(sources, binding_seqs, blocks))
+end
+
+"""
+Used in the `@when` block:
+
+```
+@when (a, b) = x begin
+    a + b
+@otherwise
+    0
+end
+```
+"""
+macro otherwise() end
+
 """
 Code generation for `@when`.
 You should pass an `Expr(:let, ...)` as the first argument.
 """
 function gen_when(let_expr, source :: LineNumberNode, mod :: Module)
     @match let_expr begin
-        Expr(:let, Expr(:block, bindings...) ||  a && Do(bindings = [a]), ret) =>
-            foldr(bindings, init=ret) do each, last
-                @match each begin
-                    :($a = $b) =>
-                        let cbl =  @format [source, a, last] quote
-                                source
-                                a => last
-                                _ => nothing
-                            end
-                            gen_match(b, cbl, source, mod)
+        Expr(:let,
+            Expr(:block, bindings...) || a && Do(bindings = [a]),
+            Expr(:block, stmts...) || b && Do(stmts = [b])) =>
+
+            begin
+                sources_cases_blocks = split_case_and_block(stmts, bindings, source)
+                # pprint(sources_cases_blocks)
+                foldr(sources_cases_blocks, init=:nothing) do (source, bindings, block), last_block
+                    foldr(bindings, init=block) do each, last_ret
+                        @match each begin
+                            :($a = $b) =>
+                                let cbl = @format [source, a, last_ret, last_block] quote
+                                            source
+                                            a => last_ret
+                                            _ => last_block
+                                        end
+                                    gen_match(b, cbl, source, mod)
+                                    # :(@match $b $cbl)
+                                end
+
+                            # like:
+                            # let a; a = 1; a end
+                            a => @format [source, a, last_ret] quote
+                                    let a
+                                        last_ret
+                                    end
+                                end
                         end
-                    a => :(let $a; $last end)
+                    end
                 end
             end
 
-        Expr(a, _...) => @syntax_err "Expect a let-binding, but found a `$a` expression."
-        _ => @syntax_err "Expect a let-binding."
+        a => let short_msg = SubString(string(a), 1, 20)
+                throw(SyntaxError("Expected a let expression, got a `$short_msg` at $(string(source))."))
+            end
     end
 end
 

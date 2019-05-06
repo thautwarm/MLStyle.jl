@@ -70,6 +70,12 @@ Finally, we finish such a library that provides **extensible pattern matching** 
 
     Once you define a pattern, you're to be asked to give some qualifiers to your own patterns to prevent visiting them from unexpected modules.
 
+- You can use MLStyle only in development via [Bootstrap mechanism](https://github.com/thautwarm/MLStyle.jl/tree/master/bootstrap)
+
+    Now there's a code generation tool called `boostrap` available at [MLStyle/boostrap](https://github.com/thautwarm/MLStyle.jl/tree/master/bootstrap), which
+    you can take advantage of to remove MLStyle dependency when making distributions.
+
+    Also, MLStyle is implemented by itself now, via the bootstrap method.
 
 - \* Modern Ways about AST Manipulations
 
