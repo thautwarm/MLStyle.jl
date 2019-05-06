@@ -381,7 +381,7 @@ var documenterSearchIndex = {"docs": [
     "page": "When Destructuring",
     "title": "When Destructuring",
     "category": "section",
-    "text": "The @when is introduced to work with the scenarios where @match is a bit heavy.It\'s similar to if-let construct in Rust language.There\'re two distinct syntaxes for @when."
+    "text": "The @when is introduced to work with the scenarios where @match is a bit heavy.It\'s similar to if-let construct in Rust language.There\'re three distinct syntaxes for @when."
 },
 
 {
@@ -398,6 +398,14 @@ var documenterSearchIndex = {"docs": [
     "title": "Sole Destructuring",
     "category": "section",
     "text": "However, a let-binding could be also heavy when you just want to solely destructure something.Finally, we allowed another syntax for @when.s = S1(5)\n@assert 5 === @when S1(x) = s x\n@assert 10 === @when S1(x) = s begin\n    2x\nend\n@assert nothing === @when S1(x) = S2(10) x"
+},
+
+{
+    "location": "syntax/when/#Multiple-Branches-1",
+    "page": "When Destructuring",
+    "title": "Multiple Branches",
+    "category": "section",
+    "text": "Sometimes we might have this kind of logic:If a matches pattern A, then do Aa\nelse if b matches pattern B, then do Bb\notherwise do CcAs there is now no pattern matching support for if-else, we cannot represent above logic literally in vallina Julia.MLStyle provides this, in such a syntax:@when let A = a\n    Aa\n@when B = b\n    Bb\n@otherwise\n    Cc\nendAlso, predicates can be used here, thus it\'s superior than if-else:@when let A = a,\n          condA.? # or if condA end\n    Aa\n@when begin B = b\n            condB.? # or `if condB end`\n      end\n    Bb\n@otherwise\n    Cc\nendA concrete example is presented here:a = 1\nb = 2\n@when let (t1, t2) = a, (t1 > 1).?\n    t2\n@when begin a::Int = b; (b < 10).? end\n    0\nend # => 0"
 },
 
 {
