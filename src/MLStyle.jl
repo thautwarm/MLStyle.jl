@@ -220,6 +220,10 @@ function gen_when(let_expr, source :: LineNumberNode, mod :: Module)
 
                             # like:
                             # let a; a = 1; a end
+                            new_source::LineNumberNode => begin
+                                    source = new_source
+                                    last_ret
+                                end
                             a => @format [source, a, last_ret] quote
                                     let a
                                         last_ret
