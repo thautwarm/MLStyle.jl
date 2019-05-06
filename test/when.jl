@@ -1,4 +1,48 @@
 @testset "@when" begin
+    @testset "docstring" begin
+        # otherwise()
+        @test 3 == @when (a, b) = (1, 2) begin
+            a + b
+        @otherwise
+            0
+        end
+        @test 0 == @when (a, b) = () begin
+            a + b
+        @otherwise
+            0
+        end
+
+        # macro when
+        @test (1,2,3) == @when let (a, 1) = (1, 1),
+                                   [b, c, 5] = [2, 3, 5]
+            (a, b, c)
+        end
+
+        x = 1
+        @test :int == @when let (_, _) = x
+            :tuple
+        @when begin ::Float64 = x end
+            :float
+        @when ::Int = x
+            :int
+        @otherwise
+            :unknown
+        end
+
+        x = 1
+        y = (1, 2)
+        cond1 = true
+        cond2 = true
+        @test 3 == @when let cond1.?,
+                  (a, b) = x
+            a + b
+        @when begin if cond2 end
+                    (a, b) = y
+              end
+            a + b
+        end
+    end
+
     @testset "Only @when" begin
         @test 2 == @when let (a, 1) = (2, 1)
             a
@@ -185,15 +229,14 @@
                 0
             end
         end
-        @test f2((9, 1), 5, :c, 1.0) == (9, 5)          # case: a, 5
-        @test f2((9, 1), 5, :cpp, 2.0) == (9, 5)        # case: a, 5
-        @test f2((9, 2), 5, :cpp, 2.0) == (:cpp, 2.0)   # case: d, f
+        @test f2((9, 1), 5, :c, 1.0) == (9, 5)          # case: a, c
+        @test f2((9, 1), 5, :cpp, 2.0) == (9, 5)        # case: a, c
+        @test f2((9, 2), 5, :cpp, 2.0) == (:cpp, 2.0)   # case: d, e
 
         @test f2((9, 0), 5, :c00, 2.0) == 0  # default case
         @test f2((9, 1), 0, :c00, 2.0) == 0  # default case
         @test f2((9, 0), 5, :cpp, 0.0) == 0  # default case
         @test f2((9, 1), 0, :cpp, 0.0) == 0  # default case
-
     end
 
     @testset "error handles" begin
