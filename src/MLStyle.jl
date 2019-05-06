@@ -47,14 +47,18 @@ include("Qualification.jl")
 
 include("TypeVarExtraction.jl")
 
-include("StandardPatterns.jl")
-using MLStyle.StandardPatterns
+include("StandardPatterns/TypeVarDecons.jl")
+include("StandardPatterns/Active.jl")
+using MLStyle.Active
 
 include("Record.jl")
 using MLStyle.Record
 
 include("DataType.jl")
 using MLStyle.DataType
+
+include("StandardPatterns/Uncomprehensions.jl")
+
 
 """
 Code generation for `@λ`.

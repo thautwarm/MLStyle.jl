@@ -19,6 +19,7 @@ end
 MODULE = TestModule
 
 @use GADT
+include("uncomp.jl")
 include("when.jl")
 # include("MQuery/test.jl")
 # include("modules/cond.jl")
