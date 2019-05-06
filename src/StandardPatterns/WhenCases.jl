@@ -118,7 +118,8 @@ function gen_when(let_expr, source :: LineNumberNode, mod :: Module)
                                     source = new_source
                                     last_ret
                                 end
-                            :(if $a; $(_...) end) => @format [source, a, last_ret, last_block] quote
+                            :(if $a; $(_...) end) ||
+                            :($a.?) => @format [source, a, last_ret, last_block] quote
                                     source
                                     a ? last_ret : last_block
                                 end
@@ -185,14 +186,15 @@ x = 1
 end
 ```
 
-4. Also, you can use predicates when matching:
+4. Also, you can use predicates when matching, in the form
+of `cond.?` or `if cond end`:
 
 ```julia
 x = 1
 y = (1, 2)
 cond1 = true
 cond2 = true
-@when let if cond1 end,
+@when let cond1.?,
           (a, b) = x
     a + b
 @when begin if cond2 end

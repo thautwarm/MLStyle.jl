@@ -15,6 +15,8 @@ makedocs(
         MLStyle.TypeVarDecons,
         MLStyle.Active,
         MLStyle.Uncomprehensions,
+        MLStyle.LambdaCases,
+        MLStyle.WhenCases,
 
         MLStyle.Render
     ],

@@ -57,7 +57,7 @@
             2
         end
         @test 3 === @when let (a, b) = (1, 2),
-                              if 1 > 0 end
+                              (1 > 0).?
                 a + b
         end
     end

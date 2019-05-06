@@ -93,12 +93,12 @@ There's an order among all those patterns' implementations, for some pattern mig
     y = (1, 2)
     cond1 = true
     cond2 = true
-    @when let if cond1 end,
-            (a, b) = x
+    @when let cond1.?,
+              (a, b) = x
         a + b
-    @when begin if cond2 end
+    @when begin cond2.?
                 (a, b) = y
-        end
+           end
         a + b
     @otherwise
         10
