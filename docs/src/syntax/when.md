@@ -6,7 +6,7 @@ The `@when` is introduced to work with the scenarios where `@match` is a bit hea
 It's similar to [if-let](https://doc.rust-lang.org/rust-by-example/flow_control/if_let.html) construct in Rust language.
 
 
-There're two distinct syntaxes for `@when`.
+There're three distinct syntaxes for `@when`.
 
 Allow Destructuring in Let-Binding
 -----------------------------------------------------------------
@@ -15,7 +15,7 @@ Allow Destructuring in Let-Binding
 tp = (2, 3)
 x = 2
 
-@assert 5 === 
+@assert 5 ===
     @when let (2, a) = tp,
                   b  = x
         a + b
@@ -38,7 +38,7 @@ end
 
 s = S1(5)
 
-@assert 500 === 
+@assert 500 ===
     @when let S1(x) = s,
               @inline fn(x) = 100x
         fn(x)
@@ -62,4 +62,57 @@ s = S1(5)
     2x
 end
 @assert nothing === @when S1(x) = S2(10) x
+```
+
+Multiple Branches
+----------------------------------
+
+Sometimes we might have this kind of logic:
+
+- If `a` matches pattern `A`, then do `Aa`
+- else if `b` matches pattern `B`, then do `Bb`
+- otherwise do `Cc`
+
+
+As there is now no pattern matching support for `if-else`,
+we cannot represent above logic literally in vallina Julia.
+
+MLStyle provides this, in such a syntax:
+
+```julia
+@when let A = a
+    Aa
+@when B = b
+    Bb
+@otherwise
+    Cc
+end
+```
+
+Also, predicates can be used here, thus it's superior than
+`if-else`:
+
+```julia
+@when let A = a,
+          condA.? # or if condA end
+    Aa
+@when begin B = b
+            condB.? # or `if condB end`
+      end
+    Bb
+@otherwise
+    Cc
+end
+```
+
+A concrete example is presented here:
+
+```julia
+a = 1
+b = 2
+@when let (t1, t2) = a, (t1 > 1).?
+    t2
+@when begin a::Int = b; (b < 10).? end
+    0
+end # => 0
 ```
