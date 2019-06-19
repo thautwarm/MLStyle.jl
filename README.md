@@ -39,18 +39,18 @@ MLStyle.jl
 
 ## What's MLStyle.jl?
 
-MLStyle.jl is a Julia package that provides multiple productivity tools from ML([Meta Language](https://en.wikipedia.org/wiki/ML_(programming_language))) like [pattern matching](https://en.wikipedia.org/wiki/Pattern_matching) that're statically generated and extensible, ADTs/GADTs([Algebraic Data Type](https://en.wikipedia.org/wiki/Algebraic_data_type), [Generalized Algebraic Data Type](https://en.wikipedia.org/wiki/Generalized_algebraic_data_type)) and [Active Patterns](https://docs.microsoft.com/en-us/dotnet/fsharp/language-reference/active-patterns).
+MLStyle.jl is a Julia package that provides multiple productivity tools from ML([Meta Language](https://en.wikipedia.org/wiki/ML_(programming_language))) like [pattern matching](https://en.wikipedia.org/wiki/Pattern_matching) that is statically generated and extensible, ADTs/GADTs([Algebraic Data Type](https://en.wikipedia.org/wiki/Algebraic_data_type), [Generalized Algebraic Data Type](https://en.wikipedia.org/wiki/Generalized_algebraic_data_type)) and [Active Patterns](https://docs.microsoft.com/en-us/dotnet/fsharp/language-reference/active-patterns).
 
-If you still have problems with the scoping of MLStyle.jl, treat it as **FP.jl**.
+Think of MLStyle.jl as a packaging bringing advanced functional programming idioms to julia.
 
 
 ## Motivation
 
-The people who're used to so-called functional programming could become retarded when there're no pattern matching and ADTs, and of course I'm one of them.
+Those used to functional programming may feel limited when they don't have pattern matching and ADTs, and of course I'm one of them.
 
 However, I don't want to take a trade-off here to use some available alternatives that miss features or are not well-optimized. Just like [why those greedy people created Julia](https://julialang.org/blog/2012/02/why-we-created-julia), I'm also so greedy that **I want to integrate all those useful features into one language and, make all of them convenient, efficient and extensible**.
 
-On the other side, during recent years I was addicted to extend Python with metaprogramming and even internal mechanisms. Although I made something interesting like [pattern-matching](https://github.com/Xython/pattern-matching), [goto](https://github.com/thautwarm/Redy/blob/master/Redy/Opt/builtin_features/_goto.py), [ADTs](https://github.com/thautwarm/Redy/tree/master/Redy/ADT), [constexpr](https://github.com/thautwarm/Redy/blob/master/Redy/Opt/builtin_features/_constexpr.py), [macros](https://github.com/thautwarm/Redy/blob/master/Redy/Opt/builtin_features/_macro.py), etc., most of these implementations are so disgustingly evil. Furtunately, in Julia, all of them could be achieved straightforwardly without any black magic, at last, some of these ideas come into the existence of MLStyle.jl.
+On the other side, during recent years I was addicted to extend Python with metaprogramming and even internal mechanisms. Although I made something interesting like [pattern-matching](https://github.com/Xython/pattern-matching), [goto](https://github.com/thautwarm/Redy/blob/master/Redy/Opt/builtin_features/_goto.py), [ADTs](https://github.com/thautwarm/Redy/tree/master/Redy/ADT), [constexpr](https://github.com/thautwarm/Redy/blob/master/Redy/Opt/builtin_features/_constexpr.py), [macros](https://github.com/thautwarm/Redy/blob/master/Redy/Opt/builtin_features/_macro.py), etc., most of these implementations are also disgustingly evil. Furtunately, in Julia, all of them could be achieved straightforwardly without any black magic, at last, some of these ideas come into existence with MLStyle.jl.
 
 Finally, we finish such a library that provides **extensible pattern matching** in such an efficient language.
 
@@ -62,7 +62,7 @@ Finally, we finish such a library that provides **extensible pattern matching** 
 
 - Performance Gain
 
-    When dealing with complex conditional logics and visiting nested datatypes, the codes compiled via `MLStyle.jl` could always match the handwritten. You can check [Benchmark](#benchmark) for details.
+    When dealing with complex conditional logics and visiting nested datatypes, the codes compiled via `MLStyle.jl` is usually ass fast as handwritten code. You can check the [benchmarks](#benchmark) for details.
 
 - Extensibility and Hygienic Scoping
 
@@ -83,19 +83,37 @@ Finally, we finish such a library that provides **extensible pattern matching** 
 
 ## Installation, Documentations and Tutorials
 
-
 Rich features are provided by MLStyle.jl and you can check [documents](https://thautwarm.github.io/MLStyle.jl/latest/) to get started.
 
-For installation, open package manager mode in Julia shell and `add MLStyle`.
+For installation, open package manager mode in the Julia REPL and `add MLStyle`.
 
 For more examples or tutorials, check [this project](https://github.com/thautwarm/MLStyle-Playground) which will be frequently updated to present some interesting uses of MLStyle.jl.
 
 ## Preview
+### Rock Paper Scissors
+Here's a trivial example of MLStyle.jl in action
+```julia
+using MLStyle
+@data Shape begin # Define an algebraic data type Shape
+    Rock()
+    Paper()
+    Scissors()
+end
 
-In this README I'm glad to share some non-trivial code snippets.
+# Determine who wins a game of rock paper scissors with pattern matching
+play(a::Shape, b::Shape) = @match (a,b) begin
+    (Paper(), Rock())     => "Paper Wins!";
+    (Rock(), Scissors())  => "Rock Wins!";
+    (Scissors(), Paper()) => "Scissors Wins!";
+    (a, b)                => a == b ? "Tie!" : play(b, a)
+end
+```
+
+
+
 
 ### Homoiconic pattern matching for Julia ASTs
-
+Here's a less trivial use of MLStyle.jl for deconstructing and pattern matching julia code. 
 ```julia
 rmlines = @λ begin
     e :: Expr           -> Expr(e.head, filter(x -> x !== nothing, map(rmlines, e.args))...)
