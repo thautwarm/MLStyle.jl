@@ -161,7 +161,7 @@ A simple intepreter implemented via GADTs could be found at `test/untyped_lam.jl
 
 ### Active Patterns
 
-Currently, MLStyle does not have [full featured](https://docs.microsoft.com/en-us/dotnet/fsharp/language-reference/active-patterns) full featured active patterns, but the subset of parametric active patterns that are implemented are very powerful.
+Currently, MLStyle does not have [full featured](https://docs.microsoft.com/en-us/dotnet/fsharp/language-reference/active-patterns) active patterns, but the subset of parametric active patterns that are implemented are very powerful.
 
 ```julia
 @active Re{r :: Regex}(x) begin
@@ -178,10 +178,9 @@ end # RegexMatch("123")
 
 ### Prerequisite
 
-Recently the rudimentary benchmarks have been finished, which turns out that MLStyle.jl could be extremely fast
-when matching cases are complicated, while in terms of some very simple cases(straightforwardly destructure shallow tuples, arrays and datatypes without recursive invocations), Match.jl could be faster.
+Recent benchmarks have been run, showing that MLStyle.jl can be extremely fast for complicated pattern matching, but due to it's advanced machinery, has noticeable overhead in very simple cases such as straightforwardly destructuring shallow tuples, arrays and datatypes without recursive invocations.
 
-All benchmark scripts are provided at directory [Matrix-Benchmark](https://github.com/thautwarm/MLStyle.jl/blob/master/matrix-benchmark).
+All benchmark scripts are provided at the directory [Matrix-Benchmark](https://github.com/thautwarm/MLStyle.jl/blob/master/matrix-benchmark).
 
 
 To run these cross-implementation benchmarks, some extra dependencies should be installed:
@@ -200,7 +199,7 @@ The benchmarks presented here are made by Julia **v1.1** on **Fedora 28**. For r
 
 #### Time Overhead
 
-In x-axis, after the name of test-case is the least time-consuming one's index, the unit is `ns`).
+On the x-axis, after the name of test-case is the least time-consuming run's index in units of `ns`.
 
 The y-label is the ratio of the implementation's time cost to that of the least time-consuming.
 
