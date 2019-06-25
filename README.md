@@ -62,7 +62,7 @@ Finally, we finish such a library that provides **extensible pattern matching** 
 
 - Performance Gain
 
-    When dealing with complex conditional logics and visiting nested datatypes, the codes compiled via `MLStyle.jl` is usually ass fast as handwritten code. You can check the [benchmarks](#benchmark) for details.
+    When dealing with complex conditional logics and visiting nested datatypes, the codes compiled via `MLStyle.jl` is usually as fast as handwritten code. You can check the [benchmarks](#benchmark) for details.
 
 - Extensibility and Hygienic Scoping
 
