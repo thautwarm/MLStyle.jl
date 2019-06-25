@@ -10,11 +10,11 @@ MLStyle.jl
 [![Join the chat at https://gitter.im/MLStyle-jl/community](https://badges.gitter.im/MLStyle-jl/community.svg)](https://gitter.im/MLStyle-jl/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 ## Index
-- [What's MLStyle.jl](#whats-mlstylejl)
+- [What is MLStyle.jl](#what-is-mlstylejl)
 
 - [Motivation](#motivation)
 
-- [Why to use MLStyle.jl](#why-to-use-mlstylejl)
+- [Why use MLStyle.jl](#why-use-mlstylejl)
 
 - [Installation, Documentations and Tutorials](#installation-documentations-and-tutorials)
 
@@ -37,7 +37,7 @@ MLStyle.jl
 - [Contributing to MLStyle](https://github.com/thautwarm/MLStyle.jl#contributing-to-mlstyle)
 
 
-## What's MLStyle.jl?
+## What is MLStyle.jl?
 
 MLStyle.jl is a Julia package that provides multiple productivity tools from ML([Meta Language](https://en.wikipedia.org/wiki/ML_(programming_language))) like [pattern matching](https://en.wikipedia.org/wiki/Pattern_matching) that is statically generated and extensible, ADTs/GADTs([Algebraic Data Type](https://en.wikipedia.org/wiki/Algebraic_data_type), [Generalized Algebraic Data Type](https://en.wikipedia.org/wiki/Generalized_algebraic_data_type)) and [Active Patterns](https://docs.microsoft.com/en-us/dotnet/fsharp/language-reference/active-patterns).
 
@@ -54,7 +54,7 @@ On the other side, during recent years I was addicted to extend Python with meta
 
 Finally, we finish such a library that provides **extensible pattern matching** in such an efficient language.
 
-## Why to use MLStyle.jl
+## Why use MLStyle.jl
 
 - Straightforward
 
@@ -110,8 +110,6 @@ end
 ```
 
 
-
-
 ### Homoiconic pattern matching for Julia ASTs
 Here's a less trivial use of MLStyle.jl for deconstructing and pattern matching julia code. 
 ```julia
@@ -163,7 +161,7 @@ A simple intepreter implemented via GADTs could be found at `test/untyped_lam.jl
 
 ### Active Patterns
 
-Currently, in MLStyle it's not a [full featured](https://docs.microsoft.com/en-us/dotnet/fsharp/language-reference/active-patterns) one, but even a subset with parametric active pattern could be super useful.
+Currently, MLStyle does not have [full featured](https://docs.microsoft.com/en-us/dotnet/fsharp/language-reference/active-patterns) full featured active patterns, but the subset of parametric active patterns that are implemented are very powerful.
 
 ```julia
 @active Re{r :: Regex}(x) begin
