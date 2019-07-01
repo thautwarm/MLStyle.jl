@@ -7,7 +7,7 @@ struct PatternUnsolvedException <: Exception
         if isa(arg, String)
             new(arg)
         else
-            new("Non-exhaustive pattern found for target `$(string(arg))`.")
+            new("Non-exhaustive pattern found for target `$(repr(arg))`.")
         end
 end
 
