@@ -5,6 +5,8 @@ using MLStyle.Extension
 using MLStyle.Err
 using MLStyle.Toolz: ($)
 using MLStyle.Render: render, format
+include("mod_repr.jl")
+
 
 const __L__ = @__LINE__
 export @format
@@ -134,7 +136,7 @@ def_pattern(Infras,
         @match hd begin
             ::Symbol   => mk_app_pattern(tag, hd, tl, mod)
             :($(::Symbol){$(_...)}) => mk_gapp_pattern(tag, [], hd, tl, mod)
-            _ => throw("Deconstructor cannot be an expression like $(string(hd)).")
+            _ => error("Deconstructor cannot be an expression like $(mod_show(hd)).")
         end
     end)
 end

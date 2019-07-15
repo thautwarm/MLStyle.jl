@@ -84,7 +84,16 @@ using MLStyle
   ),
 ))
 @eval $(LineNumberNode(
-  9,
+  8,
+  Symbol("/home/redbq/github/MLStyle.jl/bootstrap/Infras.jl"),
+))
+@eval $(Expr(
+  :call,
+  :include,
+  "../bootstrap/mod_repr.jl",
+))
+@eval $(LineNumberNode(
+  11,
   Symbol("/home/redbq/github/MLStyle.jl/bootstrap/Infras.jl"),
 ))
 @eval $(Expr(
@@ -96,14 +105,14 @@ using MLStyle
       :macrocall,
       Symbol("@__LINE__"),
       LineNumberNode(
-        9,
+        11,
         Symbol("/home/redbq/github/MLStyle.jl/bootstrap/Infras.jl"),
       ),
     ),
   ),
 ))
 @eval $(LineNumberNode(
-  10,
+  12,
   Symbol("/home/redbq/github/MLStyle.jl/bootstrap/Infras.jl"),
 ))
 @eval $(Expr(
@@ -111,7 +120,7 @@ using MLStyle
   Symbol("@format"),
 ))
 @eval $(LineNumberNode(
-  11,
+  13,
   Symbol("/home/redbq/github/MLStyle.jl/bootstrap/Infras.jl"),
 ))
 @eval $(Expr(
@@ -125,7 +134,7 @@ using MLStyle
   Expr(
     :block,
     LineNumberNode(
-      12,
+      14,
       Symbol("/home/redbq/github/MLStyle.jl/bootstrap/Infras.jl"),
     ),
     Expr(
@@ -186,7 +195,7 @@ using MLStyle
       ),
     ),
     LineNumberNode(
-      13,
+      15,
       Symbol("/home/redbq/github/MLStyle.jl/bootstrap/Infras.jl"),
     ),
     Expr(
@@ -202,7 +211,7 @@ using MLStyle
   ),
 ))
 @eval $(LineNumberNode(
-  16,
+  18,
   Symbol("/home/redbq/github/MLStyle.jl/bootstrap/Infras.jl"),
 ))
 @eval $(Expr(
@@ -210,7 +219,7 @@ using MLStyle
   Symbol("@typed_as"),
 ))
 @eval $(LineNumberNode(
-  17,
+  19,
   Symbol("/home/redbq/github/MLStyle.jl/bootstrap/Infras.jl"),
 ))
 @eval $(Expr(
@@ -220,7 +229,7 @@ using MLStyle
     Symbol("@doc"),
   ),
   LineNumberNode(
-    17,
+    19,
     Symbol("/home/redbq/github/MLStyle.jl/bootstrap/Infras.jl"),
   ),
   "this macro provide a convenient and type-stable way to generate\ntype checking.\n\nHowever, the generated code requires a given variable `TARGET`\nin metaprogramming level.\n\ne.g\n\nTARGET = :target_id\n(@typed_as Int) # which generates a pattern to check if type is Int.\n\n",
@@ -234,7 +243,7 @@ using MLStyle
     Expr(
       :block,
       LineNumberNode(
-        31,
+        33,
         Symbol("/home/redbq/github/MLStyle.jl/bootstrap/Infras.jl"),
       ),
       Expr(
@@ -246,7 +255,7 @@ using MLStyle
           Expr(
             :block,
             LineNumberNode(
-              32,
+              34,
               Symbol("/home/redbq/github/MLStyle.jl/bootstrap/Infras.jl"),
             ),
             Expr(
@@ -259,7 +268,7 @@ using MLStyle
               ),
             ),
             LineNumberNode(
-              33,
+              35,
               Symbol("/home/redbq/github/MLStyle.jl/bootstrap/Infras.jl"),
             ),
             Expr(
@@ -271,7 +280,7 @@ using MLStyle
               ),
             ),
             LineNumberNode(
-              34,
+              36,
               Symbol("/home/redbq/github/MLStyle.jl/bootstrap/Infras.jl"),
             ),
             Expr(
@@ -283,14 +292,14 @@ using MLStyle
               Expr(
                 :block,
                 LineNumberNode(
-                  35,
+                  37,
                   Symbol("/home/redbq/github/MLStyle.jl/bootstrap/Infras.jl"),
                 ),
                 Expr(
                   :macrocall,
                   Symbol("@format"),
                   LineNumberNode(
-                    35,
+                    37,
                     Symbol("/home/redbq/github/MLStyle.jl/bootstrap/Infras.jl"),
                   ),
                   Expr(
@@ -306,14 +315,14 @@ using MLStyle
                     Expr(
                       :block,
                       LineNumberNode(
-                        37,
+                        39,
                         Symbol("/home/redbq/github/MLStyle.jl/bootstrap/Infras.jl"),
                       ),
                       Expr(
                         :macrocall,
                         Symbol("@inline"),
                         LineNumberNode(
-                          37,
+                          39,
                           Symbol("/home/redbq/github/MLStyle.jl/bootstrap/Infras.jl"),
                         ),
                         :__L__,
@@ -331,12 +340,12 @@ using MLStyle
                           Expr(
                             :block,
                             LineNumberNode(
-                              38,
+                              40,
                               Symbol("/home/redbq/github/MLStyle.jl/bootstrap/Infras.jl"),
                             ),
                             :__T__,
                             LineNumberNode(
-                              39,
+                              41,
                               Symbol("/home/redbq/github/MLStyle.jl/bootstrap/Infras.jl"),
                             ),
                             :body,
@@ -344,14 +353,14 @@ using MLStyle
                         ),
                       ),
                       LineNumberNode(
-                        42,
+                        44,
                         Symbol("/home/redbq/github/MLStyle.jl/bootstrap/Infras.jl"),
                       ),
                       Expr(
                         :macrocall,
                         Symbol("@inline"),
                         LineNumberNode(
-                          42,
+                          44,
                           Symbol("/home/redbq/github/MLStyle.jl/bootstrap/Infras.jl"),
                         ),
                         :__L__,
@@ -365,7 +374,7 @@ using MLStyle
                           Expr(
                             :block,
                             LineNumberNode(
-                              43,
+                              45,
                               Symbol("/home/redbq/github/MLStyle.jl/bootstrap/Infras.jl"),
                             ),
                             :failed,
@@ -373,7 +382,7 @@ using MLStyle
                         ),
                       ),
                       LineNumberNode(
-                        46,
+                        48,
                         Symbol("/home/redbq/github/MLStyle.jl/bootstrap/Infras.jl"),
                       ),
                       Expr(
@@ -393,7 +402,7 @@ using MLStyle
   ),
 ))
 @eval $(LineNumberNode(
-  52,
+  54,
   Symbol("/home/redbq/github/MLStyle.jl/bootstrap/Infras.jl"),
 ))
 @eval $(Expr(
@@ -401,7 +410,7 @@ using MLStyle
   :patternOr,
 ))
 @eval $(LineNumberNode(
-  53,
+  55,
   Symbol("/home/redbq/github/MLStyle.jl/bootstrap/Infras.jl"),
 ))
 @eval $(Expr(
@@ -417,7 +426,7 @@ using MLStyle
     Expr(
       :block,
       LineNumberNode(
-        53,
+        55,
         Symbol("/home/redbq/github/MLStyle.jl/bootstrap/Infras.jl"),
       ),
       Expr(
@@ -426,7 +435,7 @@ using MLStyle
         Expr(
           :block,
           LineNumberNode(
-            53,
+            55,
             Symbol("/home/redbq/github/MLStyle.jl/bootstrap/Infras.jl"),
           ),
           Expr(
@@ -455,7 +464,7 @@ using MLStyle
             Expr(
               :block,
               LineNumberNode(
-                55,
+                57,
                 Symbol("/home/redbq/github/MLStyle.jl/bootstrap/Infras.jl"),
               ),
               Expr(
@@ -468,14 +477,14 @@ using MLStyle
                 ),
               ),
               LineNumberNode(
-                56,
+                58,
                 Symbol("/home/redbq/github/MLStyle.jl/bootstrap/Infras.jl"),
               ),
               Expr(
                 :macrocall,
                 Symbol("@format"),
                 LineNumberNode(
-                  56,
+                  58,
                   Symbol("/home/redbq/github/MLStyle.jl/bootstrap/Infras.jl"),
                 ),
                 Expr(
@@ -489,7 +498,7 @@ using MLStyle
                   Expr(
                     :block,
                     LineNumberNode(
-                      57,
+                      59,
                       Symbol("/home/redbq/github/MLStyle.jl/bootstrap/Infras.jl"),
                     ),
                     Expr(
@@ -498,7 +507,7 @@ using MLStyle
                       :p1,
                     ),
                     LineNumberNode(
-                      58,
+                      60,
                       Symbol("/home/redbq/github/MLStyle.jl/bootstrap/Infras.jl"),
                     ),
                     Expr(
@@ -523,7 +532,7 @@ using MLStyle
   ),
 ))
 @eval $(LineNumberNode(
-  63,
+  65,
   Symbol("/home/redbq/github/MLStyle.jl/bootstrap/Infras.jl"),
 ))
 @eval $(Expr(
@@ -547,7 +556,7 @@ using MLStyle
   ),
 ))
 @eval $(LineNumberNode(
-  64,
+  66,
   Symbol("/home/redbq/github/MLStyle.jl/bootstrap/Infras.jl"),
 ))
 @eval $(Expr(
@@ -571,7 +580,7 @@ using MLStyle
   ),
 ))
 @eval $(LineNumberNode(
-  66,
+  68,
   Symbol("/home/redbq/github/MLStyle.jl/bootstrap/Infras.jl"),
 ))
 @eval $(Expr(
@@ -579,7 +588,7 @@ using MLStyle
   :def_pattern,
 ))
 @eval $(LineNumberNode(
-  67,
+  69,
   Symbol("/home/redbq/github/MLStyle.jl/bootstrap/Infras.jl"),
 ))
 @eval $(Expr(
@@ -602,7 +611,7 @@ using MLStyle
   Expr(
     :block,
     LineNumberNode(
-      68,
+      70,
       Symbol("/home/redbq/github/MLStyle.jl/bootstrap/Infras.jl"),
     ),
     Expr(
@@ -628,7 +637,7 @@ using MLStyle
       ),
     ),
     LineNumberNode(
-      69,
+      71,
       Symbol("/home/redbq/github/MLStyle.jl/bootstrap/Infras.jl"),
     ),
     Expr(
@@ -643,7 +652,7 @@ using MLStyle
       ),
     ),
     LineNumberNode(
-      70,
+      72,
       Symbol("/home/redbq/github/MLStyle.jl/bootstrap/Infras.jl"),
     ),
     Expr(
@@ -655,7 +664,7 @@ using MLStyle
   ),
 ))
 @eval $(LineNumberNode(
-  76,
+  78,
   Symbol("/home/redbq/github/MLStyle.jl/bootstrap/Infras.jl"),
 ))
 @eval $(Expr(
@@ -665,7 +674,7 @@ using MLStyle
     Symbol("@doc"),
   ),
   LineNumberNode(
-    76,
+    78,
     Symbol("/home/redbq/github/MLStyle.jl/bootstrap/Infras.jl"),
   ),
   " To test if an datatype can\n",
@@ -675,7 +684,7 @@ using MLStyle
   ),
 ))
 @eval $(LineNumberNode(
-  82,
+  84,
   Symbol("/home/redbq/github/MLStyle.jl/bootstrap/Infras.jl"),
 ))
 @eval $(Expr(
@@ -683,7 +692,7 @@ using MLStyle
   :register_app_pattern,
 ))
 @eval $(LineNumberNode(
-  83,
+  85,
   Symbol("/home/redbq/github/MLStyle.jl/bootstrap/Infras.jl"),
 ))
 @eval $(Expr(
@@ -705,7 +714,7 @@ using MLStyle
   Expr(
     :block,
     LineNumberNode(
-      84,
+      86,
       Symbol("/home/redbq/github/MLStyle.jl/bootstrap/Infras.jl"),
     ),
     Expr(
@@ -721,7 +730,7 @@ using MLStyle
   ),
 ))
 @eval $(LineNumberNode(
-  87,
+  89,
   Symbol("/home/redbq/github/MLStyle.jl/bootstrap/Infras.jl"),
 ))
 @eval $(Expr(
@@ -729,7 +738,7 @@ using MLStyle
   :def_app_pattern,
 ))
 @eval $(LineNumberNode(
-  88,
+  90,
   Symbol("/home/redbq/github/MLStyle.jl/bootstrap/Infras.jl"),
 ))
 @eval $(Expr(
@@ -752,7 +761,7 @@ using MLStyle
   Expr(
     :block,
     LineNumberNode(
-      89,
+      91,
       Symbol("/home/redbq/github/MLStyle.jl/bootstrap/Infras.jl"),
     ),
     Expr(
@@ -778,7 +787,7 @@ using MLStyle
       ),
     ),
     LineNumberNode(
-      90,
+      92,
       Symbol("/home/redbq/github/MLStyle.jl/bootstrap/Infras.jl"),
     ),
     Expr(
@@ -793,7 +802,7 @@ using MLStyle
       ),
     ),
     LineNumberNode(
-      91,
+      93,
       Symbol("/home/redbq/github/MLStyle.jl/bootstrap/Infras.jl"),
     ),
     Expr(
@@ -805,7 +814,7 @@ using MLStyle
   ),
 ))
 @eval $(LineNumberNode(
-  94,
+  96,
   Symbol("/home/redbq/github/MLStyle.jl/bootstrap/Infras.jl"),
 ))
 @eval $(Expr(
@@ -813,7 +822,7 @@ using MLStyle
   :mk_app_pattern,
 ))
 @eval $(LineNumberNode(
-  95,
+  97,
   Symbol("/home/redbq/github/MLStyle.jl/bootstrap/Infras.jl"),
 ))
 @eval $(Expr(
@@ -829,7 +838,7 @@ using MLStyle
   Expr(
     :block,
     LineNumberNode(
-      96,
+      98,
       Symbol("/home/redbq/github/MLStyle.jl/bootstrap/Infras.jl"),
     ),
     Expr(
@@ -843,7 +852,7 @@ using MLStyle
       Expr(
         :block,
         LineNumberNode(
-          97,
+          99,
           Symbol("/home/redbq/github/MLStyle.jl/bootstrap/Infras.jl"),
         ),
         Expr(
@@ -857,7 +866,7 @@ using MLStyle
           ),
         ),
         LineNumberNode(
-          98,
+          100,
           Symbol("/home/redbq/github/MLStyle.jl/bootstrap/Infras.jl"),
         ),
         Expr(
@@ -874,7 +883,7 @@ using MLStyle
           Expr(
             :block,
             LineNumberNode(
-              99,
+              101,
               Symbol("/home/redbq/github/MLStyle.jl/bootstrap/Infras.jl"),
             ),
             Expr(
@@ -910,7 +919,7 @@ using MLStyle
               Expr(
                 :block,
                 LineNumberNode(
-                  100,
+                  102,
                   Symbol("/home/redbq/github/MLStyle.jl/bootstrap/Infras.jl"),
                 ),
                 Expr(
@@ -937,7 +946,7 @@ using MLStyle
       ),
     ),
     LineNumberNode(
-      104,
+      106,
       Symbol("/home/redbq/github/MLStyle.jl/bootstrap/Infras.jl"),
     ),
     Expr(
@@ -967,7 +976,7 @@ using MLStyle
       ),
     ),
     LineNumberNode(
-      105,
+      107,
       Symbol("/home/redbq/github/MLStyle.jl/bootstrap/Infras.jl"),
     ),
     Expr(
@@ -988,7 +997,7 @@ using MLStyle
   ),
 ))
 @eval $(LineNumberNode(
-  112,
+  114,
   Symbol("/home/redbq/github/MLStyle.jl/bootstrap/Infras.jl"),
 ))
 @eval $(Expr(
@@ -996,7 +1005,7 @@ using MLStyle
   :def_gapp_pattern,
 ))
 @eval $(LineNumberNode(
-  113,
+  115,
   Symbol("/home/redbq/github/MLStyle.jl/bootstrap/Infras.jl"),
 ))
 @eval $(Expr(
@@ -1019,7 +1028,7 @@ using MLStyle
   Expr(
     :block,
     LineNumberNode(
-      114,
+      116,
       Symbol("/home/redbq/github/MLStyle.jl/bootstrap/Infras.jl"),
     ),
     Expr(
@@ -1045,7 +1054,7 @@ using MLStyle
       ),
     ),
     LineNumberNode(
-      115,
+      117,
       Symbol("/home/redbq/github/MLStyle.jl/bootstrap/Infras.jl"),
     ),
     Expr(
@@ -1060,7 +1069,7 @@ using MLStyle
       ),
     ),
     LineNumberNode(
-      116,
+      118,
       Symbol("/home/redbq/github/MLStyle.jl/bootstrap/Infras.jl"),
     ),
     Expr(
@@ -1072,7 +1081,7 @@ using MLStyle
   ),
 ))
 @eval $(LineNumberNode(
-  119,
+  121,
   Symbol("/home/redbq/github/MLStyle.jl/bootstrap/Infras.jl"),
 ))
 @eval $(Expr(
@@ -1080,7 +1089,7 @@ using MLStyle
   :register_gapp_pattern,
 ))
 @eval $(LineNumberNode(
-  120,
+  122,
   Symbol("/home/redbq/github/MLStyle.jl/bootstrap/Infras.jl"),
 ))
 @eval $(Expr(
@@ -1102,7 +1111,7 @@ using MLStyle
   Expr(
     :block,
     LineNumberNode(
-      121,
+      123,
       Symbol("/home/redbq/github/MLStyle.jl/bootstrap/Infras.jl"),
     ),
     Expr(
@@ -1118,7 +1127,7 @@ using MLStyle
   ),
 ))
 @eval $(LineNumberNode(
-  124,
+  126,
   Symbol("/home/redbq/github/MLStyle.jl/bootstrap/Infras.jl"),
 ))
 @eval $(Expr(
@@ -1126,7 +1135,7 @@ using MLStyle
   :mk_gapp_pattern,
 ))
 @eval $(LineNumberNode(
-  125,
+  127,
   Symbol("/home/redbq/github/MLStyle.jl/bootstrap/Infras.jl"),
 ))
 @eval $(Expr(
@@ -1134,7 +1143,7 @@ using MLStyle
   :mk_gapp_pattern,
 ))
 @eval $(LineNumberNode(
-  130,
+  132,
   Symbol("/home/redbq/github/MLStyle.jl/bootstrap/Infras.jl"),
 ))
 @eval $(Expr(
@@ -1150,7 +1159,7 @@ using MLStyle
       Expr(
         :block,
         LineNumberNode(
-          131,
+          133,
           Symbol("/home/redbq/github/MLStyle.jl/bootstrap/Infras.jl"),
         ),
         Expr(
@@ -1193,7 +1202,7 @@ using MLStyle
       Expr(
         :block,
         LineNumberNode(
-          132,
+          134,
           Symbol("/home/redbq/github/MLStyle.jl/bootstrap/Infras.jl"),
         ),
         Expr(
@@ -1239,44 +1248,122 @@ using MLStyle
           Expr(
             :block,
             LineNumberNode(
-              134,
+              136,
               Symbol("/home/redbq/github/MLStyle.jl/bootstrap/Infras.jl"),
             ),
             Expr(
               :block,
               Expr(
-                :block,
+                :let,
                 Expr(
-                  :let,
-                  Expr(
-                    :(=),
-                    Symbol("##Main.MLBootstrap 1#432"),
-                    :hd,
-                  ),
+                  :(=),
+                  Symbol("##Main.MLBootstrap 1#408"),
+                  :hd,
+                ),
+                Expr(
+                  :block,
                   Expr(
                     :block,
+                    LineNumberNode(
+                      137,
+                      Symbol("/home/redbq/github/MLStyle.jl/bootstrap/Infras.jl"),
+                    ),
                     Expr(
-                      :block,
+                      :(=),
+                      Symbol("##Main.MLBootstrap 0#407"),
+                      Expr(
+                        :block,
+                        Expr(
+                          :function,
+                          Expr(
+                            :call,
+                            Symbol("##Main.MLBootstrap 14#421"),
+                            Expr(
+                              :(::),
+                              Symbol("##Main.MLBootstrap 13#420"),
+                              :Symbol,
+                            ),
+                          ),
+                          Expr(
+                            :block,
+                            Expr(
+                              :meta,
+                              :inline,
+                            ),
+                            :Symbol,
+                            Expr(
+                              :call,
+                              :mk_app_pattern,
+                              :tag,
+                              :hd,
+                              :tl,
+                              :mod,
+                            ),
+                          ),
+                        ),
+                        Expr(
+                          :function,
+                          Expr(
+                            :call,
+                            Symbol("##Main.MLBootstrap 14#421"),
+                            Symbol("##Main.MLBootstrap 13#420"),
+                          ),
+                          Expr(
+                            :block,
+                            Expr(
+                              :meta,
+                              :inline,
+                            ),
+                            Expr(
+                              :.,
+                              MLStyle.MatchCore,
+                              QuoteNode(
+                                :failed,
+                              ),
+                            ),
+                          ),
+                        ),
+                        Expr(
+                          :call,
+                          Symbol("##Main.MLBootstrap 14#421"),
+                          Symbol("##Main.MLBootstrap 1#408"),
+                        ),
+                      ),
+                    ),
+                    Expr(
+                      :if,
+                      Expr(
+                        :call,
+                        :(===),
+                        Symbol("##Main.MLBootstrap 0#407"),
+                        Expr(
+                          :.,
+                          MLStyle.MatchCore,
+                          QuoteNode(
+                            :failed,
+                          ),
+                        ),
+                      ),
                       Expr(
                         :block,
                         LineNumberNode(
-                          135,
+                          138,
                           Symbol("/home/redbq/github/MLStyle.jl/bootstrap/Infras.jl"),
                         ),
                         Expr(
                           :(=),
-                          Symbol("##Main.MLBootstrap 0#431"),
+                          Symbol("##Main.MLBootstrap 0#407"),
                           Expr(
                             :block,
                             Expr(
                               :function,
                               Expr(
                                 :call,
-                                Symbol("##Main.MLBootstrap 14#445"),
+                                Symbol("##Main.MLBootstrap 5#412"),
                                 Expr(
                                   :(::),
-                                  Symbol("##Main.MLBootstrap 13#444"),
-                                  :Symbol,
+                                  Symbol("##Main.MLBootstrap 2#409"),
+                                  Expr,
                                 ),
                               ),
                               Expr(
@@ -1285,14 +1372,215 @@ using MLStyle
                                   :meta,
                                   :inline,
                                 ),
-                                :Symbol,
+                                Expr,
                                 Expr(
-                                  :call,
-                                  :mk_app_pattern,
-                                  :tag,
-                                  :hd,
-                                  :tl,
-                                  :mod,
+                                  :block,
+                                  Expr(
+                                    :let,
+                                    Expr(
+                                      :(=),
+                                      Expr(
+                                        :tuple,
+                                        Symbol("##Main.MLBootstrap 3#410"),
+                                        Symbol("##Main.MLBootstrap 4#411"),
+                                      ),
+                                      Expr(
+                                        :tuple,
+                                        Expr(
+                                          :.,
+                                          Symbol("##Main.MLBootstrap 2#409"),
+                                          QuoteNode(
+                                            :head,
+                                          ),
+                                        ),
+                                        Expr(
+                                          :.,
+                                          Symbol("##Main.MLBootstrap 2#409"),
+                                          QuoteNode(
+                                            :args,
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                    Expr(
+                                      :block,
+                                      Expr(
+                                        :block,
+                                        Expr(
+                                          :if,
+                                          Expr(
+                                            :call,
+                                            ===,
+                                            Symbol("##Main.MLBootstrap 3#410"),
+                                            QuoteNode(
+                                              :curly,
+                                            ),
+                                          ),
+                                          Expr(
+                                            :block,
+                                            Expr(
+                                              :function,
+                                              Expr(
+                                                :where,
+                                                Expr(
+                                                  :call,
+                                                  Symbol("##Main.MLBootstrap 7#414"),
+                                                  Expr(
+                                                    :(::),
+                                                    Symbol("##Main.MLBootstrap 6#413"),
+                                                    Expr(
+                                                      :curly,
+                                                      AbstractArray,
+                                                      Symbol("##Main.MLBootstrap 8#415"),
+                                                      1,
+                                                    ),
+                                                  ),
+                                                ),
+                                                Symbol("##Main.MLBootstrap 8#415"),
+                                              ),
+                                              Expr(
+                                                :block,
+                                                Expr(
+                                                  :meta,
+                                                  :inline,
+                                                ),
+                                                Expr(
+                                                  :block,
+                                                  Expr(
+                                                    :if,
+                                                    Expr(
+                                                      :call,
+                                                      :>=,
+                                                      Expr(
+                                                        :call,
+                                                        length,
+                                                        Symbol("##Main.MLBootstrap 6#413"),
+                                                      ),
+                                                      1,
+                                                    ),
+                                                    Expr(
+                                                      :block,
+                                                      Expr(
+                                                        :(=),
+                                                        Symbol("##Main.MLBootstrap 9#416"),
+                                                        Expr(
+                                                          :ref,
+                                                          Symbol("##Main.MLBootstrap 6#413"),
+                                                          1,
+                                                        ),
+                                                      ),
+                                                      Expr(
+                                                        :block,
+                                                        Expr(
+                                                          :function,
+                                                          Expr(
+                                                            :call,
+                                                            Symbol("##Main.MLBootstrap 11#418"),
+                                                            Expr(
+                                                              :(::),
+                                                              Symbol("##Main.MLBootstrap 10#417"),
+                                                              :Symbol,
+                                                            ),
+                                                          ),
+                                                          Expr(
+                                                            :block,
+                                                            Expr(
+                                                              :meta,
+                                                              :inline,
+                                                            ),
+                                                            :Symbol,
+                                                            Expr(
+                                                              :call,
+                                                              :mk_gapp_pattern,
+                                                              :tag,
+                                                              Expr(
+                                                                :vect,
+                                                              ),
+                                                              :hd,
+                                                              :tl,
+                                                              :mod,
+                                                            ),
+                                                          ),
+                                                        ),
+                                                        Expr(
+                                                          :function,
+                                                          Expr(
+                                                            :call,
+                                                            Symbol("##Main.MLBootstrap 11#418"),
+                                                            Symbol("##Main.MLBootstrap 10#417"),
+                                                          ),
+                                                          Expr(
+                                                            :block,
+                                                            Expr(
+                                                              :meta,
+                                                              :inline,
+                                                            ),
+                                                            Expr(
+                                                              :.,
+                                                              MLStyle.MatchCore,
+                                                              QuoteNode(
+                                                                :failed,
+                                                              ),
+                                                            ),
+                                                          ),
+                                                        ),
+                                                        Expr(
+                                                          :call,
+                                                          Symbol("##Main.MLBootstrap 11#418"),
+                                                          Symbol("##Main.MLBootstrap 9#416"),
+                                                        ),
+                                                      ),
+                                                    ),
+                                                    Expr(
+                                                      :.,
+                                                      MLStyle.MatchCore,
+                                                      QuoteNode(
+                                                        :failed,
+                                                      ),
+                                                    ),
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                            Expr(
+                                              :function,
+                                              Expr(
+                                                :call,
+                                                Symbol("##Main.MLBootstrap 7#414"),
+                                                :_,
+                                              ),
+                                              Expr(
+                                                :block,
+                                                Expr(
+                                                  :meta,
+                                                  :inline,
+                                                ),
+                                                Expr(
+                                                  :.,
+                                                  MLStyle.MatchCore,
+                                                  QuoteNode(
+                                                    :failed,
+                                                  ),
+                                                ),
+                                              ),
+                                            ),
+                                            Expr(
+                                              :call,
+                                              Symbol("##Main.MLBootstrap 7#414"),
+                                              Symbol("##Main.MLBootstrap 4#411"),
+                                            ),
+                                          ),
+                                          Expr(
+                                            :.,
+                                            MLStyle.MatchCore,
+                                            QuoteNode(
+                                              :failed,
+                                            ),
+                                          ),
+                                        ),
+                                      ),
+                                    ),
+                                  ),
                                 ),
                               ),
                             ),
@@ -1300,8 +1588,8 @@ using MLStyle
                               :function,
                               Expr(
                                 :call,
-                                Symbol("##Main.MLBootstrap 14#445"),
-                                Symbol("##Main.MLBootstrap 13#444"),
+                                Symbol("##Main.MLBootstrap 5#412"),
+                                Symbol("##Main.MLBootstrap 2#409"),
                               ),
                               Expr(
                                 :block,
@@ -1320,8 +1608,8 @@ using MLStyle
                             ),
                             Expr(
                               :call,
-                              Symbol("##Main.MLBootstrap 14#445"),
-                              Symbol("##Main.MLBootstrap 1#432"),
+                              Symbol("##Main.MLBootstrap 5#412"),
+                              Symbol("##Main.MLBootstrap 1#408"),
                             ),
                           ),
                         ),
@@ -1330,7 +1618,7 @@ using MLStyle
                           Expr(
                             :call,
                             :(===),
-                            Symbol("##Main.MLBootstrap 0#431"),
+                            Symbol("##Main.MLBootstrap 0#407"),
                             Expr(
                               :.,
                               MLStyle.MatchCore,
@@ -1341,8 +1629,42 @@ using MLStyle
                           ),
                           Expr(
                             :block,
+                            LineNumberNode(
+                              139,
+                              Symbol("/home/redbq/github/MLStyle.jl/bootstrap/Infras.jl"),
+                            ),
                             Expr(
-                              :block,
+                              :(=),
+                              Symbol("##Main.MLBootstrap 0#407"),
+                              Expr(
+                                :call,
+                                :error,
+                                Expr(
+                                  :string,
+                                  "Deconstructor cannot be an expression like ",
+                                  Expr(
+                                    :call,
+                                    :mod_show,
+                                    :hd,
+                                  ),
+                                  ".",
+                                ),
+                              ),
+                            ),
+                            Expr(
+                              :if,
+                              Expr(
+                                :call,
+                                :(===),
+                                Symbol("##Main.MLBootstrap 0#407"),
+                                Expr(
+                                  :.,
+                                  MLStyle.MatchCore,
+                                  QuoteNode(
+                                    :failed,
+                                  ),
+                                ),
+                              ),
                               Expr(
                                 :block,
                                 LineNumberNode(
@@ -1350,368 +1672,22 @@ using MLStyle
                                   Symbol("/home/redbq/github/MLStyle.jl/bootstrap/Infras.jl"),
                                 ),
                                 Expr(
-                                  :(=),
-                                  Symbol("##Main.MLBootstrap 0#431"),
-                                  Expr(
-                                    :block,
-                                    Expr(
-                                      :function,
-                                      Expr(
-                                        :call,
-                                        Symbol("##Main.MLBootstrap 5#436"),
-                                        Expr(
-                                          :(::),
-                                          Symbol("##Main.MLBootstrap 2#433"),
-                                          Expr,
-                                        ),
-                                      ),
-                                      Expr(
-                                        :block,
-                                        Expr(
-                                          :meta,
-                                          :inline,
-                                        ),
-                                        Expr,
-                                        Expr(
-                                          :block,
-                                          Expr(
-                                            :let,
-                                            Expr(
-                                              :(=),
-                                              Expr(
-                                                :tuple,
-                                                Symbol("##Main.MLBootstrap 3#434"),
-                                                Symbol("##Main.MLBootstrap 4#435"),
-                                              ),
-                                              Expr(
-                                                :tuple,
-                                                Expr(
-                                                  :.,
-                                                  Symbol("##Main.MLBootstrap 2#433"),
-                                                  QuoteNode(
-                                                    :head,
-                                                  ),
-                                                ),
-                                                Expr(
-                                                  :.,
-                                                  Symbol("##Main.MLBootstrap 2#433"),
-                                                  QuoteNode(
-                                                    :args,
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                            Expr(
-                                              :block,
-                                              Expr(
-                                                :block,
-                                                Expr(
-                                                  :if,
-                                                  Expr(
-                                                    :call,
-                                                    ===,
-                                                    Symbol("##Main.MLBootstrap 3#434"),
-                                                    QuoteNode(
-                                                      :curly,
-                                                    ),
-                                                  ),
-                                                  Expr(
-                                                    :block,
-                                                    Expr(
-                                                      :function,
-                                                      Expr(
-                                                        :where,
-                                                        Expr(
-                                                          :call,
-                                                          Symbol("##Main.MLBootstrap 7#438"),
-                                                          Expr(
-                                                            :(::),
-                                                            Symbol("##Main.MLBootstrap 6#437"),
-                                                            Expr(
-                                                              :curly,
-                                                              AbstractArray,
-                                                              Symbol("##Main.MLBootstrap 8#439"),
-                                                              1,
-                                                            ),
-                                                          ),
-                                                        ),
-                                                        Symbol("##Main.MLBootstrap 8#439"),
-                                                      ),
-                                                      Expr(
-                                                        :block,
-                                                        Expr(
-                                                          :meta,
-                                                          :inline,
-                                                        ),
-                                                        Expr(
-                                                          :block,
-                                                          Expr(
-                                                            :if,
-                                                            Expr(
-                                                              :call,
-                                                              :>=,
-                                                              Expr(
-                                                                :call,
-                                                                length,
-                                                                Symbol("##Main.MLBootstrap 6#437"),
-                                                              ),
-                                                              1,
-                                                            ),
-                                                            Expr(
-                                                              :block,
-                                                              Expr(
-                                                                :(=),
-                                                                Symbol("##Main.MLBootstrap 9#440"),
-                                                                Expr(
-                                                                  :ref,
-                                                                  Symbol("##Main.MLBootstrap 6#437"),
-                                                                  1,
-                                                                ),
-                                                              ),
-                                                              Expr(
-                                                                :block,
-                                                                Expr(
-                                                                  :function,
-                                                                  Expr(
-                                                                    :call,
-                                                                    Symbol("##Main.MLBootstrap 11#442"),
-                                                                    Expr(
-                                                                      :(::),
-                                                                      Symbol("##Main.MLBootstrap 10#441"),
-                                                                      :Symbol,
-                                                                    ),
-                                                                  ),
-                                                                  Expr(
-                                                                    :block,
-                                                                    Expr(
-                                                                      :meta,
-                                                                      :inline,
-                                                                    ),
-                                                                    :Symbol,
-                                                                    Expr(
-                                                                      :call,
-                                                                      :mk_gapp_pattern,
-                                                                      :tag,
-                                                                      Expr(
-                                                                        :vect,
-                                                                      ),
-                                                                      :hd,
-                                                                      :tl,
-                                                                      :mod,
-                                                                    ),
-                                                                  ),
-                                                                ),
-                                                                Expr(
-                                                                  :function,
-                                                                  Expr(
-                                                                    :call,
-                                                                    Symbol("##Main.MLBootstrap 11#442"),
-                                                                    Symbol("##Main.MLBootstrap 10#441"),
-                                                                  ),
-                                                                  Expr(
-                                                                    :block,
-                                                                    Expr(
-                                                                      :meta,
-                                                                      :inline,
-                                                                    ),
-                                                                    Expr(
-                                                                      :.,
-                                                                      MLStyle.MatchCore,
-                                                                      QuoteNode(
-                                                                        :failed,
-                                                                      ),
-                                                                    ),
-                                                                  ),
-                                                                ),
-                                                                Expr(
-                                                                  :call,
-                                                                  Symbol("##Main.MLBootstrap 11#442"),
-                                                                  Symbol("##Main.MLBootstrap 9#440"),
-                                                                ),
-                                                              ),
-                                                            ),
-                                                            Expr(
-                                                              :.,
-                                                              MLStyle.MatchCore,
-                                                              QuoteNode(
-                                                                :failed,
-                                                              ),
-                                                            ),
-                                                          ),
-                                                        ),
-                                                      ),
-                                                    ),
-                                                    Expr(
-                                                      :function,
-                                                      Expr(
-                                                        :call,
-                                                        Symbol("##Main.MLBootstrap 7#438"),
-                                                        :_,
-                                                      ),
-                                                      Expr(
-                                                        :block,
-                                                        Expr(
-                                                          :meta,
-                                                          :inline,
-                                                        ),
-                                                        Expr(
-                                                          :.,
-                                                          MLStyle.MatchCore,
-                                                          QuoteNode(
-                                                            :failed,
-                                                          ),
-                                                        ),
-                                                      ),
-                                                    ),
-                                                    Expr(
-                                                      :call,
-                                                      Symbol("##Main.MLBootstrap 7#438"),
-                                                      Symbol("##Main.MLBootstrap 4#435"),
-                                                    ),
-                                                  ),
-                                                  Expr(
-                                                    :.,
-                                                    MLStyle.MatchCore,
-                                                    QuoteNode(
-                                                      :failed,
-                                                    ),
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                    Expr(
-                                      :function,
-                                      Expr(
-                                        :call,
-                                        Symbol("##Main.MLBootstrap 5#436"),
-                                        Symbol("##Main.MLBootstrap 2#433"),
-                                      ),
-                                      Expr(
-                                        :block,
-                                        Expr(
-                                          :meta,
-                                          :inline,
-                                        ),
-                                        Expr(
-                                          :.,
-                                          MLStyle.MatchCore,
-                                          QuoteNode(
-                                            :failed,
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                    Expr(
-                                      :call,
-                                      Symbol("##Main.MLBootstrap 5#436"),
-                                      Symbol("##Main.MLBootstrap 1#432"),
-                                    ),
-                                  ),
-                                ),
-                                Expr(
-                                  :if,
+                                  :call,
+                                  throw,
                                   Expr(
                                     :call,
-                                    :(===),
-                                    Symbol("##Main.MLBootstrap 0#431"),
-                                    Expr(
-                                      :.,
-                                      MLStyle.MatchCore,
-                                      QuoteNode(
-                                        :failed,
-                                      ),
-                                    ),
-                                  ),
-                                  Expr(
-                                    :block,
-                                    Expr(
-                                      :block,
-                                      Expr(
-                                        :block,
-                                        LineNumberNode(
-                                          137,
-                                          Symbol("/home/redbq/github/MLStyle.jl/bootstrap/Infras.jl"),
-                                        ),
-                                        Expr(
-                                          :(=),
-                                          Symbol("##Main.MLBootstrap 0#431"),
-                                          Expr(
-                                            :call,
-                                            :throw,
-                                            Expr(
-                                              :string,
-                                              "Deconstructor cannot be an expression like ",
-                                              Expr(
-                                                :call,
-                                                :string,
-                                                :hd,
-                                              ),
-                                              ".",
-                                            ),
-                                          ),
-                                        ),
-                                        Expr(
-                                          :if,
-                                          Expr(
-                                            :call,
-                                            :(===),
-                                            Symbol("##Main.MLBootstrap 0#431"),
-                                            Expr(
-                                              :.,
-                                              MLStyle.MatchCore,
-                                              QuoteNode(
-                                                :failed,
-                                              ),
-                                            ),
-                                          ),
-                                          Expr(
-                                            :block,
-                                            Expr(
-                                              :block,
-                                              Expr(
-                                                :block,
-                                                LineNumberNode(
-                                                  134,
-                                                  Symbol("/home/redbq/github/MLStyle.jl/bootstrap/Infras.jl"),
-                                                ),
-                                                Expr(
-                                                  :call,
-                                                  throw,
-                                                  Expr(
-                                                    :call,
-                                                    InternalException,
-                                                    "Non-exhaustive pattern found, at #= /home/redbq/github/MLStyle.jl/bootstrap/Infras.jl:134 =#!",
-                                                  ),
-                                                ),
-                                              ),
-                                            ),
-                                          ),
-                                          Expr(
-                                            :block,
-                                            Symbol("##Main.MLBootstrap 0#431"),
-                                          ),
-                                        ),
-                                      ),
-                                    ),
-                                  ),
-                                  Expr(
-                                    :block,
-                                    Symbol("##Main.MLBootstrap 0#431"),
+                                    InternalException,
+                                    "Non-exhaustive pattern found, at #= C:\\Users\\woclass\\Desktop\\GitHub\\MLStyle.jl\\bootstrap\\Infras.jl:136 =#!",
                                   ),
                                 ),
                               ),
+                              Symbol("##Main.MLBootstrap 0#407"),
                             ),
                           ),
-                          Expr(
-                            :block,
-                            Symbol("##Main.MLBootstrap 0#431"),
-                          ),
+                          Symbol("##Main.MLBootstrap 0#407"),
                         ),
                       ),
+                      Symbol("##Main.MLBootstrap 0#407"),
                     ),
                   ),
                 ),
