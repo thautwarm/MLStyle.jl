@@ -79,7 +79,7 @@ Finally, we have such a library that provides **extensible pattern matching** fo
 
 - \* Modern Ways about AST Manipulations
 
-    MLStyle.jl is not a superset of MacroToos.jl, but it provides something useful for AST manipulations. Furthermore, in terms of extracting sub-structures from a given AST, using expr patterns and AST patterns could spped code up by orders of magnitude.
+    MLStyle.jl is not a superset of MacroToos.jl, but it provides something useful for AST manipulations. Furthermore, in terms of extracting sub-structures from a given AST, using expr patterns and AST patterns could speed code up by orders of magnitude.
 
 ## Installation, Documentations and Tutorials
 
