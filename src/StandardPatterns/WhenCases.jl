@@ -4,22 +4,6 @@ using MLStyle.Render
 
 export @when, @otherwise, gen_when
 
-@active WhenSpliter{s::String}(x) begin
-    @match x begin
-        Expr(:macrocall,
-            &(Symbol("@", s)),
-            ln::LineNumberNode,
-            Expr(:block, elts...) || a && Do(elts = [a])
-        ) => (ln, elts)
-        Expr(:macrocall,
-            &(Symbol("@", s)),
-            ln::LineNumberNode
-            # no args
-        ) => (ln, [:(_)])
-        _ => nothing
-    end
-end
-
 function split_case_and_block(stmts, first_bindings, first_source)
     blocks :: Vector{Any} = []
     binding_seqs :: Vector{Any} = [first_bindings]
@@ -30,14 +14,14 @@ function split_case_and_block(stmts, first_bindings, first_source)
         # avoid setting LineNumberNode in the end of block.
         block_size = length(current_block)
         take_size = block_size
-        for i in block_size:-1:(block_size - 1)
+        for i in block_size:-1:1
             take_size = i
             if !(current_block[i] isa LineNumberNode)
                 break
             end
         end
         # push current_block(cache) to blocks, then clear cache
-        push!(blocks, Expr(:block, view(current_block, take_size)...))
+        push!(blocks, Expr(:block, view(current_block, 1:take_size)...))
         empty!(current_block)
         nothing
     end
@@ -49,13 +33,14 @@ function split_case_and_block(stmts, first_bindings, first_source)
 
     for stmt in stmts
         @match stmt begin
-            WhenSpliter{"when"}(source, bindings) =>
+            :(@when $source begin $(bindings...) end) ||
+            :(@when $source $elt) && Do(bindings=[elt]) =>
                 begin
                     push!(binding_seqs, bindings)
                     push!(sources, source)
                     make_block!()
                 end
-            WhenSpliter{"otherwise"}(source, _) =>
+            :(@otherwise $source) =>
                 begin
                     push!(binding_seqs, [])
                     push!(sources, source)
@@ -99,7 +84,6 @@ function gen_when(let_expr, source :: LineNumberNode, mod :: Module)
 
             begin
                 sources_cases_blocks = split_case_and_block(stmts, bindings, source)
-                # pprint(sources_cases_blocks)
                 foldr(sources_cases_blocks, init=:nothing) do (source, bindings, block), last_block
                     foldr(bindings, init=block) do each, last_ret
                         @match each begin
@@ -117,7 +101,7 @@ function gen_when(let_expr, source :: LineNumberNode, mod :: Module)
                                     source = new_source
                                     last_ret
                                 end
-                            
+
                             # match `cond.?` or `if cond end`
                             :(if $a; $(_...) end) ||
                             :($a.?) => @format [source, a, last_ret, last_block] quote
@@ -137,7 +121,7 @@ function gen_when(let_expr, source :: LineNumberNode, mod :: Module)
                 end
             end
 
-        a => let s = string(a), 
+        a => let s = string(a),
                  short_msg = SubString(s, 1, min(length(s), 20))
                 throw(SyntaxError("Expected a let expression, got a `$short_msg` at $(string(source))."))
             end

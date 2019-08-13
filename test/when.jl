@@ -238,7 +238,33 @@
         @test f2((9, 0), 5, :cpp, 0.0) == 0  # default case
         @test f2((9, 1), 0, :cpp, 0.0) == 0  # default case
     end
+    @testset "multiple statements for each case" begin
+        s = (1, 2, 3)
+        @test 2 == @when (a, 2, 3) = s begin
+            k = 1
+            if a > 2
+                k *= a
+            else
+                k += a
+            end
+            k
+        @otherwise
+            throw("")
+        end
 
+        s = (20, 3)
+        @test 100 == @when (10, 3) = s begin
+            a = 10
+            a = 10
+            a = a * a
+            a
+        @otherwise
+            a = 10
+            a = 10
+            a = a * a
+            a
+        end
+    end
     @testset "error handles" begin
         # no method matching
         @test_macro_throws MethodError @when
