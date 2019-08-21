@@ -16,7 +16,7 @@ function mk_pat_by(f)
      end
 end
 
-const strict_eq_types = @static VERSION < v"1.1.0" ? Union{Int, Nothing} : Union{Int, String, Nothing}
+const strict_eq_types = Union{Int, Nothing}
 
 def_pattern(Pervasives,
         predicate = x -> x isa strict_eq_types,
@@ -24,9 +24,9 @@ def_pattern(Pervasives,
 )
 
 def_pattern(Pervasives,
-        predicate = x -> x isa Union{Number, AbstractString, AbstractChar, AbstractFloat, QuoteNode},
+        predicate = x -> x isa Union{Number, AbstractString, AbstractChar, QuoteNode},
         rewrite   = (tag, case, mod) ->
-        let f = isimmutable(case) ? mk_pat_by(===) : mk_pat_by(==)
+        let f = isimmutable(case) ? mk_pat_by(===) : mk_pat_by(isequal)
             f(tag, case, mod)
         end
 )
