@@ -134,7 +134,7 @@ def_pattern(Infras,
         @match hd begin
             ::Symbol   => mk_app_pattern(tag, hd, tl, mod)
             :($(::Symbol){$(_...)}) => mk_gapp_pattern(tag, [], hd, tl, mod)
-            _ => throw("Deconstructor cannot be an expression like $(string(hd)).")
+            _ => throw(error("Deconstructor cannot be an expression like $hd."))
         end
     end)
 end
