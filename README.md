@@ -39,26 +39,26 @@ MLStyle.jl
 
 ## What is MLStyle.jl?
 
-MLStyle.jl is a Julia package that provides multiple productivity tools from ML([Meta Language](https://en.wikipedia.org/wiki/ML_(programming_language))) like [pattern matching](https://en.wikipedia.org/wiki/Pattern_matching) that is statically generated and extensible, ADTs/GADTs([Algebraic Data Type](https://en.wikipedia.org/wiki/Algebraic_data_type), [Generalized Algebraic Data Type](https://en.wikipedia.org/wiki/Generalized_algebraic_data_type)) and [Active Patterns](https://docs.microsoft.com/en-us/dotnet/fsharp/language-reference/active-patterns).
+MLStyle.jl is a Julia package that provides multiple productivity tools from ML ([Meta Language](https://en.wikipedia.org/wiki/ML_(programming_language))) like [pattern matching](https://en.wikipedia.org/wiki/Pattern_matching) which is statically generated and extensible, ADTs/GADTs ([Algebraic Data Type](https://en.wikipedia.org/wiki/Algebraic_data_type), [Generalized Algebraic Data Type](https://en.wikipedia.org/wiki/Generalized_algebraic_data_type)) and [Active Patterns](https://docs.microsoft.com/en-us/dotnet/fsharp/language-reference/active-patterns).
 
-Think of MLStyle.jl as a packaging bringing advanced functional programming idioms to julia.
+Think of MLStyle.jl as a package bringing advanced functional programming idioms to Julia.
 
 
 ## Motivation
 
 Those used to functional programming may feel limited when they don't have pattern matching and ADTs, and of course I'm one of them.
 
-However, I don't want to take a trade-off here to use some available alternatives that miss features or are not well-optimized. Just like [why those greedy people created Julia](https://julialang.org/blog/2012/02/why-we-created-julia), I'm also so greedy that **I want to integrate all those useful features into one language and, make all of them convenient, efficient and extensible**.
+However, I don't want to make a trade-off here by using some available alternatives that miss features or are not well-optimized. Just like [why those greedy people created Julia](https://julialang.org/blog/2012/02/why-we-created-julia), I'm also so greedy that **I want to integrate all those useful features into one language, and make all of them convenient, efficient and extensible**.
 
-On the other side, during recent years I was addicted to extend Python with metaprogramming and even internal mechanisms. Although I made something interesting like [pattern-matching](https://github.com/Xython/pattern-matching), [goto](https://github.com/thautwarm/Redy/blob/master/Redy/Opt/builtin_features/_goto.py), [ADTs](https://github.com/thautwarm/Redy/tree/master/Redy/ADT), [constexpr](https://github.com/thautwarm/Redy/blob/master/Redy/Opt/builtin_features/_constexpr.py), [macros](https://github.com/thautwarm/Redy/blob/master/Redy/Opt/builtin_features/_macro.py), etc., most of these implementations are also disgustingly evil. Furtunately, in Julia, all of them could be achieved straightforwardly without any black magic, at last, some of these ideas come into existence with MLStyle.jl.
+On the other side, in recent years I was addicted to extending Python with metaprogramming and even internal mechanisms. Although I made something interesting like [pattern-matching](https://github.com/Xython/pattern-matching), [goto](https://github.com/thautwarm/Redy/blob/master/Redy/Opt/builtin_features/_goto.py), [ADTs](https://github.com/thautwarm/Redy/tree/master/Redy/ADT), [constexpr](https://github.com/thautwarm/Redy/blob/master/Redy/Opt/builtin_features/_constexpr.py), [macros](https://github.com/thautwarm/Redy/blob/master/Redy/Opt/builtin_features/_macro.py), etc., most of these implementations are also disgustingly evil. Furtunately, in Julia, all of them could be achieved straightforwardly without any black magic, at last, some of these ideas come into existence with MLStyle.jl.
 
-Finally, we finish such a library that provides **extensible pattern matching** in such an efficient language.
+Finally, we have such a library that provides **extensible pattern matching** for such an efficient language.
 
 ## Why use MLStyle.jl
 
 - Straightforward
 
-    I think there is no need to talk about why we should use pattern mathing instead of manually writing something like conditional branches and nested visitors for datatypes.
+    I think there is no need to talk about why we should use pattern matching instead of manually writing something like conditional branches and nested visitors for datatypes.
 
 - Performance Gain
 
@@ -68,9 +68,9 @@ Finally, we finish such a library that provides **extensible pattern matching** 
 
     You can define your own patterns via the interfaces `def_pattern`, `def_app_pattern` and `def_gapp_pattern`. Almost all built-in patterns are defined at [Pervasives.jl](https://github.com/thautwarm/MLStyle.jl/blob/master/src/Pervasives.jl).
 
-    Once you define a pattern, you're to be asked to give some qualifiers to your own patterns to prevent visiting them from unexpected modules.
+    Once you define a pattern, you're tasked with giving some qualifiers to your own patterns to prevent visiting them from unexpected modules.
 
-- You can use MLStyle only in development via [Bootstrap mechanism](https://github.com/thautwarm/MLStyle.jl/tree/master/bootstrap)
+- You can use MLStyle in development via [Bootstrap mechanism](https://github.com/thautwarm/MLStyle.jl/tree/master/bootstrap):
 
     Now there's a code generation tool called `boostrap` available at [MLStyle/boostrap](https://github.com/thautwarm/MLStyle.jl/tree/master/bootstrap), which
     you can take advantage of to remove MLStyle dependency when making distributions.
@@ -79,19 +79,20 @@ Finally, we finish such a library that provides **extensible pattern matching** 
 
 - \* Modern Ways about AST Manipulations
 
-    MLStyle.jl is not a superset of MacroToos.jl, but it provides something useful for AST manipulations. Furthermore, in terms of extracting sub-structures from a given AST, using expr patterns and AST patterns could make a orders of magnitude speed up.
+    MLStyle.jl is not a superset of MacroToos.jl, but it provides something useful for AST manipulations. Furthermore, in terms of extracting sub-structures from a given AST, using expr patterns and AST patterns could speed code up by orders of magnitude.
 
 ## Installation, Documentations and Tutorials
 
-Rich features are provided by MLStyle.jl and you can check [documents](https://thautwarm.github.io/MLStyle.jl/latest/) to get started.
+Rich features are provided by MLStyle.jl and you can check the [documentation](https://thautwarm.github.io/MLStyle.jl/latest/) to get started.
 
-For installation, open package manager mode in the Julia REPL and `add MLStyle`.
+For installation, open the package manager mode in the Julia REPL and `add MLStyle`.
 
-For more examples or tutorials, check [this project](https://github.com/thautwarm/MLStyle-Playground) which will be frequently updated to present some interesting uses of MLStyle.jl.
+For more examples or tutorials, see [this project](https://github.com/thautwarm/MLStyle-Playground) which will be frequently updated to present some interesting uses of MLStyle.jl.
 
 ## Preview
 ### Rock Paper Scissors
-Here's a trivial example of MLStyle.jl in action
+Here's a trivial example of MLStyle.jl in action:
+
 ```julia
 using MLStyle
 @data Shape begin # Define an algebraic data type Shape
@@ -111,7 +112,7 @@ end
 
 
 ### Homoiconic pattern matching for Julia ASTs
-Here's a less trivial use of MLStyle.jl for deconstructing and pattern matching julia code. 
+Here's a less trivial use of MLStyle.jl for deconstructing and pattern matching Julia code. 
 ```julia
 rmlines = @λ begin
     e :: Expr           -> Expr(e.head, filter(x -> x !== nothing, map(rmlines, e.args))...)
@@ -161,7 +162,7 @@ A simple intepreter implemented via GADTs could be found at `test/untyped_lam.jl
 
 ### Active Patterns
 
-Currently, MLStyle does not have [full featured](https://docs.microsoft.com/en-us/dotnet/fsharp/language-reference/active-patterns) active patterns, but the subset of parametric active patterns that are implemented are very powerful.
+Currently, MLStyle does not have [fully featured](https://docs.microsoft.com/en-us/dotnet/fsharp/language-reference/active-patterns) active patterns, but the subset of parametric active patterns that are implemented are very powerful.
 
 ```julia
 @active Re{r :: Regex}(x) begin
@@ -178,9 +179,9 @@ end # RegexMatch("123")
 
 ### Prerequisite
 
-Recent benchmarks have been run, showing that MLStyle.jl can be extremely fast for complicated pattern matching, but due to it's advanced machinery, has noticeable overhead in very simple cases such as straightforwardly destructuring shallow tuples, arrays and datatypes without recursive invocations.
+Recent benchmarks have been run, showing that MLStyle.jl can be extremely fast for complicated pattern matching, but due to its advanced machinery has noticeable overhead in some very simple cases such as straightforwardly destructuring shallow tuples, arrays and datatypes without recursive invocations.
 
-All benchmark scripts are provided at the directory [Matrix-Benchmark](https://github.com/thautwarm/MLStyle.jl/blob/master/matrix-benchmark).
+All benchmark scripts are provided in the directory [Matrix-Benchmark](https://github.com/thautwarm/MLStyle.jl/blob/master/matrix-benchmark).
 
 
 To run these cross-implementation benchmarks, some extra dependencies should be installed:
@@ -191,7 +192,7 @@ To run these cross-implementation benchmarks, some extra dependencies should be 
 
 - `(v1.1) pkg> add MLStyle#base` for a specific version of MLStyle.jl is required.
 
-After installing dependencies, you can directly benchmark them with `julia matrix_benchmark.jl hw-tuple hw-array match macrotools match-datatype` at the root directory.
+After installing dependencies, you can directly benchmark them with `julia matrix_benchmark.jl hw-tuple hw-array match macrotools match-datatype` in the root directory.
 
 The benchmarks presented here are made by Julia **v1.1** on **Fedora 28**. For reports made on **Win10**, check [stats/windows/](https://github.com/thautwarm/MLStyle.jl/tree/master/stats/windows) directory.
 
@@ -206,9 +207,9 @@ The y-label is the ratio of the implementation's time cost to that of the least 
 
 #### Allocation
 
-In x-axis, after the name of test-case is the least allocted one's index, the unit is `_ -> (_ + 1) bytes`).
+On the x-axis, after the name of test-case is the least allocted one's index, the unit is `_ -> (_ + 1) bytes`).
 
-The y-label is the ratio of  the implementation's allocation cost to that of the least allocted.
+The y-label is the ratio of the implementation's allocation cost to that of the least allocted.
 
 #### Gallery
 
@@ -252,11 +253,10 @@ There are still some performamce issues with array patterns.
 
 - [matrix-benchmark/versus-match.jl](https://github.com/thautwarm/MLStyle.jl/blob/base-2/matrix-benchmark/versus-match.jl)
 
+
 1. Time
 
-
 [![match.jl](https://github.com/thautwarm/MLStyle.jl/blob/base-2/stats/vs-match(expr)-on-time.svg)](https://github.com/thautwarm/MLStyle.jl/blob/base-2/stats/vs-match(expr).txt)
-
 
 
 2. Allocation
@@ -264,14 +264,12 @@ There are still some performamce issues with array patterns.
 [![match.jl](https://github.com/thautwarm/MLStyle.jl/blob/base-2/stats/vs-match(expr)-on-allocs.svg)](https://github.com/thautwarm/MLStyle.jl/blob/base-2/stats/vs-match(expr).txt)
 
 
-
 - [matrix-benchmark/versus-match-datatype.jl](https://github.com/thautwarm/MLStyle.jl/blob/base-2/matrix-benchmark/versus-match-datatype.jl)
+
 
 1. Time
 
-
 [![match.jl](https://github.com/thautwarm/MLStyle.jl/blob/base-2/stats/vs-match(datatype)-on-time.svg)](https://github.com/thautwarm/MLStyle.jl/blob/base-2/stats/vs-match(datatype).txt)
-
 
 
 2. Allocation
@@ -285,10 +283,3 @@ Thanks to all individuals referred in [Acknowledgements](./acknowledgements.txt)
 
 
 Feel free to ask questions about usage, development or extensions about MLStyle at [Gitter Room](https://gitter.im/MLStyle-jl/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge).
-
-
-
-
-
-
-
