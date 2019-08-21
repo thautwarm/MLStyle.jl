@@ -455,6 +455,21 @@ def_app_pattern(Pervasives,
         end
 )
 
+def_app_pattern(Pervasives,
+        predicate = (hd_obj, args) -> hd_obj === QuoteNode,
+        rewrite = (tag, _, args, mod) ->
+        begin
+            @assert length(args) == 1 begin
+                repr = string(:(QuoteNode($(args...))))
+                "invalid pattern $repr"
+            end
+            VAR = mangle(mod)
+            (body -> @format [tag, VAR, body] quote
+                VAR = tag.value
+                body
+            end) ∘ mk_pattern(VAR, args[1], mod)
+        end
+)
 
 def_app_pattern(Pervasives,
     predicate = (hd_obj, args) -> hd_obj === Many,
