@@ -13,15 +13,15 @@ var documenterSearchIndex = {"docs": [
     "page": "Home",
     "title": "MLStyle.jl",
     "category": "section",
-    "text": "(Image: Build Status) (Image: codecov) (Image: License) (Image: Docs)  (Image: Join the chat at https://gitter.im/MLStyle-jl/community)"
+    "text": "(Image: Build Status) (Image: codecov) (Image: License) (Image: Docs) (Image: Join the chat at https://gitter.im/MLStyle-jl/community)"
 },
 
 {
-    "location": "#What\'s-MLStyle.jl?-1",
+    "location": "#What-is-MLStyle.jl?-1",
     "page": "Home",
-    "title": "What\'s MLStyle.jl?",
+    "title": "What is MLStyle.jl?",
     "category": "section",
-    "text": "MLStyle.jl is a Julia package that provides multiple productivity tools from ML(Meta Language) like statically generated and extensible pattern matching, ADTs/GADTs(Algebraic Data Type, Generalized Algebraic Data Type) and Active Patterns.If you still have problems with the scoping of MLStyle.jl, treat it as FP.jl."
+    "text": "MLStyle.jl is a Julia package that provides multiple productivity tools from ML (Meta Language) like pattern matching which is statically generated and extensible, ADTs/GADTs (Algebraic Data Type, Generalized Algebraic Data Type) and Active Patterns.Think of MLStyle.jl as a package bringing advanced functional programming idioms to Julia."
 },
 
 {
@@ -29,15 +29,15 @@ var documenterSearchIndex = {"docs": [
     "page": "Home",
     "title": "Motivation",
     "category": "section",
-    "text": "The people who\'re used to so-called functional programming could become retarded when there\'re no pattern matching and ADTs, and of course I\'m one of them.However, I don\'t want to take a trade-off here to use some available alternatives that miss features or are not well-optimized. Just like why those greedy people created Julia, I\'m also so greedy that I want to integrate all those useful features into one language and, make all of them convenient, efficient and extensible.On the other side, during recent years I was addicted to extend Python with metaprogramming and even internal mechanisms. Although I made something interesting like pattern-matching, goto, ADTs, constexpr, macros, etc., most of these implementations are so disgustingly evil. Furtunately, in Julia, all of them could be achieved straightforwardly without any black magic, at last, some of these ideas come into the existence of MLStyle.jl.Finally, we finish such a library that provides extensible pattern matching in such an efficient language."
+    "text": "Those used to functional programming may feel limited when they don\'t have pattern matching and ADTs, and of course I\'m one of them.However, I don\'t want to make a trade-off here by using some available alternatives that miss features or are not well-optimized. Just like why those greedy people created Julia, I\'m also so greedy that I want to integrate all those useful features into one language, and make all of them convenient, efficient and extensible.On the other side, in recent years I was addicted to extending Python with metaprogramming and even internal mechanisms. Although I made something interesting like pattern-matching, goto, ADTs, constexpr, macros, etc., most of these implementations are also disgustingly evil. Furtunately, in Julia, all of them could be achieved straightforwardly without any black magic, at last, some of these ideas come into existence with MLStyle.jl.Finally, we have such a library that provides extensible pattern matching for such an efficient language."
 },
 
 {
-    "location": "#Why-to-use-MLStyle.jl-1",
+    "location": "#Why-use-MLStyle.jl-1",
     "page": "Home",
-    "title": "Why to use MLStyle.jl",
+    "title": "Why use MLStyle.jl",
     "category": "section",
-    "text": "Straightforward\nI think there is no need to talk about why we   should use pattern mathing instead of manually    writing something like conditional branches and   nested visitors for datatypes.\nPerformance Gain\nWhen dealing with complex conditional logics and   visiting nested datatypes, the codes compiled via   MLStyle.jl could always match the handwritten.\nYou can check Benchmark for details.\nExtensibility and Hygienic Scoping\nYou can define your own patterns via the interfaces   def_pattern, def_app_pattern and def_gapp_pattern.\nAlmost all built-in patterns are defined at Pervasives.jl.\nOnce you define a pattern, you\'re to be asked to give some   qualifiers to your own patterns to prevent visiting them   from unexpected modules.* Modern Ways about AST Manipulations\nMLStyle.jl is not a superset of MacroToos.jl, but   it provides something useful for AST manipulations.\nFurthermore, in terms of extracting sub-structures from   a given AST, using expr patterns and AST patterns could   make a orders of magnitude speed up."
+    "text": "Straightforward\nI think there is no need to talk about why we should use pattern matching instead of manually writing something like conditional branches and nested visitors for datatypes.\nPerformance Gain\nWhen dealing with complex conditional logics and visiting nested datatypes, the codes compiled via MLStyle.jl is usually as fast as handwritten code. You can check the benchmarks for details.\nExtensibility and Hygienic Scoping\nYou can define your own patterns via the interfaces def_pattern, def_app_pattern and def_gapp_pattern. Almost all built-in patterns are defined at Pervasives.jl.\nOnce you define a pattern, you\'re tasked with giving some qualifiers to your own patterns to prevent visiting them from unexpected modules.\nYou can use MLStyle in development via Bootstrap mechanism:\nNow there\'s a code generation tool called boostrap available at MLStyle/boostrap, which   you can take advantage of to remove MLStyle dependency when making distributions.\nAlso, MLStyle is implemented by itself now, via the bootstrap method.\n* Modern Ways about AST Manipulations\nMLStyle.jl is not a superset of MacroToos.jl, but it provides something useful for AST manipulations. Furthermore, in terms of extracting sub-structures from a given AST, using expr patterns and AST patterns could speed code up by orders of magnitude."
 },
 
 {
@@ -45,7 +45,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Home",
     "title": "Installation, Documentations and Tutorials",
     "category": "section",
-    "text": "Rich features are provided by MLStyle.jl and you can check documents to get started.For installation, open package manager mode in Julia shell and add MLStyle.For more examples or tutorials, check this project which will be frequently updated to present some interesting uses of MLStyle.jl."
+    "text": "Rich features are provided by MLStyle.jl and you can check the documentation to get started.For installation, open the package manager mode in the Julia REPL and add MLStyle.For more examples or tutorials, see this project which will be frequently updated to present some interesting uses of MLStyle.jl."
 },
 
 {
@@ -53,7 +53,15 @@ var documenterSearchIndex = {"docs": [
     "page": "Home",
     "title": "Preview",
     "category": "section",
-    "text": "In this README I\'m glad to share some non-trivial code snippets."
+    "text": ""
+},
+
+{
+    "location": "#Rock-Paper-Scissors-1",
+    "page": "Home",
+    "title": "Rock Paper Scissors",
+    "category": "section",
+    "text": "Here\'s a trivial example of MLStyle.jl in action:using MLStyle\n@data Shape begin # Define an algebraic data type Shape\n    Rock()\n    Paper()\n    Scissors()\nend\n\n# Determine who wins a game of rock paper scissors with pattern matching\nplay(a::Shape, b::Shape) = @match (a,b) begin\n    (Paper(), Rock())     => \"Paper Wins!\";\n    (Rock(), Scissors())  => \"Rock Wins!\";\n    (Scissors(), Paper()) => \"Scissors Wins!\";\n    (a, b)                => a == b ? \"Tie!\" : play(b, a)\nend"
 },
 
 {
@@ -61,7 +69,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Home",
     "title": "Homoiconic pattern matching for Julia ASTs",
     "category": "section",
-    "text": "rmlines = @λ begin\n    e :: Expr           -> Expr(e.head, filter(x -> x !== nothing, map(rmlines, e.args))...)\n      :: LineNumberNode -> nothing\n    a                   -> a\nend\nexpr = quote\n    struct S{T}\n        a :: Int\n        b :: T\n    end\nend |> rmlines\n\n@match expr begin\n    quote\n        struct $name{$tvar}\n            $f1 :: $t1\n            $f2 :: $t2\n        end\n    end =>\n    quote\n        struct $name{$tvar}\n            $f1 :: $t1\n            $f2 :: $t2\n        end\n    end |> rmlines == expr\nend"
+    "text": "Here\'s a less trivial use of MLStyle.jl for deconstructing and pattern matching Julia code.rmlines = @λ begin\n    e :: Expr           -> Expr(e.head, filter(x -> x !== nothing, map(rmlines, e.args))...)\n      :: LineNumberNode -> nothing\n    a                   -> a\nend\nexpr = quote\n    struct S{T}\n        a :: Int\n        b :: T\n    end\nend |> rmlines\n\n@match expr begin\n    quote\n        struct $name{$tvar}\n            $f1 :: $t1\n            $f2 :: $t2\n        end\n    end =>\n    quote\n        struct $name{$tvar}\n            $f1 :: $t1\n            $f2 :: $t2\n        end\n    end |> rmlines == expr\nend"
 },
 
 {
@@ -69,7 +77,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Home",
     "title": "Generalized Algebraic Data Types",
     "category": "section",
-    "text": "@use GADT\n\n@data public Exp{T} begin\n    Sym       :: Symbol => Exp{A} where {A}\n    Val{A}    :: A => Exp{A}\n    App{A, B} :: (Exp{Fun{A, B}}, Exp{A_}) => Exp{B} where {A_ <: A}\n    Lam{A, B} :: (Symbol, Exp{B}) => Exp{Fun{A, B}}\n    If{A}     :: (Exp{Bool}, Exp{A}, Exp{A}) => Exp{A}\nend\nA simple intepreter implementation using GADTs could be found at test/untyped_lam.jl."
+    "text": "@use GADT\n\n@data public Exp{T} begin\n    Sym{A}    :: Symbol                        => Exp{A}\n    Val{A}    :: A                             => Exp{A}\n    App{A, B, A_} :: (Exp{Fun{A, B}}, Exp{A_}) => Exp{B}\n    Lam{A, B} :: (Symbol, Exp{B})              => Exp{Fun{A, B}}\n    If{A}     :: (Exp{Bool}, Exp{A}, Exp{A})   => Exp{A}\nend\nA simple intepreter implemented via GADTs could be found at test/untyped_lam.jl."
 },
 
 {
@@ -77,7 +85,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Home",
     "title": "Active Patterns",
     "category": "section",
-    "text": "Currently, in MLStyle it\'s not a full featured one, but even a subset with parametric active pattern could be super useful.@active Re{r :: Regex}(x) begin\n    match(r, x)\nend\n\n@match \"123\" begin\n    Re{r\"\\d+\"}(x) => x\n    _ => @error \"\"\nend # RegexMatch(\"123\")"
+    "text": "Currently, MLStyle does not have fully featured active patterns, but the subset of parametric active patterns that are implemented are very powerful.@active Re{r :: Regex}(x) begin\n    match(r, x)\nend\n\n@match \"123\" begin\n    Re{r\"\\d+\"}(x) => x\n    _ => @error \"\"\nend # RegexMatch(\"123\")"
 },
 
 {
@@ -93,39 +101,7 @@ var documenterSearchIndex = {"docs": [
     "page": "Home",
     "title": "Prerequisite",
     "category": "section",
-    "text": "Recently the rudimentary benchmarks have been finished, which turns out that MLStyle.jl could be extremely fast when matching cases are complicated, while in terms of some very simple cases(straightforward destruct shallow tuples, arrays and datatypes without recursive invocations), Match.jl could be faster.All benchmark scripts are provided at directory Matrix-Benchmark.To run these cross-implementation benchmarks, some extra dependencies should be installed:(v1.1) pkg> add https://github.com/thautwarm/Benchmarkplotting.jl#master for making cross-implementation benchmark methods and plotting.\n(v1.1) pkg> add Gadfly MacroTools Match BenchmarkTools StatsBase Statistics ArgParse DataFrames.\n(v1.1) pkg> add MLStyle#base for a specific version of MLStyle.jl is required.After installing dependencies, you can directly benchmark them with julia matrix_benchmark.jl hw-tuple hw-array match macrotools match-datatype at the root directory.The benchmarks presented here are made by Julia v1.1 on Fedora 28. For reports made on Win10, check stats/windows/ directory."
-},
-
-{
-    "location": "#Visualization-1",
-    "page": "Home",
-    "title": "Visualization",
-    "category": "section",
-    "text": ""
-},
-
-{
-    "location": "#Time-Overhead-1",
-    "page": "Home",
-    "title": "Time Overhead",
-    "category": "section",
-    "text": "In x-axis, after the name of test-case is the least time-consuming one\'s index, the unit is ns).The y-label is the ratio of the implementation\'s time cost to that of the least time-consuming."
-},
-
-{
-    "location": "#Allocation-1",
-    "page": "Home",
-    "title": "Allocation",
-    "category": "section",
-    "text": "In x-axis, after the name of test-case is the least allocted one\'s index, the unit is _ -> (_ + 1) bytes).The y-label is the ratio of  the implementation\'s allocation cost to that of the least allocted."
-},
-
-{
-    "location": "#Gallery-1",
-    "page": "Home",
-    "title": "Gallery",
-    "category": "section",
-    "text": "Check https://github.com/thautwarm/MLStyle.jl/tree/master/stats."
+    "text": "Recent benchmarks have been run, showing that MLStyle.jl can be extremely fast for complicated pattern matching, but due to its advanced machinery has noticeable overhead in some very simple cases such as straightforwardly destructuring shallow tuples, arrays and datatypes without recursive invocations.All benchmark scripts are provided in the directory Matrix-Benchmark.To run these cross-implementation benchmarks, some extra dependencies should be installed:(v1.1) pkg> add https://github.com/thautwarm/Benchmarkplotting.jl#master for making cross-implementation benchmark methods and plotting.\n(v1.1) pkg> add Gadfly MacroTools Match BenchmarkTools StatsBase Statistics ArgParse DataFrames.\n(v1.1) pkg> add MLStyle#base for a specific version of MLStyle.jl is required.After installing dependencies, you can directly benchmark them with julia matrix_benchmark.jl hw-tuple hw-array match macrotools match-datatype in the root directory.The benchmarks presented here are made by Julia v1.1 on Fedora 28. For reports made on Win10, check stats/windows/ directory."
 },
 
 {
