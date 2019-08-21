@@ -456,18 +456,23 @@ def_app_pattern(Pervasives,
 )
 
 def_app_pattern(Pervasives,
-        predicate = (hd_obj, args) -> hd_obj === QuoteNode,
+        predicate = (hd_obj, args) -> hd_obj === QuoteNode && length(args) == 1,
         rewrite = (tag, _, args, mod) ->
         begin
-            @assert length(args) == 1 begin
-                repr = string(:(QuoteNode($(args...))))
-                "invalid pattern $repr"
-            end
             VAR = mangle(mod)
-            (body -> @format [tag, VAR, body] quote
-                VAR = tag.value
-                body
-            end) ∘ mk_pattern(VAR, args[1], mod)
+
+            function (body)
+                @format [tag, VAR, body, failed, QuoteNode] quote
+                    if tag isa QuoteNode
+                        VAR = tag.value
+                        body
+                    else
+                        failed
+                    end
+                end
+            end ∘
+            mk_pattern(VAR, args[1], mod)
+
         end
 )
 
@@ -517,15 +522,15 @@ function mk_gapp_pattern(tag, forall, hd, tl, use_mod)
             :($(ctor :: Symbol){$(spec_vars...)}) || ctor :: Symbol && Do(spec_vars = [])=>
                 begin
                     if isdefined(use_mod, ctor)
-                        ctor = use_mod.eval(ctor)
-                        for (def_mod, desc) in Infras.GAPP_DESTRUCTORS
-                            if qualifier_test(desc.qualifiers, use_mod, def_mod) && desc.predicate(spec_vars, ctor, tl)
-                                return desc.rewrite(tag, forall, spec_vars, ctor, tl, use_mod)
+                        let ctor = getfield(use_mod, ctor)
+                            for (def_mod, desc) in Infras.GAPP_DESTRUCTORS
+                                if qualifier_test(desc.qualifiers, use_mod, def_mod) && desc.predicate(spec_vars, ctor, tl)
+                                    return desc.rewrite(tag, forall, spec_vars, ctor, tl, use_mod)
+                                end
                             end
                         end
                     end
-                    spec_info = isempty(spec_vars) ? "" :  ("{" *  join(map(string, spec_vars), ", ") * "}")
-                    info = string(ctor) * spec_info * "("  * join(map(string, tl), ", ") * ")"
+                    info = string(:($ctor{$(spec_vars...)}($(tl...))))
                     throw(PatternUnsolvedException("invalid usage or unknown application case $info."))
                 end
         end

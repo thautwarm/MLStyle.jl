@@ -110,4 +110,17 @@
         @test ast_match(:(x + 5)) === 3
     end
 
+    @testset "QuoteNode" begin
+        function ast_match(a)
+            @match a begin
+            QuoteNode(:($x + $y)) => (x, y)
+            _ => nothing
+            end
+        end
+        @test ast_match(QuoteNode(:(x + 1))) === (:x, 1)
+        @test ast_match(QuoteNode(:(x + 2))) === (:x, 2)
+        @test ast_match(QuoteNode(1)) === nothing
+        @test ast_match(:x)       === nothing
+    end
+
 end
