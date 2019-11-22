@@ -175,7 +175,7 @@ And now let's define the operators of our abstract machine.
 
 @data public Exp{T} begin
 
-    # The symbol referes to some variable in current context.
+    # The symbol refers to some variable in current context.
     Sym{A}    :: Symbol => Exp{A}
 
     # Value.
