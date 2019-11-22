@@ -136,7 +136,7 @@ Given an arbitrary Julia module, if you don't use `@use GADT` to enable GADT ext
 your own `where` pattern just works here.
 
 
-Here's a simple intepreter implemented using GADTs.
+Here's a simple interpreter implemented using GADTs.
 
 Firstly, enable GADT extension.
 

@@ -20,7 +20,7 @@ Those used to functional programming may feel limited when they don't have patte
 
 However, I don't want to make a trade-off here by using some available alternatives that miss features or are not well-optimized. Just like [why those greedy people created Julia](https://julialang.org/blog/2012/02/why-we-created-julia), I'm also so greedy that **I want to integrate all those useful features into one language, and make all of them convenient, efficient and extensible**.
 
-On the other side, in recent years I was addicted to extending Python with metaprogramming and even internal mechanisms. Although I made something interesting like [pattern-matching](https://github.com/Xython/pattern-matching), [goto](https://github.com/thautwarm/Redy/blob/master/Redy/Opt/builtin_features/_goto.py), [ADTs](https://github.com/thautwarm/Redy/tree/master/Redy/ADT), [constexpr](https://github.com/thautwarm/Redy/blob/master/Redy/Opt/builtin_features/_constexpr.py), [macros](https://github.com/thautwarm/Redy/blob/master/Redy/Opt/builtin_features/_macro.py), etc., most of these implementations are also disgustingly evil. Furtunately, in Julia, all of them could be achieved straightforwardly without any black magic, at last, some of these ideas come into existence with MLStyle.jl.
+On the other side, in recent years I was addicted to extending Python with metaprogramming and even internal mechanisms. Although I made something interesting like [pattern-matching](https://github.com/Xython/pattern-matching), [goto](https://github.com/thautwarm/Redy/blob/master/Redy/Opt/builtin_features/_goto.py), [ADTs](https://github.com/thautwarm/Redy/tree/master/Redy/ADT), [constexpr](https://github.com/thautwarm/Redy/blob/master/Redy/Opt/builtin_features/_constexpr.py), [macros](https://github.com/thautwarm/Redy/blob/master/Redy/Opt/builtin_features/_macro.py), etc., most of these implementations are also disgustingly evil. Fortunately, in Julia, all of them could be achieved straightforwardly without any black magic, at last, some of these ideas come into existence with MLStyle.jl.
 
 Finally, we have such a library that provides **extensible pattern matching** for such an efficient language.
 
@@ -42,7 +42,7 @@ Finally, we have such a library that provides **extensible pattern matching** fo
 
 - You can use MLStyle in development via [Bootstrap mechanism](https://github.com/thautwarm/MLStyle.jl/tree/master/bootstrap):
 
-    Now there's a code generation tool called `boostrap` available at [MLStyle/boostrap](https://github.com/thautwarm/MLStyle.jl/tree/master/bootstrap), which
+    Now there's a code generation tool called `bootstrap` available at [MLStyle/bootstrap](https://github.com/thautwarm/MLStyle.jl/tree/master/bootstrap), which
     you can take advantage of to remove MLStyle dependency when making distributions.
 
     Also, MLStyle is implemented by itself now, via the bootstrap method.
@@ -127,7 +127,7 @@ end
 
 ```
 
-A simple intepreter implemented via GADTs could be found at `test/untyped_lam.jl`.
+A simple interpreter implemented via GADTs could be found at `test/untyped_lam.jl`.
 
 
 ### Active Patterns
