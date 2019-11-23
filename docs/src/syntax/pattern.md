@@ -522,7 +522,7 @@ end # true
 
 The pattern `quote .. end` is equivalent to `:(begin ... end)`.
 
-Additonally, you can use any other patterns simultaneously when matching asts. In fact, there're regular patterns inside a `$` expression of your ast pattern.
+Additionally, you can use any other patterns simultaneously when matching asts. In fact, there're regular patterns inside a `$` expression of your ast pattern.
 
 A more complex example presented here might help with your comprehension about this:
 

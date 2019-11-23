@@ -72,7 +72,7 @@ Finally, we have such a library that provides **extensible pattern matching** fo
 
 - You can use MLStyle in development via [Bootstrap mechanism](https://github.com/thautwarm/MLStyle.jl/tree/master/bootstrap):
 
-    Now there's a code generation tool called `boostrap` available at [MLStyle/boostrap](https://github.com/thautwarm/MLStyle.jl/tree/master/bootstrap), which
+    Now there's a code generation tool called `bootstrap` available at [MLStyle/bootstrap](https://github.com/thautwarm/MLStyle.jl/tree/master/bootstrap), which
     you can take advantage of to remove MLStyle dependency when making distributions.
 
     Also, MLStyle is implemented by itself now, via the bootstrap method.
@@ -157,7 +157,7 @@ end
 
 ```
 
-A simple intepreter implemented via GADTs could be found at `test/untyped_lam.jl`.
+A simple interpreter implemented via GADTs could be found at `test/untyped_lam.jl`.
 
 
 ### Active Patterns
@@ -207,9 +207,9 @@ The y-label is the ratio of the implementation's time cost to that of the least 
 
 #### Allocation
 
-On the x-axis, after the name of test-case is the least allocted one's index, the unit is `_ -> (_ + 1) bytes`).
+On the x-axis, after the name of test-case is the least allocated one's index, the unit is `_ -> (_ + 1) bytes`).
 
-The y-label is the ratio of the implementation's allocation cost to that of the least allocted.
+The y-label is the ratio of the implementation's allocation cost to that of the least allocated.
 
 #### Gallery
 
@@ -217,7 +217,7 @@ The benchmark results in dataframe format are available at [this directory](http
 
 - [matrix-benchmark/versus-hw-array.jl](https://github.com/thautwarm/MLStyle.jl/blob/base-2/matrix-benchmark/versus-hw-array.jl)
 
-There are still some performamce issues with array patterns.
+There are still some performance issues with array patterns.
 
 1. Time
 

@@ -1,7 +1,7 @@
 Write You A Query Language
 ===============================================
 
-You may have heard of LINQ or extension methods before, and they're all embedded query langauges.
+You may have heard of LINQ or extension methods before, and they're all embedded query languages.
 
 In terms of Julia ecosystem, there're already Query.jl, LightQuery.jl, DataFramesMeta.jl, etc., each of which reaches the partial or full features of a query language.
 
@@ -101,7 +101,7 @@ function (ARG)
 end
 ```
 
-Then, let's think about the `select` clause. You might find it's a `map`(if we don't take aggregrate function into consideration). However, for we don't want to
+Then, let's think about the `select` clause. You might find it's a `map`(if we don't take aggregate function into consideration). However, for we don't want to
 make redundant allocations when executing the queries, so we should use `Base.Generator` as the data representation.
 
 For `@select _.foo + x, _.bar`, it should be generated to something like
@@ -276,7 +276,7 @@ end
 ```
 
 However, subsequently, we comes to the `having` clause, in fact, I'd regard it as a sub-clause of
-`groupby`, which means it cannot take place indenpendently, but co-appear with a `groupby` clause.
+`groupby`, which means it cannot take place independently, but co-appear with a `groupby` clause.
 
 Given such a case:
 ```julia
@@ -313,7 +313,7 @@ The conditional code generation of `groupby` could be achieved very concisely vi
 
 After introducing the generation for above 4 clauses, `orderby` and `limit` then become quite trivial, and I don't want to repeat myself if not necessary.
 
-Now we know that mulitiple clauses could be generated to produce a `Tuple` result, first of which is the field names, the
+Now we know that multiple  clauses could be generated to produce a `Tuple` result, first of which is the field names, the
 second is the lazy computation of the query. We can resume this tuple to the corresponding types, for instance,
 
 ```julia
@@ -333,7 +333,7 @@ end
 Refinement of Codegen: Typed Columns
 ---------------------------------------------
 
-Last section introduce a framework of code generation for implementing query langauges, but in Julia, there's still a fatal problem.
+Last section introduce a framework of code generation for implementing query languages, but in Julia, there's still a fatal problem.
 
 Look at the value to be return(when input is a `DataFrame`):
 
@@ -610,7 +610,7 @@ You might not be able to understand what the meanings of `fields` and `assigns` 
 
 - `assigns : OrderedDict{Any, Expr}`
 
-    When you want to bind the index of `foo` to a given symbol `idx_of_foo`, you should set an expressison `$findfirst(==(:foo), $IN_FIELDS)` to `assigns` on key `idx_of_foo`. The reason why we don't use a `Vector{Expr}` to represent `assigns` is, we can avoid re-assignments in some cases(you can find an instance in `generate_groupby`).
+    When you want to bind the index of `foo` to a given symbol `idx_of_foo`, you should set an expression `$findfirst(==(:foo), $IN_FIELDS)` to `assigns` on key `idx_of_foo`. The reason why we don't use a `Vector{Expr}` to represent `assigns` is, we can avoid re-assignments in some cases(you can find an instance in `generate_groupby`).
 
     Finally, `assigns` would be generated to the binding section of
     a `let` sentence.

@@ -64,7 +64,7 @@ outputs:
 ERROR: LoadError: MLStyle.Err.PatternUnsolvedException("invalid usage or unknown application case Main.A.Data1(Any[:x]).")
 ```
 
-When it comes to active patterns, the behaviour is the same.
+When it comes to active patterns, the behavior is the same.
 
 Visible-In
 ----------------------
