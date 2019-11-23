@@ -85,7 +85,7 @@ eval_arith(
         Divide(Number(20),
                Mult(Number(2),
                     Number(5)))))
-# =&gt; 0</code></pre><h2><a class="nav-anchor" id="Generalized-ADT-1" href="#Generalized-ADT-1">Generalized ADT</a></h2><p>Note that, for GADTs would use <code>where</code> syntax as a pattern, it means that you cannot use GADTs and your custom <code>where</code> patterns at the same time. To resolve this, we introduce the extension system like Haskell here.</p><p>Since that you can define your own <code>where</code> pattern and export it to any modules. Given an arbitrary Julia module, if you don&#39;t use <code>@use GADT</code> to enable GADT extensions and, your own <code>where</code> pattern just works here.</p><p>Here&#39;s a simple intepreter implemented using GADTs.</p><p>Firstly, enable GADT extension.</p><pre><code class="language-julia">using MLStyle
+# =&gt; 0</code></pre><h2><a class="nav-anchor" id="Generalized-ADT-1" href="#Generalized-ADT-1">Generalized ADT</a></h2><p>Note that, for GADTs would use <code>where</code> syntax as a pattern, it means that you cannot use GADTs and your custom <code>where</code> patterns at the same time. To resolve this, we introduce the extension system like Haskell here.</p><p>Since that you can define your own <code>where</code> pattern and export it to any modules. Given an arbitrary Julia module, if you don&#39;t use <code>@use GADT</code> to enable GADT extensions and, your own <code>where</code> pattern just works here.</p><p>Here&#39;s a simple interpreter implemented using GADTs.</p><p>Firstly, enable GADT extension.</p><pre><code class="language-julia">using MLStyle
 @use GADT</code></pre><p>Then define the function type.</p><pre><code class="language-julia">import Base: convert
 
 struct Fun{T, R}
@@ -107,7 +107,7 @@ end
 ⇒(::Type{A}, ::Type{B}) where {A, B} = Fun{A, B}</code></pre><p>And now let&#39;s define the operators of our abstract machine.</p><pre><code class="language-julia">
 @data public Exp{T} begin
 
-    # The symbol referes to some variable in current context.
+    # The symbol refers to some variable in current context.
     Sym{A}    :: Symbol =&gt; Exp{A}
 
     # Value.
