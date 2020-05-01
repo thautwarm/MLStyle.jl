@@ -19,52 +19,55 @@ export PatternUnsolvedException, InternalException, SyntaxError, UnknownExtensio
 export @as_record
 export @λ, gen_lambda
 export @when, @otherwise, gen_when
-
-# convenient modules
-export Modules
-
-
-include("Err.jl")
-using MLStyle.Err
-
-include("Extension.jl")
-using MLStyle.Extension
-
-include("Internal/Toolz.jl")
-
-include("Render.jl")
+export MatchCore
 
 include("MatchCore.jl")
-using MLStyle.MatchCore
 
-include("Infras.jl")
-using MLStyle.Infras
+# # convenient modules
+# export Modules
 
-include("Pervasives.jl")
-using MLStyle.Pervasives
 
-include("Qualification.jl")
+# include("Err.jl")
+# using MLStyle.Err
 
-include("TypeVarExtraction.jl")
+# include("Extension.jl")
+# using MLStyle.Extension
 
-include("StandardPatterns/TypeVarDecons.jl")
-include("StandardPatterns/Active.jl")
-using MLStyle.Active
+# include("Internal/Toolz.jl")
 
-include("Record.jl")
-using MLStyle.Record
+# include("Render.jl")
 
-include("DataType.jl")
-using MLStyle.DataType
+# include("MatchCore.jl")
+# using MLStyle.MatchCore
 
-include("StandardPatterns/Uncomprehensions.jl")
+# include("Infras.jl")
+# using MLStyle.Infras
 
-include("StandardPatterns/LambdaCases.jl")
-using MLStyle.LambdaCases
+# include("Pervasives.jl")
+# using MLStyle.Pervasives
 
-include("StandardPatterns/WhenCases.jl")
-using MLStyle.WhenCases
+# include("Qualification.jl")
 
-include("Modules/Modules.jl")
+# include("TypeVarExtraction.jl")
+
+# include("StandardPatterns/TypeVarDecons.jl")
+# include("StandardPatterns/Active.jl")
+# using MLStyle.Active
+
+# include("Record.jl")
+# using MLStyle.Record
+
+# include("DataType.jl")
+# using MLStyle.DataType
+
+# include("StandardPatterns/Uncomprehensions.jl")
+
+# include("StandardPatterns/LambdaCases.jl")
+# using MLStyle.LambdaCases
+
+# include("StandardPatterns/WhenCases.jl")
+# using MLStyle.WhenCases
+
+# include("Modules/Modules.jl")
 
 end # module
