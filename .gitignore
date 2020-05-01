@@ -26,3 +26,7 @@ tags
 
 # temp files
 temp/
+
+# editors
+MLStyle.jl.iml
+.vscode/
