@@ -1,5 +1,7 @@
 module MLStyle
 
+export ellipsis_split
+
 # Flags
 export @use, use, @used
 # Match Implementation
@@ -22,7 +24,8 @@ export @when, @otherwise, gen_when
 export MatchCore
 
 include("MatchCore.jl")
-
+include("ExprTools.jl")
+include("MatchImpl.jl")
 # # convenient modules
 # export Modules
 

@@ -1,132 +1,159 @@
+module MatchImpl
+export is_enum, pattern_compile, @switch
 using MLStyle.MatchCore
+using MLStyle.ExprTools
+
 using AbstractPattern
 using AbstractPattern.BasicPatterns
 OptionalLn = Union{LineNumberNode, Nothing}
 
-ex2tf(eval::Function, a) =
-    isprimitivetype(typeof(a)) ? literal(a) : error("invalid literal $a")
-ex2tf(eval::Function, l::LineNumberNode) = wildcard
-ex2tf(eval::Function, q::QuoteNode) = literal(q)
-ex2tf(eval::Function, s::String) = literal(s)
-ex2tf(eval::Function, n::Symbol) =
-    n === :_ ?  wildcard : P_capture(n)
+is_enum(_) = false
+function pattern_compile end
 
-Base.@pure function qt2ex(ex::Any)
-    if ex isa Expr
-        Meta.isexpr(ex, :$) && return ex.args[1]
-        Expr(:call, Expr, QuoteNode(ex.head), Expr(:vect, (qt2ex(e) for e in ex.args)...))
-    elseif ex isa Symbol
-        QuoteNode(ex)
+function const_type(t::Any, Ary::Val{N}) where N
+    get_const_type(::Vararg{Any, N})::Any = t
+    get_const_type
+end
+
+function guess_type_from_expr(eval::Function, ex::Any, tps :: Set{Symbol})
+    @sswitch ex begin
+        @case :($t{$(targs...)})
+            # TODO: check if it is a type
+            return eval(t)
+        @case t::Type
+            return t
+        @case ::Symbol
+            return ex in tps ? Any : #= TODO: check if it's a type =# eval(ex)
+        @case _
+            error("unrecognised type expression $ex")
+    end
+end
+
+ex2tf(m::Module, a) = isprimitivetype(typeof(a)) ? literal(a) : error("invalid literal $a")
+ex2tf(m::Module, l::LineNumberNode) = wildcard
+ex2tf(m::Module, q::QuoteNode) = literal(q)
+ex2tf(m::Module, s::String) = literal(s)
+ex2tf(m::Module, n::Symbol) =
+    if n === :_
+        wildcard
     else
-        ex
-    end
-end
-
-function bind_locally(f::Function)
-    function ap(target::Any, env::ChainDict{Symbol, Symbol}, ln::OptionalLn)
-        bind = Expr(:block)
-        for_chaindict(env) do k, v
-            push!(bind.args, :($k = $v))
+        if isdefined(m, n)
+            p = getfield(m, n)
+            rec(x) = ex2tf(m, x)
+            is_enum(p) && return pattern_compile(p, rec, [], [], [])
         end
-        inner = f(target, env, ln) 
-        isempty(bind.args) ?
-            inner :
-            Expr(:let, bind, inner)
+        P_capture(n)    
     end
-end
 
-function ex2tf(eval::Function, ex::Expr)
-    !(x) = ex2tf(eval, x)
+function ex2tf(m::Module, ex::Expr)
+    eval = m.eval
+    rec(x) = ex2tf(m, x)
+
     @sswitch ex begin
     @case Expr(:||, args)
-        return or([!e for e in args])
+        return or(map(recur, args))
     @case Expr(:&&, args)
-        return and([!e for e in args])
-    @case Expr(:if, cond, Expr(:block, _))
-        return bind_locally() do _, _, _
-            cond
-        end |> guard
+        return and(map(recur, args))
+    @case Expr(:if, [cond, Expr(:block, _)])
+        return guard() do _, scope, _
+            see_captured_vars(cond, scope)
+        end
     @case Expr(:&, [expr])
-        return bind_locally() do target, _, _
-            :($target == $expr)
-        end |> guard
-    @case Expr(:(::), [p, ty])
-        t = eval(ty)::TypeObject
-        and([P_type_of(ty), !p])
+        return guard() do target, scope, _
+            see_captured_vars(:($target == $expr), scope)
+        end
+    @case Expr(:vect, elts)
+        tag, split = ellipsis_split(elts)
+        return tag isa Val{:vec} ?
+
+            P_vector([rec(e) for e in split]) :
+            let (init, mid, tail) = split
+                P_vector3(
+                    [rec(e) for e in init],
+                    rec(mid),
+                    [rec(e) for e in tail]
+                )
+            end
+    @case Expr(:tuple, elts)
+        return P_tuple([rec(e) for e in args])
     
+    @case Expr(:quote, [quoted])
+        return rec(qt2ex(quoted))
+    
+    @case Expr(:where, [
+                Expr(:call, [:($t{$(targs...)}), args...])   ||
+                Expr(:call, [t, args...]) && let targs = [] end,
+                tps...
+            ])
+        t = eval(t)
+        return pattern_compile(t, rec, tps, targs, args)
+    
+    @case Expr(:call, [:($t{$(targs...)}), args...])   ||
+          Expr(:call, [t, args...]) && let targs = [] end
+        t = eval(t)
+        return pattern_compile(t, rec, [], targs, args)
+
+    @case :($val :: $t where {$(tps...)}) ||
+          :(:: $t where {$(tps...)}) && let val = :_ end ||
+          :($val :: $t)              && let tps = [] end ||
+          :(:: $t)                   && let val = :_, tps = [] end
         
-    elseif hd === :(::)
-        if n_args === 2
-            p, ty = args
-            ty = eval(ty)::TypeObject
-            and(P_type_of(ty), !p)
-        else
-            @assert n_args === 1
-            p = args[1]
-            ty = eval(ty)::TypeObject
-            P_type_of(ty)
-        end
-    elseif hd === :vect
-        ellipsis_index = findfirst(args) do arg
-            Meta.isexpr(arg, :...)
-        end
-        isnothing(ellipsis_index) ?
-            P_vector([!e for e in args]) :
-            P_vector3(
-                [!e for e in args[1:ellipsis_index-1]],
-                !(args[ellipsis_index].args[1]),
-                [!e for e in args[ellipsis_index+1:end]],
+       
+        tp_set = get_type_parameters(tps)::Set{Symbol}
+        p_ty = guess_type_from_expr(m.eval, t, tp_set) |> P_type_of
+        tp_vec = collect(tp_set)
+        sort!(tp_vec)
+        p_guard = guard() do target, scope, _
+            isempty(tp_vec) &&
+                return see_captured_vars(
+                    :($target isa $t),
+                    scope
+                )
+            targns = Symbol[]
+            fn = gensym("extract type params")
+            testn = gensym("test type params")
+            ret = Expr(:block)
+            suite = ret.args
+            for tp in tp_vec
+                targn = gensym(tp)
+                push!(targns, targn)
+            end
+            push!(
+                suite,
+                :(function $fn(::$t) where {$(tps...)}
+                    $(Expr(:tuple, tp_vec...))
+                end),
+                :(function $fn(_)
+                    nothing
+                end),
+                :($testn = $fn($target)),
+                Expr(:if,
+                    :($testn !== nothing),
+                    Expr(
+                        :block,
+                        Expr(:(=), Expr(:tuple, targns...), testn),
+                        true
+                    ),
+                    false
+                )
             )
-    elseif hd === :tuple
-        P_tuple([!e for e in args])
-    elseif hd === :call
-        let f = args[1],
-            args′ = view(args, 2:length(args))
-            n_args′ = n_args - 1
-            t = eval(f)
-            all_field_ns = fieldnames(t)
-            partial_ns = Symbol[]
-            patterns = Function[]
-            if n_args′ >= 1 && Meta.isexpr(args′[1], :parameters)
-                kwargs = args′[1].args
-                args′ = view(args′, 2:length(args′))
-            else
-                kwargs = []
+            for i in eachindex(tp_vec)
+                scope[tp_vec[i]] = targns[i]
             end
-            if length(all_field_ns) === length(args′)
-                append!(patterns, [!e for e in args′])
-                append!(partial_ns, all_field_ns)
-            elseif length(all_field_ns) !== 0
-                error("count of positional fields should be 0 or the same as the fields($all_field_ns)")
-            end
-            for e in kwargs
-                if e isa Symbol
-                    e in all_field_ns || error("unknown field name $e for $t when field punnning.")
-                    push!(partial_ns, e)
-                    push!(patterns, P_capture(e))
-                elseif Meta.isexpr(e, :kw)
-                    key, value = e.args
-                    key in all_field_ns || error("unknown field name $key for $t when field punnning.")
-                    @assert key isa Symbol
-                    push!(partial_ns, key)
-                    push!(patterns, and(P_capture(key), !value))
-                end
-            end
-            P_partial_struct_decons(t, partial_ns, patterns)
+            ret
         end
-    elseif hd === :quote
-        !qt2ex(args[1])
-    else
-        error("not implemented expr=>pattern rule for '($hd)' Expr.")
+        
+        return and([p_ty, p_guard, rec(val)])
+    @case a
+        error("unknown pattern syntax $(repr(a))")
     end
 end
 
 const case_sym = Symbol("@case")
-"""a minimal implementation of sswitch
-"""
-macro sswitch(val, ex)
+
+macro switch(val, ex)
     @assert Meta.isexpr(ex, :block)
-    clauses = Pair{Function, Symbol}[]
+    clauses = Union{LineNumberNode, Pair{<:Function, Symbol}}[]
     body = Expr(:block)
     alphabeta = 'a':'z'
     base = gensym()
@@ -136,12 +163,16 @@ macro sswitch(val, ex)
         if Meta.isexpr(stmt, :macrocall) &&
            stmt.args[1] === case_sym &&
            length(stmt.args) == 3
-
-            pattern = basic_ex2tf(__module__.eval, stmt.args[3])
-            br :: Symbol = Symbol(alphabeta[i % 26], i <= 26 ? "" : string(i), base)
+            
+            k += 1
+            pattern = ex2tf(__module__, stmt.args[3])
+            br :: Symbol = Symbol(alphabeta[k % 26], k <= 26 ? "" : string(i), base)
             push!(clauses,  pattern => br)
             push!(body.args, :(@label $br))
         else
+            if stmt isa LineNumberNode
+                push!(clauses, stmt)
+            end
             push!(body.args, stmt)
         end
     end
@@ -152,4 +183,97 @@ macro sswitch(val, ex)
         match_logic,
         body
     ))
+end
+
+Base.@pure function expr2tuple(expr)
+    :($expr.head, $expr.args)
+end
+
+function pattern_compile(
+    ::Type{Expr},
+    self::Function,
+    type_params::AbstractArray,
+    type_args::AbstractArray,
+    args::AbstractArray
+)
+    isempty(type_params) || error("A Expr pattern requires no type params.")
+    isempty(type_args)   || error("A Expr pattern requires no type arguments.")
+    
+    tcons(_...)::Type{Expr} = Expr
+    comp = PComp(
+        "Expr",
+        tcons,
+    )
+    
+    p_tag = self(args[1])
+    p_vec = self(Expr(:vect, view(args, 2:length(args))...))
+    p_tuple = P_tuple([p_tag, p_vec])
+    and([P_type_of(Expr), P_slow_view(expr2tuple, p_tuple)])
+end
+
+
+function pattern_compile(
+    ::Type{Core.SimpleVector},
+    self::Function,
+    type_params::AbstractArray,
+    type_args::AbstractArray,
+    args::AbstractArray
+)
+    isempty(type_params) || error("A Expr pattern requires no type params.")
+    isempty(type_args)   || error("A Expr pattern requires no type arguments.")
+    
+    tag, split = ellipsis_split(args)
+    return tag isa Val{:vec} ?
+        P_svec([self(e) for e in split]) :
+        let (init, mid, tail) = split
+            P_svec3(
+                [self(e) for e in init],
+                self(mid),
+                [self(e) for e in tail]
+            )
+        end
+end
+
+# macro match(val, tbl)
+#     @assert Meta.isexpr(tbl, :block)
+#     clauses = Union{LineNumberNode, Pair{<:Function, Symbol}}[]
+#     body = Expr(:block)
+#     alphabeta = 'a':'z'
+#     base = gensym()
+#     k = 0
+#     for i in eachindex(tbl.args)
+#         ex = tbl.args[i]
+#         @switch ex begin
+#             @case :($a => $b)
+                
+#             @case ::LineNumberNode
+#                 continue
+#         end
+#         stmt = ex.args[i]
+
+#         if Meta.isexpr(stmt, :call) &&
+#            stmt.args[1] === case_sym &&
+#            length(stmt.args) == 3
+            
+#             k += 1
+#             pattern = ex2tf(__module__, stmt.args[3])
+#             br :: Symbol = Symbol(alphabeta[k % 26], k <= 26 ? "" : string(i), base)
+#             push!(clauses,  pattern => br)
+#             push!(body.args, :(@label $br))
+#         else
+#             if stmt isa LineNumberNode
+#                 push!(clauses, stmt)
+#             end
+#             push!(body.args, stmt)
+#         end
+#     end
+    
+#     match_logic = backend(val, clauses, __source__)
+#     esc(Expr(
+#         :block,
+#         match_logic,
+#         body
+#     ))
+# end
+
 end
