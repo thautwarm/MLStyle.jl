@@ -1,8 +1,40 @@
 module MatchCore
+using MLStyle
 
-export @sswitch, qt2ex
+export @sswitch, qt2ex, ellipsis_split, backend
 using AbstractPattern
 using AbstractPattern.BasicPatterns
+
+"""
+[a, b..., c] -> :vec3 => [a], b, [c]
+[a, b, c]    -> :vec => [a, b, c]
+"""
+function ellipsis_split(args::AbstractArray{T, 1}) where T
+    ellipsis_index = findfirst(args) do arg
+        Meta.isexpr(arg, :...)
+    end
+    if isnothing(ellipsis_index)
+        Val(:vec) => args
+    else
+        Val(:vec3) => (
+            args[1:ellipsis_index-1],
+            args[ellipsis_index].args[1],
+            args[ellipsis_index+1:end]
+        )
+    end
+end
+
+Base.@pure function qt2ex(ex::Any)
+    if ex isa Expr
+        Meta.isexpr(ex, :$) && return ex.args[1]
+        Expr(:call, Expr, QuoteNode(ex.head), Expr(:vect, (qt2ex(e) for e in ex.args)...))
+    elseif ex isa Symbol
+        QuoteNode(ex)
+    else
+        ex
+    end
+end
+
 
 const backend = MK(RedyFlavoured)
 
@@ -27,17 +59,6 @@ basic_ex2tf(eval::Function, s::String) = literal(s)
 basic_ex2tf(eval::Function, n::Symbol) =
     n === :_ ?  wildcard : P_capture(n)
 
-Base.@pure function qt2ex(ex::Any)
-    if ex isa Expr
-        Meta.isexpr(ex, :$) && return ex.args[1]
-        Expr(:call, Expr, QuoteNode(ex.head), Expr(:vect, (qt2ex(e) for e in ex.args)...))
-    elseif ex isa Symbol
-        QuoteNode(ex)
-    else
-        ex
-    end
-end
-
 function basic_ex2tf(eval::Function, ex::Expr)
     !(x) = basic_ex2tf(eval, x)
     hd = ex.head; args = ex.args; n_args = length(args)
@@ -53,22 +74,26 @@ function basic_ex2tf(eval::Function, ex::Expr)
     elseif hd === :if
         @assert n_args === 2
         cond = args[1]
-        guard() do target, env, _
-            bind = Expr(:block)
-            for_chaindict(env) do k, v
-                push!(bind.args, :($k = $v))
-            end
-            Expr(:let, bind, cond)
+        guard() do _, scope, _
+            see_captured_vars(cond, scope)
         end
     elseif hd === :&
         @assert n_args === 1
         val = args[1]
-        guard() do target, env, _
-            bind = Expr(:block)
-            for_chaindict(env) do k, v
-                push!(bind.args, :($k = $v))
-            end
-            Expr(:let, bind, :($target == $val))
+        guard() do target, scope, _
+            see_captured_vars(:($target == $val), scope)
+        end
+    elseif hd === :let
+        bind = args[1]
+        @assert bind isa Expr
+        if bind.head === :(=)
+            @assert bind.args[1] isa Symbol
+            P_bind(bind.args[1], bind.args[2], see_capture=true)
+        else
+            @assert bind.head === :block
+            binds = Function[P_bind(arg.args[1], arg.args[2], see_capture=true) for arg in bind.args]
+            push!(binds, wildcard)
+            and(binds)
         end
     elseif hd === :(::)
         if n_args === 2
@@ -77,21 +102,21 @@ function basic_ex2tf(eval::Function, ex::Expr)
             and(P_type_of(ty), !p)
         else
             @assert n_args === 1
-            p = args[1]
+            ty = args[1]
             ty = eval(ty)::TypeObject
             P_type_of(ty)
         end
     elseif hd === :vect
-        ellipsis_index = findfirst(args) do arg
-            Meta.isexpr(arg, :...)
-        end
-        isnothing(ellipsis_index) ?
-            P_vector([!e for e in args]) :
-            P_vector3(
-                [!e for e in args[1:ellipsis_index-1]],
-                !(args[ellipsis_index].args[1]),
-                [!e for e in args[ellipsis_index+1:end]],
-            )
+        tag, split = ellipsis_split(args)
+        return tag isa Val{:vec} ?
+            P_vector([!e for e in split]) :
+            let (init, mid, tail) = split
+                P_vector3(
+                    [!e for e in init],
+                    !mid,
+                    [!e for e in tail]
+                )
+            end
     elseif hd === :tuple
         P_tuple([!e for e in args])
     elseif hd === :call
@@ -99,6 +124,18 @@ function basic_ex2tf(eval::Function, ex::Expr)
             args′ = view(args, 2:length(args))
             n_args′ = n_args - 1
             t = eval(f)
+            if t === Core.svec
+                tag, split = ellipsis_split(args′ )
+                return tag isa Val{:vec} ?
+                    P_svec([!e for e in split]) :
+                    let (init, mid, tail) = split
+                        P_svec3(
+                            [!e for e in init],
+                            !mid,
+                            [!e for e in tail]
+                        )
+                    end
+            end
             all_field_ns = fieldnames(t)
             partial_ns = Symbol[]
             patterns = Function[]
@@ -141,22 +178,33 @@ const case_sym = Symbol("@case")
 """
 macro sswitch(val, ex)
     @assert Meta.isexpr(ex, :block)
-    clauses = Pair{Function, Symbol}[]
+    clauses = Union{LineNumberNode, Pair{<:Function, Symbol}}[]
     body = Expr(:block)
     alphabeta = 'a':'z'
     base = gensym()
     k = 0
+    ln =  __source__
     for i in eachindex(ex.args)
         stmt = ex.args[i]
         if Meta.isexpr(stmt, :macrocall) &&
            stmt.args[1] === case_sym &&
            length(stmt.args) == 3
-
-            pattern = basic_ex2tf(__module__.eval, stmt.args[3])
-            br :: Symbol = Symbol(alphabeta[i % 26], i <= 26 ? "" : string(i), base)
+           
+           push!(clauses, ln)
+            k += 1
+            pattern = try
+                basic_ex2tf(__module__.eval, stmt.args[3])
+            catch e
+                e isa ErrorException && error("\n$ln:\n $(e.msg)")
+                rethrow()
+            end
+            br :: Symbol = Symbol(alphabeta[k % 26], k <= 26 ? "" : string(i), base)
             push!(clauses,  pattern => br)
             push!(body.args, :(@label $br))
         else
+            if stmt isa LineNumberNode
+                ln = stmt
+            end
             push!(body.args, stmt)
         end
     end
