@@ -1,14 +1,20 @@
 module MatchImpl
-export is_enum, pattern_compile, @switch, @match
+export is_enum, pattern_compile, @switch, @match, Where
 using MLStyle.MatchCore
 using MLStyle.ExprTools
 
-using AbstractPattern
-using AbstractPattern.BasicPatterns
+using MLStyle.AbstractPattern
+using MLStyle.AbstractPattern.BasicPatterns
 OptionalLn = Union{LineNumberNode, Nothing}
 
-is_enum(_) = false
+is_enum(_)::Bool = false
 function pattern_compile end
+
+struct Where
+    value
+    type
+    type_parameters :: AbstractArray{T, 1} where T
+end
 
 Base.@pure function qt2ex(ex::Any)
     if ex isa Expr
@@ -56,60 +62,10 @@ ex2tf(m::Module, n::Symbol) =
         P_capture(n)    
     end
 
-function ex2tf(m::Module, ex::Expr)
-    eval = m.eval
+function ex2tf(m::Module, w::Where)
     rec(x) = ex2tf(m, x)
-
-    @sswitch ex begin
-    @case Expr(:||, args)
-        return or(map(recur, args))
-    @case Expr(:&&, args)
-        return and(map(recur, args))
-    @case Expr(:if, [cond, Expr(:block, _)])
-        return guard() do _, scope, _
-            see_captured_vars(cond, scope)
-        end
-    @case Expr(:&, [expr])
-        return guard() do target, scope, _
-            see_captured_vars(:($target == $expr), scope)
-        end
-    @case Expr(:vect, elts)
-        tag, split = ellipsis_split(elts)
-        return tag isa Val{:vec} ?
-
-            P_vector([rec(e) for e in split]) :
-            let (init, mid, tail) = split
-                P_vector3(
-                    [rec(e) for e in init],
-                    rec(mid),
-                    [rec(e) for e in tail]
-                )
-            end
-    @case Expr(:tuple, elts)
-        return P_tuple([rec(e) for e in args])
-    
-    @case Expr(:quote, [quoted])
-        return rec(qt2ex(quoted))
-    
-    @case Expr(:where, [
-                Expr(:call, [:($t{$(targs...)}), args...])   ||
-                Expr(:call, [t, args...]) && let targs = [] end,
-                tps...
-            ])
-        t = eval(t)
-        return pattern_compile(t, rec, tps, targs, args)
-    
-    @case Expr(:call, [:($t{$(targs...)}), args...])   ||
-          Expr(:call, [t, args...]) && let targs = [] end
-        t = eval(t)
-        return pattern_compile(t, rec, [], targs, args)
-
-    @case :($val :: $t where {$(tps...)}) ||
-          :(:: $t where {$(tps...)}) && let val = :_ end ||
-          :($val :: $t)              && let tps = [] end ||
-          :(:: $t)                   && let val = :_, tps = [] end
-        
-       
+    @sswitch w begin
+    @case Where(;value=val, type=t, type_parameters=tps)
         tp_set = get_type_parameters(tps)::Set{Symbol}
         p_ty = guess_type_from_expr(m.eval, t, tp_set) |> P_type_of
         tp_vec = collect(tp_set)
@@ -153,8 +109,77 @@ function ex2tf(m::Module, ex::Expr)
             end
             ret
         end
+        return and([p_ty, p_guard, rec(val)])    
+    end
+end
+
+function ex2tf(m::Module, ex::Expr)
+    eval = m.eval
+    rec(x) = ex2tf(m, x)
+
+    @sswitch ex begin
+    @case Expr(:||, args)
+        return or(map(rec, args))
+    @case Expr(:&&, args)
+        return and(map(rec, args))
+    @case Expr(:if, [cond, Expr(:block, _)])
+        return guard() do _, scope, _
+            see_captured_vars(cond, scope)
+        end
+    @case Expr(:let, args)
+        bind = args[1]
+        @assert bind isa Expr
+        return if bind.head === :(=)
+            @assert bind.args[1] isa Symbol
+            P_bind(bind.args[1], bind.args[2], see_capture=true)
+        else
+            @assert bind.head === :block
+            binds = Function[P_bind(arg.args[1], arg.args[2], see_capture=true) for arg in bind.args]
+            push!(binds, wildcard)
+            and(binds)
+        end
+    @case Expr(:&, [expr])
+        return guard() do target, scope, _
+            see_captured_vars(:($target == $expr), scope)
+        end
+    @case Expr(:vect, elts)
+        tag, split = ellipsis_split(elts)
+        return tag isa Val{:vec} ?
+
+            P_vector([rec(e) for e in split]) :
+            let (init, mid, tail) = split
+                P_vector3(
+                    [rec(e) for e in init],
+                    rec(mid),
+                    [rec(e) for e in tail]
+                )
+            end
+    @case Expr(:tuple, elts)
+        return P_tuple([rec(e) for e in args])
+    
+    @case Expr(:quote, [quoted])
+        return rec(qt2ex(quoted))
+    
+    @case Expr(:where, [
+                Expr(:call, [:($t{$(targs...)}), args...])  ||
+                Expr(:call, [t, args...]) && let targs = [] end,
+                tps...
+            ]) && if t !== Where end
+        t = eval(t)
+        return pattern_compile(t, rec, tps, targs, args)
+    
+    @case (Expr(:call, [:($t{$(targs...)}), args...]) || Expr(:call, [t, args...]) && let targs = [] end) &&
+            if t !== Where end
+        t = eval(t)
+        return pattern_compile(t, rec, [], targs, args)
+
+    @case :($val :: $t where {$(tps...)})                ||
+          :(:: $t where {$(tps...)}) && let val = :_ end ||
+          :($val :: $t)              && let tps = [] end ||
+          :(:: $t)                   && let val = :_, tps = [] end
         
-        return and([p_ty, p_guard, rec(val)])
+          return ex2tf(m, Where(val, t, tps))
+        
     @case a
         error("unknown pattern syntax $(repr(a))")
     end
@@ -189,11 +214,12 @@ macro switch(val, ex)
     end
     
     match_logic = backend(val, clauses, __source__)
-    esc(Expr(
+    exp = Expr(
         :block,
         match_logic,
         body
-    ))
+    )
+    esc(exp)
 end
 
 Base.@pure function expr2tuple(expr)
