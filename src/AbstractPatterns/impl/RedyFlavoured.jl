@@ -1,5 +1,7 @@
 module RedyFlavoured
 using MLStyle.AbstractPattern
+using MLStyle.Err: PatternCompilationError
+
 Config = NamedTuple{(:type, :ln)}
 Scope = ChainDict{Symbol,Symbol}
 ViewCache = ChainDict{Pair{TypeObject, Any}, Tuple{Symbol, Bool}}

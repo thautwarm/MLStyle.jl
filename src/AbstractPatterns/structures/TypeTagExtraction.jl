@@ -1,6 +1,4 @@
 @nospecialize
-# term_position is from ./SourcePos.jl and,
-# PatternCompilationError is from ../PatternSignature
 """the view point of the type tag for each term
 """
 function tag_extract(points_of_view::Dict{Function,Int})
@@ -12,7 +10,7 @@ function tag_extract(points_of_view::Dict{Function,Int})
         t = reduce(typeintersect, ts)
         if t === Base.Bottom
             core_msg = "and patterns require an intersection of $(ts), which seems empty!"
-            throw(PatternCompilationError(nothing, core_msg))
+            error(core_msg)
         end
         t
     end
@@ -36,10 +34,7 @@ function tag_extract(points_of_view::Dict{Function,Int})
             join(map(repr, targs), ",")
             if e isa MethodError && e.f === comp.tcons
                 argstr = join(repeat(String["_"], length(targs)), ", ")
-                throw(PatternCompilationError(
-                    nothing,
-                    "invalid deconstructor $(comp.repr)($(argstr))",
-                ))
+                error("invalid deconstructor $(comp.repr)($(argstr))")
             end
             rethrow()
         end
