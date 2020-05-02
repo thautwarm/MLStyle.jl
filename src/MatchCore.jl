@@ -1,7 +1,7 @@
 module MatchCore
 using MLStyle
 
-export @sswitch, qt2ex, ellipsis_split, backend
+export @sswitch, ellipsis_split, backend
 using AbstractPattern
 using AbstractPattern.BasicPatterns
 
@@ -54,7 +54,7 @@ end
 basic_ex2tf(eval::Function, a) =
     isprimitivetype(typeof(a)) ? literal(a) : error("invalid literal $a")
 basic_ex2tf(eval::Function, l::LineNumberNode) = wildcard
-basic_ex2tf(eval::Function, q::QuoteNode) = literal(q)
+basic_ex2tf(eval::Function, q::QuoteNode) = literal(q.value)
 basic_ex2tf(eval::Function, s::String) = literal(s)
 basic_ex2tf(eval::Function, n::Symbol) =
     n === :_ ?  wildcard : P_capture(n)
@@ -210,11 +210,17 @@ macro sswitch(val, ex)
     end
     
     match_logic = backend(val, clauses, __source__)
-    esc(Expr(
-        :block,
-        match_logic,
-        body
-    ))
+    esc(
+        Expr(
+            :let,
+            Expr(:block),
+            Expr(
+                :block,
+                match_logic,
+                body
+            )
+        )
+    )
 end
 
 end # module end

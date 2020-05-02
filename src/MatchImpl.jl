@@ -1,5 +1,5 @@
 module MatchImpl
-export is_enum, pattern_compile, @switch
+export is_enum, pattern_compile, @switch, @match
 using MLStyle.MatchCore
 using MLStyle.ExprTools
 
@@ -9,6 +9,17 @@ OptionalLn = Union{LineNumberNode, Nothing}
 
 is_enum(_) = false
 function pattern_compile end
+
+Base.@pure function qt2ex(ex::Any)
+    if ex isa Expr
+        Meta.isexpr(ex, :$) && return ex.args[1]
+        Expr(:call, Expr, QuoteNode(ex.head), (qt2ex(e) for e in ex.args)...)
+    elseif ex isa Symbol
+        QuoteNode(ex)
+    else
+        ex
+    end
+end
 
 function const_type(t::Any, Ary::Val{N}) where N
     get_const_type(::Vararg{Any, N})::Any = t
@@ -31,7 +42,7 @@ end
 
 ex2tf(m::Module, a) = isprimitivetype(typeof(a)) ? literal(a) : error("invalid literal $a")
 ex2tf(m::Module, l::LineNumberNode) = wildcard
-ex2tf(m::Module, q::QuoteNode) = literal(q)
+ex2tf(m::Module, q::QuoteNode) = literal(q.value)
 ex2tf(m::Module, s::String) = literal(s)
 ex2tf(m::Module, n::Symbol) =
     if n === :_
@@ -234,46 +245,50 @@ function pattern_compile(
         end
 end
 
-# macro match(val, tbl)
-#     @assert Meta.isexpr(tbl, :block)
-#     clauses = Union{LineNumberNode, Pair{<:Function, Symbol}}[]
-#     body = Expr(:block)
-#     alphabeta = 'a':'z'
-#     base = gensym()
-#     k = 0
-#     for i in eachindex(tbl.args)
-#         ex = tbl.args[i]
-#         @switch ex begin
-#             @case :($a => $b)
-                
-#             @case ::LineNumberNode
-#                 continue
-#         end
-#         stmt = ex.args[i]
-
-#         if Meta.isexpr(stmt, :call) &&
-#            stmt.args[1] === case_sym &&
-#            length(stmt.args) == 3
-            
-#             k += 1
-#             pattern = ex2tf(__module__, stmt.args[3])
-#             br :: Symbol = Symbol(alphabeta[k % 26], k <= 26 ? "" : string(i), base)
-#             push!(clauses,  pattern => br)
-#             push!(body.args, :(@label $br))
-#         else
-#             if stmt isa LineNumberNode
-#                 push!(clauses, stmt)
-#             end
-#             push!(body.args, stmt)
-#         end
-#     end
+macro match(val, tbl)
+    @assert Meta.isexpr(tbl, :block)
+    clauses = Union{LineNumberNode, Pair{<:Function, Symbol}}[]
+    body = Expr(:block)
+    alphabeta = 'a':'z'
+    base = gensym()
+    k = 0
+    final_label = Symbol(".", base)
+    final_res = gensym("final")
     
-#     match_logic = backend(val, clauses, __source__)
-#     esc(Expr(
-#         :block,
-#         match_logic,
-#         body
-#     ))
-# end
+    for i in eachindex(tbl.args)
+        ex = tbl.args[i]
+        @switch ex begin
+            @case :($a => $b)
+                k += 1
+                pattern = ex2tf(__module__, a)
+                br :: Symbol = Symbol(alphabeta[k % 26], k <= 26 ? "" : string(i), base)
+                push!(clauses,  pattern => br)
+                push!(body.args, :(@label $br))
+                push!(body.args, :($final_res = $b))
+                push!(body.args, :(@goto $final_label))
+                continue
+            @case ln::LineNumberNode
+                push!(clauses, ln)
+                push!(body.args, ln)
+                continue
+        end
+    end
+    
+    match_logic = backend(val, clauses, __source__)
+    push!(body.args, :(@label $final_label))
+    push!(body.args, final_res)
+    
+    esc(
+        Expr(
+            :let,
+            Expr(:block),
+            Expr(
+                :block,
+                match_logic,
+                body
+            )
+        )
+    )
 
+end
 end
