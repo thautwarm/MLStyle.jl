@@ -1,9 +1,9 @@
 module MatchCore
 using MLStyle
 
-export @sswitch, ellipsis_split, backend
-using AbstractPattern
-using AbstractPattern.BasicPatterns
+export @sswitch, ellipsis_split, backend, P_partial_struct_decons
+using MLStyle.AbstractPattern
+using MLStyle.AbstractPattern.BasicPatterns
 
 """
 [a, b..., c] -> :vec3 => [a], b, [c]
@@ -73,9 +73,10 @@ function basic_ex2tf(eval::Function, ex::Expr)
 
     elseif hd === :if
         @assert n_args === 2
-        cond = args[1]
-        guard() do _, scope, _
-            see_captured_vars(cond, scope)
+        let cond = args[1]
+            guard() do _, scope, _
+                see_captured_vars(cond, scope)
+            end
         end
     elseif hd === :&
         @assert n_args === 1
@@ -148,7 +149,7 @@ function basic_ex2tf(eval::Function, ex::Expr)
             if length(all_field_ns) === length(args′)
                 append!(patterns, [!e for e in args′])
                 append!(partial_ns, all_field_ns)
-            elseif length(all_field_ns) !== 0
+            elseif length(partial_ns) !== 0
                 error("count of positional fields should be 0 or the same as the fields($all_field_ns)")
             end
             for e in kwargs
@@ -210,7 +211,7 @@ macro sswitch(val, ex)
     end
     
     match_logic = backend(val, clauses, __source__)
-    esc(
+    ret =
         Expr(
             :let,
             Expr(:block),
@@ -220,7 +221,7 @@ macro sswitch(val, ex)
                 body
             )
         )
-    )
+    esc(ret)
 end
 
 end # module end

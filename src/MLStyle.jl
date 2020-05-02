@@ -1,6 +1,6 @@
 module MLStyle
 
-export ellipsis_split
+export ellipsis_split, is_enum, pattern_compile, @switch, @match, Where
 
 # Flags
 export @use, use, @used
@@ -23,9 +23,13 @@ export @λ, gen_lambda
 export @when, @otherwise, gen_when
 export MatchCore
 
+include("AbstractPatterns/AbstractPattern.jl")
 include("MatchCore.jl")
 include("ExprTools.jl")
 include("MatchImpl.jl")
+include("Record.jl")
+
+
 # # convenient modules
 # export Modules
 
