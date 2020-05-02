@@ -1,8 +1,4 @@
-struct PatternCompilationError <: Exception
-    line::Union{LineNumberNode,Nothing}
-    msg::AbstractString
-end
-
+using MLStyle.Err: PatternCompilationError
 
 PatternImpl = NamedTuple{
     (:and, :or, :literal, :wildcard, :decons, :guard, :effect),

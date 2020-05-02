@@ -1,5 +1,6 @@
 module MatchCore
 using MLStyle
+using MLStyle.Err
 
 export @sswitch, ellipsis_split, backend, P_partial_struct_decons
 using MLStyle.AbstractPattern
@@ -196,7 +197,7 @@ macro sswitch(val, ex)
             pattern = try
                 basic_ex2tf(__module__.eval, stmt.args[3])
             catch e
-                e isa ErrorException && error("\n$ln:\n $(e.msg)")
+                e isa ErrorException && throw(PatternCompilationError(ln, e.msg))
                 rethrow()
             end
             br :: Symbol = Symbol(alphabeta[k % 26], k <= 26 ? "" : string(i), base)

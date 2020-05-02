@@ -16,12 +16,14 @@ export @active
 # Extensibilities
 export def_pattern, def_app_pattern, def_gapp_pattern, mk_pattern, mk_app_pattern, mk_gapp_pattern, def_record, def_active_pattern
 # Exceptions
-export PatternUnsolvedException, InternalException, SyntaxError, UnknownExtension, @syntax_err
+export PatternCompilationError, InternalException, SyntaxError, UnknownExtension
 # Syntax Sugars
 export @as_record
 export @λ, gen_lambda
 export @when, @otherwise, gen_when
 export MatchCore
+include("Err.jl")
+using .Err
 
 include("AbstractPatterns/AbstractPattern.jl")
 include("MatchCore.jl")
