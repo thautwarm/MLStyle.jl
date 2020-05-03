@@ -24,29 +24,37 @@ function active_def(P, body, mod::Module, line::LineNumberNode)
     else
         :(struct $t end)
     end
-    parametric = isempty(type_args) ? :(::Nothing) : Expr(:tuple, type_args...)
-    token = QuoteNode(gensym(:mlstyle))
+    parametric = isempty(type_args) ? [] : type_args
     prepr = "$P"
+    token = gensym(prepr)
+    v_ty = Val{(view, token)}
+    v_val = Val((view, token))
 
     quote
         $definition
-        (::Val{($Base.view, $token)})($parametric, $arg) = $body
+        (::$v_ty)($(parametric...), ) = $arg -> $body
         $line
-        function $MatchImpl.pattern_uncall(t::typeof($t), self::Function, type_params, type_args, args)
+        function $MatchImpl.pattern_uncall(t::($t isa Function ? typeof($t) : Type{$t}), self::Function, type_params, type_args, args)
             $line
             isempty(type_params) || error("A ($t) pattern requires no type params.")
-            parametric = isempty(type_args) ? nothing : Expr(:tuple, type_args...)
+            parametric = isempty(type_args) ? [] : type_args
             n_args = length(args)
+        
             function trans(expr)
-                f = Val(($Base.view, $token))
-                Expr(:call, f, parametric, expr)
+                Expr(:call, Expr(:call, $v_val, parametric...), expr)
             end
             
             function guard2(expr)
-                :($expr !== nothing)
+                if n_args === 0
+                    :($expr isa Bool && $expr)
+                elseif n_args === 1
+                    :($expr isa Some && $expr !== nothing)
+                else
+                    :($expr isa $Tuple && length($expr) === $n_args)
+                end
             end
             
-            extract = if length(args) === 1
+            extract = if n_args <= 1
                 function (expr::Any, i::Int, ::Any, ::Any)
                     expr
                 end
@@ -55,6 +63,7 @@ function active_def(P, body, mod::Module, line::LineNumberNode)
                     :($expr[$i])
                 end
             end
+                
             type_infer(_...) = Any
             
             comp = $PComp(
@@ -62,7 +71,14 @@ function active_def(P, body, mod::Module, line::LineNumberNode)
                 view=$SimpleCachablePre(trans),
                 guard2=$NoncachablePre(guard2)
             )
-            $decons(comp, extract, [self(arg) for arg in args])
+            ps = if n_args === 0
+                []
+            elseif n_args === 1
+                [self(Expr(:call, Some, args[1]))]
+            else
+                [self(e) for e in args]
+            end    
+            $decons(comp, extract, ps)
         end
     end
 end
