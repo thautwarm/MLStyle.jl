@@ -442,9 +442,7 @@ function compile_spec!(
     end
     mkcond = re_tagless(x.pattern, x.ln)(redy_impl)
     ln = x.ln
-    if !isnothing(ln)
-        push!(suite, ln)
-    end
+    push!(suite, ln)
     cond = mkcond(env, target)
     conditional_expr = to_expression(cond)
     true_clause = Expr(:block)

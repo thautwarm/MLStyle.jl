@@ -1,6 +1,7 @@
 module MatchImpl
 export is_enum, pattern_uncall, pattern_unref, @switch, @match, Where, gen_match, gen_switch
 export Q, unQ
+import MLStyle
 using MLStyle.Err
 using MLStyle.MatchCore
 using MLStyle.ExprTools
@@ -190,9 +191,56 @@ function ex2tf(m::Module, ex::Expr)
 
         return ex2tf(m, Where(val, t, tps))
 
+        @case :($ty[$pat for $reconstruct in $seq if $cond])                  ||
+              :($ty[$pat for $reconstruct in $seq]) && let cond = nothing end ||
+              :[$pat for $reconstruct in $seq if $cond] && let ty = Any end   ||
+              :[$pat for $reconstruct in $seq] && let cond = nothing, ty = Any end && if seq isa Symbol end
+
+        return uncomprehension(rec, ty, pat, reconstruct, seq, cond)
+
         @case a
         error("unknown pattern syntax $(repr(a))")
     end
+end
+
+function uncomprehension(self::Function, ty::Any, pat::Any, reconstruct::Any, seq::Any, cond::Any)
+    eltype = guess_type_from_expr(eval, ty, Set{Symbol}())
+    p0 = P_type_of(AbstractArray{T, 1} where T <: eltype)
+    function extract(target::Any, ::Int, scope::ChainDict{Symbol, Symbol}, ln::LineNumberNode)
+        token = gensym("uncompreh token")
+        iter = gensym("uncompreh iter")
+        vec = gensym("uncompreh seq")
+        fn = gensym("uncompreh func")
+        compute_ty = gensym("type compute")
+        pat′ = cond == nothing ? pat : :($pat && if $cond end)
+        mk_case(x) = Expr(:macrocall, Symbol("@case"), ln, x)
+        switch_body = quote
+            $(mk_case(pat′))
+                return $Some($reconstruct)
+            $(mk_case(:_))
+                return
+        end
+        switch_stmt = Expr(:macrocall, GlobalRef(MLStyle, Symbol("@switch")), ln, iter, switch_body)
+        final = quote
+            $fn($iter) = $switch_stmt
+            $compute_ty(::$Type{$Some{T}}) where T = T
+            $compute_ty(_) = Any
+            $vec = $compute_ty($Base.typeintersect($Some, $Base._return_type($fn, $Tuple{$Base.eltype($target)})))[]
+            $vec = $Some($vec)
+            for $iter in $target
+                $token = $fn($iter)
+                if $token === nothing
+                    $vec = nothing
+                    break
+                end
+                push!($vec.value, $token.value)
+            end
+            $vec
+        end
+        see_captured_vars(final, scope)
+    end
+    p1 = decons(extract, [self(Expr(:call, Some, seq))])
+    return and([p0, p1])
 end
 
 const case_sym = Symbol("@case")
