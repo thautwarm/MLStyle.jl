@@ -1,5 +1,6 @@
 module MatchImpl
-export is_enum, pattern_compile, @switch, @match, Where
+export is_enum, pattern_uncall, pattern_unref, @switch, @match, Where, gen_match, gen_switch
+export Q, unQ
 using MLStyle.Err
 using MLStyle.MatchCore
 using MLStyle.ExprTools
@@ -9,7 +10,8 @@ using MLStyle.AbstractPattern.BasicPatterns
 OptionalLn = Union{LineNumberNode,Nothing}
 
 is_enum(_)::Bool = false
-function pattern_compile end
+function pattern_uncall end
+function pattern_unref end
 
 struct Where
     value::Any
@@ -56,7 +58,7 @@ ex2tf(m::Module, n::Symbol) =
         if isdefined(m, n)
             p = getfield(m, n)
             rec(x) = ex2tf(m, x)
-            is_enum(p) && return pattern_compile(p, rec, [], [], [])
+            is_enum(p) && return pattern_uncall(p, rec, [], [], [])
         end
         P_capture(n)
     end
@@ -143,10 +145,14 @@ function ex2tf(m::Module, ex::Expr)
             P_vector3([rec(e) for e in init], rec(mid), [rec(e) for e in tail])
         end
         @case Expr(:tuple, elts)
-        return P_tuple([rec(e) for e in args])
+        return P_tuple([rec(e) for e in elts])
 
         @case Expr(:quote, [quoted])
         return rec(qt2ex(quoted))
+
+        @case Expr(:ref, [t, args...])
+        t = eval(t)
+        return pattern_unref(t, rec, args)
 
         @case Expr(
             :where,
@@ -159,7 +165,7 @@ function ex2tf(m::Module, ex::Expr)
         ) && if t !== Where
         end
         t = eval(t)
-        return pattern_compile(t, rec, tps, targs, args)
+        return pattern_uncall(t, rec, tps, targs, args)
 
         @case (
             Expr(:call, [:($t{$(targs...)}), args...]) ||
@@ -168,11 +174,11 @@ function ex2tf(m::Module, ex::Expr)
         ) && if t !== Where
         end
         t = eval(t)
-        return pattern_compile(t, rec, [], targs, args)
+        return pattern_uncall(t, rec, [], targs, args)
 
         @case Expr(:curly, [t, targs...])
         t = eval(t)
-        return pattern_compile(t, rec, [], targs, [])
+        return pattern_uncall(t, rec, [], targs, [])
 
         @case :($val::$t where {$(tps...)}) ||
               :(::$t where {$(tps...)}) && let val = :_
@@ -192,6 +198,10 @@ end
 const case_sym = Symbol("@case")
 
 macro switch(val, ex)
+    esc(gen_switch(val, ex, __source__, __module__))
+end
+
+function gen_switch(val, ex, __source__::LineNumberNode, __module__::Module)
     @assert Meta.isexpr(ex, :block)
     clauses = Union{LineNumberNode,Pair{<:Function,Symbol}}[]
     body = Expr(:block)
@@ -241,15 +251,14 @@ macro switch(val, ex)
             push!(variable_init, :($actual_sym = $mangled_sym))
         end
     end
-    exp = Expr(:block, match_logic, body)
-    esc(exp)
+    Expr(:block, match_logic, body)
 end
 
 Base.@pure function expr2tuple(expr)
     :($expr.head, $expr.args)
 end
 
-function pattern_compile(
+function pattern_uncall(
     ::Type{Expr},
     self::Function,
     type_params::AbstractArray,
@@ -268,8 +277,7 @@ function pattern_compile(
     and([P_type_of(Expr), P_slow_view(expr2tuple, p_tuple)])
 end
 
-
-function pattern_compile(
+function pattern_uncall(
     ::Type{Core.SimpleVector},
     self::Function,
     type_params::AbstractArray,
@@ -294,7 +302,7 @@ function _some_tcons(t)
 end
 const _some_comp = PComp("Some", _some_tcons; guard1=NoncachablePre(_some_guard1))
 
-function pattern_compile(::Type{Some}, self::Function, tparams::AbstractArray, targs::AbstractArray, args::AbstractArray)
+function pattern_uncall(::Type{Some}, self::Function, tparams::AbstractArray, targs::AbstractArray, args::AbstractArray)
     isempty(tparams) || error("A (:) pattern requires no type params.")
     isempty(targs) || error("A (:) pattern requires no type arguments.")
     @assert length(args) === 1
@@ -306,6 +314,10 @@ function pattern_compile(::Type{Some}, self::Function, tparams::AbstractArray, t
 end
 
 macro match(val, tbl)
+    esc(gen_match(val, tbl, __source__, __module__))
+end
+
+function gen_match(val, tbl, __source__::LineNumberNode, __module__::Module)
     @assert Meta.isexpr(tbl, :block)
     clauses = Union{LineNumberNode,Pair{<:Function,Symbol}}[]
     body = Expr(:block)
@@ -364,8 +376,6 @@ macro match(val, tbl)
     push!(body.args, :(@label $final_label))
     push!(body.args, final_res)
 
-    ret = Expr(:let, Expr(:block), Expr(:block, match_logic, body))
-    esc(ret)
-
+    Expr(:let, Expr(:block), Expr(:block, match_logic, body))
 end
 end

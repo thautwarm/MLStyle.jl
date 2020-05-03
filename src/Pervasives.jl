@@ -2,9 +2,11 @@ module Pervasives
 using MLStyle
 using MLStyle.AbstractPattern
 using MLStyle.AbstractPattern
-const strict_eq_types = Union{Int, Nothing}
+struct Many end
+struct Do end
+export Many, Do
 
-function MLStyle.pattern_compile(::typeof(:), self::Function, tparams::AbstractArray, targs::AbstractArray, args::AbstractArray)
+function MLStyle.pattern_uncall(::typeof(:), self::Function, tparams::AbstractArray, targs::AbstractArray, args::AbstractArray)
     isempty(tparams) || error("A (:) pattern requires no type params.")
     isempty(targs) || error("A (:) pattern requires no type arguments.")
     guard() do target, scope, _
@@ -12,7 +14,7 @@ function MLStyle.pattern_compile(::typeof(:), self::Function, tparams::AbstractA
     end
 end
 
-function MLStyle.pattern_compile(::Type{Dict}, self::Function, tparams::AbstractArray, targs::AbstractArray, args::AbstractArray)
+function MLStyle.pattern_uncall(::Type{Dict}, self::Function, tparams::AbstractArray, targs::AbstractArray, args::AbstractArray)
     isempty(tparams) || error("A (:) pattern requires no type params.")
     isempty(targs) || error("A (:) pattern requires no type arguments.")
     isempty(tparams) || return begin
@@ -47,10 +49,89 @@ function MLStyle.pattern_compile(::Type{Dict}, self::Function, tparams::Abstract
     and([tchk, decomp])
 end
 
-struct Many end
-struct Do end
 
-export Many, Do
+function _allow_assignment!(expr :: Expr)
+    if expr.head === :kw || expr.head === :(=)
+        expr.head = :(=)
+        @assert expr.args[1] isa Symbol
+    end
+end
+
+function MLStyle.pattern_unref(::Type{Do}, self::Function, args::AbstractArray)
+    foreach(_allow_assignment!, args)
+    
+    effect()  do target, scope, ln
+        ret = Expr(:block)
+        for arg in args
+            @switch arg begin
+            @case :($sym = $value) && if sym isa Symbol end
+                sym′ = get(scope, sym) do
+                    nothing
+                end
+                bound = true
+                if sym′ === nothing
+                    sym′ = gensym(sym)
+                    bound = false
+                end
+                assignment = see_captured_vars(:($sym′ = $value), scope)
+                push!(ret.args, assignment)
+                if !bound
+                    scope[sym] = sym′
+                end
+                continue
+            @case _
+                push!(ret.args, see_captured_vars(arg, scope))
+                continue
+            end
+        end
+        ret
+    end
+end
+
+function MLStyle.pattern_uncall(::Type{Do}, self::Function, tparams::AbstractArray, targs::AbstractArray, args::AbstractArray)
+    isempty(tparams) || error("A (:) pattern requires no type params.")
+    isempty(targs) || error("A (:) pattern requires no type arguments.")
+    Base.depwarn("Do(pat) is deprecated, use Do[pat].", :Many)
+    MLStyle.pattern_unref(Do, self, args)
+end
+
+function MLStyle.pattern_unref(::Type{Many}, self::Function, args::AbstractArray)
+    @assert length(args) === 1
+    arg = args[1]
+    foreach(_allow_assignment!, args)
+    
+    let_pat = Expr(:let, Expr(:block, args...), Expr(:block))
+    old = repr(Expr(:call, :Do, args...))
+    new = repr(let_pat)
+    guard()  do target, scope, ln
+        token = gensym("loop token")
+        iter = gensym("loop iter")
+        mk_case(x) = Expr(:macrocall, Symbol("@case"), ln, x)
+        switch_body = quote
+            $(mk_case(arg))
+                continue
+            $(mk_case(:_))
+                $token = false
+                break
+        end
+        switch_stmt = Expr(:macrocall, GlobalRef(MLStyle, Symbol("@switch")), ln, iter, switch_body)
+        final = quote
+            $token = true
+            for $iter in $target
+                $switch_stmt
+            end
+            $token
+        end
+        see_captured_vars(final, scope)
+    end 
+end
+
+function MLStyle.pattern_uncall(::Type{Many}, self::Function, tparams::AbstractArray, targs::AbstractArray, args::AbstractArray)
+    isempty(tparams) || error("A (:) pattern requires no type params.")
+    isempty(targs) || error("A (:) pattern requires no type arguments.")
+    Base.depwarn("Many(pat) is deprecated, use Many[pat].", :Many)
+    MLStyle.pattern_unref(Many, self, args)
+end
 
 # QuoteNode, Do, Many
 
