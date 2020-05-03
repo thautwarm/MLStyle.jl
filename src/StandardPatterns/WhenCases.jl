@@ -1,6 +1,6 @@
 module WhenCases
 using MLStyle
-using MLStyle.Render
+using MLStyle.Sugars: Q
 
 export @when, @otherwise, gen_when
 
@@ -16,9 +16,7 @@ function split_case_and_block(stmts, first_bindings, first_source)
         take_size = block_size
         for i in block_size:-1:1
             take_size = i
-            if !(current_block[i] isa LineNumberNode)
-                break
-            end
+            current_block[i] isa LineNumberNode || break
         end
         # push current_block(cache) to blocks, then clear cache
         push!(blocks, Expr(:block, view(current_block, 1:take_size)...))
@@ -32,23 +30,25 @@ function split_case_and_block(stmts, first_bindings, first_source)
     end
 
     for stmt in stmts
-        @match stmt begin
-            :(@when $source begin $(bindings...) end) ||
-            :(@when $source $elt) && Do(bindings=[elt]) =>
-                begin
-                    push!(binding_seqs, bindings)
-                    push!(sources, source)
-                    make_block!()
-                end
-            :(@otherwise $source) =>
-                begin
-                    push!(binding_seqs, [])
-                    push!(sources, source)
-                    make_block!()
-                end
-            a => append_block!(a)
+        @switch stmt begin
+        @case Q[@when $source begin $(bindings...) end] ||
+              Q[@when $source $elt] && let bindings=[elt] end
+                
+            push!(binding_seqs, bindings)
+            push!(sources, source)
+            make_block!()
+            continue
+        @case Q[@otherwise $source]
+            push!(binding_seqs, [])
+            push!(sources, source)
+            make_block!()
+            continue
+        @case a
+            append_block!(a)
+            continue
         end
     end
+
     make_block!()
     # thus, the length of `sources`, `binding_seqs` and `blocks`
     # are guaranteed to be the same.
@@ -77,54 +77,40 @@ Code generation for `@when`.
 You should pass an `Expr(:let, ...)` as the first argument.
 """
 function gen_when(let_expr, source :: LineNumberNode, mod :: Module)
-    @match let_expr begin
-        Expr(:let,
-            Expr(:block, bindings...) || a && Do(bindings = [a]),
-            Expr(:block, stmts...) || b && Do(stmts = [b])) =>
+    @switch let_expr begin
+    @case Expr(:let,
+            Expr(:block, bindings...) || a && let bindings = [a] end,
+            Expr(:block, stmts...)    || b && let stmts = [b] end)
 
-            begin
-                sources_cases_blocks = split_case_and_block(stmts, bindings, source)
-                foldr(sources_cases_blocks, init=:nothing) do (source, bindings, block), last_block
-                    foldr(bindings, init=block) do each, last_ret
-                        @match each begin
-                            :($a = $b) =>
-                                let cbl = @format [source, a, last_ret, last_block] quote
-                                            source
-                                            a => last_ret
-                                            _ => last_block
-                                        end
-                                    gen_match(b, cbl, source, mod)
-                                    # :(@match $b $cbl)
-                                end
+            sources_cases_blocks = split_case_and_block(stmts, bindings, source)
+            return foldr(sources_cases_blocks, init=:nothing) do (source, bindings, block), last_block
+                foldr(bindings, init=block) do each, last_ret
+                    @switch each begin
+                    @case :($a = $b)
+                        cbl = Expr(:block, source, :($a => $last_ret), :(_ => $last_block))
+                        return gen_match(b, cbl, source, mod)
+                       
+                    @case source::LineNumberNode
+                        source = new_source
+                        return last_ret    
 
-                            new_source::LineNumberNode => begin
-                                    source = new_source
-                                    last_ret
-                                end
-
-                            # match `cond.?` or `if cond end`
-                            :(if $a; $(_...) end) ||
-                            :($a.?) => @format [source, a, last_ret, last_block] quote
-                                    source
-                                    a ? last_ret : last_block
-                                end
-
-                            # match something like: `let a; a = 1; a end`
-                            a => @format [source, a, last_ret] quote
-                                    source
-                                    let a
-                                        last_ret
-                                    end
-                                end
-                        end
+                        # match `cond.?` or `if cond end`
+                    @case :(if $a; $(_...) end) ||
+                          :($a.?)
+                        
+                        return Expr(:block, source, :($a ? $last_ret : $last_block))
+                          
+                    # match something like: `let a; a = 1; a end`
+                    @case a
+                        return Expr(:block, source, Expr(:let, a, last_ret))
                     end
                 end
             end
 
-        a => let s = string(a),
-                 short_msg = SubString(s, 1, min(length(s), 20))
-                throw(SyntaxError("Expected a let expression, got a `$short_msg` at $(string(source))."))
-            end
+    @case a 
+        s = string(a)
+        short_msg = SubString(s, 1, min(length(s), 20))
+        throw(SyntaxError("Expected a let expression, got a `$short_msg` at $(string(source))."))
     end
 end
 
@@ -202,7 +188,7 @@ macro when(assignment, ret)
             let let_expr = Expr(:let, Expr(:block, assignment), ret)
                 gen_when(let_expr, __source__, __module__) |> esc
             end
-        _ => @syntax_err "Not match the form of `@when a = b expr`"
+        _ => throw(SyntaxError("Not match the form of `@when a = b expr`"))
     end
 end
 
