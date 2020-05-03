@@ -1,5 +1,6 @@
 module BasicPatterns
 using MLStyle.AbstractPattern
+using MLStyle.AbstractPattern.RedyFlavoured
 
 export P_bind, P_tuple, P_type_of, P_vector, P_capture, P_vector3, P_slow_view, P_fast_view
 export P_svec, P_svec3
@@ -20,11 +21,11 @@ struct SimpleCachablePre <: APP
 end
 (f::SimpleCachablePre)(target) = f.f(target)
 
-function sequence_index(viewed, i::Integer)
+function sequence_index(viewed, i::Integer, ::Any, ::Any)
     :($viewed[$i])
 end
 
-function self_index(viewed, i::Integer)
+function self_index(viewed, i::Integer, ::Any, ::Any)
     @assert i === 1
     viewed
 end
@@ -153,7 +154,7 @@ function P_vector3(init::AbstractArray, pack::Function, tail::AbstractArray, pre
     #         T<:Eltype
     #     }
     # end
-    function extract(arr, i::Int)
+    function extract(arr, i::Int, ::Any, ::Any)
         if i <= n1
             :($arr[$i])
         elseif i === n1 + 1
@@ -180,7 +181,7 @@ function P_svec3(init::AbstractArray, pack::Function, tail::AbstractArray, prepr
     function type_of_svec(types...)
         Core.SimpleVector
     end
-    function extract(arr, i::Int)
+    function extract(arr, i::Int, ::Any, ::Any)
         if i <= n1
             :($arr[$i])
         elseif i === n1 + 1

@@ -85,8 +85,12 @@ function PComp(
     PComp(repr, tcons, guard1, view, guard2)
 end
 
-decons(comp::PComp, ps; extract=invalid_extract) = decons(comp, extract, ps)
+const any_type(_...) = Any
+const as_is_comp = PComp("identity", any_type)
 
+
+decons(extract, ps) = decons(as_is_comp, extract, ps)
+decons(comp::PComp, ps; extract=invalid_extract) = decons(comp, extract, ps)
 decons(comp::PComp, extract::Function, ps) = function apply(impls::PatternImpls{N}) where N
     xs = [p(impls) for p in ps]
     me = Vector{Any}(undef, N)

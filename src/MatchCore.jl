@@ -46,7 +46,7 @@ function P_partial_struct_decons(t, partial_fields, ps, prepr::AbstractString="$
     comp = PComp(
         prepr, tcons;
     )
-    function extract(sub, i::Int)
+    function extract(sub, i::Int, ::Any, ::Any)
         :($sub.$(partial_fields[i]))
     end
     decons(comp, extract, ps)
@@ -177,6 +177,7 @@ end
 
 const case_sym = Symbol("@case")
 """a minimal implementation of sswitch
+this is incomplete and only for bootstrapping, do not use it.
 """
 macro sswitch(val, ex)
     @assert Meta.isexpr(ex, :block)

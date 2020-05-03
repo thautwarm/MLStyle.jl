@@ -1,5 +1,4 @@
 module AbstractPattern
-
 export spec_gen, runterm, MK, RedyFlavoured, TypeObject
 export and, or, literal, and, wildcard, decons,
        guard, effect, self
@@ -7,6 +6,10 @@ export PatternCompilationError, Target, PatternImpl, PComp
 export APP, NoncachablePre, NoPre
 export ChainDict, for_chaindict, child, for_chaindict_dup
 export BasicPatterns
+export P_bind, P_tuple, P_type_of, P_vector, P_capture, P_vector3, P_slow_view, P_fast_view
+export P_svec, P_svec3
+export SimpleCachablePre, see_captured_vars
+
 include("DataStructure.jl")
 include("Target.jl")
 include("PatternSignature.jl")
@@ -19,9 +22,9 @@ include("UserSignature.jl")
 include("Retagless.jl")
 include("impl/RedyFlavoured.jl")
 include("impl/BasicPatterns.jl")
+using .BasicPatterns
 
 @nospecialize
-
 function MK(m::Any)
     m.backend
 end
