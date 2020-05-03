@@ -23,10 +23,10 @@ function P_partial_struct_decons(t, partial_fields, ps, prepr::AbstractString="$
     decons(comp, extract, ps)
 end
 
-function record_def(Struct, line::LineNumberNode)
+function record_def(Struct, line::LineNumberNode, ::Module)
     quote
         $line
-        function $MatchImpl.pattern_compile(t::Type{$Struct}, self::Function, type_params, type_args, args)
+        function $MatchImpl.pattern_uncall(t::Type{$Struct}, self::Function, type_params, type_args, args)
             $line
             isempty(type_params) || return begin
                 call = Expr(:call, t, args...)
@@ -76,10 +76,10 @@ function record_def(Struct, line::LineNumberNode)
 end
 
 
-function as_record(n, line)
+function as_record(n, line::LineNumberNode, __module__::Module)
     @switch n begin
     @case ::Symbol
-        return record_def(n, line)
+        return record_def(n, line, __module__)
     @case :(struct $hd{$(_...)}
                 $(_...)
             end) ||
@@ -106,11 +106,11 @@ end
 
 macro as_record(qualifier, n)
     deprecate_qualifiers(qualifier)
-    esc(as_record(n, __source__))
+    esc(as_record(n, __source__, __module__))
 end
 
 macro as_record(n)
-    esc(as_record(n, __source__))
+    esc(as_record(n, __source__, __module__))
 end
 
 end

@@ -1,6 +1,6 @@
 module LambdaCases
 using MLStyle
-using MLStyle.Render
+using MLStyle.Sugars
 
 export gen_lambda, @λ
 
@@ -17,43 +17,33 @@ function gen_lambda(cases, source :: LineNumberNode, mod :: Module)
             :($case => $block)
         end
     end
-    @match cases begin
-        :($a => $b) && Do(bs = [b]) ||
-        :($a -> $(bs...)) =>
-                let pair = make_pair_expr(a, bs),
-                    cbl = Expr(:block, source, pair),
-                    match_expr = gen_match(TARGET, cbl, source, mod)
 
-                    @format [TARGET, source, match_expr] quote
-                        source
-                        function (TARGET)
-                            match_expr
-                        end
-                    end
-                end
-
-        Do(stmts=[]) &&
-        quote
-            $(Many(
-                (a :: LineNumberNode) && Do(push!(stmts , a)) ||
-                (:($a => $b) && Do(bs=[b]) || :($a -> $(bs...))) &&
-                Do(push!(stmts, make_pair_expr(a, bs)))
-            )...)
-        end =>
-            let cbl = Expr(:block, source, stmts...),
-                match_expr = gen_match(TARGET, cbl, source, mod)
-
-                @format [source, match_expr, TARGET] quote
-                    source
-                    function (TARGET)
-                        match_expr
-                    end
-                end
-            end
-
-        _ => @syntax_err "Syntax error in lambda case definition!"
-
+    @switch cases begin
+        @case :($a -> $(bs...))     ||
+              :($a => $b) && let bs = [b] end
+        
+            pair = make_pair_expr(a, bs)
+            cbl = Expr(:block, source, pair)
+            match_expr = gen_match(TARGET, cbl, source, mod)
+            @goto AA
+            
+        @case let stmts=[] end && Expr(:block,        
+            Many[
+                a :: LineNumberNode && Do[push!(stmts, a)] ||
+                Or[:($a => $b) && let bs=[b] end, :($a -> $(bs...))] &&
+                Do[push!(stmts, make_pair_expr(a, bs))]
+            ]...
+        )
+        
+            cbl = Expr(:block, source, stmts...)
+            match_expr = gen_match(TARGET, cbl, source, mod)
+            @goto AA
     end
+    @label AA
+    Expr(:function,
+        Expr(:call, TARGET, TARGET), 
+        Expr(:block, source, match_expr)
+    )
 end
 
 """

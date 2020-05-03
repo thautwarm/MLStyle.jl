@@ -51,15 +51,15 @@ end # => true
 ```
 """
 macro data(typ, def_variants)
-    data(typ, def_variants, __source__) |> esc
+    esc(data(typ, def_variants, __source__, __module__))
 end
 
 macro data(qualifier, typ, def_variants)
     deprecate_qualifiers(qualifier)
-    data(typ, def_variants, __source__) |> esc
+    esc(data(typ, def_variants, __source__, __module__))
 end
 
-function data(typ::Any, def_variants::Expr, line::LineNumberNode)
+function data(typ::Any, def_variants::Expr, line::LineNumberNode, ::Module)
     typename, tvars_of_abst = @match typ begin
         :($typename{$(a...)}) => (typename, get_type_parameters_ordered(a))
         :($typename{$(a...)} <: $b) => (typename, get_type_parameters_ordered(a))

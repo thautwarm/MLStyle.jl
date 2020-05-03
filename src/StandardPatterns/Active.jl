@@ -7,28 +7,32 @@ using MLStyle.AbstractPattern
 export @active, active_def
 
 function active_def(P, body, mod::Module, line::LineNumberNode)
+
     @switch P begin
         @case Expr(:call,
-            Expr(:curly, t, type_args...) || t && let type_args = [],
+            Expr(:curly, t, type_args...) || t && let type_args = [] end,
             arg
         ) && if t isa Symbol end
+            @goto endwitch
         @case _
             error("malformed active pattern definition: $P")
     end
+    @label endwitch
     
     definition = if isdefined(mod, t)
         line
     else
-        struct $t end
+        :(struct $t end)
     end
     parametric = isempty(type_args) ? :(::Nothing) : Expr(:tuple, type_args...)
-    token = gensym(:mlstyle)
+    token = QuoteNode(gensym(:mlstyle))
     prepr = "$P"
+
     quote
         $definition
-        ::Val{($Base.view, $token)}($parametric, $arg) = $body
+        (::Val{($Base.view, $token)})($parametric, $arg) = $body
         $line
-        function $MatchImpl.pattern_compile(t::typeof{$t}, self::Function, type_params, type_args, args)
+        function $MatchImpl.pattern_uncall(t::typeof($t), self::Function, type_params, type_args, args)
             $line
             isempty(type_params) || error("A ($t) pattern requires no type params.")
             parametric = isempty(type_args) ? nothing : Expr(:tuple, type_args...)
@@ -45,17 +49,20 @@ function active_def(P, body, mod::Module, line::LineNumberNode)
             extract = if length(args) === 1
                 function (expr::Any, i::Int, ::Any, ::Any)
                     expr
-                end :
+                end
+            else
                 function (expr::Any, i::Int, ::Any, ::Any)
                     :($expr[$i])
                 end
+            end
             type_infer(_...) = Any
             
             comp = $PComp(
-                $prepr, ()->Any;
-                guard2=guard2
+                $prepr, type_infer;
+                view=$SimpleCachablePre(trans),
+                guard2=$NoncachablePre(guard2)
             )
-            decons(comp, extract, [self(arg) for arg in args])
+            $decons(comp, extract, [self(arg) for arg in args])
         end
     end
 end
@@ -90,12 +97,11 @@ You can give a qualifier in the first argument of `@active` to customize its vis
 """
 macro active(qualifier, case, active_body)
     deprecate_qualifiers(qualifier)
-    active_def(case, body, __module__, __source__)
-   def_active_pattern(qualifier, case, active_body, __module__)
+    active_def(case, active_body, __module__, __source__) |> esc
 end
 
 macro active(case, active_body)
-    active_def(case, body, __module__, __source__)
+    active_def(case, active_body, __module__, __source__) |> esc
 end
 
 end

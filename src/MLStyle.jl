@@ -31,6 +31,14 @@ using .Record
 @reexport Record
 
 include("Pervasives.jl")
+using .Pervasives: Do, Many
+export Do, Many
+
+include("Sugars.jl")
+
+include("StandardPatterns/LambdaCases.jl")
+using .LambdaCases
+@reexport LambdaCases
 
 include("StandardPatterns/Active.jl")
 using .Active
