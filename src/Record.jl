@@ -47,6 +47,7 @@ function record_def(Struct, line::LineNumberNode, ::Module)
             if length(all_field_names) === n_args
                 append!(patterns, map(self, args))
                 append!(partial_field_names, all_field_names)
+            elseif n_args === 1 && args[1] === :_
             elseif n_args !== 0
                 error("count of positional fields should be 0 or the same as the fields($all_field_names)")
             end
@@ -74,7 +75,6 @@ function record_def(Struct, line::LineNumberNode, ::Module)
         end
     end
 end
-
 
 function as_record(n, line::LineNumberNode, __module__::Module)
     @switch n begin

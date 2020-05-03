@@ -10,7 +10,7 @@ function flatten_macros(node :: Expr)
     Expr(:tuple, args...) || a && Do(args = [a]) =>
 
     @match args begin
-    [args..., function ismacro end && tl] => [(op |> get_op, args), flatten_macros(tl)...]
+    [args..., GuardBy(ismacro) && tl] => [(op |> get_op, args), flatten_macros(tl)...]
     _ => [(op |> get_op, args)]
 
     end

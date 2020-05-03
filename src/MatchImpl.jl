@@ -20,10 +20,16 @@ struct Where
     type_parameters::AbstractArray{T,1} where {T}
 end
 
+struct QuotePattern
+    value :: QuoteNode
+end
+
 Base.@pure function qt2ex(ex::Any)
     if ex isa Expr
         Meta.isexpr(ex, :$) && return ex.args[1]
-        Expr(:call, Expr, QuoteNode(ex.head), (qt2ex(e) for e in ex.args)...)
+        Expr(:call, Expr, QuoteNode(ex.head), (qt2ex(e) for e in ex.args if !(e isa LineNumberNode))...)
+    elseif ex isa QuoteNode
+        QuotePattern(ex)
     elseif ex isa Symbol
         QuoteNode(ex)
     else
@@ -63,6 +69,14 @@ ex2tf(m::Module, n::Symbol) =
         end
         P_capture(n)
     end
+
+function ex2tf(m::Module, s::QuotePattern)
+    p0 = P_type_of(QuoteNode)
+    p1 = guard() do target, _, _
+        :($target.value == $(s.value))
+    end
+    and([p0, p1])
+end
 
 function ex2tf(m::Module, w::Where)
     rec(x) = ex2tf(m, x)
@@ -192,9 +206,9 @@ function ex2tf(m::Module, ex::Expr)
         return ex2tf(m, Where(val, t, tps))
 
         @case :($ty[$pat for $reconstruct in $seq if $cond])                  ||
-              :($ty[$pat for $reconstruct in $seq]) && let cond = nothing end ||
+              :($ty[$pat for $reconstruct in $seq]) && let cond = true end ||
               :[$pat for $reconstruct in $seq if $cond] && let ty = Any end   ||
-              :[$pat for $reconstruct in $seq] && let cond = nothing, ty = Any end && if seq isa Symbol end
+              :[$pat for $reconstruct in $seq] && let cond = true, ty = Any end && if seq isa Symbol end
 
         return uncomprehension(rec, ty, pat, reconstruct, seq, cond)
 
@@ -210,30 +224,38 @@ function uncomprehension(self::Function, ty::Any, pat::Any, reconstruct::Any, se
         token = gensym("uncompreh token")
         iter = gensym("uncompreh iter")
         vec = gensym("uncompreh seq")
+        infer_flag = gensym("uncompreh flag")
         fn = gensym("uncompreh func")
-        compute_ty = gensym("type compute")
-        pat′ = cond == nothing ? pat : :($pat && if $cond end)
+        reconstruct_tmp = gensym("reconstruct")
         mk_case(x) = Expr(:macrocall, Symbol("@case"), ln, x)
         switch_body = quote
-            $(mk_case(pat′))
-                return $Some($reconstruct)
+            $(mk_case(pat))
+                $reconstruct_tmp = $reconstruct
+                if $infer_flag isa $Val{true}
+                    return $reconstruct_tmp
+                else
+                    if $cond
+                        push!($vec.value, $reconstruct_tmp)
+                    end
+                    return true
+                end
             $(mk_case(:_))
-                return
+                if $infer_flag isa $Val{true}
+                    error("impossible")
+                else
+                    return false
+                end
         end
         switch_stmt = Expr(:macrocall, GlobalRef(MLStyle, Symbol("@switch")), ln, iter, switch_body)
         final = quote
-            $fn($iter) = $switch_stmt
-            $compute_ty(::$Type{$Some{T}}) where T = T
-            $compute_ty(_) = Any
-            $vec = $compute_ty($Base.typeintersect($Some, $Base._return_type($fn, $Tuple{$Base.eltype($target)})))[]
+            $Base.@inline $fn($iter, $infer_flag::$Val) = $switch_stmt
+            $vec = $Base._return_type($fn, $Tuple{$Base.eltype($target), $Val{true}})[]
             $vec = $Some($vec)
             for $iter in $target
-                $token = $fn($iter)
-                if $token === nothing
-                    $vec = nothing
-                    break
-                end
-                push!($vec.value, $token.value)
+                $token = $fn($iter, $Val(false))
+                $token && continue
+                $vec = nothing
+                break
             end
             $vec
         end

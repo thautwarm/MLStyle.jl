@@ -1,3 +1,8 @@
+@data WhenTest begin
+    WhenTest_1(Int)
+    WhenTest_2(Int)
+end
+
 @testset "@when" begin
     @testset "docstring" begin
         # otherwise()
@@ -72,10 +77,6 @@
     end
 
     @testset "@when + @data" begin
-        @data WhenTest begin
-            WhenTest_1(Int)
-            WhenTest_2(Int)
-        end
 
         var1 = WhenTest_1(2)
         var2 = WhenTest_2(2)

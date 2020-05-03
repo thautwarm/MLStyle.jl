@@ -1,4 +1,3 @@
-
 module ADTSubTyping
     using MLStyle
     using Test
@@ -11,56 +10,55 @@ module ADTSubTyping
         end
 
         @test C1(1, 2) isa C{Int}
-
     end
 
 end
-@testset "adt" begin
-    @testset "adt List" begin
-        # 1. define List
-        @data List{T} begin
-            Nil()
-            Cons(head :: T, tail :: List{T})
-        end
-        # 2. define interfaces
-        len(xs::List{T}) where T = @match xs begin
-            Nil{T}() => 0
-            Cons{T}(_, tail) => 1 + len(tail)
-        end
 
-        @test len(Nil{Any}()) == 0
-        xs = Cons(3,Cons(2, Cons(1, Nil{Int}())))
-        @test len(xs) == 3
+@testset "adt List" begin
+    # 1. define List
+    @data List{T} begin
+        Nil()
+        Cons(head :: T, tail :: List{T})
     end
-    @testset "adt Arith" begin
-        # 1. define Arith
-        @data Arith begin
-            Num(v :: Int)
-            Minus(fst :: Arith, snd :: Arith)
-            Add(fst :: Arith, snd :: Arith)
-            Mult(fst :: Arith, snd :: Arith)
-            Divide(fst :: Arith, snd :: Arith)
-        end
-        # 2. define interfaces
-        function eval_arith(arith :: Arith)
-            @match arith begin
-                Num(v)       => v
-                Add(fst, snd) => eval_arith(fst) + eval_arith(snd)
-                Minus(fst, snd) => eval_arith(fst) - eval_arith(snd)
-                Mult(fst, snd)   => eval_arith(fst) * eval_arith(snd)
-                Divide(fst, snd) => eval_arith(fst) / eval_arith(snd)
-            end
-        end
-        Number = Num
-        @test eval_arith(
-            Add(Number(1),
-                Minus(Number(2),
-                    Divide(Number(20),
-                            Mult(Number(2),
-                                Number(5)))))) == 1
+    # 2. define interfaces
+    len(xs::List{T}) where T = @match xs begin
+        Nil{T}() => 0
+        Cons{T}(_, tail) => 1 + len(tail)
     end
 
+    @test len(Nil{Any}()) == 0
+    xs = Cons(3,Cons(2, Cons(1, Nil{Int}())))
+    @test len(xs) == 3
 end
+@testset "adt Arith" begin
+    # 1. define Arith
+    @data Arith begin
+        Num(v :: Int)
+        Minus(fst :: Arith, snd :: Arith)
+        Add(fst :: Arith, snd :: Arith)
+        Mult(fst :: Arith, snd :: Arith)
+        Divide(fst :: Arith, snd :: Arith)
+    end
+    # 2. define interfaces
+    function eval_arith(arith :: Arith)
+        @match arith begin
+            Num(v)       => v
+            Add(fst, snd) => eval_arith(fst) + eval_arith(snd)
+            Minus(fst, snd) => eval_arith(fst) - eval_arith(snd)
+            Mult(fst, snd)   => eval_arith(fst) * eval_arith(snd)
+            Divide(fst, snd) => eval_arith(fst) / eval_arith(snd)
+        end
+    end
+    Number = Num
+    @test eval_arith(
+        Add(Number(1),
+            Minus(Number(2),
+                Divide(Number(20),
+                        Mult(Number(2),
+                            Number(5)))))) == 1
+end
+
+
 
 @testset "case" begin
     @data CD begin
@@ -104,4 +102,6 @@ end
             SSS_1(_) => :ok
         end
     end)
+end
+
 end

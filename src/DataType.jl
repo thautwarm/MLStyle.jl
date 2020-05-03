@@ -55,11 +55,11 @@ macro data(typ, def_variants)
 end
 
 macro data(qualifier, typ, def_variants)
-    deprecate_qualifiers(qualifier)
+    deprecate_qualifiers(string(qualifier))
     esc(data(typ, def_variants, __source__, __module__))
 end
 
-function data(typ::Any, def_variants::Expr, line::LineNumberNode, ::Module)
+function data(typ::Any, def_variants::Expr, line::LineNumberNode, mod::Module)
     typename, tvars_of_abst = @match typ begin
         :($typename{$(a...)}) => (typename, get_type_parameters_ordered(a))
         :($typename{$(a...)} <: $b) => (typename, get_type_parameters_ordered(a))
@@ -68,7 +68,7 @@ function data(typ::Any, def_variants::Expr, line::LineNumberNode, ::Module)
     end
 
     ret = Expr(:block, :(abstract type $typ end))
-    impl!(ret.args, typename, tvars_of_abst, def_variants, line)
+    impl!(ret.args, typename, tvars_of_abst, def_variants, line, mod)
     ret
 end
 
@@ -77,7 +77,8 @@ function impl!(
     abs_t,
     abs_tvars::Vector{Symbol},
     variants::Expr,
-    ln::LineNumberNode
+    ln::LineNumberNode,
+    mod::Module
 )
     abst() = isempty(abs_tvars) ? abs_t : :($abs_t{$(abs_tvars...)})
     for each in variants.args
@@ -171,7 +172,7 @@ function impl!(
                     )
                 end
 
-                expr_setup_record = as_record(case, ln)
+                expr_setup_record = as_record(case, ln, mod)
                 push!(
                     suite,
                     expr_struct_def,
