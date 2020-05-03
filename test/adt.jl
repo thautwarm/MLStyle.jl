@@ -1,22 +1,19 @@
-module ADTSubTyping
-    using MLStyle
-    using Test
-    abstract type A{a} end
-    abstract type B{a} <: A{a} end
+@testcase "subtyping" begin
+    @lift abstract type A{a} end
+    @lift abstract type B{a} <: A{a} end
 
     @testset "adt subtying" begin
-        @data C{A} <: B{A} begin
+        @lift @data C{A} <: B{A} begin
             C1(A, Int)
         end
 
         @test C1(1, 2) isa C{Int}
     end
-
 end
 
-@testset "adt List" begin
-    # 1. define List
-    @data List{T} begin
+@testcase "adt list" begin
+    # 1. define the List data type
+    @lift @data List{T} begin
         Nil()
         Cons(head :: T, tail :: List{T})
     end
@@ -25,14 +22,16 @@ end
         Nil{T}() => 0
         Cons{T}(_, tail) => 1 + len(tail)
     end
-
-    @test len(Nil{Any}()) == 0
-    xs = Cons(3,Cons(2, Cons(1, Nil{Int}())))
-    @test len(xs) == 3
+    @testset "adt List" begin
+        @test len(Nil{Any}()) == 0
+        xs = Cons(3,Cons(2, Cons(1, Nil{Int}())))
+        @test len(xs) == 3
+    end
 end
-@testset "adt Arith" begin
+
+@testcase "adt arith" begin
     # 1. define Arith
-    @data Arith begin
+    @lift @data Arith begin
         Num(v :: Int)
         Minus(fst :: Arith, snd :: Arith)
         Add(fst :: Arith, snd :: Arith)
@@ -49,43 +48,46 @@ end
             Divide(fst, snd) => eval_arith(fst) / eval_arith(snd)
         end
     end
-    Number = Num
-    @test eval_arith(
-        Add(Number(1),
-            Minus(Number(2),
-                Divide(Number(20),
-                        Mult(Number(2),
-                            Number(5)))))) == 1
+
+    @testset "adt Arith" begin
+        Number = Num
+        @test eval_arith(
+            Add(Number(1),
+                Minus(Number(2),
+                    Divide(Number(20),
+                            Mult(Number(2),
+                                Number(5)))))) == 1
+    end
 end
 
 
-
-@testset "case" begin
-    @data CD begin
+@testcase "share data with several modules" begin
+    @lift @data CD begin
         D(a, b)
         C{T} :: (a :: Int, b::T) => CD
     end
-    @data A begin
+    @lift @data A begin
         E()
     end
-    @test E <: A
-    @test fieldnames(D) == (:a, :b)
-    @test_throws MethodError C(3.0, :abc)
-end
 
+    @testset "case" begin
+        @test E <: A
+        @test fieldnames(D) == (:a, :b)
+        @test_throws MethodError C(3.0, :abc)
+    end
 
-module ADummy
-    using MLStyle
-end
+    @lift module ADummy
+        using MLStyle
+    end
 
-module BDummy
-    using MLStyle
-end
+    @lift module BDummy
+        using MLStyle
+    end
 
-@testset "share data with several modules" begin
-    @data visible in [ADummy] SSS begin
+    @lift @data visible in [ADummy] SSS begin
         SSS_1(Int)
     end
+
     ADummy.eval(:(SSS_1 = $SSS_1; SSS = $SSS))
 
     @test ADummy.eval(quote
@@ -94,7 +96,6 @@ end
         end
     end) == :ok
 
-
     BDummy.eval(:(SSS_1 = $SSS_1; SSS = $SSS))
 
     @test_skip BDummy.eval(quote
@@ -102,6 +103,4 @@ end
             SSS_1(_) => :ok
         end
     end)
-end
-
 end

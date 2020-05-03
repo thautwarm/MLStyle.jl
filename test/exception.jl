@@ -13,9 +13,6 @@ using MLStyle.Extension
         1 = 1
     end))
 
-
-    @test_throws UnknownExtension used(:FieldPuns, MODULE)
-
     @data Test_Ext_Data begin
         Test_Ext_Data_1 :: Int => Test_Ext_Data
     end
