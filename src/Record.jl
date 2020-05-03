@@ -17,7 +17,7 @@ function P_partial_struct_decons(t, partial_fields, ps, prepr::AbstractString="$
     comp = PComp(
         prepr, tcons;
     )
-    function extract(sub, i::Int)
+    function extract(sub::Any, i::Int, ::Any, ::Any)
         :($sub.$(partial_fields[i]))
     end
     decons(comp, extract, ps)
@@ -68,10 +68,9 @@ function record_def(Struct, line::LineNumberNode)
                 end
             end
             
-            
             ret = $P_partial_struct_decons(t, partial_field_names, patterns)
             isempty(type_args) && return ret
-            $and([self(Expr(:(::), Expr(:curly, t, type_args))) , ret])
+            $and([self(Expr(:(::), Expr(:curly, t, type_args...))) , ret])
         end
     end
 end
@@ -81,9 +80,20 @@ function as_record(n, line)
     @switch n begin
     @case ::Symbol
         return record_def(n, line)
-    @case Expr(:struct, _, :($hd{$(_...)}), _...) ||
-          Expr(:struct, _, hd, _...)
-        return Expr(:block,
+    @case :(struct $hd{$(_...)}
+                $(_...)
+            end) ||
+          :(struct $hd{$(_...)} <: $_
+            $(_...)
+            end) ||
+          :(struct $hd <: $_
+                $(_...)
+            end) ||
+          :(struct $hd
+                $(_...)
+            end)
+        return Expr(
+            :block,
             n,
             record_def(hd, line)
         )

@@ -2,6 +2,7 @@ module RedyFlavoured
 using MLStyle.AbstractPattern
 using MLStyle.Err: PatternCompilationError
 
+
 Config = NamedTuple{(:type, :ln)}
 Scope = ChainDict{Symbol,Symbol}
 ViewCache = ChainDict{Pair{TypeObject, Any}, Tuple{Symbol, Bool}}
@@ -18,7 +19,7 @@ struct CompileEnv
     scope :: Scope
     # Dict(view => (viewed_cache_symbol => guarantee_of_defined?))
     view_cache :: ViewCache
-    terminal_scope :: Dict{Symbol, Dict{Symbol, Symbol}}
+    terminal_scope :: Dict{Symbol, Vector{Pair{Dict{Symbol, Symbol}, Expr}}}
 end
 
 abstract type Cond end
@@ -386,7 +387,7 @@ function myimpl()
 
             for i in eachindex(ps)
                 p = ps[i] :: Function
-                field_target = Target{true}(extract(viewed_sym, i), Ref{TypeObject}(Any))
+                field_target = Target{true}(extract(viewed_sym, i, scope, ln), Ref{TypeObject}(Any))
                 view_cache′ = ViewCache()
                 env′ = CompileEnv(scope, view_cache′, env.terminal_scope)
                 elt_chk = p(env′, field_target)
@@ -460,18 +461,22 @@ function compile_spec!(
     x::Leaf,
     target::Target,
 )
-    terminal_scope = env.terminal_scope
-    branched_terminal_scope = get!(terminal_scope, x.cont) do
-        Dict{Symbol, Symbol}()
-    end
+    
+    
+    scope = Dict{Symbol, Symbol}()
     for_chaindict(env.scope) do k, v
-        v′ = get!(branched_terminal_scope, k) do
-            v
-        end
-        if v′ !== v
-            push!(suite, :($v′ = $v))  # hope this gets optimized to move semantics...
-        end
+        scope[k] = v
     end
+    if !isempty(scope)
+        terminal_scope = env.terminal_scope
+        move = Expr(:block)
+        branched_terminal = get!(terminal_scope, x.cont) do
+            Pair{Dict{Symbol, Symbol}, Expr}[]
+        end
+        push!(branched_terminal, scope=>move)
+        push!(suite, move)
+    end
+    
     push!(suite, Expr(:macrocall, Symbol("@goto"), LineNumberNode(1), x.cont))
 end
 
@@ -529,11 +534,38 @@ function compile_spec(target::Any, case::AbstractCase, ln::Union{LineNumberNode,
 
     scope = Scope()
     view_cache = ViewCache()
-    terminal_scope = Dict{Symbol, Dict{Symbol, Symbol}}()
+    terminal_scope = Dict{Symbol, Vector{Pair{Dict{Symbol, Symbol}, Expr}}}()
     env = CompileEnv(scope, view_cache, terminal_scope)
     
     compile_spec!(env, suite, case, target)
     pushfirst!(suite, init_cache(view_cache))
+
+    terminal_scope′ = Dict{Symbol, Dict{Symbol, Symbol}}()
+    for (br, move_semantics) in terminal_scope
+        n_merge = length(move_semantics)
+        if n_merge === 1
+            name_map, _ = move_semantics[1]
+            terminal_scope′[br] = name_map
+            continue
+        end
+        hd_name_map = move_semantics[1].first
+        ∩ˢ = intersect!(
+            Set(keys(hd_name_map)),
+            (keys(name_map) for (name_map, _) in move_semantics)...
+        )::Set{Symbol}
+        adjusted_move = Dict{Symbol, Symbol}()
+        ∩ⱽ = sort!(collect(∩ˢ))
+        for γᵢ in ∩ⱽ # γᵢ: the i-th captured user symbol
+            γᵢ∞′ = move_semantics[1].first[γᵢ] # the finally mangled of γᵢ
+            adjusted_move[γᵢ] = γᵢ∞′
+            for i in 2:n_merge
+                (name_map, move) = move_semantics[i]
+                γᵢ′ = name_map[γᵢ] # outdated move record
+                push!(move.args, :($γᵢ∞′ = $γᵢ′))
+            end
+        end
+        terminal_scope′[br] = adjusted_move
+    end
 
     if !isnothing(ln)
         # TODO: better trace
@@ -544,7 +576,7 @@ function compile_spec(target::Any, case::AbstractCase, ln::Union{LineNumberNode,
     end
     
     ret = length(suite) === 1 ? suite[1] : ret
-    terminal_scope, ret
+    terminal_scope′, ret
 end
 
 """compile a series of `Term => Symbol`(branches) to a Julia expression

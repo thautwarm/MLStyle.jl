@@ -1,78 +1,65 @@
 # Active patterns
 module Active
 using MLStyle
-using MLStyle.Infras
-using MLStyle.MatchCore
 using MLStyle.Qualification
-using MLStyle.TypeVarExtraction
+using MLStyle.AbstractPattern
 
-export @active, def_active_pattern
+export @active, active_def
 
-function def_active_pattern(qualifier_ast, case, active_body, mod)
-    (case_name, IDENTS, param) = @match case begin
-        :($(case_name :: Symbol)($param)) => (case_name, nothing, param)
-        :($(case_name :: Symbol){$(idents...)}($param)) => (case_name, idents, param)
+function active_def(P, body, mod::Module, line::LineNumberNode)
+    @switch P begin
+        @case Expr(:call,
+            Expr(:curly, t, type_args...) || t && let type_args = [],
+            arg
+        ) && if t isa Symbol end
+        @case _
+            error("malformed active pattern definition: $P")
     end
-    TARGET = mangle(mod)
-
-    if !isdefined(mod, case_name)
-        mod.eval(quote struct $case_name end end)
-    end
-    qualifier = get_qualifier(qualifier_ast, mod)
-    case_obj = getfield(mod, case_name)
-    if IDENTS === nothing
-        def_app_pattern(mod,
-            predicate = (hd_obj, args) -> hd_obj === case_obj,
-            rewrite = (tag, hd_obj, args, mod) -> begin
-                    (test_var, pat) = @match length(args) begin
-                        0 => (false, true)
-                        1 => (nothing, args[1])
-                        _ => (nothing, Expr(:tuple, args...))
-                    end
-
-                    function (body)
-                        @format [tag, test_var, param, TARGET, active_body, body] quote
-                            let  TARGET =
-                                let param = tag
-                                    active_body
-                                end
-                                TARGET === test_var ?  failed : body
-                            end
-                        end
-                    end ∘ mk_pattern(TARGET, pat, mod)
-                end,
-            qualifiers = Set([qualifier]))
+    
+    definition = if isdefined(mod, t)
+        line
     else
-        n_idents = length(IDENTS)
-        def_gapp_pattern(mod,
-            predicate = (spec_vars, hd_obj, args) -> hd_obj === case_obj && length(spec_vars) === n_idents,
-            rewrite   = (tag, forall, spec_vars, hd_obj, args, mod) -> begin
-                    (test_var, pat) = @match length(args) begin
-                        0 => (false, true)
-                        1 => (nothing, args[1])
-                        _ => (nothing, Expr(:tuple, args...))
-                    end
-                    assign_elts_and_active_body =
-                        let arr = [:($IDENT = $(spec_vars[i]))
-                                    for (i, IDENT)
-                                    in enumerate(IDENTS)]
-                            Expr(:let, Expr(:block, arr...), Expr(:block, active_body))
-                        end
-                    function (body)
-                        @format [tag, test_var, param, TARGET, assign_elts_and_active_body, body] quote
-                            let TARGET =
-                                let param = tag
-                                    assign_elts_and_active_body
-                                end
-                                TARGET === test_var ?  failed : body
-                            end
-                        end
-                    end ∘ mk_pattern(TARGET, pat, mod)
-            end,
-        qualifiers = Set([qualifier]))
+        struct $t end
     end
-    nothing
+    parametric = isempty(type_args) ? :(::Nothing) : Expr(:tuple, type_args...)
+    token = gensym(:mlstyle)
+    prepr = "$P"
+    quote
+        $definition
+        ::Val{($Base.view, $token)}($parametric, $arg) = $body
+        $line
+        function $MatchImpl.pattern_compile(t::typeof{$t}, self::Function, type_params, type_args, args)
+            $line
+            isempty(type_params) || error("A ($t) pattern requires no type params.")
+            parametric = isempty(type_args) ? nothing : Expr(:tuple, type_args...)
+            n_args = length(args)
+            function trans(expr)
+                f = Val(($Base.view, $token))
+                Expr(:call, f, parametric, expr)
+            end
+            
+            function guard2(expr)
+                :($expr !== nothing)
+            end
+            
+            extract = if length(args) === 1
+                function (expr::Any, i::Int, ::Any, ::Any)
+                    expr
+                end :
+                function (expr::Any, i::Int, ::Any, ::Any)
+                    :($expr[$i])
+                end
+            type_infer(_...) = Any
+            
+            comp = $PComp(
+                $prepr, ()->Any;
+                guard2=guard2
+            )
+            decons(comp, extract, [self(arg) for arg in args])
+        end
+    end
 end
+
 
 """
 Simple active pattern implementation.
@@ -102,11 +89,13 @@ You can give a qualifier in the first argument of `@active` to customize its vis
 ```
 """
 macro active(qualifier, case, active_body)
+    deprecate_qualifiers(qualifier)
+    active_def(case, body, __module__, __source__)
    def_active_pattern(qualifier, case, active_body, __module__)
 end
 
 macro active(case, active_body)
-    def_active_pattern(:public, case, active_body, __module__)
+    active_def(case, body, __module__, __source__)
 end
 
 end

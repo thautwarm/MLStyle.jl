@@ -29,7 +29,7 @@ function get_type_parameters(args :: AbstractArray{T, 1})::AbstractSet{Symbol} w
     syms
 end
 
-function get_type_parameters_ordered(args :: AbstractArray{T, 1})::AbstractSet{Symbol} where T
+function get_type_parameters_ordered(args :: AbstractArray{T, 1})::Vector{Symbol} where T
     syms = Symbol[]
     for arg in args
         take_type_parameters!(syms, arg)

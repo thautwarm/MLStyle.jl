@@ -28,11 +28,6 @@ Base.@pure function qt2ex(ex::Any)
     end
 end
 
-function const_type(t::Any, Ary::Val{N}) where {N}
-    get_const_type(::Vararg{Any,N})::Any = t
-    get_const_type
-end
-
 function guess_type_from_expr(eval::Function, ex::Any, tps::Set{Symbol})
     @sswitch ex begin
         @case :($t{$(targs...)})
@@ -40,6 +35,7 @@ function guess_type_from_expr(eval::Function, ex::Any, tps::Set{Symbol})
         return eval(t)
         @case t::Type
         return t
+        
         @case ::Symbol
         return ex in tps ? Any : eval(ex) #= TODO: check if it's a type =#
         @case _
@@ -54,6 +50,8 @@ ex2tf(m::Module, s::String) = literal(s)
 ex2tf(m::Module, n::Symbol) =
     if n === :_
         wildcard
+    elseif n === :nothing
+        literal(nothing)
     else
         if isdefined(m, n)
             p = getfield(m, n)
@@ -172,6 +170,10 @@ function ex2tf(m::Module, ex::Expr)
         t = eval(t)
         return pattern_compile(t, rec, [], targs, args)
 
+        @case Expr(:curly, [t, targs...])
+        t = eval(t)
+        return pattern_compile(t, rec, [], targs, [])
+
         @case :($val::$t where {$(tps...)}) ||
               :(::$t where {$(tps...)}) && let val = :_
               end ||
@@ -284,6 +286,25 @@ function pattern_compile(
     end
 end
 
+function _some_guard1(expr::Any)
+    :($expr !== nothing)
+end
+function _some_tcons(t)
+    Some{T} where T <: t
+end
+const _some_comp = PComp("Some", _some_tcons; guard1=NoncachablePre(_some_guard1))
+
+function pattern_compile(::Type{Some}, self::Function, tparams::AbstractArray, targs::AbstractArray, args::AbstractArray)
+    isempty(tparams) || error("A (:) pattern requires no type params.")
+    isempty(targs) || error("A (:) pattern requires no type arguments.")
+    @assert length(args) === 1
+    function some_extract(expr::Any, i::Int, ::Any, ::Any)
+        @assert i === 1
+        :($expr.value)
+    end
+    decons(_some_comp, some_extract, [self(args[1])])
+end
+
 macro match(val, tbl)
     @assert Meta.isexpr(tbl, :block)
     clauses = Union{LineNumberNode,Pair{<:Function,Symbol}}[]
@@ -343,7 +364,8 @@ macro match(val, tbl)
     push!(body.args, :(@label $final_label))
     push!(body.args, final_res)
 
-    esc(Expr(:let, Expr(:block), Expr(:block, match_logic, body)))
+    ret = Expr(:let, Expr(:block), Expr(:block, match_logic, body))
+    esc(ret)
 
 end
 end

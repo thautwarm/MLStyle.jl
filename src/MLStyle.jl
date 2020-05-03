@@ -1,5 +1,4 @@
 module MLStyle
-
 include("Err.jl")
 using .Err
 
@@ -9,14 +8,21 @@ include("Qualification.jl")
 
 # =========================================
 
+
+
 include("AbstractPatterns/AbstractPattern.jl")
 include("MatchCore.jl")
 include("ExprTools.jl")
 include("MatchImpl.jl")
 include("Record.jl")
+include("DataType.jl")
 
 using .ExprTools
+
 @reexport Err
+
+using .DataType
+@reexport DataType
 
 using .MatchImpl
 @reexport MatchImpl
@@ -24,7 +30,11 @@ using .MatchImpl
 using .Record
 @reexport Record
 
+include("Pervasives.jl")
 
+include("StandardPatterns/Active.jl")
+using .Active
+@reexport Active
 
 # Flags
 export @use, use, @used
