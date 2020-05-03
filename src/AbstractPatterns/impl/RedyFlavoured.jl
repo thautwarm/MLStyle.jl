@@ -18,6 +18,7 @@ struct CompileEnv
     scope :: Scope
     # Dict(view => (viewed_cache_symbol => guarantee_of_defined?))
     view_cache :: ViewCache
+    terminal_scope :: Dict{Symbol, Dict{Symbol, Symbol}}
 end
 
 abstract type Cond end
@@ -222,7 +223,7 @@ function myimpl()
                         view_cache = env.view_cache
                         view_cache′ = child(view_cache)
                         view_cache_change = view_cache′.cur
-                        env = CompileEnv(env.scope, view_cache′)
+                        env = CompileEnv(env.scope, view_cache′, env.terminal_scope)
                     end
                     computed_guarantee′, env, AndCond(last, p(env, target))
                 end
@@ -246,7 +247,7 @@ function myimpl()
             n_ps = length(ps)
             for p in ps
                 scope′ = child(scope)
-                env′ = CompileEnv(scope′, view_cache)
+                env′ = CompileEnv(scope′, view_cache, env.terminal_scope)
                 push!(or_checks, p(env′, target.clone))
                 push!(scopes, scope′.cur)
             end
@@ -387,7 +388,7 @@ function myimpl()
                 p = ps[i] :: Function
                 field_target = Target{true}(extract(viewed_sym, i), Ref{TypeObject}(Any))
                 view_cache′ = ViewCache()
-                env′ = CompileEnv(scope, view_cache′)
+                env′ = CompileEnv(scope, view_cache′, env.terminal_scope)
                 elt_chk = p(env′, field_target)
                 chk = AndCond(
                     chk,
@@ -459,10 +460,19 @@ function compile_spec!(
     x::Leaf,
     target::Target,
 )
-    for_chaindict(env.scope) do k, v
-        push!(suite, :($k = $v))  # hope this gets optimized to move semantics...
+    terminal_scope = env.terminal_scope
+    branched_terminal_scope = get!(terminal_scope, x.cont) do
+        Dict{Symbol, Symbol}()
     end
-    push!(suite, Expr(:macrocall, Symbol("@goto"), LineNumberNode(@__LINE__), x.cont))
+    for_chaindict(env.scope) do k, v
+        v′ = get!(branched_terminal_scope, k) do
+            v
+        end
+        if v′ !== v
+            push!(suite, :($v′ = $v))  # hope this gets optimized to move semantics...
+        end
+    end
+    push!(suite, Expr(:macrocall, Symbol("@goto"), LineNumberNode(1), x.cont))
 end
 
 function compile_spec!(
@@ -483,7 +493,7 @@ function compile_spec!(
         true_clause = Expr(:block)
         # create new `view_cache` as only one case will be executed
         view_cache′ = child(env.view_cache)
-        env′ = CompileEnv(child(env.scope), view_cache′)
+        env′ = CompileEnv(child(env.scope), view_cache′, env.terminal_scope)
         compile_spec!(env′, true_clause.args, case, target.with_type(ty))
         update_parent!(view_cache′)
         push!(suite, Expr(:if, :($sym isa $ty), true_clause))
@@ -505,7 +515,7 @@ function compile_spec!(
         # use old view_cache:
         # cases are tried in order,
         # hence `view_cache` can inherit from the previous case
-        env′ = CompileEnv(child(env.scope), env.view_cache)
+        env′ = CompileEnv(child(env.scope), env.view_cache, env.terminal_scope)
         compile_spec!(env′, suite, case, target.clone)
     end
 end
@@ -516,20 +526,25 @@ function compile_spec(target::Any, case::AbstractCase, ln::Union{LineNumberNode,
 
     ret = Expr(:block)
     suite = ret.args
+
     scope = Scope()
     view_cache = ViewCache()
-    env = CompileEnv(scope, view_cache)
+    terminal_scope = Dict{Symbol, Dict{Symbol, Symbol}}()
+    env = CompileEnv(scope, view_cache, terminal_scope)
     
     compile_spec!(env, suite, case, target)
     pushfirst!(suite, init_cache(view_cache))
+
     if !isnothing(ln)
         # TODO: better trace
-        msg = "no pattern matched, at $ln"
+        msg = "matching non-exhaustive, at $ln"
         push!(suite, :(error($msg)))
     else
         push!(suite, :(error("no pattern matched")))
     end
-    length(suite) === 1 ? suite[1] : ret
+    
+    ret = length(suite) === 1 ? suite[1] : ret
+    terminal_scope, ret
 end
 
 """compile a series of `Term => Symbol`(branches) to a Julia expression

@@ -195,24 +195,30 @@ macro switch(val, ex)
     body = Expr(:block)
     alphabeta = 'a':'z'
     base = gensym()
-    k = 0
     ln = __source__
+    variable_init_blocks = Dict{Symbol, Expr}()
     for i in eachindex(ex.args)
         stmt = ex.args[i]
         if Meta.isexpr(stmt, :macrocall) &&
            stmt.args[1] === case_sym &&
            length(stmt.args) == 3
-
-            k += 1
+        
             pattern = try
                 ex2tf(__module__, stmt.args[3])
             catch e
                 e isa ErrorException && throw(PatternCompilationError(ln, e.msg))
                 rethrow()
             end
+            
+            k = length(variable_init_blocks) + 1
             br::Symbol = Symbol(alphabeta[k%26], k <= 26 ? "" : string(i), base)
             push!(clauses, pattern => br)
+
+            variable_init_block = Expr(:block)
+            variable_init_blocks[br] = variable_init_block
+
             push!(body.args, :(@label $br))
+            push!(body.args, variable_init_block)
         else
             if stmt isa LineNumberNode
                 ln = stmt
@@ -221,8 +227,18 @@ macro switch(val, ex)
             push!(body.args, stmt)
         end
     end
-
-    match_logic = backend(val, clauses, __source__)
+    
+    isempty(variable_init_blocks) && throw(
+        PatternCompilationError(__source__, "empty switch statements!")
+    )
+    
+    terminal_scope, match_logic = backend(val, clauses, __source__)
+    for (br, branches_terminal_scope) in terminal_scope
+        variable_init = variable_init_blocks[br].args
+        for (actual_sym, mangled_sym) in branches_terminal_scope
+            push!(variable_init, :($actual_sym = $mangled_sym))
+        end
+    end
     exp = Expr(:block, match_logic, body)
     esc(exp)
 end
@@ -274,25 +290,31 @@ macro match(val, tbl)
     body = Expr(:block)
     alphabeta = 'a':'z'
     base = gensym()
-    k = 0
     final_label = Symbol(".", base)
     final_res = gensym("final")
     ln = __source__
+    variable_init_blocks = Dict{Symbol, Expr}()
     for i in eachindex(tbl.args)
         ex = tbl.args[i]
         @switch ex begin
             @case :($a => $b)
-            k += 1
             pattern = try
                 ex2tf(__module__, a)
             catch e
                 e isa ErrorException && throw(PatternCompilationError(ln, e.msg))
                 rethrow()
             end
+            k = length(variable_init_blocks) + 1
             br::Symbol = Symbol(alphabeta[k%26], k <= 26 ? "" : string(i), base)
             push!(clauses, pattern => br)
+
+            variable_init_block = Expr(:block)
+            return_expr = Expr(:block)
+            let_expr = Expr(:let, variable_init_block, b)
+            variable_init_blocks[br] = variable_init_block
+
             push!(body.args, :(@label $br))
-            push!(body.args, :($final_res = $b))
+            push!(body.args, :($final_res = $let_expr))
             push!(body.args, :(@goto $final_label))
             continue
             @case ln::LineNumberNode
@@ -302,8 +324,22 @@ macro match(val, tbl)
             # TODO: syntax error report
         end
     end
+    
+    isempty(variable_init_blocks) && throw(
+        PatternCompilationError(
+            __source__,
+            "empty match expression!"
+        )
+    )
 
-    match_logic = backend(val, clauses, __source__)
+    terminal_scope, match_logic = backend(val, clauses, __source__)
+    for (br, branches_terminal_scope) in terminal_scope
+        variable_init = variable_init_blocks[br].args
+        for (actual_sym, mangled_sym) in branches_terminal_scope
+            push!(variable_init, :($actual_sym = $mangled_sym))
+        end
+    end
+
     push!(body.args, :(@label $final_label))
     push!(body.args, final_res)
 

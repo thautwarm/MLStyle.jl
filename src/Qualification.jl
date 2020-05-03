@@ -1,14 +1,16 @@
 module Qualification
-using MLStyle.MatchCore
-using MLStyle.Pervasives
+export deprecate_qualifiers
 
-export get_qualifier
-get_qualifier(node, curmod) =
-    @match node begin
-        :public   => invasive
-        :internal => internal
-        :(visible in [$(mods...)]) ||
-        :(visible in $mod) && Do(mods = [mod]) =>
-            share_with(Set(map(curmod.eval, mods)))
-    end
+function deprecate_qualifiers(o)
+    s = string(o)
+    trunc = min(length(s), 20)
+    s = SubString(s, 1:trunc)
+    Base.depwarn(
+        "When definining $(s):" *
+        "Scoping specifiers such as `internal`, `public` are deprecated." *
+        "Now the scope of a pattern is consistent with the visibility of the pattern object in current module.",
+        o
+    )
+end
+
 end

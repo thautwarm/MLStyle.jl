@@ -1,5 +1,7 @@
 module Err
-export PatternCompilationError, InternalException, SyntaxError, UnknownExtension, @syntax_err
+export PatternCompilationError, InternalException, SyntaxError, UnknownExtension, PatternUnsolvedException
+
+PatternUnsolvedException = ErrorException
 
 struct PatternCompilationError <: Exception
     line::Union{LineNumberNode,Nothing}

@@ -1,8 +1,9 @@
 module ExprTools
 using MLStyle.MatchCore
-export take_type_parameters!, get_type_parameters
+export take_type_parameters!, get_type_parameters, get_type_parameters_ordered
+export @reexport
 
-function take_type_parameters!(syms::Set{Symbol}, ex)::Nothing
+function take_type_parameters!(syms, ex)::Nothing
     @sswitch ex begin
     @case :($a >: $_) || :($a <: $_)
         @assert a isa Symbol
@@ -20,12 +21,27 @@ function take_type_parameters!(syms::Set{Symbol}, ex)::Nothing
     end
 end
 
-function get_type_parameters(args :: AbstractArray{T, 1})::Set{Symbol} where T
+function get_type_parameters(args :: AbstractArray{T, 1})::AbstractSet{Symbol} where T
     syms = Set{Symbol}()
     for arg in args
         take_type_parameters!(syms, arg)
     end
     syms
+end
+
+function get_type_parameters_ordered(args :: AbstractArray{T, 1})::AbstractSet{Symbol} where T
+    syms = Symbol[]
+    for arg in args
+        take_type_parameters!(syms, arg)
+    end
+    unique!(syms)
+    syms
+end
+
+macro reexport(m)
+    m = __module__.eval(m)
+    ns = names(m)
+    isempty(ns) ? nothing : esc(:(export $(ns...)))
 end
 
 end

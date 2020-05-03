@@ -1,6 +1,30 @@
 module MLStyle
 
-export ellipsis_split, is_enum, pattern_compile, @switch, @match, Where
+include("Err.jl")
+using .Err
+
+# ================deprecated===============
+include("Extension.jl")
+include("Qualification.jl")
+
+# =========================================
+
+include("AbstractPatterns/AbstractPattern.jl")
+include("MatchCore.jl")
+include("ExprTools.jl")
+include("MatchImpl.jl")
+include("Record.jl")
+
+using .ExprTools
+@reexport Err
+
+using .MatchImpl
+@reexport MatchImpl
+
+using .Record
+@reexport Record
+
+
 
 # Flags
 export @use, use, @used
@@ -22,14 +46,10 @@ export @as_record
 export @λ, gen_lambda
 export @when, @otherwise, gen_when
 export MatchCore
-include("Err.jl")
-using .Err
 
-include("AbstractPatterns/AbstractPattern.jl")
-include("MatchCore.jl")
-include("ExprTools.jl")
-include("MatchImpl.jl")
-include("Record.jl")
+
+
+
 
 
 # # convenient modules
