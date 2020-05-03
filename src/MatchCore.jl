@@ -28,7 +28,7 @@ end
 Base.@pure function qt2ex(ex::Any)
     if ex isa Expr
         Meta.isexpr(ex, :$) && return ex.args[1]
-        Expr(:call, Expr, QuoteNode(ex.head), Expr(:vect, (qt2ex(e) for e in ex.args)...))
+        Expr(:call, Expr, QuoteNode(ex.head), Expr(:vect, (qt2ex(e) for e in ex.args if !(e isa LineNumberNode))...))
     elseif ex isa Symbol
         QuoteNode(ex)
     else

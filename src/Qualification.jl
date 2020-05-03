@@ -9,7 +9,7 @@ function deprecate_qualifiers(o)
         "When definining $(s): " *
         "Scoping specifiers such as `internal`, `public` are deprecated. " *
         "Now the scope of a pattern is consistent with the visibility of the pattern object in current module.",
-        o
+        :qualifier
     )
 end
 

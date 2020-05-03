@@ -31,7 +31,7 @@ function split_case_and_block(stmts, first_bindings, first_source)
 
     for stmt in stmts
         @switch stmt begin
-        @case Q[@when $source begin $(bindings...) end] ||
+        @case :(@when $source begin $(bindings...) end) ||
               Q[@when $source $elt] && let bindings=[elt] end
                 
             push!(binding_seqs, bindings)
@@ -90,7 +90,7 @@ function gen_when(let_expr, source :: LineNumberNode, mod :: Module)
                         cbl = Expr(:block, source, :($a => $last_ret), :(_ => $last_block))
                         return gen_match(b, cbl, source, mod)
                        
-                    @case source::LineNumberNode
+                    @case new_source::LineNumberNode
                         source = new_source
                         return last_ret    
 

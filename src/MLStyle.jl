@@ -28,8 +28,8 @@ using .Record
 @reexport Record
 
 include("Pervasives.jl")
-using .Pervasives: Do, Many
-export Do, Many
+using .Pervasives: Do, Many, GuardBy
+export Do, Many, GuardBy
 
 include("Sugars.jl")
 

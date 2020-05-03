@@ -4,7 +4,8 @@ using MLStyle.AbstractPattern
 using MLStyle.AbstractPattern
 struct Many end
 struct Do end
-export Many, Do
+struct GuardBy end
+export Many, Do, GuardBy
 
 function MLStyle.pattern_uncall(::typeof(:), self::Function, tparams::AbstractArray, targs::AbstractArray, args::AbstractArray)
     isempty(tparams) || error("A (:) pattern requires no type params.")
@@ -95,6 +96,15 @@ function MLStyle.pattern_uncall(::Type{Do}, self::Function, tparams::AbstractArr
     MLStyle.pattern_unref(Do, self, args)
 end
 
+function MLStyle.pattern_uncall(::Type{GuardBy}, self::Function, tparams::AbstractArray, targs::AbstractArray, args::AbstractArray)
+    isempty(tparams) || error("A (:) pattern requires no type params.")
+    isempty(targs) || error("A (:) pattern requires no type arguments.")
+    @assert length(args) === 1
+    guard() do target, _, _
+        :($(args[1])($target))
+    end
+end
+
 function MLStyle.pattern_unref(::Type{Many}, self::Function, args::AbstractArray)
     @assert length(args) === 1
     arg = args[1]
@@ -132,6 +142,7 @@ function MLStyle.pattern_uncall(::Type{Many}, self::Function, tparams::AbstractA
     Base.depwarn("Many(pat) is deprecated, use Many[pat].", :Many)
     MLStyle.pattern_unref(Many, self, args)
 end
+
 
 # QuoteNode, Do, Many
 

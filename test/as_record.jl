@@ -12,12 +12,12 @@ end
 
 
 @test @match Record_1(1, 2) begin
-    Record_1(a=1) => true
+    Record_1(;a=1) => true
     _ => false
 end
 
 @test @match Record_1(1, 2) begin
-    Record_1(b = 2) => true
+    Record_1(;b = 2) => true
     _ => false
 end
 
