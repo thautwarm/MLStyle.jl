@@ -2,7 +2,6 @@ module Extension
 using MLStyle.Err
 export use, @use, used
 
-
 function used(ext :: Symbol, mod :: Module) :: Bool
     Base.depwarn(
        "No need to use this function anymore since MLStyle v0.4",
