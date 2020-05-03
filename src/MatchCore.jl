@@ -186,6 +186,7 @@ macro sswitch(val, ex)
     base = gensym()
     k = 0
     ln =  __source__
+    variable_init_blocks = Dict{Symbol, Expr}()
     for i in eachindex(ex.args)
         stmt = ex.args[i]
         if Meta.isexpr(stmt, :macrocall) &&
@@ -203,6 +204,9 @@ macro sswitch(val, ex)
             br :: Symbol = Symbol(alphabeta[k % 26], k <= 26 ? "" : string(i), base)
             push!(clauses,  pattern => br)
             push!(body.args, :(@label $br))
+            variable_init_block = Expr(:block)
+            push!(body.args, variable_init_block)
+            variable_init_blocks[br] = variable_init_block
         else
             if stmt isa LineNumberNode
                 ln = stmt
@@ -211,7 +215,13 @@ macro sswitch(val, ex)
         end
     end
     
-    match_logic = backend(val, clauses, __source__)
+    terminal_scope, match_logic = backend(val, clauses, __source__)
+    for (br, branches_terminal_scope) in terminal_scope
+        variable_init = variable_init_blocks[br].args
+        for (actual_sym, mangled_sym) in branches_terminal_scope
+            push!(variable_init, :($actual_sym = $mangled_sym))
+        end
+    end
     ret =
         Expr(
             :let,

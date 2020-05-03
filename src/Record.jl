@@ -4,8 +4,9 @@ using MLStyle.MatchCore
 using MLStyle.MatchImpl
 using MLStyle.AbstractPattern
 using MLStyle.AbstractPattern.BasicPatterns
+using MLStyle.Qualification
 
-export @as_record
+export @as_record, record_def
 
 
 function P_partial_struct_decons(t, partial_fields, ps, prepr::AbstractString="$t")
@@ -22,7 +23,7 @@ function P_partial_struct_decons(t, partial_fields, ps, prepr::AbstractString="$
     decons(comp, extract, ps)
 end
 
-function mk_code(Struct, line::LineNumberNode)
+function record_def(Struct, line::LineNumberNode)
     quote
         $line
         function $MatchImpl.pattern_compile(t::Type{$Struct}, self::Function, type_params, type_args, args)
@@ -79,30 +80,22 @@ end
 function as_record(n, line)
     @switch n begin
     @case ::Symbol
-        return mk_code(n, line)
+        return record_def(n, line)
     @case Expr(:struct, _, :($hd{$(_...)}), _...) ||
           Expr(:struct, _, hd, _...)
         return Expr(:block,
             n,
-            mk_code(hd, line)
+            record_def(hd, line)
         )
     @case _
         error("malformed structure $n")
     end
 end
 
-function _depwarn(o)
-    trunc = min(length(o), 20)
-    s = SubString(string(o), 1:trunc)
-    Base.depwarn(
-        "When definining $(s):" *
-        "Scoping specifiers such as `internal`, `public` are deprecated." *
-        "Now the scope of a pattern is consistent with the visibility of the pattern object in current module."
-    )
-end
 
-macro as_record(_, n)
-    _depwarn(n)
+
+macro as_record(qualifier, n)
+    deprecate_qualifiers(qualifier)
     esc(as_record(n, __source__))
 end
 
