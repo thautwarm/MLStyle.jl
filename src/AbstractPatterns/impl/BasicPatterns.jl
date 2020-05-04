@@ -23,7 +23,7 @@ end
 (f::SimpleCachablePre)(target) = f.f(target)
 
 function sequence_index(viewed, i::Integer, ::Any, ::Any)
-    :($Base.@inbounds $viewed[$i])
+    :($viewed[$i])
 end
 
 function self_index(viewed, i::Integer, ::Any, ::Any)
@@ -157,7 +157,7 @@ function P_vector3(init::AbstractArray, pack::Function, tail::AbstractArray, pre
     # end
     function extract(arr, i::Int, ::Any, ::Any)
         ex = if i <= n1
-            :($Base.@inbounds $arr[$i])
+            :($arr[$i])
         elseif i === n1 + 1
             n2 === 0 ?
             :(view($arr, $(n1+1):length($arr))) :
@@ -166,7 +166,7 @@ function P_vector3(init::AbstractArray, pack::Function, tail::AbstractArray, pre
             incr = i - n1 - 1
             j = n2 - incr
             ex = j == 0 ? :($arr[end]) : :($arr[end-$j])
-            :($Base.@inbounds $ex)
+            :($ex)
         end
        
     end
