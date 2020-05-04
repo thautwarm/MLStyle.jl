@@ -25,6 +25,7 @@ makedocs(
         "Home"   => "index.md",
         "Syntax" => Any[
             "syntax/adt.md",
+            "syntax/switch.md",
             "syntax/pattern.md",
             "syntax/pattern-function.md",
             "syntax/when.md",
