@@ -1,21 +1,6 @@
+***This documentation needs to get up-to-date.***
 
 There's an order among all those patterns' implementations, for some pattern might rely on an other.
-
-## TypeVarDecons.jl
-
-- Description: provided with the capability of deconstructing type variables, thus we can match types.
-- No dependencies
-- Instance:
-
-    ```julia
-    @match 1 begin
-        ::Int => "okay"
-    end
-
-    @match 1 begin
-        ::T where T <: Number => "okay"
-    end
-    ```
 
 ## Active.jl
 
@@ -28,7 +13,7 @@ There's an order among all those patterns' implementations, for some pattern mig
         if x > 0
             nothing
         else
-            :ok
+            Some(:ok)
         end
     end
 
@@ -37,7 +22,7 @@ There's an order among all those patterns' implementations, for some pattern mig
         _ => true
     end # true
 
-    @active public IsEven(x) begin
+    @active IsEven(x) begin
         x % 2 === 0
     end
 
