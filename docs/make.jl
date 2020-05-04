@@ -7,18 +7,14 @@ makedocs(
         MLStyle.MatchCore,
         MLStyle.DataType,
         MLStyle.Err,
-        MLStyle.Extension,
-        MLStyle.Infras,
         MLStyle.Pervasives,
+        MLStyle.Record,
 
         # standard patterns
-        MLStyle.TypeVarDecons,
         MLStyle.Active,
         MLStyle.Uncomprehensions,
         MLStyle.LambdaCases,
-        MLStyle.WhenCases,
-
-        MLStyle.Render
+        MLStyle.WhenCases
     ],
     clean = false,
     format = :html,
@@ -32,8 +28,6 @@ makedocs(
             "syntax/pattern.md",
             "syntax/pattern-function.md",
             "syntax/when.md",
-            "syntax/extension.md",
-            "syntax/qualifier.md"
         ],
         "Tutorials" => Any[
             "tutorials/capture.md",

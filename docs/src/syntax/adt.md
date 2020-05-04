@@ -2,51 +2,53 @@ Algebraic Data Types
 ==============================
 
 
-Syntax
+Cheat Sheet 
 -----------------
 
+Cheat sheet for regular ADT definitions:
+
+```julia
+@data A <: B begin
+    C1 # is an enum(**WIP**)
+    
+    # similar to C1 but cannot match without a call
+    C2()
+    
+    # the capitalized means types(field names are "_1", "_2", ...)
+    # C3(1, "2")._1 == 1
+    C3(Int, String)
+  
+    C4(::Int, ::String)   # "::" means types
+    
+    # the lowercase means field names
+    # C5(:ss, 1.0).a == :ss
+    C5(a, b)
+    
+    C6(a::Int, b::Vector{<:AbstractString})
+end
 ```
 
-<Seq> a         = a (',' a)*
-<TypeName>      = %Uppercase identifier%
-<fieldname>     = %Lowercase identifier%
-<TVar>          = %Uppercase identifier%
-<ConsName>      = %Uppercase identifier%
-<ImplicitTVar>  = %Uppercase identifier%
-<Type>          = <TypeName> [ '{' <Seq TVar> '}' ]
-<Module>        = %Uppercase identifier%
+Cheat sheet for GADT definitions:
 
-<ADT>           =
-    '@data' ['public' | 'internal' | 'visible' 'in' <Seq Module>] <Type> 'begin'
+```julia
+@data Ab{T} <: AB begin
+    
+    C1{X, Y} :: Ab{X}   # is an enum(**WIP**)
+    C2 :: () => Ab{Int}
 
-        (<ConsName>[{<Seq TVar>}] (
-            <Seq fieldname> | <Seq Type> | <Seq (<fieldname> :: <Type>)>
-        ))*
-
-    'end'
-
-<GADT>           =
-    '@data' ['public' | 'internal' | 'visible' 'in' <Seq Module>] <Type> 'begin'
-
-        (<ConsName>[{<Seq TVar>}] '::'
-           ( '('
-                (<Seq fieldname> | <Seq Type> | <Seq (<fieldname> :: <Type>)>)
-             ')'
-              | <fieldname>
-              | <Type>
-           )
-           '=>' <Type> ['where' '{' <Seq ImplicitTvar> '}']
-        )*
-
-    'end'
-
+    # where is for inference, the clauses must be assignments
+    C3{A<:Number, B} :: (a::A, b::Symbol) => Ab{B} where {B = Type{A}}
+    # C3(1, :a) :: C3{Int, Tuple{Int}}
+    # C3(1, :a) :: Ab{Int, Tuple{Int}}
+end
 ```
 
-Examples:
+Examples
+-------------------------
 
 ```julia
 
-@data internal A begin
+@data A begin
     A1(Int, Int)
     A2(a :: Int, b :: Int)
     A3(a, b) # equals to `A3(a::Any, b::Any)`
@@ -57,32 +59,25 @@ end
     B2(a :: T)
 end
 
-@data visible in MyModule C{T} begin
+@data C{T} begin
     C1(T)
     C2{A} :: Vector{A} => C{A}
 end
 
 abstract type DD end
-@data visible in [Main, Base, Core] D{T} <: DD begin
-    D1 :: Int => D{T} where T # implicit type vars
+some_type_to_int(x::Type{Int}) = 1
+some_type_to_int(x::Type{<:Tuple}) = 2
+
+@data D{T} <: DD begin
+    D1{T} :: Int => D{T}
     D2{A, B} :: (A, B, Int) => D{Tuple{A, B}}
-    D3{A} :: A => D{Array{A, N}} where N # implicit type vars
+    D3{A, N} :: A => D{Array{A, N}} where {N = some_type_to_int(A)}
 end
+# z :: D3{Int64,1}(10) = D3(10) :: D{Array{Int64,1}}
 ```
 
-Qualifier
-----------------------
-
-
-There are 3 default qualifiers for ADT definition:
-
-- `internal`: The pattern created by the ADT can only be used in the module it's defined in.
-- `public`: If the constructor is imported into current module, the corresponding pattern will be available.
-- `visible in [mod...]`: Define a set of modules where the pattern is available.
-
-
-Example: Describe arithmetic operations
---------------------------------------
+Example: Modeling Arithmetic Operations
+----------------------------------------------
 
 ```julia
 using MLStyle
@@ -104,8 +99,8 @@ eval_arith(arith :: Arith) =
     let wrap_op(op)  = (a, b) -> op(eval_arith(a), eval_arith(b)),
         (+, -, *, /) = map(wrap_op, (+, -, *, /))
         @match arith begin
-            Number(v)       => v
-            Minus(fst, snd) => fst - snd
+            Number(v)        => v
+            Minus(fst, snd)  => fst - snd
             Mult(fst, snd)   => fst * snd
             Divide(fst, snd) => fst / snd
         end
@@ -122,182 +117,15 @@ eval_arith(
 
 
 
-Generalized ADT
---------------------------
-
-
-
-Note that, for GADTs would use `where` syntax as a pattern, it means that you cannot
-use GADTs and your custom `where` patterns at the same time. To resolve this, we introduce
-the extension system like Haskell here.
-
-Since that you can define your own `where` pattern and export it to any modules.
-Given an arbitrary Julia module, if you don't use `@use GADT` to enable GADT extensions and,
-your own `where` pattern just works here.
-
-
-Here's a simple interpreter implemented using GADTs.
-
-Firstly, enable GADT extension.
-
-```julia
-using MLStyle
-@use GADT
-```
-
-Then define the function type.
-
-```julia
-import Base: convert
-
-struct Fun{T, R}
-    fn :: Function
-end
-
-function (typed_fn :: Fun{T, R})(arg :: T) :: R where {T, R}
-    typed_fn.fn(arg)
-end
-
-function convert(::Type{Fun{T, R}}, fn :: Function) where {T, R}
-    Fun{T, R}(fn)
-end
-
-function convert(::Type{Fun{T, R}}, fn :: Fun{C, D}) where{T, R, C <: T, D <: R}
-    Fun{T, R}(fn.fn)
-end
-
-⇒(::Type{A}, ::Type{B}) where {A, B} = Fun{A, B}
-```
-
-And now let's define the operators of our abstract machine.
-
-```julia
-
-@data public Exp{T} begin
-
-    # The symbol refers to some variable in current context.
-    Sym{A}    :: Symbol => Exp{A}
-
-    # Value.
-    Val{A}    :: A => Exp{A}
-
-    # Function application.
-    App{A, B, A_ <: A} :: (Exp{Fun{A, B}}, Exp{A_}) => Exp{B}
-
-    # Lambda/Anonymous function.
-    Lam{A, B} :: (Symbol, Exp{B}) => Exp{Fun{A, B}}
-
-    # If expression
-    If{A}     :: (Exp{Bool}, Exp{A}, Exp{A}) => Exp{A}
-end
-```
-
-To make function abstractions, we need a `substitute` operation.
-
-```julia
-
-"""
-e.g: substitute(some_exp, :a => another_exp)
-"""
-function substitute(template :: Exp{T}, pair :: Tuple{Symbol, Exp{G}}) where {T, G}
-    (sym, exp) = pair
-    @match template begin
-        Sym(&sym) => exp
-        Val(_) => template
-        App(f, a) => App(substitute(f, pair), substitute(a, pair)) :: Exp{T}
-        Lam(&sym, exp) => template
-        If(cond, exp1, exp2) =>
-            let (cond, exp1, exp2) = map(substitute, (cond, exp1, exp2))
-                If(cond, exp1, exp2) :: Exp{T}
-            end
-    end
-end
-```
-
-Then we could write how to execute our abstract machine.
-
-```julia
-function eval_exp(exp :: Exp{T}, ctx :: Dict{Symbol, Any}) where T
-    @match exp begin
-        Sym(a) => (ctx[a] :: T, ctx)
-        Val(a :: T) => (a, ctx)
-        App{A, T, A_}(f :: Exp{Fun{A, T}}, arg :: Exp{A_}) where {A, A_ <: A} =>
-            let (f, ctx) = eval_exp(f, ctx),
-                (arg, ctx) = eval_exp(arg, ctx)
-                (f(arg), ctx)
-            end
-        Lam{A, B}(sym, exp::Exp{B}) where {A, B} =>
-            let f(x :: A) = begin
-                    A
-                    eval_exp(substitute(exp, sym => Val(x)), ctx)[1]
-                end
-
-                (f, ctx)
-            end
-        If(cond, exp1, exp2) =>
-            let (cond, ctx) = eval_exp(cond, ctx)
-                eval_exp(cond ? exp1 : exp2, ctx)
-            end
-    end
-end
-```
-
-This `eval_exp` takes 2 arguments, one of which is an `Exp{T}`, while another is the store(you can regard it as the scope),
-the return is a tuple, the first of which is a value typed `T` and the second is the new store after the execution.
-
-Following codes are about how to use this abstract machine.
-
-```julia
-add = Val{Number ⇒ Number ⇒ Number}(x -> y -> x + y)
-sub = Val{Number ⇒ Number ⇒ Number}(x -> y -> x - y)
-gt = Val{Number ⇒ Number ⇒ Bool}(x -> y -> x > y)
-ctx = Dict{Symbol, Any}()
-
-@assert 3 == eval_exp(App(App(add, Val(1)), Val(2)), ctx)[1]
-@assert -1 == eval_exp(App(App(sub, Val(1)), Val(2)), ctx)[1]
-@assert 1 == eval_exp(
-    If(
-        App(App(gt, Sym{Int}(:x)), Sym{Int}(:y)),
-        App(App(sub, Sym{Int}(:x)), Sym{Int}(:y)),
-        App(App(sub, Sym{Int}(:y)), Sym{Int}(:x))
-    ), Dict{Symbol, Any}(:x => 1, :y => 2))[1]
-
-```
-
-
-Implicit Type Variables of Generalized ADT
+About Type Parameters
 ----------------------------------------------------
 
+`where` is used for type parameter introduction.
 
-Sometimes you might want this:
-
+Following 2 patterns are equivalent:
 ```julia
-@use GADT
-
-@data A{T} begin
-    A1 :: Int => A{T} where T
-end
-```
-It means that for all `T`, we have `A{T} >: A1`, where `A1` is a case class and could be used as a constructor.
-
-You can work with them in this way:
-```julia
-function string_A() :: A{String}
-    A1(2)
-end
-
-@assert String == @match string_A() begin
-    A{T} where T => T
-end
+A{T1...}(T2...) where {T3...}
+A{T1...}(T2...) :: A{T1...} where {T3...}
 ```
 
-Currently, there're several limitations with implicit type variables, say, you're not expected to use implicit type variables in
-the argument types of constructors, like:
-
-```julia
-@data A{T} begin
-    A1 :: T => A{T} where T # NOT EXPECTED!
-end
-```
-
-It's possible to achieve more flexible implicit type variables, but it's quite difficult for such a package without statically type checking.
+Check [Advanced Type Pattern](https://thautwarm.github.io/MLStyle.jl/latest/syntax/pattern/#Advanced-Type-Pattern-1) for more about `where` use in matching.

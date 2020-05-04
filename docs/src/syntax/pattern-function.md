@@ -6,12 +6,12 @@ Pattern function
 ```julia
 f = @λ begin
     # patterns here
-    x                  -> 1
+    x                  => 1
     ((x, (1, 2)) &&
-        if x > 3 end)  -> 5
-    (x, y)             -> 2
-    ::String           -> "is string"
-    _                  -> "is any"
+        if x > 3 end)  => 5
+    (x, y)             => 2
+    ::String           => "is string"
+    _                  => "is any"
 end
 f(1) # => 1
 f((4, (1, 2))) # => 5
@@ -24,6 +24,7 @@ argument in one means:
 
 ```julia
 map((@λ [a, b, c...] -> c), [[1, 2, 3, 4], [1, 2]])
+# Or: map((@λ [a, b, c...] => c), [[1, 2, 3, 4], [1, 2]])
 # => 2-element Array{SubArray{Int64,1,Array{Int64,1},Tuple{UnitRange{Int64}},true},1}:
 #    [3, 4]
 #    []
@@ -32,12 +33,12 @@ map((@λ [a, b, c...] -> c), [[1, 2, 3, 4], [1, 2]])
 Functionally, A `pattern function` is no more than using a `@match` inside some anonymous function.
 
 ```julia
-
 function (x)
     @match x begin
         pat1 => body1
         pat2 => body2
     end
 end
-
 ```
+
+Both `->` and `=>` works for pattern functions.

@@ -12,8 +12,10 @@ Pattern
 - [Custom Pattern, Dict, Tuple, Array](#Custom-Pattern-1)
 - [Or Pattern](#Or-Pattern-1)
 - [ADT destructuring, GADTs](#ADT-Destructuring-1)
+- [Records](#Records-1)
 - [Advanced Type Pattern](#Advanced-Type-Pattern-1)
 - [Side Effect](#Side-Effect-1)
+- [Let Pattern](#Let-Pattern-1)
 - [Active Pattern](#Active-Pattern-1)
 - [Expr Pattern](#Expr-Pattern-1)
 - [Ast Pattern](#Ast-Pattern-1)
@@ -102,29 +104,27 @@ Guard
 end
 ```
 
+
 Predicate
 ---------------
 
 The following has the same semantics as the above snippet.
 
 ```julia
-
 function pred(x)
     x > 5
 end
 
 @match x begin
-    x && function pred end => 5 - x # only succeed when x > 5
+    x && GuardBy(pred) => 5 - x # only succeed when x > 5
     _        => 1
 end
 
 @match x begin
-    x && function (x) x > 5 end => 5 - x # only succeed when x > 5
+    x && GuardBy(x -> x > 5) => 5 - x # only succeed when x > 5
     _        => 1
 end
-
 ```
-
 
 Range Pattern
 --------------------
@@ -153,13 +153,7 @@ end
 Custom Pattern
 --------------
 
-Not recommend to do this for it's implementation specific.
-If you want to make your own extensions, check [Pervasives.jl](https://github.com/thautwarm/MLStyle.jl/blob/master/src/Pervasives.jl).
-
-Defining your own patterns using the low level APIs is quite easy,
-but exposing the implementations would cause compatibilities in future development.
-
-
+TODO.
 
 Dict, Tuple, Array
 ---------------------
@@ -178,7 +172,6 @@ end
 - Tuple pattern
 
 ```julia
-
 @match (1, 2, (3, 4, (5, ))) begin
     (a, b, (c, d, (5, ))) => (a, b, c, d)
 
@@ -230,17 +223,7 @@ Tips: `Or Pattern`s could nested.
 ADT Destructuring
 ---------------
 
-You can match `ADT` in following 3 means:
-
-```julia
-
-C(a, b, c) => ... # ordered arguments
-C(b = b) => ...   # record syntax
-C(_) => ...       # wildcard for destructuring
-
-```
-
-Here is an example:
+Here is an example, check more about ADTs(and GADTs) at [Algebraic Data Type Syntax in MLStyle](https://thautwarm.github.io/MLStyle.jl/latest/syntax/adt).
 
 ```julia
 
@@ -269,7 +252,8 @@ my_data_query([神农架, Yellostone])
 ...
 ```
 
-- Support destructuring Julia types defined regularly
+Records
+----------------------
 
 ```julia
 struct A
@@ -277,66 +261,80 @@ struct A
     b
     c
 end
+@as_record A
 
-# allow `A` to be destructured as datatypes in current module.
-@as_record internal A
+# or just wrap the struct definition with @as_record
+# @as_record struct A
+#     a
+#     b
+#     c
+# end
 
 @match A(1, 2, 3) begin
     A(1, 2, 3) => ...
 end
-```
 
-- About GADTs
+@match A(1, 2, 3) begin
+    A(_) => true
+end # always true
 
-```julia
-@use GADT
+@match A(1, 2, 3) begin
+    A() => true
+end # always true
 
-@data internal Example{T} begin
-    A{T} :: (Int, T) => Example{Tuple{Int, T}}
-end
+# field punnings(superior than extracting fields)
+@match A(1, 2, 3) begin
+    A(;a, b=b) => a + b
+end # 3
 
-@match A(1, 2) begin
-    A{T}(a :: Int, b :: T) where T <: Number => (a == 1 && T == Int)
-end
-
+# extract fields
+@match A(1, 2, 3) begin
+    A(a=a, b=b) => a + b
+end # 3
 ```
 
 Advanced Type Pattern
 -------------------------
 
-Instead of `TypeLevel` feature used in v0.1, an ideal type-stable way to destruct types now is introduced here.
+We can introduce type parameters via `where` syntax.
 
 ```julia
 @match 1 begin
-    ::String => String
-    ::Int => Int
-end
-# => Int64
-
-@match 1 begin
-    ::T where T <: AbstractArray => 0
-    ::T where T <: Number => 1
-end
-
-# => 0
-
-struct S{A, B}
-    a :: A
-    b :: B
-end
-
-@match S(1, "2") begin
-    ::S{A} where A => A
-end
-# => Int64
-
-@match S(1, "2") begin
-    ::S{A, B} where {A, B <: AbstractString} => (A, B)
-end
-# => (Int64, String)
-
+    a :: T where T => T
+end # => T
 ```
 
+However, whenever you're using `where`, DO NOT use locally captured type arguments in the right side of `::`, when `::` is directly under a `where`.
+
+
+**Wrong use**:
+
+```julia
+@match (1, (2, 3)) begin
+    (::T1 where T1, ::Tuple{T1, T2} where T2) => (T1, T2)
+end
+# T1 not defined
+```
+
+Workaround 1:
+
+```julia
+@match (1, (2, 3)) begin
+    (::T1 where T1, ::Tuple{T1′, T2} where {T1′, T2}) &&
+     if T1′ == T1 end => (T1, T2)
+end
+# (Int64, Int64)
+```
+
+Workaround 2:
+
+```julia
+@match (1, (2, 3)) begin
+    (::T1, (::T1, ::T2)) :: Tuple{T1, Tuple{T1, T2}} where {T1, T2} =>
+        (T1, T2)
+end
+# (Int64, Int64)
+```
 
 Side-Effect
 -----------------------
@@ -367,42 +365,97 @@ end # 9
 
 They may be not used very often but quite convenient for some specific domain.
 
+**P.S 1**: when assigning variables with `Do`, don't do `Do((x, y) = expr)`, use this: `Do(x = expr[1], y = expr[2])`. Our pattern compile needs to aware the scope change!
+
+**P.S 2**: `Do[x...]` is an eye candy for `Do(x)`, and so does `Many[x]` for `Many(x)`. **HOWEVER**, do not use `begin end` syntax in `Do[...]` or `Many[...]`. Julia restricts the parser and it'll not get treated as a `begin end` block.
+
+**P.S 3**: The [`let` pattern](#Let-Pattern-1) is different from the `Do` pattern.
+
+- `Do[x=y]` changes `x`, but `let x = y end` shadows `x`. `let` may also change a variable's value. Check the documents of `@switch` macro.
+
+- You can write non-binding in `Do`: `Do[println(1)]`, but you cannot do this in `let` patterns.
+
+
+Let Pattern
+-------------------
+
+```julia
+@match 1 begin
+    let x = 1 end => x
+end
+```
+
+Bind a variable without changing the value of existing variables, i.e., `let` patterns shadow symbols.
+
+`let` may also change a variable's value. Check the documents of `@switch` macro.
+
 Active Pattern
 ------------------
 
 This implementation is a subset of [F# Active Patterns](https://docs.microsoft.com/en-us/dotnet/fsharp/language-reference/active-patterns).
 
-There're 2 distinct active patterns, first of which is the normal form:
+There're 3 distinct active patterns, first of which is the normal form:
 
 ```julia
+# 1-ary deconstruction: return Union{Some{T}, Nothing}
 @active LessThan0(x) begin
-    if x > 0
+    if x >= 0
         nothing
     else
-        x
+        Some(x)
     end
 end
 
 @match 15 begin
-    LessThan0(_) => :a
-    _ => :b
-end # :b
+    LessThan0(a) => a
+    _ => 0
+end # 0
 
 @match -15 begin
     LessThan0(a) => a
     _ => 0
 end # -15
 
+# 0-ary deconstruction: return Bool
+@active IsLessThan0(x) begin
+    x < 0
+end
+
+@match 10 begin
+    IsLessThan0() => :a
+    _ => :b
+end # b
+
+# (n+2)-ary deconstruction: return Tuple{E1, E2, ...}
+@active SplitVecAt2(x) begin
+    (x[1:2], x[2+1:end])
+end
+
+@match [1, 2, 3, 4, 7] begin
+    SplitVecAt2(a, b) => (a, b)
+end
+# ([1, 2], [3, 4, 7])
+
 ```
 
-The second is the parametric version.
+Above 3 cases can be enhanced by becoming **parametric**:
 
 ```julia
+
+@active SplitVecAt{N::Int}(x) begin
+    (x[1:N], x[N+1:end])
+end
+
+@match [1, 2, 3, 4, 7] begin
+    SplitVecAt{2}(a, b) => (a, b)
+end
+# ([1, 2], [3, 4, 7])
+
 @active Re{r :: Regex}(x) begin
     res = match(r, x)
     if res !== nothing
         # use explicit `if-else` to emphasize the return should be Union{T, Nothing}.
-        res
+        Some(res)
     else
         nothing
     end
@@ -413,45 +466,22 @@ end
     _ => @error ""
 end # RegexMatch("123")
 
-
-@active IsEven(x) begin
-    if x % 2 === 0
-        # use explicit `if-else` to emphasize the return should be true/false.
-        true
-    else
-        false
-    end
-end
-
-@match 4 begin
-    IsEven() => :even
-    _ => :odd
-end # :even
-
-@match 3 begin
-    IsEven() => :even
-    _ => :odd
-end # :odd
 ```
 
-Note that the pattern `A{a, b, c}` is equivalent to `A{a, b, c}()`.
-
-When enabling the extension `Enum` with `@use Enum`, the pattern `A` is equivalent to `A()`:
+Sometimes the enum syntax is useful and convenient:
 
 ```julia
-@use Enum
-@match 4 begin
+@active IsEven(x) begin
+    x % 2 === 0
+end
+
+MLStyle.is_enum(::Type{IsEven}) = true
+
+@match 6 begin
     IsEven => :even
     _ => :odd
 end # :even
-
-@match 3 begin
-    IsEven => :even
-    _ => :odd
-end # :odd
 ```
-
-Finally, you can customize the visibility of your own active patterns by giving it a qualifier.
 
 Expr Pattern
 -------------------
@@ -474,18 +504,16 @@ function extract_name(e)
                                                         "    $e\n")
         end
 end
-@assert extract_name(:(quote
+@assert :f == extract_name(:(
     function f()
         1 + 1
     end
-end)) == :f
+))
 ```
 
 
 Ast Pattern
 --------------------------
-
-This might be the most important update since v0.2.
 
 ```julia
 rmlines = @λ begin
@@ -553,7 +581,7 @@ end
 
             $(block2...)
         end
-    end && if (isempty(block1) && isempty(block2)) end =>
+    end && if isempty(block1 && isempty(block2) end =>
 
          Dict(:funcname => funcname,
               :firstarg => firstarg,
@@ -563,8 +591,16 @@ end
               :app_fn         => app_fn,
               :app_arg        => app_arg)
 end
-```
 
+# Dict{Symbol,Any} with 7 entries:
+#   :app_fn         => :e
+#   :args           => Any[:b, :c]
+#   :firstarg       => :a
+#   :funcname       => :f
+#   :other_bindings => Any[:(e = (x->begin…
+#   :last_operand   => :c
+#   :app_arg        => :d
+```
 
 Here is several articles about Ast Patterns.
 

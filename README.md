@@ -9,6 +9,9 @@ MLStyle.jl
 [![Docs](https://img.shields.io/badge/docs-latest-purple.svg)](https://thautwarm.github.io/MLStyle.jl/latest/) 
 [![Join the chat at https://gitter.im/MLStyle-jl/community](https://badges.gitter.im/MLStyle-jl/community.svg)](https://gitter.im/MLStyle-jl/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
+
+This README and the documentations are so far for v0.3 and not up-to-date yet. We're actively working on this.
+
 ## Index
 - [What is MLStyle.jl](#what-is-mlstylejl)
 

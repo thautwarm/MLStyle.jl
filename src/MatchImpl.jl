@@ -106,6 +106,7 @@ function ex2tf(m::Module, w::Where)
             targns = Symbol[]
             fn = gensym("extract type params")
             testn = gensym("test type params")
+            ty_accurate = gensym("accurate type param")
             ret = Expr(:block)
             suite = ret.args
             for tp in tp_vec
@@ -114,13 +115,9 @@ function ex2tf(m::Module, w::Where)
             end
             push!(
                 suite,
-                :(function $fn(::$t) where {$(tp_vec...)}
-                    $tp_chk_ret
-                end),
-                :(function $fn(_)
-                    nothing
-                end),
-                :($testn = $fn($target)),
+                :($fn(::Type{$ty_accurate}) where {$(tp_vec...), $ty_accurate <: $t} = $tp_chk_ret),
+                :($fn(_) = nothing),
+                :($testn = $fn(typeof($target))),
                 Expr(
                     :if,
                     :($testn !== nothing),
