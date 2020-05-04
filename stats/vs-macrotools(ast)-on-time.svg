@@ -18,22 +18,22 @@
   <g class="guide xlabels" font-size="2.82" font-family="Consolas" fill="#6C606B" id="img-343c9bfe-2">
     <g transform="translate(40.15,92.97)">
       <g class="primitive">
-        <text text-anchor="middle" dy="0.6em">simple1(min: 204.079)</text>
+        <text text-anchor="middle" dy="0.6em">simple1(min: 175.428)</text>
       </g>
     </g>
     <g transform="translate(92.27,92.97)">
       <g class="primitive">
-        <text text-anchor="middle" dy="0.6em">simple2(min: 251.666)</text>
+        <text text-anchor="middle" dy="0.6em">simple2(min: 241.374)</text>
       </g>
     </g>
     <g transform="translate(144.39,92.97)">
       <g class="primitive">
-        <text text-anchor="middle" dy="0.6em">N(fields) = 5(min: 443.388)</text>
+        <text text-anchor="middle" dy="0.6em">N(fields) = 5(min: 454.481)</text>
       </g>
     </g>
     <g transform="translate(196.5,92.97)">
       <g class="primitive">
-        <text text-anchor="middle" dy="0.6em">N(fields) = 10(min: 889.894)</text>
+        <text text-anchor="middle" dy="0.6em">N(fields) = 10(min: 796.247)</text>
       </g>
     </g>
   </g>
@@ -110,28 +110,28 @@
           <g stroke-width="0.3" id="img-343c9bfe-28">
             <g class="color_MacroTools" fill-opacity="1" stroke="#FFFFFF" fill="#D4CA3A" id="img-343c9bfe-29">
               <g class="marker" id="img-343c9bfe-30">
-                <g transform="translate(196.5,44.93)" id="img-343c9bfe-31">
+                <g transform="translate(196.5,43.15)" id="img-343c9bfe-31">
                   <circle cx="0" cy="0" r="1.59" class="primitive"/>
                 </g>
               </g>
             </g>
             <g class="color_MacroTools" fill-opacity="1" stroke="#FFFFFF" fill="#D4CA3A" id="img-343c9bfe-32">
               <g class="marker" id="img-343c9bfe-33">
-                <g transform="translate(144.39,33.38)" id="img-343c9bfe-34">
+                <g transform="translate(144.39,33.34)" id="img-343c9bfe-34">
                   <circle cx="0" cy="0" r="1.59" class="primitive"/>
                 </g>
               </g>
             </g>
             <g class="color_MacroTools" fill-opacity="1" stroke="#FFFFFF" fill="#D4CA3A" id="img-343c9bfe-35">
               <g class="marker" id="img-343c9bfe-36">
-                <g transform="translate(92.27,23.29)" id="img-343c9bfe-37">
+                <g transform="translate(92.27,22.78)" id="img-343c9bfe-37">
                   <circle cx="0" cy="0" r="1.59" class="primitive"/>
                 </g>
               </g>
             </g>
             <g class="color_MacroTools" fill-opacity="1" stroke="#FFFFFF" fill="#D4CA3A" id="img-343c9bfe-38">
               <g class="marker" id="img-343c9bfe-39">
-                <g transform="translate(40.15,17.72)" id="img-343c9bfe-40">
+                <g transform="translate(40.15,17.04)" id="img-343c9bfe-40">
                   <circle cx="0" cy="0" r="1.59" class="primitive"/>
                 </g>
               </g>

@@ -27,10 +27,10 @@ getindex(asoc_lst :: Vector{Pair{Symbol, T}}, key ::Symbol) where T =
 
 
 data = [
-    Symbol("ok_case1") => [42, 42, 3, 3, 5, 10],
-    Symbol("ok_case2") => [1, 2, 3, 42, 42, 42],
+    Symbol("ok_case1") => [42, 42, 3, 3, 3, 10, 1, -2, 5, 10],
+    Symbol("ok_case2") => [1, 2, 3, 42, 42, 42, 22, 22, 22, 22, 22],
     Symbol("ok_case3") => [42, 42, 1, 42, 2, 3, 11],
-    Symbol("early_fail") => [42, 42, 3, 3, 3, 10],
+    Symbol("early_fail") => [42, 42, -3, -3, -8, 18, -21, 1, 10],
     Symbol("late_fail1") => [42, 42, 3, 3, 5, 42],
     Symbol("late_fail2") => [1, 2, 42],
     Symbol("late_fail3") => [42, 42, 1, 42, 2, 3, -42]
@@ -63,7 +63,7 @@ implementations = [
     :HandWritten => function(vec)
         !(vec isa Vector)  ? 4 :
         let n = length(vec)
-            if n > 1 && vec[end] === 10 && sum(vec[3:end-1]) > 10
+            if n > 3 && vec[end] === 10 && sum(vec[3:end-1]) > 10
                 1
             elseif n > 3 && vec[1] === 1 && vec[2] === 2 && vec[3] === 3
                 2
@@ -90,14 +90,12 @@ theme = Theme(
     major_label_font = "Consolas",
     point_size=5px
 )
-report_meantime, df_time = report(:meantime, df, Scale.y_log10, theme)
-report_allocs, df_allocs = report(:allocs, df, theme)
+report_meantime, df_time = report(df, Scale.y_log2, theme; benchfield=:meantime, baseline=:MLStyle)
 
 open("stats/vs-hw(array).txt", "w") do f
     write(f, string(df))
 end
 
 draw(SVG("stats/vs-hw(array)-on-time.svg", 10inch, 4inch), report_meantime);
-draw(SVG("stats/vs-hw(array)-on-allocs.svg", 10inch, 4inch), report_allocs);
 
 end

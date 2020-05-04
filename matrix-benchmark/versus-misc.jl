@@ -120,14 +120,10 @@ theme = Theme(
     major_label_font = "Consolas",
     point_size=5px
 )
-report_meantime, df_time = report(:meantime, df, Scale.y_log10, theme)
-report_allocs, df_allocs = report(:allocs, df, theme)
-
-open("stats/vs-hw(tuple).txt", "w") do f
+report_meantime, df_time = report(df,  Scale.y_log2, theme; benchfield=:meantime, baseline=:MLStyle)
+open("stats/vs-hw(misc).txt", "w") do f
     write(f, string(df))
 end
-
 draw(SVG("stats/vs-hw(misc)-on-time.svg", 10inch, 4inch), report_meantime);
-draw(SVG("stats/vs-hw(misc)-on-allocs.svg", 10inch, 4inch), report_allocs);
 
 end

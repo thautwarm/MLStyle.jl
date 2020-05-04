@@ -5,6 +5,7 @@ using MLStyle.AbstractPattern.RedyFlavoured
 export P_bind, P_tuple, P_type_of, P_vector, P_capture, P_vector3, P_slow_view, P_fast_view
 export P_svec, P_svec3
 export SimpleCachablePre, see_captured_vars
+
 @nospecialize
 OptionalLn = Union{LineNumberNode,Nothing}
 
@@ -22,7 +23,7 @@ end
 (f::SimpleCachablePre)(target) = f.f(target)
 
 function sequence_index(viewed, i::Integer, ::Any, ::Any)
-    :($viewed[$i])
+    :($Base.@inbounds $viewed[$i])
 end
 
 function self_index(viewed, i::Integer, ::Any, ::Any)
@@ -100,7 +101,7 @@ function P_tuple(fields::AbstractArray, prepr::AbstractString="Tuple")
 end
 
 function type_of_vector(types...)
-    AbstractArray{T, 1} where T
+    AbstractVector
     # if length(types) == 0
     #     AbstractArray{Any,1}
     # else
@@ -155,14 +156,19 @@ function P_vector3(init::AbstractArray, pack::Function, tail::AbstractArray, pre
     #     }
     # end
     function extract(arr, i::Int, ::Any, ::Any)
-        if i <= n1
-            :($arr[$i])
+        ex = if i <= n1
+            :($Base.@inbounds $arr[$i])
         elseif i === n1 + 1
-            :(view($arr, $n1+1:length($arr)-$n2))
+            n2 === 0 ?
+            :(view($arr, $(n1+1):length($arr))) :
+            :(view($arr, $(n1+1):length($arr)-$n2))
         else
             incr = i - n1 - 1
-            :($arr[end-$(n2-incr)])
+            j = n2 - incr
+            ex = j == 0 ? :($arr[end]) : :($arr[end-$j])
+            :($Base.@inbounds $ex)
         end
+       
     end
     function pred(target)
         :(length($target) >= $min_len)
@@ -185,10 +191,13 @@ function P_svec3(init::AbstractArray, pack::Function, tail::AbstractArray, prepr
         if i <= n1
             :($arr[$i])
         elseif i === n1 + 1
-            :($arr[$n1+1:end-$n2])
+            n2 === 0 ?
+                :($arr[$(n1+1):end]) :
+                :($arr[$(n1+1):end-$n2])
         else
             incr = i - n1 - 1
-            :($arr[end-$(n2-incr)])
+            j = n2 - incr
+            j == 0 ? :($arr[end]) : :($arr[end-$j])
         end
     end
     function pred(target)

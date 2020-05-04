@@ -2,11 +2,11 @@
 │ Row │ implementation │ case           │ allocs  │ meantime │
 │     │ Symbol         │ Symbol         │ Float64 │ Float64  │
 ├─────┼────────────────┼────────────────┼─────────┼──────────┤
-│ 1   │ MLStyle        │ simple1        │ 3.0     │ 204.079  │
-│ 2   │ MLStyle        │ simple2        │ 3.0     │ 251.666  │
-│ 3   │ MLStyle        │ N(fields) = 5  │ 4.33333 │ 443.388  │
-│ 4   │ MLStyle        │ N(fields) = 10 │ 6.33333 │ 889.894  │
-│ 5   │ MacroTools     │ simple1        │ 39.0    │ 11259.1  │
-│ 6   │ MacroTools     │ simple2        │ 39.0    │ 10189.3  │
-│ 7   │ MacroTools     │ N(fields) = 5  │ 40.0    │ 10252.8  │
-│ 8   │ MacroTools     │ N(fields) = 10 │ 41.0    │ 10838.5  │
+│ 1   │ MLStyle        │ simple1        │ 3.0     │ 175.428  │
+│ 2   │ MLStyle        │ simple2        │ 3.0     │ 241.374  │
+│ 3   │ MLStyle        │ N(fields) = 5  │ 4.33333 │ 454.481  │
+│ 4   │ MLStyle        │ N(fields) = 10 │ 6.33333 │ 796.247  │
+│ 5   │ MacroTools     │ simple1        │ 39.0    │ 10046.0  │
+│ 6   │ MacroTools     │ simple2        │ 39.0    │ 10051.9  │
+│ 7   │ MacroTools     │ N(fields) = 5  │ 40.0    │ 10536.2  │
+│ 8   │ MacroTools     │ N(fields) = 10 │ 41.0    │ 10708.9  │

@@ -4,7 +4,7 @@
 using MLStyle
 using ArgParse
 
-versus_items = ("hw-tuple", "hw-array", "macrotools", "match", "match-datatype")
+versus_items = ("misc", "hw-tuple", "hw-array", "macrotools", "match", "match-datatype")
 
 function parse_cmd()
     s = ArgParseSettings()

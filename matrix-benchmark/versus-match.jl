@@ -117,14 +117,12 @@ theme = Theme(
     major_label_font = "Consolas",
     point_size=6px
 )
-report_meantime, df_time = report(:meantime, df, Scale.y_log10, theme)
-report_allocs, df_allocs = report(:allocs, df, theme)
+report_meantime, df_time = report(df, Scale.y_log10, theme; benchfield=:meantime, baseline=Symbol(:MLStyle, " AST-pattern"))
 
 open("stats/vs-match(expr).txt", "w") do f
     write(f, string(df))
 end
 
 draw(SVG("stats/vs-match(expr)-on-time.svg", 10inch, 4inch), report_meantime);
-draw(SVG("stats/vs-match(expr)-on-allocs.svg", 10inch, 4inch), report_allocs);
 
 end
