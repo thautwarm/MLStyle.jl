@@ -44,7 +44,8 @@ function substitute(template::Exp{T}, pair::Tuple{Symbol,Exp{G}}) where {T,G<:T}
     end
 end
 
-function eval_exp(exp::Exp{T}, ctx::Dict{Symbol,Any}) where {T}
+function eval_exp(exp::Exp{T_}, ctx::Dict{Symbol,Any}) where {T_}
+    let T = T_ # fix static parameter issues for Julia 1.0 and 1.1
     @match exp begin
         Sym(a) => (ctx[a]::T, ctx)
         Val(a::T) => (a, ctx)
@@ -62,6 +63,7 @@ function eval_exp(exp::Exp{T}, ctx::Dict{Symbol,Any}) where {T}
             eval_exp(cond ? exp1 : exp2, ctx)
         end
         _ => error(exp)
+    end
     end
 end
 

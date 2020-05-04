@@ -565,7 +565,7 @@ function compile_spec(target::Any, case::AbstractCase, ln::Union{LineNumberNode,
         terminal_scope′[br] = adjusted_move
     end
 
-    if !isnothing(ln)
+    if ln !== nothing
         # TODO: better trace
         msg = "matching non-exhaustive, at $ln"
         push!(suite, :(error($msg)))
