@@ -1,25 +1,32 @@
-21×4 DataFrames.DataFrame
+28×4 DataFrames.DataFrame
 │ Row │ implementation │ case       │ allocs  │ meantime │
 │     │ Symbol         │ Symbol     │ Float64 │ Float64  │
 ├─────┼────────────────┼────────────┼─────────┼──────────┤
-│ 1   │ MLStyle        │ ok_case1   │ 1.0     │ 1.0      │
-│ 2   │ MLStyle        │ ok_case2   │ 1.5     │ 1.88181  │
-│ 3   │ MLStyle        │ ok_case3   │ 1.5     │ 1.77922  │
-│ 4   │ MLStyle        │ early_fail │ 1.0     │ 1.0      │
-│ 5   │ MLStyle        │ late_fail1 │ 1.5     │ 1.55622  │
-│ 6   │ MLStyle        │ late_fail2 │ 1.5     │ 1.55326  │
-│ 7   │ MLStyle        │ late_fail3 │ 1.5     │ 1.41006  │
-│ 8   │ Match.jl       │ ok_case1   │ 1.0     │ 1.07094  │
-│ 9   │ Match.jl       │ ok_case2   │ 1.0     │ 1.09067  │
-│ 10  │ Match.jl       │ ok_case3   │ 1.0     │ 1.06955  │
-│ 11  │ Match.jl       │ early_fail │ 1.0     │ 1.08552  │
-│ 12  │ Match.jl       │ late_fail1 │ 1.0     │ 1.17133  │
-│ 13  │ Match.jl       │ late_fail2 │ 1.0     │ 1.05024  │
-│ 14  │ Match.jl       │ late_fail3 │ 1.0     │ 1.06372  │
-│ 15  │ HandWritten    │ ok_case1   │ 1.0     │ 1.99983  │
-│ 16  │ HandWritten    │ ok_case2   │ 1.0     │ 1.0      │
-│ 17  │ HandWritten    │ ok_case3   │ 1.0     │ 1.0      │
-│ 18  │ HandWritten    │ early_fail │ 1.0     │ 2.04628  │
-│ 19  │ HandWritten    │ late_fail1 │ 1.0     │ 1.0      │
-│ 20  │ HandWritten    │ late_fail2 │ 1.0     │ 1.0      │
-│ 21  │ HandWritten    │ late_fail3 │ 1.0     │ 1.0      │
+│ 1   │ MLStyle        │ ok_case1   │ 1.5     │ 13.263   │
+│ 2   │ MLStyle        │ ok_case2   │ 1.5     │ 17.183   │
+│ 3   │ MLStyle        │ ok_case3   │ 1.5     │ 14.6345  │
+│ 4   │ MLStyle        │ early_fail │ 1.5     │ 14.3725  │
+│ 5   │ MLStyle        │ late_fail1 │ 1.5     │ 14.4195  │
+│ 6   │ MLStyle        │ late_fail2 │ 1.5     │ 12.3753  │
+│ 7   │ MLStyle        │ late_fail3 │ 1.5     │ 14.3192  │
+│ 8   │ Rematch        │ ok_case1   │ 1.5     │ 30.6061  │
+│ 9   │ Rematch        │ ok_case2   │ 2.0     │ 61.1194  │
+│ 10  │ Rematch        │ ok_case3   │ 1.5     │ 30.7854  │
+│ 11  │ Rematch        │ early_fail │ 1.5     │ 37.071   │
+│ 12  │ Rematch        │ late_fail1 │ 1.5     │ 32.3252  │
+│ 13  │ Rematch        │ late_fail2 │ 1.5     │ 22.8837  │
+│ 14  │ Rematch        │ late_fail3 │ 1.5     │ 30.364   │
+│ 15  │ Match.jl       │ ok_case1   │ 1.5     │ 12.7644  │
+│ 16  │ Match.jl       │ ok_case2   │ 1.0     │ 6.10646  │
+│ 17  │ Match.jl       │ ok_case3   │ 1.0     │ 5.4858   │
+│ 18  │ Match.jl       │ early_fail │ 1.5     │ 15.9453  │
+│ 19  │ Match.jl       │ late_fail1 │ 1.0     │ 5.13843  │
+│ 20  │ Match.jl       │ late_fail2 │ 1.0     │ 5.76571  │
+│ 21  │ Match.jl       │ late_fail3 │ 1.0     │ 5.34819  │
+│ 22  │ HandWritten    │ ok_case1   │ 1.5     │ 30.2276  │
+│ 23  │ HandWritten    │ ok_case2   │ 1.0     │ 6.04322  │
+│ 24  │ HandWritten    │ ok_case3   │ 1.0     │ 5.71342  │
+│ 25  │ HandWritten    │ early_fail │ 1.5     │ 30.1574  │
+│ 26  │ HandWritten    │ late_fail1 │ 1.0     │ 5.81919  │
+│ 27  │ HandWritten    │ late_fail2 │ 1.0     │ 4.54055  │
+│ 28  │ HandWritten    │ late_fail3 │ 1.0     │ 5.47196  │

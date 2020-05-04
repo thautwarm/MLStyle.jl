@@ -45,7 +45,7 @@ implementations = [
         _ -> 4
     end),
     :Rematch => function (x)
-        Rematch.@match begin
+        Rematch.@match x begin
             [_, _, frag..., 10] where sum(frag) > 10  => 1
             [1, 2, 3, _...]  => 2
             [_, _, 1, _, 2, 3, z] where z > 10 => 3

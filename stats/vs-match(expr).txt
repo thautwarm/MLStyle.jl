@@ -2,21 +2,21 @@
 │ Row │ implementation       │ case        │ allocs  │ meantime │
 │     │ Symbol               │ Symbol      │ Float64 │ Float64  │
 ├─────┼──────────────────────┼─────────────┼─────────┼──────────┤
-│ 1   │ MLStyle Expr-pattern │ node_fn1    │ 1.0     │ 1.0      │
-│ 2   │ MLStyle Expr-pattern │ node_fn2    │ 1.0     │ 1.0      │
-│ 3   │ MLStyle Expr-pattern │ node_chain  │ 1.0     │ 1.0      │
-│ 4   │ MLStyle Expr-pattern │ node_struct │ 1.0     │ 1.0      │
-│ 5   │ MLStyle Expr-pattern │ node_const  │ 1.0     │ 1.53479  │
-│ 6   │ MLStyle Expr-pattern │ node_assign │ 1.0     │ 1.02191  │
-│ 7   │ MLStyle AST-pattern  │ node_fn1    │ 1.66667 │ 3.60699  │
-│ 8   │ MLStyle AST-pattern  │ node_fn2    │ 1.66667 │ 3.59491  │
-│ 9   │ MLStyle AST-pattern  │ node_chain  │ 1.33333 │ 3.89558  │
-│ 10  │ MLStyle AST-pattern  │ node_struct │ 1.66667 │ 3.28323  │
-│ 11  │ MLStyle AST-pattern  │ node_const  │ 1.33333 │ 1.0      │
-│ 12  │ MLStyle AST-pattern  │ node_assign │ 1.0     │ 1.0      │
-│ 13  │ Match.jl             │ node_fn1    │ 3.66667 │ 34.3644  │
-│ 14  │ Match.jl             │ node_fn2    │ 3.66667 │ 34.8068  │
-│ 15  │ Match.jl             │ node_chain  │ 3.33333 │ 35.1264  │
-│ 16  │ Match.jl             │ node_struct │ 2.0     │ 16.8142  │
-│ 17  │ Match.jl             │ node_const  │ 5.33333 │ 81.7946  │
-│ 18  │ Match.jl             │ node_assign │ 3.33333 │ 51.3192  │
+│ 1   │ MLStyle Expr-pattern │ node_fn1    │ 1.0     │ 12.6186  │
+│ 2   │ MLStyle Expr-pattern │ node_fn2    │ 1.0     │ 14.4265  │
+│ 3   │ MLStyle Expr-pattern │ node_chain  │ 1.0     │ 14.1731  │
+│ 4   │ MLStyle Expr-pattern │ node_struct │ 1.0     │ 15.6587  │
+│ 5   │ MLStyle Expr-pattern │ node_const  │ 1.0     │ 15.4795  │
+│ 6   │ MLStyle Expr-pattern │ node_assign │ 1.0     │ 8.55871  │
+│ 7   │ MLStyle AST-pattern  │ node_fn1    │ 1.0     │ 12.2142  │
+│ 8   │ MLStyle AST-pattern  │ node_fn2    │ 1.0     │ 9.15417  │
+│ 9   │ MLStyle AST-pattern  │ node_chain  │ 1.0     │ 16.9771  │
+│ 10  │ MLStyle AST-pattern  │ node_struct │ 1.0     │ 9.3868   │
+│ 11  │ MLStyle AST-pattern  │ node_const  │ 1.0     │ 9.40064  │
+│ 12  │ MLStyle AST-pattern  │ node_assign │ 1.0     │ 9.58637  │
+│ 13  │ Match.jl             │ node_fn1    │ 3.66667 │ 652.136  │
+│ 14  │ Match.jl             │ node_fn2    │ 3.66667 │ 678.601  │
+│ 15  │ Match.jl             │ node_chain  │ 3.33333 │ 660.446  │
+│ 16  │ Match.jl             │ node_struct │ 2.0     │ 270.594  │
+│ 17  │ Match.jl             │ node_const  │ 5.33333 │ 1057.58  │
+│ 18  │ Match.jl             │ node_assign │ 3.33333 │ 581.11   │

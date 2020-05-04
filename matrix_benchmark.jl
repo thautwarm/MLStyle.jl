@@ -29,7 +29,7 @@ end
 
 action = @λ begin
     [] -> nothing
-    [function check_versus end && hd, tl...] ->
+    [GuardBy(check_versus) && hd, tl...] ->
         begin
             benchmark(hd)
             action(tl)
