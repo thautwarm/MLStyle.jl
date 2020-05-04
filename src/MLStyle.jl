@@ -5,6 +5,7 @@ using .Err
 # ================deprecated===============
 include("Extension.jl")
 include("Qualification.jl")
+include("Render.jl")
 # =========================================
 
 include("AbstractPatterns/AbstractPattern.jl")
@@ -47,5 +48,8 @@ using .WhenCases
 
 using .Extension
 @reexport Extension
+
+include("Modules/Modules.jl")
+export Modules
 
 end # module

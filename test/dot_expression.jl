@@ -8,7 +8,7 @@ macro linq(expr)
     @match expr begin
         :($subject.$method($(args...))) =>
             let method = getfield(Linq, method)
-                quote $method($subject, $(args...)) end
+                :($method($subject, $(args...)))
             end
         _ => @error "invalid"
     end

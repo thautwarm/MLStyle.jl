@@ -27,10 +27,10 @@ macro testcase(name, ex)
     lifted = []
     lift!(ex, lifted)
     m = gensym(name)
-    println(Expr(:block, lifted...))
     __module__.eval(:(module $m
     using MLStyle
     using Test
+    $(Symbol("@test_macro_throws")) = $(getfield(TestModule, Symbol("@test_macro_throws")))
     $(lifted...)
     @testset $name $ex
     end))
@@ -50,6 +50,9 @@ end
 MODULE = TestModule
 
 @use GADT
+
+include("when.jl")
+include("untyped_lam.jl")
 include("active_patterns.jl")
 include("uncomp.jl")
 include("lambda.jl")
@@ -64,14 +67,11 @@ include("dot_expression.jl")
 include("modules/cond.jl")
 include("modules/ast.jl")
 
-include("render.jl")
 include("pervasive.jl")
 include("match.jl")
 include("pattern.jl")
 include("typelevel.jl")
-include("untyped_lam.jl")
 include("nothing.jl")
 
-include("when.jl")
 include("MQuery/test.jl")
 end

@@ -44,7 +44,14 @@ function record_def(Struct, line::LineNumberNode, ::Module)
             end
             @label endswitch
             n_args = length(args)
-            if length(all_field_names) === n_args
+            if all(Meta.isexpr(arg, :kw) for arg in args)
+                for arg in args
+                    field_name = arg.args[1]
+                    field_name in all_field_names || error("$t has no field $field_name.")
+                    push!(partial_field_names, field_name)
+                    push!(patterns, self(arg.args[2]))
+                end
+            elseif length(all_field_names) === n_args
                 append!(patterns, map(self, args))
                 append!(partial_field_names, all_field_names)
             elseif n_args === 1 && args[1] === :_

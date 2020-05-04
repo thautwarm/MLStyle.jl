@@ -1,4 +1,4 @@
-@testset "Int" begin
+@testcase "Int" begin
     @testset "affirm: 1-10" begin
     @test all(1:10) do a
         @match a begin
@@ -124,8 +124,8 @@ end
 end
 
 
-@testset "Recognizer(AppPattern)" begin
-    @data internal TestRecog begin
+@testcase "Recognizer(AppPattern)" begin
+    @lift @data internal TestRecog begin
         TestRecog_A(Int, Int)
         TestRecog_B(a :: Float64, b :: String)
     end
@@ -173,11 +173,12 @@ end
 
 end
 
-struct TestGH end
 
-@testset "Generalized Recognizer(GAppPattern)" begin
+
+@testcase "Generalized Recognizer(GAppPattern)" begin
     @use GADT
-    @data internal TestGRecog{T} begin
+    @lift struct TestGH end
+    @lift @data internal TestGRecog{T} begin
         TestGRecog_A{T, A} :: (A, T) => TestGRecog{T}
         TestGRecog_B{T, B} :: (a :: T, b :: B) => TestGRecog{T}
     end
@@ -245,9 +246,7 @@ struct TestGH end
 
 end
 
-module TestUppercaseCapturing
-    using Test
-    using MLStyle
+@testcase "TestUppercaseCapturing" begin
     @testset "UppercaseCapturing" begin
         @use UppercaseCapturing
 

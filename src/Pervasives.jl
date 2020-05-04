@@ -11,7 +11,8 @@ function MLStyle.pattern_uncall(::typeof(:), self::Function, tparams::AbstractAr
     isempty(tparams) || error("A (:) pattern requires no type params.")
     isempty(targs) || error("A (:) pattern requires no type arguments.")
     guard() do target, scope, _
-        Expr(:call, :, args...)
+        rng = Expr(:call, :, args...)
+        see_captured_vars(:($target in $rng), scope)
     end
 end
 
@@ -74,7 +75,7 @@ function MLStyle.pattern_unref(::Type{Do}, self::Function, args::AbstractArray)
                     sym′ = gensym(sym)
                     bound = false
                 end
-                assignment = see_captured_vars(:($sym′ = $value), scope)
+                assignment = Expr(:(=), sym′ , see_captured_vars(value, scope))
                 push!(ret.args, assignment)
                 if !bound
                     scope[sym] = sym′
@@ -92,7 +93,6 @@ end
 function MLStyle.pattern_uncall(::Type{Do}, self::Function, tparams::AbstractArray, targs::AbstractArray, args::AbstractArray)
     isempty(tparams) || error("A (:) pattern requires no type params.")
     isempty(targs) || error("A (:) pattern requires no type arguments.")
-    Base.depwarn("Do(pat) is deprecated, use Do[pat].", :Many)
     MLStyle.pattern_unref(Do, self, args)
 end
 
@@ -139,7 +139,6 @@ end
 function MLStyle.pattern_uncall(::Type{Many}, self::Function, tparams::AbstractArray, targs::AbstractArray, args::AbstractArray)
     isempty(tparams) || error("A (:) pattern requires no type params.")
     isempty(targs) || error("A (:) pattern requires no type arguments.")
-    Base.depwarn("Many(pat) is deprecated, use Many[pat].", :Many)
     MLStyle.pattern_unref(Many, self, args)
 end
 

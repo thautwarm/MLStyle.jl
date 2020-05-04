@@ -10,7 +10,7 @@ using MLStyle.AbstractPattern.BasicPatterns
 [a, b..., c] -> :vec3 => [a], b, [c]
 [a, b, c]    -> :vec => [a, b, c]
 """
-function ellipsis_split(args::AbstractArray{T, 1}) where T
+function ellipsis_split(args::AbstractArray{T,1}) where {T}
     ellipsis_index = findfirst(args) do arg
         Meta.isexpr(arg, :...)
     end
@@ -20,15 +20,20 @@ function ellipsis_split(args::AbstractArray{T, 1}) where T
         Val(:vec3) => (
             args[1:ellipsis_index-1],
             args[ellipsis_index].args[1],
-            args[ellipsis_index+1:end]
+            args[ellipsis_index+1:end],
         )
     end
 end
 
-Base.@pure function qt2ex(ex::Any)
+function qt2ex(ex::Any)
     if ex isa Expr
         Meta.isexpr(ex, :$) && return ex.args[1]
-        Expr(:call, Expr, QuoteNode(ex.head), Expr(:vect, (qt2ex(e) for e in ex.args if !(e isa LineNumberNode))...))
+        Expr(
+            :call,
+            Expr,
+            QuoteNode(ex.head),
+            Expr(:vect, (qt2ex(e) for e in ex.args if !(e isa LineNumberNode))...),
+        )
     elseif ex isa Symbol
         QuoteNode(ex)
     else
@@ -39,13 +44,11 @@ end
 
 const backend = MK(RedyFlavoured)
 
-function P_partial_struct_decons(t, partial_fields, ps, prepr::AbstractString="$t")
+function P_partial_struct_decons(t, partial_fields, ps, prepr::AbstractString = "$t")
     function tcons(_...)
         t
     end
-    comp = PComp(
-        prepr, tcons;
-    )
+    comp = PComp(prepr, tcons;)
     function extract(sub, i::Int, ::Any, ::Any)
         :($sub.$(partial_fields[i]))
     end
@@ -57,12 +60,13 @@ basic_ex2tf(eval::Function, a) =
 basic_ex2tf(eval::Function, l::LineNumberNode) = wildcard
 basic_ex2tf(eval::Function, q::QuoteNode) = literal(q.value)
 basic_ex2tf(eval::Function, s::String) = literal(s)
-basic_ex2tf(eval::Function, n::Symbol) =
-    n === :_ ?  wildcard : P_capture(n)
+basic_ex2tf(eval::Function, n::Symbol) = n === :_ ? wildcard : P_capture(n)
 
 function basic_ex2tf(eval::Function, ex::Expr)
     !(x) = basic_ex2tf(eval, x)
-    hd = ex.head; args = ex.args; n_args = length(args)
+    hd = ex.head
+    args = ex.args
+    n_args = length(args)
     if hd === :||
         @assert n_args === 2
         l, r = args
@@ -90,10 +94,12 @@ function basic_ex2tf(eval::Function, ex::Expr)
         @assert bind isa Expr
         if bind.head === :(=)
             @assert bind.args[1] isa Symbol
-            P_bind(bind.args[1], bind.args[2], see_capture=true)
+            P_bind(bind.args[1], bind.args[2], see_capture = true)
         else
             @assert bind.head === :block
-            binds = Function[P_bind(arg.args[1], arg.args[2], see_capture=true) for arg in bind.args]
+            binds = Function[
+                P_bind(arg.args[1], arg.args[2], see_capture = true) for arg in bind.args
+            ]
             push!(binds, wildcard)
             and(binds)
         end
@@ -110,33 +116,22 @@ function basic_ex2tf(eval::Function, ex::Expr)
         end
     elseif hd === :vect
         tag, split = ellipsis_split(args)
-        return tag isa Val{:vec} ?
-            P_vector([!e for e in split]) :
-            let (init, mid, tail) = split
-                P_vector3(
-                    [!e for e in init],
-                    !mid,
-                    [!e for e in tail]
-                )
-            end
+        return tag isa Val{:vec} ? P_vector([!e for e in split]) :
+               let (init, mid, tail) = split
+            P_vector3([!e for e in init], !mid, [!e for e in tail])
+        end
     elseif hd === :tuple
         P_tuple([!e for e in args])
     elseif hd === :call
-        let f = args[1],
-            args′ = view(args, 2:length(args))
+        let f = args[1], args′ = view(args, 2:length(args))
             n_args′ = n_args - 1
             t = eval(f)
             if t === Core.svec
-                tag, split = ellipsis_split(args′ )
-                return tag isa Val{:vec} ?
-                    P_svec([!e for e in split]) :
-                    let (init, mid, tail) = split
-                        P_svec3(
-                            [!e for e in init],
-                            !mid,
-                            [!e for e in tail]
-                        )
-                    end
+                tag, split = ellipsis_split(args′)
+                return tag isa Val{:vec} ? P_svec([!e for e in split]) :
+                       let (init, mid, tail) = split
+                    P_svec3([!e for e in init], !mid, [!e for e in tail])
+                end
             end
             all_field_ns = fieldnames(t)
             partial_ns = Symbol[]
@@ -155,12 +150,14 @@ function basic_ex2tf(eval::Function, ex::Expr)
             end
             for e in kwargs
                 if e isa Symbol
-                    e in all_field_ns || error("unknown field name $e for $t when field punnning.")
+                    e in all_field_ns ||
+                        error("unknown field name $e for $t when field punnning.")
                     push!(partial_ns, e)
                     push!(patterns, P_capture(e))
                 elseif Meta.isexpr(e, :kw)
                     key, value = e.args
-                    key in all_field_ns || error("unknown field name $key for $t when field punnning.")
+                    key in all_field_ns ||
+                        error("unknown field name $key for $t when field punnning.")
                     @assert key isa Symbol
                     push!(partial_ns, key)
                     push!(patterns, and(P_capture(key), !value))
@@ -181,20 +178,19 @@ this is incomplete and only for bootstrapping, do not use it.
 """
 macro sswitch(val, ex)
     @assert Meta.isexpr(ex, :block)
-    clauses = Union{LineNumberNode, Pair{<:Function, Symbol}}[]
+    clauses = Union{LineNumberNode,Pair{<:Function,Symbol}}[]
     body = Expr(:block)
     alphabeta = 'a':'z'
-    base = gensym()
     k = 0
-    ln =  __source__
-    variable_init_blocks = Dict{Symbol, Expr}()
+    ln = __source__
+    variable_init_blocks = Dict{Symbol,Expr}()
     for i in eachindex(ex.args)
         stmt = ex.args[i]
         if Meta.isexpr(stmt, :macrocall) &&
            stmt.args[1] === case_sym &&
            length(stmt.args) == 3
-           
-           push!(clauses, ln)
+
+            push!(clauses, ln)
             k += 1
             pattern = try
                 basic_ex2tf(__module__.eval, stmt.args[3])
@@ -202,9 +198,9 @@ macro sswitch(val, ex)
                 e isa ErrorException && throw(PatternCompilationError(ln, e.msg))
                 rethrow()
             end
-            br :: Symbol = Symbol(alphabeta[k % 26], k <= 26 ? "" : string(i), base)
-            push!(clauses,  pattern => br)
-            push!(body.args, :(@label $br))
+            br::Symbol = Symbol(string(alphabeta[k%26]), k)
+            push!(clauses, pattern => br)
+            push!(body.args, CFGLabel(br))
             variable_init_block = Expr(:block)
             push!(body.args, variable_init_block)
             variable_init_blocks[br] = variable_init_block
@@ -215,7 +211,7 @@ macro sswitch(val, ex)
             push!(body.args, stmt)
         end
     end
-    
+
     terminal_scope, match_logic = backend(val, clauses, __source__)
     for (br, branches_terminal_scope) in terminal_scope
         variable_init = variable_init_blocks[br].args
@@ -223,16 +219,9 @@ macro sswitch(val, ex)
             push!(variable_init, :($actual_sym = $mangled_sym))
         end
     end
-    ret =
-        Expr(
-            :let,
-            Expr(:block),
-            Expr(
-                :block,
-                match_logic,
-                body
-            )
-        )
+    ret = Expr(:let, Expr(:block), Expr(:block, match_logic, body))
+    ret = CFGSpec(ret)
+    ret = init_cfg(ret)
     esc(ret)
 end
 

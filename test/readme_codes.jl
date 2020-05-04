@@ -1,6 +1,5 @@
 rmlines = @λ begin
-    e :: Expr           -> Expr(e.head, filter(x -> x !== nothing, map(rmlines, e.args))...)
-      :: LineNumberNode -> nothing
+    e :: Expr           -> Expr(e.head, map(rmlines, filter(x -> !(x isa LineNumberNode), e.args))...)
     a                   -> a
 end
 expr = quote
@@ -10,7 +9,7 @@ expr = quote
     end
 end |> rmlines
 
-@match expr begin
+@test @match expr begin
     quote
         struct $name{$tvar}
             $f1 :: $t1

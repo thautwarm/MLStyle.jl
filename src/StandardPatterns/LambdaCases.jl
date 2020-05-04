@@ -1,6 +1,7 @@
 module LambdaCases
 using MLStyle
 using MLStyle.Sugars
+using MLStyle.AbstractPattern: init_cfg
 
 export gen_lambda, @λ
 
@@ -42,7 +43,7 @@ function gen_lambda(cases, source :: LineNumberNode, mod :: Module)
     @label AA
     Expr(:function,
         Expr(:call, TARGET, TARGET), 
-        Expr(:block, source, match_expr)
+        Expr(:block, source, init_cfg(match_expr))
     )
 end
 

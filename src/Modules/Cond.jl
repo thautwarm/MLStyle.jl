@@ -4,28 +4,27 @@ using MLStyle
 export @cond
 
 function cond(cases, source, mod::Module)
-    @match cases begin
-        quote
-        $(cases...)
-        end =>
-        let default = Expr(:call, throw, "None of the branches have satisfied conditions, at $(string(source)).")
-            foldr(cases, init = default) do case, last
-                last_lnode = source
-                @match case begin
-                    ::LineNumberNode => begin
-                        last_lnode = case
-                        Expr(:block, case, last)
-                    end
-                    :(_ => $b) => b
-                    :($a => $b) => Expr(:if, a, b, last)
-                    _ => throw("Invalid syntax for conditional branches at $last_lnode.")
-                end
+    @switch cases begin
+    @case Expr(:block, cases...)
+        default = Expr(:call, throw, "None of the branches have satisfied conditions, at $(string(source)).")
+        last_lnode = source
+        folded = foldr(cases, init=default) do case, last
+            @switch case begin
+                @case ::LineNumberNode
+                    last_lnode = case
+                    return last
+                @case  :(_ => $b)
+                    return b
+                @case :($a => $b)
+                    return Expr(:if, a, b, Expr(:block, last_lnode, last))
+                @case _
+                    throw("Invalid syntax for conditional branches at $last_lnode.")
             end
         end
-        _ => begin
-            msg = "Malformed ast template, the second arg should be a block with a series of pairs(`a => b`), at $(string(source))."
-            throw(SyntaxError(msg))
-        end
+        return Expr(:block, source, folded)
+    @case _
+        msg = "Malformed ast template, the second arg should be a block with a series of pairs(`a => b`), at $(string(source))."
+        throw(SyntaxError(msg))
     end
 end
 

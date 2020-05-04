@@ -1,7 +1,7 @@
 module AbstractPattern
 export spec_gen, runterm, MK, RedyFlavoured, TypeObject
 export and, or, literal, and, wildcard, decons,
-       guard, effect, self
+       guard, effect
 export PatternCompilationError, Target, PatternImpl, PComp
 export APP, NoncachablePre, NoPre
 export ChainDict, for_chaindict, child, for_chaindict_dup
@@ -9,6 +9,44 @@ export BasicPatterns
 export P_bind, P_tuple, P_type_of, P_vector, P_capture, P_vector3, P_slow_view, P_fast_view
 export P_svec, P_svec3
 export SimpleCachablePre, see_captured_vars
+export CFGSpec, CFGJump, CFGLabel, CFGItem, init_cfg
+
+mutable struct CFGSpec
+    exp :: Expr
+end
+
+struct CFGItem
+    kind :: Symbol
+    name :: Symbol
+end
+
+CFGJump(x::Symbol) = CFGItem(:symbolicgoto, x)
+CFGLabel(x::Symbol) = CFGItem(:symboliclabel, x)
+
+init_cfg(ex::Expr) = init_cfg(CFGSpec(ex))
+function init_cfg(cfg::CFGSpec)
+    exp = copy(cfg.exp)
+    cfg_info = Dict{Symbol, Symbol}()
+    init_cfg!(exp, cfg_info)
+    exp
+end
+
+function init_cfg!(ex::Expr, cf_info::Dict{Symbol, Symbol})
+    args = ex.args
+    for i in eachindex(args)
+        @inbounds arg = args[i]
+        if arg isa CFGItem
+            label = get!(cf_info, arg.name) do
+                gensym(arg.name)
+            end
+            @inbounds args[i] = Expr(arg.kind, label)
+        elseif arg isa Expr
+            init_cfg!(arg, cf_info)
+        elseif arg isa CFGSpec
+            @inbounds args[i] = init_cfg(arg)
+        end
+    end
+end
 
 include("DataStructure.jl")
 include("Target.jl")
