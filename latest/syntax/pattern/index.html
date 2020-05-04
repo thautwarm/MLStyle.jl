@@ -277,7 +277,7 @@ end |&gt; rmlines
             $f2 :: $t2
         end
     end |&gt; rmlines == expr
-end # true</code></pre><p><strong>How you create an AST, then how you match them.</strong></p><p><strong>How you use AST interpolations(<code>$</code> operation), then how you use capturing patterns on them.</strong></p><p>The pattern <code>quote .. end</code> is equivalent to <code>:(begin ... end)</code>.</p><p>Additionally, you can use any other patterns simultaneously when matching asts. In fact, there&#39;re regular patterns inside a <code>$</code> expression of your ast pattern.</p><p>A more complex example presented here might help with your comprehension about this:</p><pre><code class="language-julia">ast = quote
+end # true</code></pre><p><strong>How you create an AST, then how you match them.</strong></p><p><strong>How you use AST interpolations(<code>$</code> operation), then how you use capturing patterns on them.</strong></p><p>The pattern <code>quote .. end</code> is equivalent to <code>:(begin ... end)</code>.</p><p>Additonally, you can use any other patterns simultaneously when matching asts. In fact, there&#39;re regular patterns inside a <code>$</code> expression of your ast pattern.</p><p>A more complex example presented here might help with your comprehension about this:</p><pre><code class="language-julia">ast = quote
     function f(a, b, c, d)
       let d = a + b + c, e = x -&gt; 2x + d
           e(d)

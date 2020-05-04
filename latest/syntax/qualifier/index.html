@@ -35,7 +35,7 @@ module A2
     end
 end
 end</code></pre><p>outputs:</p><pre><code class="language-none">[ Info: 2
-ERROR: LoadError: MLStyle.Err.PatternUnsolvedException(&quot;invalid usage or unknown application case Main.A.Data1(Any[:x]).&quot;)</code></pre><p>When it comes to active patterns, the behavior is the same.</p><h2><a class="nav-anchor" id="Visible-In-1" href="#Visible-In-1">Visible-In</a></h2><p>Sometimes users need to have a more fine-grained control over the patterns&#39; visibility, thus we have provided such a way to allow patterns to be visible in several modules specified by one&#39;s own.</p><pre><code class="language-julia">@active visible in (@__MODULE__) IsEven(x) begin
+ERROR: LoadError: MLStyle.Err.PatternUnsolvedException(&quot;invalid usage or unknown application case Main.A.Data1(Any[:x]).&quot;)</code></pre><p>When it comes to active patterns, the behaviour is the same.</p><h2><a class="nav-anchor" id="Visible-In-1" href="#Visible-In-1">Visible-In</a></h2><p>Sometimes users need to have a more fine-grained control over the patterns&#39; visibility, thus we have provided such a way to allow patterns to be visible in several modules specified by one&#39;s own.</p><pre><code class="language-julia">@active visible in (@__MODULE__) IsEven(x) begin
     x % 2 === 4
 end</code></pre><p>Above <code>IsEven</code> is only visible in current module.</p><pre><code class="language-julia">@active visible in [MyPack.A, MyPack.B] IsEven(x) begin
     x % 2 === 4
