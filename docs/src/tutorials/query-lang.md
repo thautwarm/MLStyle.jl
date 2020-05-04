@@ -1,6 +1,8 @@
 Write You A Query Language
 ===============================================
 
+**P.S**: *this document hasn't got up-to-date*.
+
 You may have heard of LINQ or extension methods before, and they're all embedded query languages.
 
 In terms of Julia ecosystem, there're already Query.jl, LightQuery.jl, DataFramesMeta.jl, etc., each of which reaches the partial or full features of a query language.
