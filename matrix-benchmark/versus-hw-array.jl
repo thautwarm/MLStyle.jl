@@ -65,9 +65,9 @@ implementations = [
         end
     end,
     :HandWritten => function (vec)
-        !(vec isa Vector) ? 4 :
+        !(vec isa AbstractVector) ? 4 :
                 let n = length(vec)
-            if n > 3 && vec[end] === 10 && sum(vec[3:end-1]) > 10
+            if n >= 3 && vec[end] === 10 && sum(vec[3:end-1]) > 10
                 1
             elseif n > 3 && vec[1] === 1 && vec[2] === 2 && vec[3] === 3
                 2
