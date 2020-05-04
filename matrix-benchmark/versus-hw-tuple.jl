@@ -6,6 +6,7 @@ using Gadfly
 using MLStyle
 using DataFrames
 import Match
+import Rematch
 
 import Base.getindex
 getindex(asoc_lst :: Vector{Pair{Symbol, T}}, key ::Symbol) where T =
@@ -43,6 +44,15 @@ implementations = [
         ((1, 2, 3, _), (4, 5, 6, _, (7, 8, 9, _, (11, 12, 13)))) -> 4
         _ -> 5
     end),
+    :Rematch => function (x)
+        Rematch.@match x begin
+            (1, (_, "2", _), ("3", 4, 5))   => 1
+            (_, "1", 2, _, (3, "4", _), _)  => 2
+            (_, 1, _, 2, _, 3, _, 4, _, 5)  => 3
+            ((1, 2, 3, _), (4, 5, 6, _, (7, 8, 9, _, (11, 12, 13)))) => 4
+            _ => 5
+        end
+    end,
     Symbol("Match.jl") => function (x)
         Match.@match x begin
             (1, (_, "2", _), ("3", 4, 5))   => 1

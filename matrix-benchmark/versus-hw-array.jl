@@ -6,6 +6,7 @@ using Gadfly
 using MLStyle
 using DataFrames
 import Match
+import Rematch
 
 import Base.getindex
 getindex(asoc_lst :: Vector{Pair{Symbol, T}}, key ::Symbol) where T =
@@ -36,12 +37,21 @@ data = [
 ]
 
 implementations = [
+
     :MLStyle => (@λ begin
         [_, _, (frag && if sum(frag) > 10 end)..., 10] -> 1
         [1, 2, 3, _...]  -> 2
         [_, _, 1, _, 2, 3, z && if z > 10 end]  -> 3
         _ -> 4
     end),
+    :Rematch => function (x)
+        Rematch.@match begin
+            [_, _, frag..., 10] where sum(frag) > 10  => 1
+            [1, 2, 3, _...]  => 2
+            [_, _, 1, _, 2, 3, z] where z > 10 => 3
+            _ => 4
+        end
+    end,
     Symbol("Match.jl") => function (x)
         Match.@match x begin
             [_, _, frag..., 10], if sum(frag) > 10 end => 1

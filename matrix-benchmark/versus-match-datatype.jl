@@ -6,6 +6,7 @@ using Gadfly
 using MLStyle
 using DataFrames
 import Match
+import Rematch
 
 import Base.getindex
 getindex(asoc_lst :: Vector{Pair{Symbol, T}}, key ::Symbol) where T =
@@ -65,6 +66,16 @@ implementations = [
         ::GenericData{String} -> 5
         _ -> 0
     end),
+    :Rematch => function (x)
+        Rematch.@match x begin
+            Normal1(_, _, _ :: Number) => 1
+            Normal1(_, _, Normal2(1)) => 2
+            Generic1(3, 3) => 3
+            Generic2((1, 2)) => 4
+            _:: GenericData{String} => 5
+            _ => 0
+        end
+    end,
     Symbol("Match.jl") => function (x)
         Match.@match x begin
             Normal1(_, _, _ :: Number) => 1
