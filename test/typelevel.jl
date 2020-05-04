@@ -1,5 +1,5 @@
-@testset "type destructing" begin
-    @data internal S{A, B} begin
+@testcase "type destructing" begin
+    @lift @data internal S{A, B} begin
         S_1{A, B} :: (a :: A, b :: B) => S{A, B}
     end
 

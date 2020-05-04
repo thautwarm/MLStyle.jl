@@ -30,6 +30,7 @@ macro testcase(name, ex)
     __module__.eval(:(module $m
     using MLStyle
     using Test
+    MODULE = $MODULE
     $(Symbol("@test_macro_throws")) = $(getfield(TestModule, Symbol("@test_macro_throws")))
     $(lifted...)
     @testset $name $ex

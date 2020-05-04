@@ -1,6 +1,6 @@
 using MLStyle.Extension
 
-@testset "exception" begin
+@testcase "exception" begin
     @test_skip @match 1 begin
         Unknown(a, b) => 0
     end
@@ -13,7 +13,7 @@ using MLStyle.Extension
         1 = 1
     end))
 
-    @data Test_Ext_Data begin
+    @lift @data Test_Ext_Data begin
         Test_Ext_Data_1 :: Int => Test_Ext_Data
     end
 

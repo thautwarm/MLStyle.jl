@@ -14,7 +14,7 @@ function ellipsis_split(args::AbstractArray{T,1}) where {T}
     ellipsis_index = findfirst(args) do arg
         Meta.isexpr(arg, :...)
     end
-    if isnothing(ellipsis_index)
+    if ellipsis_index === nothing
         Val(:vec) => args
     else
         Val(:vec3) => (
