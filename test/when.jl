@@ -1,9 +1,9 @@
-@data WhenTest begin
-    WhenTest_1(Int)
-    WhenTest_2(Int)
-end
+@testcase "@when" begin
+    @lift @data WhenTest begin
+        WhenTest_1(Int)
+        WhenTest_2(Int)
+    end
 
-@testset "@when" begin
     @testset "docstring" begin
         # otherwise()
         @test 3 == @when (a, b) = (1, 2) begin

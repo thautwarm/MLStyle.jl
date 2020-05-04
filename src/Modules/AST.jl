@@ -1,28 +1,58 @@
 module AST
 using MLStyle
-using MLStyle.Render
+using MLStyle.AbstractPattern
 using MLStyle.Err
-include("AST.Compat.jl")
-export @matchast, @capture
+export @matchast, @capture, Capture
 
-function matchast(target, actions, source, mod::Module)
-    stmts = @match actions begin
-       Expr(:quote, quote $(stmts...) end) => stmts
+struct Capture end
 
-       _ => begin
-            msg = "Malformed ast template, the second arg should be a block with a series of pairs(`a => b`), at $(string(source))."
-            throw(SyntaxError(msg))
+function MLStyle.pattern_uncall(
+    ::Type{Capture},
+    self::Function,
+    type_params::AbstractArray,
+    type_args::AbstractArray,
+    args::AbstractArray
+)
+    isempty(type_params) || error("A Capture requires no type params.")
+    isempty(type_args) || error("A Capture pattern requires no type arguments.")
+    length(args) === 1 || error("A Capture pattern accepts one argument.")
+    function extract(::Any, ::Int, scope::ChainDict{Symbol, Symbol}, ::Any)
+        ret = Expr(:call, Dict)
+        for_chaindict(scope) do k, v
+            k = QuoteNode(k)
+            push!(ret.args, :($k => $v))
         end
+        ret
     end
-    last_lnode = source
-    map(stmts) do stmt
-        @match stmt begin
-            ::LineNumberNode => (last_lnode = stmt)
-            :($a => $b) => :($(Expr(:quote, a)) => $b)
-            _ => throw(SyntaxError("Malformed ast template, should be formed as `a => b`, at $(string(last_lnode))."))
+    decons(extract, [self(args[1])])
+end
+
+function matchast(target, actions, source::LineNumberNode, mod::Module)
+    @switch actions begin
+    @case Expr(:quote, Expr(:block, stmts...))
+        last_lnode = source
+        cbl = Expr(:block)
+        for stmt in stmts
+            @switch stmt begin
+                @case ::LineNumberNode 
+                    last_lnode = stmt
+                    continue
+                @case :($a => $b)
+                    push!(
+                        cbl.args,
+                        last_lnode,
+                        :($(Expr(:quote, a)) => $b)
+                    )
+                    continue 
+                @case _
+                    throw(SyntaxError("Malformed ast template, should be formed as `a => b`, at $(string(last_lnode))."))
+            end
         end
-    end |> actions ->
-    gen_match(target, Expr(:block, actions...), source, mod)
+        return gen_match(target, cbl, source, mod)
+    @case _
+        msg = "Malformed ast template, the second arg should be a block with a series of pairs(`a => b`), at $(string(source))."
+        throw(SyntaxError(msg))
+    end
 end
 
 """
@@ -42,7 +72,9 @@ e.g.,
 ```
 """
 macro matchast(template, actions)
-    matchast(template, actions, __source__, __module__) |> esc
+    res = matchast(template, actions, __source__, __module__)
+    res = init_cfg(res)
+    return esc(res)
 end
 
 """
@@ -62,32 +94,27 @@ If the template doesn't match input AST, return `nothing`.
 :(@capture)
 
 macro capture(template)
-    capture(template, __source__, __module__) |> esc
+    farg = gensym("expression")
+    fbody = 
+       gen_capture(template, farg, __source__, __module__) |> init_cfg
+    fhead = Expr(:call, farg, farg)
+    esc(Expr(:function, fhead, fbody))
 end
 
 macro capture(template, ex)
-    Expr(:call, capture(template, __source__, __module__), ex) |> esc
+    res = gen_capture(template, ex, __source__, __module__)
+    res = init_cfg(res)
+    return esc(res)
 end
 
-function capture(template, source, mod::Module)
-    out_expr = @static VERSION < v"1.1.0" ?
-        begin
-            syms = Set(Symbol[])
-            capturing_analysis(template, syms, true)
-            Expr(:call, Dict, (Expr(:call, =>, QuoteNode(each), each) for each in syms)...)
-        end :
-        :($Base.@locals)
+function gen_capture(template::Any, ex::Any, source::LineNumberNode, mod::Module)
+    template = Expr(:quote, template)
+    sym = :__SCOPE_CAPTURE__
+    p_capture_scope = Expr(:call, Capture, sym)
+    p_whole = Expr(:&&, template, p_capture_scope)
+    tbl = Expr(:block, :($p_whole => $sym))
 
-    arg_sym = gensym()
-    let template = Expr(:quote, template),
-        actions = Expr(:block, :($template => $out_expr), :(_ => nothing)),
-        match_gen = gen_match(arg_sym, actions, source, mod)
-        @format [arg_sym, match_gen] quote
-            function (arg_sym)
-                match_gen
-            end
-        end
-    end
+    gen_match(ex, tbl, source, mod)
 end
 
 end

@@ -1,6 +1,7 @@
 module WhenCases
 using MLStyle
 using MLStyle.Sugars: Q
+using MLStyle.AbstractPattern: init_cfg
 
 export @when, @otherwise, gen_when
 
@@ -81,7 +82,6 @@ function gen_when(let_expr, source :: LineNumberNode, mod :: Module)
     @case Expr(:let,
             Expr(:block, bindings...) || a && let bindings = [a] end,
             Expr(:block, stmts...)    || b && let stmts = [b] end)
-
             sources_cases_blocks = split_case_and_block(stmts, bindings, source)
             return foldr(sources_cases_blocks, init=:nothing) do (source, bindings, block), last_block
                 foldr(bindings, init=block) do each, last_ret
@@ -179,14 +179,18 @@ end
 ```
 """
 macro when(let_expr)
-    gen_when(let_expr, __source__, __module__) |> esc
+    res = gen_when(let_expr, __source__, __module__)
+    res = init_cfg(res)
+    esc(res)
 end
 
 macro when(assignment, ret)
     @match assignment begin
         :($_ = $_) =>
             let let_expr = Expr(:let, Expr(:block, assignment), ret)
-                gen_when(let_expr, __source__, __module__) |> esc
+                res = gen_when(let_expr, __source__, __module__)
+                res = init_cfg(res)
+                esc(res)
             end
         _ => throw(SyntaxError("Not match the form of `@when a = b expr`"))
     end

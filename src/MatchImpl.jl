@@ -21,7 +21,7 @@ struct Where
 end
 
 struct QuotePattern
-    value :: QuoteNode
+    value
 end
 
 Base.@pure function qt2ex(ex::Any)
@@ -29,7 +29,7 @@ Base.@pure function qt2ex(ex::Any)
         Meta.isexpr(ex, :$) && return ex.args[1]
         Expr(:call, Expr, QuoteNode(ex.head), (qt2ex(e) for e in ex.args if !(e isa LineNumberNode))...)
     elseif ex isa QuoteNode
-        QuotePattern(ex)
+        QuotePattern(qt2ex(ex.value))
     elseif ex isa Symbol
         QuoteNode(ex)
     else
@@ -37,16 +37,18 @@ Base.@pure function qt2ex(ex::Any)
     end
 end
 
-function guess_type_from_expr(eval::Function, ex::Any, tps::Set{Symbol})
+function guess_type_from_expr(m::Module, ex::Any, tps::Set{Symbol})
     @sswitch ex begin
         @case :($t{$(targs...)})
         # TODO: check if it is a type
-        return eval(t)
+        return guess_type_from_expr(m, t, tps)
         @case t::Type
         return t
-        
         @case ::Symbol
-        return ex in tps ? Any : eval(ex) #= TODO: check if it's a type =#
+        ex in tps || isdefined(m, ex) &&
+            #= TODO: check if it's a type =#
+            return getfield(m, ex)
+        return Any 
         @case _
         error("unrecognised type expression $ex")
     end
@@ -70,11 +72,11 @@ ex2tf(m::Module, n::Symbol) =
         P_capture(n)
     end
 
+_quote_extract(expr::Any, ::Int, ::Any, ::Any) = :($expr.value)
+
 function ex2tf(m::Module, s::QuotePattern)
     p0 = P_type_of(QuoteNode)
-    p1 = guard() do target, _, _
-        :($target.value == $(s.value))
-    end
+    p1 = decons(_quote_extract, [ex2tf(m, s.value)])
     and([p0, p1])
 end
 
@@ -83,11 +85,24 @@ function ex2tf(m::Module, w::Where)
     @sswitch w begin
         @case Where(; value = val, type = t, type_parameters = tps)
         tp_set = get_type_parameters(tps)::Set{Symbol}
-        p_ty = guess_type_from_expr(m.eval, t, tp_set) |> P_type_of
+        p_ty = guess_type_from_expr(m, t, tp_set) |> P_type_of
         tp_vec = collect(tp_set)
         sort!(tp_vec)
         p_guard = guard() do target, scope, _
+
             isempty(tp_vec) && return see_captured_vars(:($target isa $t), scope)
+
+            tp_guard = foldr(tps, init=true) do tp, last
+                tp isa Symbol && return last
+                last === true && return tp
+                Expr(:&&, tp, last)
+            end
+
+            tp_chk_ret = Expr(:tuple, tp_vec...)
+            if tp_guard !== true
+                tp_chk_ret = :($tp_guard ? $tp_chk_ret : nothing)
+            end
+
             targns = Symbol[]
             fn = gensym("extract type params")
             testn = gensym("test type params")
@@ -99,8 +114,8 @@ function ex2tf(m::Module, w::Where)
             end
             push!(
                 suite,
-                :(function $fn(::$t) where {$(tps...)}
-                    $(Expr(:tuple, tp_vec...))
+                :(function $fn(::$t) where {$(tp_vec...)}
+                    $tp_chk_ret
                 end),
                 :(function $fn(_)
                     nothing
@@ -218,7 +233,7 @@ function ex2tf(m::Module, ex::Expr)
 end
 
 function uncomprehension(self::Function, ty::Any, pat::Any, reconstruct::Any, seq::Any, cond::Any)
-    eltype = guess_type_from_expr(eval, ty, Set{Symbol}())
+    eltype = guess_type_from_expr(self.m, ty, Set{Symbol}())
     p0 = P_type_of(AbstractArray{T, 1} where T <: eltype)
     function extract(target::Any, ::Int, scope::ChainDict{Symbol, Symbol}, ln::LineNumberNode)
         token = gensym("uncompreh token")
@@ -268,7 +283,9 @@ end
 const case_sym = Symbol("@case")
 
 macro switch(val, ex)
-    esc(gen_switch(val, ex, __source__, __module__))
+    res = gen_switch(val, ex, __source__, __module__)
+    res = init_cfg(res)
+    esc(res)
 end
 
 function gen_switch(val, ex, __source__::LineNumberNode, __module__::Module)
@@ -276,7 +293,6 @@ function gen_switch(val, ex, __source__::LineNumberNode, __module__::Module)
     clauses = Union{LineNumberNode,Pair{<:Function,Symbol}}[]
     body = Expr(:block)
     alphabeta = 'a':'z'
-    base = gensym()
     ln = __source__
     variable_init_blocks = Dict{Symbol, Expr}()
     for i in eachindex(ex.args)
@@ -293,13 +309,13 @@ function gen_switch(val, ex, __source__::LineNumberNode, __module__::Module)
             end
             
             k = length(variable_init_blocks) + 1
-            br::Symbol = Symbol(alphabeta[k%26], k <= 26 ? "" : string(i), base)
+            br::Symbol = Symbol(string(alphabeta[k%26]), k)
             push!(clauses, pattern => br)
 
             variable_init_block = Expr(:block)
             variable_init_blocks[br] = variable_init_block
 
-            push!(body.args, :(@label $br))
+            push!(body.args, CFGLabel(br))
             push!(body.args, variable_init_block)
         else
             if stmt isa LineNumberNode
@@ -321,11 +337,15 @@ function gen_switch(val, ex, __source__::LineNumberNode, __module__::Module)
             push!(variable_init, :($actual_sym = $mangled_sym))
         end
     end
-    Expr(:block, match_logic, body)
+    CFGSpec(Expr(:block, match_logic, body))
 end
 
 Base.@pure function expr2tuple(expr)
     :($expr.head, $expr.args)
+end
+
+Base.@pure function packexpr(expr)
+    :([$expr.head, $expr.args...])
 end
 
 function pattern_uncall(
@@ -335,8 +355,13 @@ function pattern_uncall(
     type_args::AbstractArray,
     args::AbstractArray,
 )
-    isempty(type_params) || error("A Expr pattern requires no type params.")
-    isempty(type_args) || error("A Expr pattern requires no type arguments.")
+    isempty(type_params) || error("An Expr pattern requires no type params.")
+    isempty(type_args) || error("An Expr pattern requires no type arguments.")
+    @sswitch args begin
+        @case [Expr(:..., [_]), _...]
+            return and([P_type_of(Expr), P_slow_view(packexpr, self(Expr(:vect, args...)))])
+        @case _
+    end
 
     tcons(_...)::Type{Expr} = Expr
     comp = PComp("Expr", tcons)
@@ -354,14 +379,27 @@ function pattern_uncall(
     type_args::AbstractArray,
     args::AbstractArray,
 )
-    isempty(type_params) || error("A Expr pattern requires no type params.")
-    isempty(type_args) || error("A Expr pattern requires no type arguments.")
+    isempty(type_params) || error("A svec pattern requires no type params.")
+    isempty(type_args) || error("A svec pattern requires no type arguments.")
 
     tag, split = ellipsis_split(args)
     return tag isa Val{:vec} ? P_svec([self(e) for e in split]) :
            let (init, mid, tail) = split
         P_svec3([self(e) for e in init], self(mid), [self(e) for e in tail])
     end
+end
+
+function pattern_uncall(
+    ::Type{QuoteNode},
+    self::Function,
+    type_params::AbstractArray,
+    type_args::AbstractArray,
+    args::AbstractArray,
+)
+    isempty(type_params) || error("A QuoteNode pattern requires no type params.")
+    isempty(type_args) || error("A QuoteNode pattern requires no type arguments.")
+    length(args) == 1 || error("A QuoteNode pattern accepts only 1 argument.")
+    self(QuotePattern(args[1]))
 end
 
 function _some_guard1(expr::Any)
@@ -384,7 +422,9 @@ function pattern_uncall(::Type{Some}, self::Function, tparams::AbstractArray, ta
 end
 
 macro match(val, tbl)
-    esc(gen_match(val, tbl, __source__, __module__))
+    res = gen_match(val, tbl, __source__, __module__)
+    res = init_cfg(res)
+    esc(res)
 end
 
 function gen_match(val, tbl, __source__::LineNumberNode, __module__::Module)
@@ -392,8 +432,7 @@ function gen_match(val, tbl, __source__::LineNumberNode, __module__::Module)
     clauses = Union{LineNumberNode,Pair{<:Function,Symbol}}[]
     body = Expr(:block)
     alphabeta = 'a':'z'
-    base = gensym()
-    final_label = Symbol(".", base)
+    final_label = Symbol("FINAL")
     final_res = gensym("final")
     ln = __source__
     variable_init_blocks = Dict{Symbol, Expr}()
@@ -408,7 +447,7 @@ function gen_match(val, tbl, __source__::LineNumberNode, __module__::Module)
                 rethrow()
             end
             k = length(variable_init_blocks) + 1
-            br::Symbol = Symbol(alphabeta[k%26], k <= 26 ? "" : string(i), base)
+            br::Symbol = Symbol(string(alphabeta[k%26]), k)
             push!(clauses, pattern => br)
 
             variable_init_block = Expr(:block)
@@ -416,9 +455,9 @@ function gen_match(val, tbl, __source__::LineNumberNode, __module__::Module)
             let_expr = Expr(:let, variable_init_block, b)
             variable_init_blocks[br] = variable_init_block
 
-            push!(body.args, :(@label $br))
+            push!(body.args, CFGLabel(br))
             push!(body.args, :($final_res = $let_expr))
-            push!(body.args, :(@goto $final_label))
+            push!(body.args, CFGJump(final_label))
             continue
             @case ln::LineNumberNode
             push!(clauses, ln)
@@ -443,9 +482,9 @@ function gen_match(val, tbl, __source__::LineNumberNode, __module__::Module)
         end
     end
 
-    push!(body.args, :(@label $final_label))
+    push!(body.args, CFGLabel(final_label))
     push!(body.args, final_res)
 
-    Expr(:let, Expr(:block), Expr(:block, match_logic, body))
+    CFGSpec(Expr(:let, Expr(:block), Expr(:block, match_logic, body)))
 end
 end

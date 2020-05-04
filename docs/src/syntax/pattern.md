@@ -246,19 +246,19 @@ Here is an example:
 
 @data Example begin
     Natural(dimension :: Float32, climate :: String, altitude :: Int32)
-    Cutural(region :: String,  kind :: String, country :: String, nature :: Natural)
+    Cultural(region :: String,  kind :: String, country :: String, nature :: Natural)
 end
 
-神农架 = Cutural("湖北", "林区", "中国", Natural(31.744, "北亚热带季风气候", 3106))
-Yellostone = Cutural("Yellowstone National Park", "Natural", "United States", Natural(44.36, "subarctic", 2357))
+神农架 = Cultural("湖北", "林区", "中国", Natural(31.744, "北亚热带季风气候", 3106))
+Yellostone = Cultural("Yellowstone National Park", "Natural", "United States", Natural(44.36, "subarctic", 2357))
 
-function my_data_query(data_lst :: Vector{Cutural})
+function my_data_query(data_lst :: Vector{Cultural})
     filter(data_lst) do data
         @match data begin
-            Cutural(_, "林区", "中国", Natural(dim=dim, altitude)) &&
+            Cultural(_, "林区", "中国", Natural(dim=dim, altitude)) &&
             if dim > 30.0 && altitude > 1000 end => true
 
-            Cutural(_, _, "United States", Natural(altitude=altitude)) &&
+            Cultural(_, _, "United States", Natural(altitude=altitude)) &&
             if altitude > 2000 end  => true
             _ => false
 

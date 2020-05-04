@@ -475,7 +475,7 @@ function compile_spec!(
         push!(suite, move)
     end
     
-    push!(suite, Expr(:macrocall, Symbol("@goto"), LineNumberNode(1), x.cont))
+    push!(suite, CFGJump(x.cont))
 end
 
 function compile_spec!(
