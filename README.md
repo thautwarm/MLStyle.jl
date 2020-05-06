@@ -72,7 +72,7 @@ Finally, we have such a library that provides **extensible pattern matching** fo
 
     Check documentations for details.
 
-- You can use MLStyle only in development time by expanding the macros(MLStyle generates **enclosed** codes which requires no runtime support, which means **the generated code can run without MLStyle installed**!)
+- **You can use MLStyle only in development time** by expanding the macros(MLStyle generates **enclosed** codes which requires no runtime support, which means **the generated code can run without MLStyle installed**!)
 
     Now there's a code generation tool called `bootstrap` available at [MLStyle/bootstrap](https://github.com/thautwarm/MLStyle.jl/tree/master/bootstrap), which
     you can take advantage of to remove MLStyle dependency when making distributions.
