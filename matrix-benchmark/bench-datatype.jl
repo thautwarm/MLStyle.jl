@@ -1,6 +1,5 @@
 module BenchDataType
 
-using Benchmarkplotting
 using BenchmarkTools
 using Statistics
 using Gadfly
@@ -9,14 +8,7 @@ using DataFrames
 import Match
 import Rematch
 using ..ArbitrarySampler
-
-import Base.getindex
-getindex(asoc_lst :: Vector{Pair{Symbol, T}}, key ::Symbol) where T =
-    for (search_key, value) in asoc_lst
-        if search_key === key
-            return value
-        end
-    end
+using ..Utils
 
 @data NormalData begin
     Normal1(a :: Int, b :: Int, c :: Any)
@@ -30,14 +22,6 @@ end
 
 mod′(n) = x -> mod(x, n)
 
-"""
-ok cases:
-1.   Normal1(c :: Number)
-2.   Normal1(Normal2(1))
-3.   Generic1(a = 3, b = 3)
-4.   Generic2((1, 2))
-5.   GenericData{String}
-"""
 specs = [
     :s1 => @spec(Normal1(::Int, ::Int, ::Real || ::Complex || _)),
     :s2 => @spec(Normal1(::Int, ::Int, Normal2(1 || ::Int))),
@@ -96,19 +80,15 @@ df = DataFrame(records)
 
 @info df
 
-theme = Theme(
-    guide_title_position = :left,
-    colorkey_swatch_shape = :circle,
-    minor_label_font = "Consolas",
-    major_label_font = "Consolas",
-    point_size = 5px,
+report_meantime, df_time = report(
+    df, Guide.title("Data Types");
+    benchfield = :time_mean
 )
-report_meantime, df_time =
-    report(df, Scale.y_log2, theme, Guide.title("Datatypes"); benchfield = :time_mean, baseline = :MLStyle)
+
 
 open("stats/bench-datatype.txt", "w") do f
     write(f, string(df))
 end
 
-draw(SVG("stats/bench-datatype.svg", 10inch, 4inch), report_meantime)
+draw(SVG("stats/bench-datatype.svg", 14inch, 6inch), report_meantime)
 end

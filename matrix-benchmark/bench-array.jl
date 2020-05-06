@@ -1,5 +1,4 @@
 module BenchArray
-using Benchmarkplotting
 using BenchmarkTools
 using Statistics
 using Gadfly
@@ -8,23 +7,7 @@ using DataFrames
 import Match
 import Rematch
 using ..ArbitrarySampler
-
-import Base.getindex
-getindex(asoc_lst::Vector{Pair{Symbol,T}}, key::Symbol) where {T} =
-    for (search_key, value) in asoc_lst
-        if search_key === key
-            return value
-        end
-    end
-
-"""
-3 cases could succeed in validation:
-
-[_, _, frag..., 10], sum(frag) > 10
-[1, 2, 3, _...]
-[_, _, 1, _, 2, 3, z], z > 10
-
-"""
+using ..Utils
 
 mod′(n) = x -> mod(x, n)
 len_in(rng) = x -> length(x) in rng
@@ -117,13 +100,16 @@ theme = Theme(
     major_label_font = "Consolas",
     point_size = 5px,
 )
-report_meantime, df_time =
-    report(df, Scale.y_log2, theme, Guide.title("Arrays"); benchfield = :time_mean, baseline = :MLStyle)
+
+report_meantime, df_time = report(
+    df, Guide.title("Arrays");
+    benchfield = :time_mean
+)
 
 open("stats/bench-array.txt", "w") do f
     write(f, string(df))
 end
 
-draw(SVG("stats/bench-array.svg", 10inch, 4inch), report_meantime)
+draw(SVG("stats/bench-array.svg", 14inch, 6inch), report_meantime)
 
 end

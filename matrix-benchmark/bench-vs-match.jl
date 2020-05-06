@@ -1,128 +1,124 @@
 module VersusMatch
-
-using Benchmarkplotting
+using BenchmarkTools
 using Statistics
 using Gadfly
 using MLStyle
-using Match
-import Base.getindex
-getindex(asoc_lst :: Vector{Pair{Symbol, T}}, key ::Symbol) where T =
-    for (search_key, value) in asoc_lst
-        if search_key === key
-            return value
-        end
-    end
+using DataFrames
+import Match
+using ..ArbitrarySampler
+using ..Utils
 
-data = [
-    :node_fn1 => :(function f(a, b) a + b end),
-    :node_fn2 => :(function f(a, b, c...) c end),
-    :node_chain => :(subject.method(arg1, arg2)),
-    :node_struct => :(
-            struct name <: base
-                field1 :: Int
-                field2 :: Float32
-            end
-    ),
-    :node_const => :(
-            const a = value
-    ),
-    :node_assign => :(a = b + c)
+sym = @spec ::Symbol
+scall = @spec :($$sym($$sym, $$sym{0,5}...)) || :($$sym())
+atom = @spec $sym || $scall
+xcall = @spec :($$atom($$atom, $$atom{0,5}...)) || :($$atom()) || $atom
+specs = [
+    :s1 => @spec(:(function $$xcall($$xcall, $$xcall)
+        $$xcall + $ $xcall
+    end)),
+    :s2 => @spec(:(function $$xcall($$xcall, $($xcall{0,5}...))
+        $$xcall
+    end)),
+    :s3 => @spec(Expr(:call, Expr(:., $xcall, QuoteNode($sym)), $xcall{0,3}...)),
+    :s4 => @spec(:(struct $$sym <: $$xcall
+        $$sym::$ $sym
+        $$sym::$ $xcall
+    end)),
+    :s5 => @spec(:(const $$sym = $$scall)),
+    :s6 => @spec(:($$xcall = $$scall + $ $sym)),
 ]
+
 implementations = [
     Symbol(:MLStyle, " Expr-pattern") => let
         function extract_name(e)
             MLStyle.@match e begin
-                ::Symbol                           => e
-                Expr(:<:, a, _)                    => extract_name(a)
-                Expr(:struct, _, name, _)          => extract_name(name)
-                Expr(:call, f, _...)               => extract_name(f)
-                Expr(:., subject, attr, _...)      => extract_name(subject)
-                Expr(:function, sig, _...)         => extract_name(sig)
-                Expr(:const, assn, _...)           => extract_name(assn)
-                Expr(:(=), fn, body, _...)         => extract_name(fn)
-                Expr(expr_type,  _...)             => error("Can't extract name from ",
-                                                            expr_type, " expression:\n",
-                                                            "    $e\n")
+                ::Symbol => e
+                Expr(:<:, a, _) => extract_name(a)
+                Expr(:struct, _, name, _) => extract_name(name)
+                Expr(:call, f, _...) => extract_name(f)
+                Expr(:., subject, attr, _...) => extract_name(subject)
+                Expr(:function, sig, _...) => extract_name(sig)
+                Expr(:const, assn, _...) => extract_name(assn)
+                Expr(:(=), fn, body, _...) => extract_name(fn)
+                Expr(expr_type, _...) => error(
+                    "Can't extract name from ",
+                    expr_type,
+                    " expression:\n",
+                    "    $e\n",
+                )
             end
         end
-        @assert extract_name(data[:node_fn1]) == :f
-        @assert extract_name(data[:node_fn2]) == :f
-        @assert extract_name(data[:node_chain]) == :subject
-        @assert extract_name(data[:node_struct]) == :name
-        @assert extract_name(data[:node_const]) == :a
-        @assert extract_name(data[:node_assign]) == :a
         extract_name
     end,
     Symbol(:MLStyle, " AST-pattern") => let
         function extract_name_homoiconic(e)
             MLStyle.@match e begin
-                ::Symbol                           => e
-                :($a <: $_)                        => extract_name_homoiconic(a)
+                ::Symbol => e
+                :($a <: $_) => extract_name_homoiconic(a)
                 :(struct $name <: $_
                     $(_...)
-                end)                             => name
-                :($f($(_...)))                     => extract_name_homoiconic(f)
-                :($subject.$_)                     => extract_name_homoiconic(subject)
+                end) => name
+                :($f($(_...))) => extract_name_homoiconic(f)
+                :($subject.$_) => extract_name_homoiconic(subject)
                 :(function $name($(_...))
                     $(_...)
-                end)                            => extract_name_homoiconic(name)
-                :(const $assn = $_)                => extract_name_homoiconic(assn)
-                :($fn = $_)                        => extract_name_homoiconic(fn)
-                Expr(expr_type,  _...)             => error("Can't extract name from ",
-                                                            expr_type, " expression:\n",
-                                                            "    $e\n")
+                end) => extract_name_homoiconic(name)
+                :(const $assn = $_) => extract_name_homoiconic(assn)
+                :($fn = $_) => extract_name_homoiconic(fn)
+                Expr(expr_type, _...) => error(
+                    "Can't extract name from ",
+                    expr_type,
+                    " expression:\n",
+                    "    $e\n",
+                )
             end
         end
-        @assert extract_name_homoiconic(data[:node_fn1]) == :f
-        @assert extract_name_homoiconic(data[:node_fn2]) == :f
-        @assert extract_name_homoiconic(data[:node_chain]) == :subject
-        @assert extract_name_homoiconic(data[:node_struct]) == :name
-        @assert extract_name_homoiconic(data[:node_const]) == :a
-        @assert extract_name_homoiconic(data[:node_assign]) == :a
         extract_name_homoiconic
     end,
-    Symbol("Match.jl") =>  let
-        extract_name(e :: Symbol) = e
+    Symbol("Match.jl") => let
+        extract_name(e::Symbol) = e
         function extract_name(e::Expr)
             Match.@match e begin
-                Expr(:<:, [a, b])                  => extract_name(a)
-                Expr(:struct,      [_, name, _])   => extract_name(name)
-                Expr(:call,      [f, _...])        => extract_name(f)
-                Expr(:., [subject, attr, _...])    => extract_name(subject)
-                Expr(:function,  [sig, _...])      => extract_name(sig)
-                Expr(:const,     [assn, _...])     => extract_name(assn)
-                Expr(:(=),       [fn, body, _...]) => extract_name(fn)
-                Expr(expr_type,  _...)             => error("Can't extract name from ",
-                                                            expr_type, " expression:\n",
-                                                            "    $e\n")
+                Expr(:<:, [a, b]) => extract_name(a)
+                Expr(:struct, [_, name, _]) => extract_name(name)
+                Expr(:call, [f, _...]) => extract_name(f)
+                Expr(:., [subject, attr, _...]) => extract_name(subject)
+                Expr(:function, [sig, _...]) => extract_name(sig)
+                Expr(:const, [assn, _...]) => extract_name(assn)
+                Expr(:(=), [fn, body, _...]) => extract_name(fn)
+                Expr(expr_type, _...) => error(
+                    "Can't extract name from ",
+                    expr_type,
+                    " expression:\n",
+                    "    $e\n",
+                )
             end
         end
-        @assert extract_name(data[:node_fn1]) == :f
-        @assert extract_name(data[:node_fn2]) == :f
-        @assert extract_name(data[:node_chain]) == :subject
-        @assert extract_name(data[:node_struct]) == :name
-        @assert extract_name(data[:node_const]) == :a
-        @assert extract_name(data[:node_assign]) == :a
         extract_name
-    end
+    end,
 ]
 
-criterion(x) = (meantime = mean(x.times), allocs = 1 + x.allocs)
-df = bcompare(criterion, data, implementations)
+records = NamedTuple{(:time_mean, :implementation, :case)}[]
+for (spec_id, spec) in specs
+    for (impl_id, impl_fn) in implementations
+        bench′ =
+            @benchmark $impl_fn(sample) setup = (sample = $generate($spec)) samples = 2000
+        time′ = mean(bench′.times)
+        @info :bench (spec_id, impl_id, time′)
+        push!(records, (time_mean = time′, implementation = impl_id, case = spec_id))
+    end
+end
 
-theme = Theme(
-    guide_title_position = :left,
-    colorkey_swatch_shape = :circle,
-    minor_label_font = "Consolas",
-    major_label_font = "Consolas",
-    point_size=6px
-)
-report_meantime, df_time = report(df, Scale.y_log10, theme, Guide.title("Example from Match.jl"); benchfield=:meantime, baseline=Symbol(:MLStyle, " AST-pattern"))
+df = DataFrame(records)
+@info df
+
+report_meantime, df_time =
+    report(df, Guide.title("Example from Match.jl Documentation"); benchfield = :time_mean)
 
 open("stats/bench-versus-match.txt", "w") do f
     write(f, string(df))
 end
 
-draw(SVG("stats/bench-versus-match.svg", 10inch, 4inch), report_meantime);
+draw(SVG("stats/bench-versus-match.svg", 14inch, 6inch), report_meantime)
 
 end

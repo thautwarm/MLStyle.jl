@@ -1,6 +1,4 @@
 module BenchStructureFields
-
-using Benchmarkplotting
 using BenchmarkTools
 using Statistics
 using Gadfly
@@ -8,6 +6,7 @@ using MLStyle
 using DataFrames
 using MacroTools: @capture
 using ..ArbitrarySampler
+using ..Utils
 
 lineno = @spec LineNumberNode(::Int isa (x -> mod(x, 100) + 1))
 field = @spec :($(::Symbol)::$(::Symbol)) || ::Symbol
@@ -102,13 +101,16 @@ theme = Theme(
     major_label_font = "Consolas",
     point_size = 5px,
 )
-report_meantime, df_time =
-    report(df, Scale.y_log2, theme, Guide.title("Extracting ASTs"); benchfield = :time_mean, baseline = :MLStyle)
+
+report_meantime, df_time = report(
+    df, Guide.title("Extracting Expr(:struct, ...)");
+    benchfield = :time_mean
+)
 
 open("stats/bench-structfields.txt", "w") do f
     write(f, string(df))
 end
 
-draw(SVG("stats/bench-structfields.svg", 10inch, 4inch), report_meantime)
+draw(SVG("stats/bench-structfields.svg", 14inch, 6inch), report_meantime)
 
 end

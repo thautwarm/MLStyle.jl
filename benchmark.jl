@@ -3,7 +3,10 @@ check https://github.com/thautwarm/MLStyle.jl/blob/master/matrix_benchmark.jl
 """
 
 include("matrix-benchmark/sampler.jl")
+include("matrix-benchmark/utils.jl")
 export ArbitrarySampler
+export Utils
+
 versus_items = ("datatype", "misc", "tuple", "array", "structfields", "vs-match")
 
 function run_all()

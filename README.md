@@ -152,9 +152,9 @@ end
 @data public Exp{T} begin
     Sym{A}    :: Symbol                           => Exp{A}
     Val{A}    :: A                                => Exp{A}
-    App{A, B, A′<:A} :: (Exp{Fun{A, B}}, Exp{A′}) => Exp{B}
     Lam{A, B} :: (Symbol, Exp{B})                 => Exp{Fun{A, B}}
     If{A}     :: (Exp{Bool}, Exp{A}, Exp{A})      => Exp{A}
+    App{A, B, A′<:A} :: (Exp{Fun{A, B}}, Exp{A′}) => Exp{B}
 end
 ```
 
@@ -195,9 +195,7 @@ All benchmark scripts are provided in the directory [Matrix-Benchmark](https://g
 
 To run these cross-implementation benchmarks, some extra dependencies should be installed:
 
-- `(v1.4) pkg> add https://github.com/thautwarm/Benchmarkplotting.jl#master` for making cross-implementation plotting.
-
-- `(v1.4) pkg> add Gadfly MacroTools Match BenchmarkTools StatsBase Statistics ArgParse DataFrames`.
+- `(v1.4) pkg> add Gadfly MacroTools Rematch Match BenchmarkTools StatsBase Statistics ArgParse DataFrames`.
 
 - `(v1.4) pkg> add MLStyle` for a specific version of MLStyle.jl is required.
 

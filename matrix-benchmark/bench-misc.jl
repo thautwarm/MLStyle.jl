@@ -1,6 +1,5 @@
 module BenchMisc
 using BenchmarkTools
-using Benchmarkplotting
 using Statistics
 using Gadfly
 using MLStyle
@@ -8,23 +7,7 @@ using DataFrames
 import Match
 import Rematch
 using ..ArbitrarySampler
-
-import Base.getindex
-getindex(asoc_lst :: Vector{Pair{Symbol, T}}, key ::Symbol) where T =
-    for (search_key, value) in asoc_lst
-        if search_key === key
-            return value
-        end
-    end
-
-"""
-3 cases could succeed in validation:
-
-(1, (_, "2", _), ("3", 4, 5))
-(_, "1", 2, _, (3, "4", _), _)
-(_, 1, _, 2, _, 3, _, 4, _, 5)
-((1, 2, 3, _), (4, 5, 6, _, (7, 8, 9, _, (11, 12, 13))))
-"""
+using ..Utils
 
 abstract type AbstractUserType end
 struct UserTy1{A} <: AbstractUserType
@@ -55,7 +38,7 @@ specs = [
 implementations = [
     :MLStyle => (@λ begin
         (1, _, ::String)              -> 1
-        ([2, a, b, 3] && if a > b end)  -> 2
+        ([2, _, _, 3] && [_, a, b, _] && if a > b end) -> 2
         UserTy1(2, ::String, (7, 9))  -> 3
         "yes"                         -> 4
         UserTy1(2, "no", ::AbstractUserType)      -> 5
@@ -115,13 +98,15 @@ theme = Theme(
     major_label_font = "Consolas",
     point_size = 5px,
 )
-report_meantime, df_time =
-    report(df, Scale.y_log2, theme, Guide.title("Misc"); benchfield = :time_mean, baseline = :MLStyle)
 
+report_meantime, df_time = report(
+    df, Guide.title("Misc");
+    benchfield = :time_mean
+)
 open("stats/bench-misc.txt", "w") do f
     write(f, string(df))
 end
 
-draw(SVG("stats/bench-misc.svg", 10inch, 4inch), report_meantime)
+draw(SVG("stats/bench-misc.svg", 14inch, 6inch), report_meantime)
 
 end
