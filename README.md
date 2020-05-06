@@ -246,7 +246,7 @@ The benchmark results in dataframe format are available at [this directory](http
 
 - code: [matrix-benchmark/bench-vs-match.jl](https://github.com/thautwarm/MLStyle.jl/blob/master/matrix-benchmark/bench-vs-match.jl)
 
-[![matrix-benchmark/bench-vs-match.jl](https://raw.githubusercontent.com/thautwarm/MLStyle.jl/master/stats/bench-vs-match.svg)](https://github.com/thautwarm/MLStyle.jl/blob/master/stats/bench-vs-match.txt)
+[![matrix-benchmark/bench-versus-match.jl](https://raw.githubusercontent.com/thautwarm/MLStyle.jl/master/stats/bench-versus-match.svg)](https://github.com/thautwarm/MLStyle.jl/blob/master/stats/bench-vs-match.txt)
 
 
 ## Contributing to MLStyle
