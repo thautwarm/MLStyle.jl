@@ -41,14 +41,14 @@ function guess_type_from_expr(m::Module, ex::Any, tps::Set{Symbol})
     @sswitch ex begin
         @case :($t{$(targs...)})
         # TODO: check if it is a type
-        return guess_type_from_expr(m, t, tps)
+        return true, guess_type_from_expr(m, t, tps)[2]
         @case t::Type
-        return t
+        return false, t
         @case ::Symbol
         ex in tps || isdefined(m, ex) &&
             #= TODO: check if it's a type =#
-            return getfield(m, ex)
-        return Any 
+            return (false, getfield(m, ex))
+        return true, Any
         @case _
         error("unrecognised type expression $ex")
     end
@@ -85,13 +85,20 @@ function ex2tf(m::Module, w::Where)
     @sswitch w begin
         @case Where(; value = val, type = t, type_parameters = tps)
         tp_set = get_type_parameters(tps)::Set{Symbol}
-        p_ty = guess_type_from_expr(m, t, tp_set) |> P_type_of
+        should_guess, ty_guess = guess_type_from_expr(m, t, tp_set)
+        p_ty = P_type_of(ty_guess)
         tp_vec = collect(tp_set)
         sort!(tp_vec)
         p_guard = guard() do target, scope, _
-
-            isempty(tp_vec) && return see_captured_vars(:($target isa $t), scope)
-
+            
+            if isempty(tp_vec)
+                return if should_guess
+                    see_captured_vars(:($target isa $t), scope)
+                else
+                    true
+                end
+            end
+            
             tp_guard = foldr(tps, init=true) do tp, last
                 tp isa Symbol && return last
                 last === true && return tp
@@ -230,7 +237,7 @@ function ex2tf(m::Module, ex::Expr)
 end
 
 function uncomprehension(self::Function, ty::Any, pat::Any, reconstruct::Any, seq::Any, cond::Any)
-    eltype = guess_type_from_expr(self.m, ty, Set{Symbol}())
+    eltype = guess_type_from_expr(self.m, ty, Set{Symbol}())[2]
     p0 = P_type_of(AbstractArray{T, 1} where T <: eltype)
     function extract(target::Any, ::Int, scope::ChainDict{Symbol, Symbol}, ln::LineNumberNode)
         token = gensym("uncompreh token")

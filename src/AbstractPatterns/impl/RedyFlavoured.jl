@@ -5,7 +5,7 @@ using MLStyle.Err: PatternCompilationError
 
 Config = NamedTuple{(:type, :ln)}
 Scope = ChainDict{Symbol,Symbol}
-ViewCache = ChainDict{Pair{TypeObject, Any}, Tuple{Symbol, Bool}}
+ViewCache = ChainDict{Pair{TypeObject,Any},Tuple{Symbol,Bool}}
 
 function update_parent!(view_cache::ViewCache)
     parent = view_cache.init[]
@@ -16,10 +16,10 @@ end
 
 struct CompileEnv
     # Dict(user_defined_name => actual_name). mangling for scope safety
-    scope :: Scope
+    scope::Scope
     # Dict(view => (viewed_cache_symbol => guarantee_of_defined?))
-    view_cache :: ViewCache
-    terminal_scope :: Dict{Symbol, Vector{Pair{Dict{Symbol, Symbol}, Expr}}}
+    view_cache::ViewCache
+    terminal_scope::Dict{Symbol,Vector{Pair{Dict{Symbol,Symbol},Expr}}}
 end
 
 abstract type Cond end
@@ -90,7 +90,7 @@ function build_readable_expression!(
 
     empty!(exprs′)
     empty!(following_stmts′)
-    
+
     build_readable_expression!(exprs′, following_stmts′, cond.right)
     right = to_expression(exprs′, following_stmts′)
 
@@ -137,7 +137,7 @@ function static_memo(
     view_cache::ViewCache,
     op::APP;
     ty::TypeObject,
-    depend::Union{Nothing, APP}=nothing
+    depend::Union{Nothing,APP} = nothing,
 )
     if op isa NoPre
         nothing
@@ -146,10 +146,10 @@ function static_memo(
         f(cached_sym, CACHE_NO_CACHE)
     else
         cache_key = depend === nothing ? op : (depend => op)
-        cache_key = Pair{TypeObject, Any}(ty, cache_key)
+        cache_key = Pair{TypeObject,Any}(ty, cache_key)
         cached = get(view_cache, cache_key) do
-           nothing 
-        end::Union{Tuple{Symbol, Bool}, Nothing}
+            nothing
+        end::Union{Tuple{Symbol,Bool},Nothing}
         if cached === nothing
 
             cached_sym = gensym("cache")
@@ -196,12 +196,13 @@ function myimpl()
 
     wildcard(::Config) = (::CompileEnv, target::Target) -> TrueCond()
 
-    literal(v, config::Config) =
-        function ap_literal(::CompileEnv, target::Target)::Cond
-            if v isa Symbol
-                v = QuoteNode(v)
-            end
-        CheckCond(:($(target.repr) == $v))
+    literal(v, config::Config) = function ap_literal(::CompileEnv, target::Target)::Cond
+        if v isa Symbol
+            v = QuoteNode(v)
+        end
+        isprimitivetype(config.type) ?
+            CheckCond(:($(target.repr) === $v)) :
+            CheckCond(:($(target.repr) == $v))
     end
 
     function and(ps::Vector{<:Function}, config::Config)
@@ -216,8 +217,8 @@ function myimpl()
             #   match val with
             #   | View1 && View2 ->
             # and we know `View1` must be cached.
-            (computed_guarantee′, env′, ret) = 
-                foldl(tl, init=(true, env, init)) do (computed_guarantee, env, last), p
+            (computed_guarantee′, env′, ret) =
+                foldl(tl, init = (true, env, init)) do (computed_guarantee, env, last), p
                     # `TrueCond` means the return expression must be evaluated to `true`
                     computed_guarantee′ = computed_guarantee && last isa TrueCond
                     if computed_guarantee′ === false && computed_guarantee === true
@@ -228,7 +229,7 @@ function myimpl()
                     end
                     computed_guarantee′, env, AndCond(last, p(env, target))
                 end
-            
+
             if computed_guarantee′ === false
                 update_parent!(env′.view_cache)
             end
@@ -252,10 +253,11 @@ function myimpl()
                 push!(or_checks, p(env′, target.clone))
                 push!(scopes, scope′.cur)
             end
-            
-            
+
+
             # check the change of scope discrepancies for all branches
-            intersected_new_names = intersect!(Set(keys(scopes[1])),  map(keys, view(scopes, 2:n_ps))...)
+            intersected_new_names =
+                intersect!(Set(keys(scopes[1])), map(keys, view(scopes, 2:n_ps))...)
             for key in intersected_new_names
                 refresh = gensym(key)
                 for i in eachindex(or_checks)
@@ -270,21 +272,16 @@ function myimpl()
                         AndCond(or_checks[i], TrueCond(:($refresh = $old_name)))
                 end
                 scope[key] = refresh
-                
+
             end
             foldr(OrCond, or_checks)
-            
+
         end |> cache
     end
 
     # C(p1, p2, .., pn)
     # pattern = (target: code, remainder: code) -> code
-    function decons(
-        comp::PComp,
-        extract::Function,
-        ps::Vector,
-        config::Config,
-    )
+    function decons(comp::PComp, extract::Function, ps::Vector, config::Config)
         ty = config.type
         ln = config.ln
 
@@ -300,30 +297,28 @@ function myimpl()
             scope = env.scope
             # compute pattern viewing if no guarantee of being computed
             view_cache = env.view_cache
-            
+
             target_sym::Symbol = target.repr
             viewed_sym::Any = target_sym
-            static_memo(view_cache, comp.guard1; ty=ty) do cached_sym, cache_flag
+            static_memo(view_cache, comp.guard1; ty = ty) do cached_sym, cache_flag
                 if cache_flag === CACHE_CACHED
                     chk = AndCond(chk, CheckCond(:($cached_sym.value)))
                     return
                 end
-                
+
                 if cache_flag === CACHE_NO_CACHE
                     guard_expr = comp.guard1(target_sym)
                     chk = AndCond(chk, CheckCond(guard_expr))
                 elseif cache_flag === CACHE_MAY_CACHE
                     guard_expr = comp.guard1(target_sym)
-                    do_cache = Expr(:if,
+                    do_cache = Expr(
+                        :if,
                         :($cached_sym === nothing),
-                        :($cached_sym = Some($guard_expr))
+                        :($cached_sym = Some($guard_expr)),
                     )
                     chk = AndCond(
                         chk,
-                        AndCond(
-                            TrueCond(do_cache),
-                            CheckCond(:($cached_sym.value))
-                        )
+                        AndCond(TrueCond(do_cache), CheckCond(:($cached_sym.value))),
                     )
                 else
                     error("impossible: invalid flag")
@@ -331,33 +326,34 @@ function myimpl()
                 nothing
             end
 
-            static_memo(view_cache, comp.view; ty=ty) do cached_sym, cache_flag
+            static_memo(view_cache, comp.view; ty = ty) do cached_sym, cache_flag
                 if cache_flag === CACHE_NO_CACHE
                     viewed_sym = gensym()
                     viewed_expr = comp.view(target_sym)
-                    chk = AndCond(
-                        TrueCond(:($viewed_sym = $viewed_expr))
-                    )
+                    chk = AndCond(TrueCond(:($viewed_sym = $viewed_expr)))
                 elseif cache_flag === CACHE_CACHED
                     viewed_sym = :($cached_sym.value)
                 elseif cache_flag === CACHE_MAY_CACHE
                     viewed_expr = comp.view(target_sym)
-                    do_cache = Expr(:if,
+                    do_cache = Expr(
+                        :if,
                         :($cached_sym === nothing),
-                        :($cached_sym = Some($viewed_expr))
+                        :($cached_sym = Some($viewed_expr)),
                     )
-                    chk = AndCond(
-                        chk,
-                        TrueCond(do_cache)
-                    )
+                    chk = AndCond(chk, TrueCond(do_cache))
                     viewed_sym = :($cached_sym.value)
                 else
                     error("impossible: invalid flag")
                 end
                 nothing
             end
-            
-            static_memo(view_cache, comp.guard2; ty=ty, depend=comp.view) do cached_sym, cache_flag
+
+            static_memo(
+                view_cache,
+                comp.guard2;
+                ty = ty,
+                depend = comp.view,
+            ) do cached_sym, cache_flag
                 if cache_flag === CACHE_CACHED
                     chk = AndCond(chk, CheckCond(:($cached_sym.value)))
                     return
@@ -368,16 +364,14 @@ function myimpl()
                     chk = AndCond(chk, CheckCond(guard_expr))
                 elseif cache_flag === CACHE_MAY_CACHE
                     guard_expr = comp.guard2(viewed_sym)
-                    do_cache = Expr(:if,
+                    do_cache = Expr(
+                        :if,
                         :($cached_sym === nothing),
-                        :($cached_sym = Some($guard_expr))
+                        :($cached_sym = Some($guard_expr)),
                     )
                     chk = AndCond(
                         chk,
-                        AndCond(
-                            TrueCond(do_cache),
-                            CheckCond(:($cached_sym.value))
-                        )
+                        AndCond(TrueCond(do_cache), CheckCond(:($cached_sym.value))),
                     )
                 else
                     error("impossible: invalid flag")
@@ -386,18 +380,13 @@ function myimpl()
             end
 
             for i in eachindex(ps)
-                p = ps[i] :: Function
-                field_target = Target{true}(extract(viewed_sym, i, scope, ln), Ref{TypeObject}(Any))
+                p = ps[i]::Function
+                field_target =
+                    Target{true}(extract(viewed_sym, i, scope, ln), Ref{TypeObject}(Any))
                 view_cache′ = ViewCache()
                 env′ = CompileEnv(scope, view_cache′, env.terminal_scope)
                 elt_chk = p(env′, field_target)
-                chk = AndCond(
-                    chk,
-                    AndCond(
-                        TrueCond(init_cache(view_cache′)),
-                        elt_chk
-                    )
-                )
+                chk = AndCond(chk, AndCond(TrueCond(init_cache(view_cache′)), elt_chk))
             end
             chk
         end |> cache
@@ -453,15 +442,10 @@ function compile_spec!(
     )
 end
 
-function compile_spec!(
-    env::CompileEnv,
-    suite::Vector{Any},
-    x::Leaf,
-    target::Target,
-)
-    
-    
-    scope = Dict{Symbol, Symbol}()
+function compile_spec!(env::CompileEnv, suite::Vector{Any}, x::Leaf, target::Target)
+
+
+    scope = Dict{Symbol,Symbol}()
     for_chaindict(env.scope) do k, v
         scope[k] = v
     end
@@ -469,12 +453,12 @@ function compile_spec!(
         terminal_scope = env.terminal_scope
         move = Expr(:block)
         branched_terminal = get!(terminal_scope, x.cont) do
-            Pair{Dict{Symbol, Symbol}, Expr}[]
+            Pair{Dict{Symbol,Symbol},Expr}[]
         end
-        push!(branched_terminal, scope=>move)
+        push!(branched_terminal, scope => move)
         push!(suite, move)
     end
-    
+
     push!(suite, CFGJump(x.cont))
 end
 
@@ -532,13 +516,13 @@ function compile_spec(target::Any, case::AbstractCase, ln::Union{LineNumberNode,
 
     scope = Scope()
     view_cache = ViewCache()
-    terminal_scope = Dict{Symbol, Vector{Pair{Dict{Symbol, Symbol}, Expr}}}()
+    terminal_scope = Dict{Symbol,Vector{Pair{Dict{Symbol,Symbol},Expr}}}()
     env = CompileEnv(scope, view_cache, terminal_scope)
-    
+
     compile_spec!(env, suite, case, target)
     pushfirst!(suite, init_cache(view_cache))
 
-    terminal_scope′ = Dict{Symbol, Dict{Symbol, Symbol}}()
+    terminal_scope′ = Dict{Symbol,Dict{Symbol,Symbol}}()
     for (br, move_semantics) in terminal_scope
         n_merge = length(move_semantics)
         if n_merge === 1
@@ -547,11 +531,12 @@ function compile_spec(target::Any, case::AbstractCase, ln::Union{LineNumberNode,
             continue
         end
         hd_name_map = move_semantics[1].first
-        ∩ˢ = intersect!(
-            Set(keys(hd_name_map)),
-            (keys(name_map) for (name_map, _) in move_semantics)...
-        )::Set{Symbol}
-        adjusted_move = Dict{Symbol, Symbol}()
+        ∩ˢ =
+            intersect!(
+                Set(keys(hd_name_map)),
+                (keys(name_map) for (name_map, _) in move_semantics)...,
+            )::Set{Symbol}
+        adjusted_move = Dict{Symbol,Symbol}()
         ∩ⱽ = sort!(collect(∩ˢ))
         for γᵢ in ∩ⱽ # γᵢ: the i-th captured user symbol
             γᵢ∞′ = move_semantics[1].first[γᵢ] # the finally mangled of γᵢ
@@ -572,7 +557,7 @@ function compile_spec(target::Any, case::AbstractCase, ln::Union{LineNumberNode,
     else
         push!(suite, :(error("no pattern matched")))
     end
-    
+
     ret = length(suite) === 1 ? suite[1] : ret
     terminal_scope′, ret
 end

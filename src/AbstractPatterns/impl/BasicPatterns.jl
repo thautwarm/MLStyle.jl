@@ -6,6 +6,10 @@ export P_bind, P_tuple, P_type_of, P_vector, P_capture, P_vector3, P_slow_view, 
 export P_svec, P_svec3
 export SimpleCachablePre, see_captured_vars
 
+const EQ = 0b001
+const GT = 0b100
+const LT = 0b010
+
 @nospecialize
 OptionalLn = Union{LineNumberNode,Nothing}
 
@@ -30,7 +34,6 @@ function self_index(viewed, i::Integer, ::Any, ::Any)
     @assert i === 1
     viewed
 end
-
 
 function length_eq_check(seq, n::Int)
     if n === 0
@@ -101,19 +104,14 @@ function P_tuple(fields::AbstractArray, prepr::AbstractString="Tuple")
 end
 
 function type_of_vector(types...)
-    AbstractVector
-    # if length(types) == 0
-    #     AbstractArray{Any,1}
-    # else
-    #     Eltype = foldl(typejoin, types)
-    #     AbstractArray{T,1} where {T<:Eltype}
-    # end
+    AbstractArray
 end
 """deconstruct a vector
 """
 function P_vector(fields::AbstractArray, prepr::AbstractString="1DVector")
 
     n_fields = length(fields)
+
     function pred(target)
         length_eq_check(target, n_fields)
     end
@@ -130,7 +128,7 @@ function P_svec(fields::AbstractArray, prepr::AbstractString="svec")
     end
     n_fields = length(fields)
     function pred(target)
-        length_eq_check(target, n_fields)
+        :(ndims($target) === 1 && length($target) === $n_fields)
     end
     comp = PComp(prepr, type_of_svec; guard1=NoncachablePre(pred))
     decons(comp, sequence_index, fields)
@@ -142,36 +140,22 @@ function P_vector3(init::AbstractArray, pack::Function, tail::AbstractArray, pre
     n1 = length(init)
     n2 = length(tail)
     min_len = length(init) + length(tail)
-    # function type_of_vector(types...)
-    #     Eltype = foldl(
-    #             typejoin,
-    #             [
-    #                 types[1:n1]...,
-    #                 eltype(types[n1+1]),
-    #                 types[end-n2:end]...
-    #             ]
-    #         )
-    #     AbstractArray{T,1} where {
-    #         T<:Eltype
-    #     }
-    # end
     function extract(arr, i::Int, ::Any, ::Any)
         ex = if i <= n1
             :($arr[$i])
         elseif i === n1 + 1
             n2 === 0 ?
-            :(view($arr, $(n1+1):length($arr))) :
-            :(view($arr, $(n1+1):length($arr)-$n2))
+            :(  $SubArray($arr, ($(n1+1):length($arr),     )) ) :
+            :(  $SubArray($arr, ($(n1+1):length($arr)-$n2, )) )
         else
             incr = i - n1 - 1
             j = n2 - incr
             ex = j == 0 ? :($arr[end]) : :($arr[end-$j])
             :($ex)
         end
-       
     end
     function pred(target)
-        :(length($target) >= $min_len)
+        :(ndims($target) === 1 && length($target) >= $min_len)
     end
     comp = PComp(prepr, type_of_vector; guard1=NoncachablePre(pred))
     decons(comp, extract, [init; pack; tail])

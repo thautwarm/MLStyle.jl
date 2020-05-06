@@ -20,8 +20,8 @@ struct CFGItem
     name :: Symbol
 end
 
-CFGJump(x::Symbol) = CFGItem(:symbolicgoto, x)
-CFGLabel(x::Symbol) = CFGItem(:symboliclabel, x)
+CFGJump(x::Symbol) = CFGItem(Symbol("@goto"), x)
+CFGLabel(x::Symbol) = CFGItem(Symbol("@label"), x)
 
 init_cfg(ex::Expr) = init_cfg(CFGSpec(ex))
 function init_cfg(cfg::CFGSpec)
@@ -31,6 +31,7 @@ function init_cfg(cfg::CFGSpec)
     exp
 end
 
+const _const_lineno = LineNumberNode(32, "<codegen>")
 function init_cfg!(ex::Expr, cf_info::Dict{Symbol, Symbol})
     args = ex.args
     for i in eachindex(args)
@@ -39,7 +40,7 @@ function init_cfg!(ex::Expr, cf_info::Dict{Symbol, Symbol})
             label = get!(cf_info, arg.name) do
                 gensym(arg.name)
             end
-            @inbounds args[i] = Expr(arg.kind, label)
+            @inbounds args[i] = Expr(:macrocall, arg.kind, _const_lineno, label)
         elseif arg isa Expr
             init_cfg!(arg, cf_info)
         elseif arg isa CFGSpec

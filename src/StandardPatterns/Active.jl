@@ -34,7 +34,7 @@ function active_def(P, body, mod::Module, line::LineNumberNode)
         $definition
         (::$v_ty)($(parametric...), ) = $arg -> $body
         $line
-        function $MatchImpl.pattern_uncall(t::($t isa Function ? typeof($t) : Type{$t}), self::Function, type_params, type_args, args)
+        function $MLStyle.pattern_uncall(t::($t isa Function ? typeof($t) : Type{$t}), self::Function, type_params, type_args, args)
             $line
             isempty(type_params) || error("A ($t) pattern requires no type params.")
             parametric = isempty(type_args) ? [] : type_args

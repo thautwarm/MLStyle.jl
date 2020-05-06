@@ -1,39 +1,41 @@
 module BenchTuple
-
 using Benchmarkplotting
+using BenchmarkTools
 using Statistics
 using Gadfly
 using MLStyle
 using DataFrames
 import Match
 import Rematch
+using ..ArbitrarySampler
 
 import Base.getindex
-getindex(asoc_lst :: Vector{Pair{Symbol, T}}, key ::Symbol) where T =
+getindex(asoc_lst::Vector{Pair{Symbol,T}}, key::Symbol) where {T} =
     for (search_key, value) in asoc_lst
         if search_key === key
             return value
         end
     end
 
-"""
-3 cases could succeed in validation:
+mod′(n) = x -> mod(x, n)
+len_in(rng) = x -> length(x) in rng
+is_in(rng) = x -> x in rng
 
-(1, (_, "2", _), ("3", 4, 5))
-(_, "1", 2, _, (3, "4", _), _)
-(_, 1, _, 2, _, 3, _, 4, _, 5)
-((1, 2, 3, _), (4, 5, 6, _, (7, 8, 9, _, (11, 12, 13))))
-"""
+integer20 = @spec ::Integer isa mod′(20)
 
+struct UserTy{T}
+    a::T
+    b::Symbol
+end
+@as_record UserTy
 
-data = [
-    Symbol("ok_case1") => (1, (42, "2", 42), ("3", 4, 5)),
-    Symbol("ok_case2") => (42, "1", 2, 42, (3, "4", 42), 42),
-    Symbol("ok_case3") => (42, 1, 42, 2, 42, 3, 42, 4, 42, 5),
-    Symbol("ok_case4") => ((1, 2, 3, 42), (4, 5, 6, 42, (7, 8, 9, 42, (11, 12, 13)))),
-    Symbol("fail1") => (1, (42, 42, 42), ("3", 4, 5)),
-    Symbol("fail2") => (42, "1", 2, 42, (3, 42, 42), 42),
-    Symbol("fail3") => (42, 1, 42, 2, 42, 3, 42, 4, 42, 42)
+specs = [
+    :spec1 => (@spec (1, (_, "2", _), ("3", 4, 5))),
+    :spec2 => (@spec (_, "1", 2, _, (3, "4", _), _)),
+    :spec3 => (@spec (_, 1, _, 2, _, 3, _, 4, _, 5)),
+    :spec4  => (@spec ((1, 2, 3, _), (4, 5, 6, _, (7, 8, 9, _, (11, 12, 13))))),
+    :spec5  => (@spec (::String, ::Symbol, ::Real, ([1, _], UserTy(:a, :b)))),
+    :_      => @spec(_)
 ]
 
 implementations = [
@@ -103,22 +105,37 @@ implementations = [
     end
 ]
 
-criterion(x) = (meantime = mean(x.times), allocs = 1 + x.allocs)
-df = bcompare(criterion, data, implementations)
+records = NamedTuple{(:time_mean, :implementation, :case)}[]
+for (spec_id, spec) in specs
+    # group_key = string(spec_id)
+    # suite[group_key] = BenchmarkGroup()
+    for (impl_id, impl_fn) in implementations
+        bench′ =
+            @benchmark $impl_fn(sample) setup = (sample = $generate($spec)) samples = 2000
+        time′ = mean(bench′.times)
+        @info :bench (spec_id, impl_id, time′)
+        push!(records, (time_mean = time′, implementation = impl_id, case = spec_id))
+    end
+end
+
+df = DataFrame(records)
+
 @info df
+
 theme = Theme(
     guide_title_position = :left,
     colorkey_swatch_shape = :circle,
     minor_label_font = "Consolas",
     major_label_font = "Consolas",
-    point_size=5px
+    point_size = 5px,
 )
-report_meantime, df_time = report(df, theme, Scale.y_log2(;maxvalue=10, minvalue=0.6); benchfield=:meantime, baseline=:MLStyle)
+report_meantime, df_time =
+    report(df, Scale.y_log2, theme, Guide.title("Tuples"); benchfield = :time_mean, baseline = :MLStyle)
 
-open("stats/vs-hw(tuple).txt", "w") do f
+open("stats/bench-tuple.txt", "w") do f
     write(f, string(df))
 end
 
-draw(SVG("stats/vs-hw(tuple)-on-time.svg", 10inch, 4inch), report_meantime);
+draw(SVG("stats/bench-tuple.svg", 10inch, 4inch), report_meantime)
 
 end

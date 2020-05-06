@@ -1,0 +1,22 @@
+18×4 DataFrames.DataFrame
+│ Row │ implementation       │ case        │ allocs  │ meantime │
+│     │ Symbol               │ Symbol      │ Float64 │ Float64  │
+├─────┼──────────────────────┼─────────────┼─────────┼──────────┤
+│ 1   │ MLStyle Expr-pattern │ node_fn1    │ 1.0     │ 23.7136  │
+│ 2   │ MLStyle Expr-pattern │ node_fn2    │ 1.0     │ 23.2773  │
+│ 3   │ MLStyle Expr-pattern │ node_chain  │ 1.0     │ 25.9988  │
+│ 4   │ MLStyle Expr-pattern │ node_struct │ 1.0     │ 27.9984  │
+│ 5   │ MLStyle Expr-pattern │ node_const  │ 1.0     │ 27.9233  │
+│ 6   │ MLStyle Expr-pattern │ node_assign │ 1.0     │ 13.8895  │
+│ 7   │ MLStyle AST-pattern  │ node_fn1    │ 1.0     │ 19.5335  │
+│ 8   │ MLStyle AST-pattern  │ node_fn2    │ 1.0     │ 18.4667  │
+│ 9   │ MLStyle AST-pattern  │ node_chain  │ 1.0     │ 27.5553  │
+│ 10  │ MLStyle AST-pattern  │ node_struct │ 1.0     │ 7.40688  │
+│ 11  │ MLStyle AST-pattern  │ node_const  │ 1.0     │ 20.2684  │
+│ 12  │ MLStyle AST-pattern  │ node_assign │ 1.0     │ 15.8295  │
+│ 13  │ Match.jl             │ node_fn1    │ 5.0     │ 1117.61  │
+│ 14  │ Match.jl             │ node_fn2    │ 5.0     │ 1210.26  │
+│ 15  │ Match.jl             │ node_chain  │ 4.5     │ 925.697  │
+│ 16  │ Match.jl             │ node_struct │ 2.5     │ 435.44   │
+│ 17  │ Match.jl             │ node_const  │ 7.5     │ 1620.89  │
+│ 18  │ Match.jl             │ node_assign │ 4.5     │ 851.658  │

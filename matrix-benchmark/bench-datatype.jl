@@ -1,12 +1,14 @@
 module BenchDataType
 
 using Benchmarkplotting
+using BenchmarkTools
 using Statistics
 using Gadfly
 using MLStyle
 using DataFrames
 import Match
 import Rematch
+using ..ArbitrarySampler
 
 import Base.getindex
 getindex(asoc_lst :: Vector{Pair{Symbol, T}}, key ::Symbol) where T =
@@ -26,6 +28,7 @@ end
     Generic2(A)
 end
 
+mod′(n) = x -> mod(x, n)
 
 """
 ok cases:
@@ -35,31 +38,19 @@ ok cases:
 4.   Generic2((1, 2))
 5.   GenericData{String}
 """
-data = [
-    Symbol("ok1") => Normal1(2, 3, 1.0),
-
-    Symbol("fail1") => Normal1(2, 3, ()),
-
-    Symbol("ok2") => Normal1(2, 3, Normal2(1)),
-
-    Symbol("fail2") => Normal1(2, 3, Normal2(3)),
-
-    Symbol("ok3") => Generic1(3, 3),
-
-    Symbol("fail3") => Generic1(3, -3),
-
-    Symbol("ok4") => Generic2((1, 2)),
-
-    Symbol("fail4") => Generic2(()),
-
-    Symbol("ok5") => Generic2("5"),
-
-    Symbol("fail5") => Generic2(Int)
+specs = [
+    :s1 => @spec(Normal1(::Int, ::Int, ::Real || ::Complex || _)),
+    :s2 => @spec(Normal1(::Int, ::Int, Normal2(1 || ::Int))),
+    :s3 => @spec(Generic1(3 || _, 4 || ::Int)),
+    :s4 => @spec(Generic2((1 || _, 2 || _))),
+    :s5 => @spec(Generic1(::String || _, 0)  || Generic2(::String || _)),
+    :s6 => @spec(Generic1(_, ::Int) || Generic2(_) || Normal2(::Int) || Normal1(::Int, ::Int, _)),
+    :_ => @spec(_)
 ]
 
 implementations = [
     :MLStyle => (@λ begin
-        Normal1(c = ::T where T <: Number) -> 1
+        Normal1(c = ::Number) -> 1
         Normal1(c = Normal2(1)) -> 2
         Generic1(a = 3, b = 3) -> 3
         Generic2((1, 2)) -> 4
@@ -88,9 +79,20 @@ implementations = [
     end
 ]
 
-criterion(x) = (meantime = mean(x.times), allocs = 1 + x.allocs)
-df = bcompare(criterion, data, implementations, repeat=1)
+records = NamedTuple{(:time_mean, :implementation, :case)}[]
+for (spec_id, spec) in specs
+    # group_key = string(spec_id)
+    # suite[group_key] = BenchmarkGroup()
+    for (impl_id, impl_fn) in implementations
+        bench′ =
+            @benchmark $impl_fn(sample) setup = (sample = $generate($spec)) samples = 2000
+        time′ = mean(bench′.times)
+        @info :bench (spec_id, impl_id, time′)
+        push!(records, (time_mean = time′, implementation = impl_id, case = spec_id))
+    end
+end
 
+df = DataFrame(records)
 
 @info df
 
@@ -99,14 +101,14 @@ theme = Theme(
     colorkey_swatch_shape = :circle,
     minor_label_font = "Consolas",
     major_label_font = "Consolas",
-    point_size=5px
+    point_size = 5px,
 )
+report_meantime, df_time =
+    report(df, Scale.y_log2, theme, Guide.title("Datatypes"); benchfield = :time_mean, baseline = :MLStyle)
 
-report_meantime, df_time = report(df, Scale.y_log2, theme; benchfield=:meantime, baseline=:MLStyle)
-
-open("stats/vs-match(datatype).txt", "w") do f
+open("stats/bench-datatype.txt", "w") do f
     write(f, string(df))
 end
 
-draw(SVG("stats/vs-match(datatype)-on-time.svg", 10inch, 4inch), report_meantime);
+draw(SVG("stats/bench-datatype.svg", 10inch, 4inch), report_meantime)
 end

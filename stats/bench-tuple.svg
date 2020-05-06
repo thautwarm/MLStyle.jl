@@ -1,0 +1,356 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<svg xmlns="http://www.w3.org/2000/svg"
+     xmlns:xlink="http://www.w3.org/1999/xlink"
+     xmlns:gadfly="http://www.gadflyjl.org/ns"
+     version="1.2"
+     width="254mm" height="101.6mm" viewBox="0 0 254 101.6"
+     stroke="none"
+     fill="#000000"
+     stroke-width="0.3"
+     font-size="3.88"
+>
+<defs>
+  <marker id="arrow" markerWidth="15" markerHeight="7" refX="5" refY="3.5" orient="auto" markerUnits="strokeWidth">
+    <path d="M0,0 L15,3.5 L0,7 z" stroke="context-stroke" fill="context-stroke"/>
+  </marker>
+</defs>
+<g class="plotroot yscalable" id="img-ee24f64e-1">
+  <g class="guide xlabels" font-size="2.82" font-family="Consolas" fill="#6C606B" id="img-ee24f64e-2">
+    <g transform="translate(29.36,92.97)">
+      <g class="primitive">
+        <text text-anchor="middle" dy="0.6em">spec1(min: 246.341)</text>
+      </g>
+    </g>
+    <g transform="translate(64.49,92.97)">
+      <g class="primitive">
+        <text text-anchor="middle" dy="0.6em">spec2(min: 5046.047)</text>
+      </g>
+    </g>
+    <g transform="translate(99.62,92.97)">
+      <g class="primitive">
+        <text text-anchor="middle" dy="0.6em">spec3(min: 5431.964)</text>
+      </g>
+    </g>
+    <g transform="translate(134.75,92.97)">
+      <g class="primitive">
+        <text text-anchor="middle" dy="0.6em">spec4(min: 4488.054)</text>
+      </g>
+    </g>
+    <g transform="translate(169.87,92.97)">
+      <g class="primitive">
+        <text text-anchor="middle" dy="0.6em">spec5(min: 20.053)</text>
+      </g>
+    </g>
+    <g transform="translate(205,92.97)">
+      <g class="primitive">
+        <text text-anchor="middle" dy="0.6em">_(min: 24.333)</text>
+      </g>
+    </g>
+  </g>
+  <g class="guide colorkey" id="img-ee24f64e-3">
+    <g fill="#4C404B" font-size="2.82" font-family="'PT Sans','Helvetica Neue','Helvetica',sans-serif" id="img-ee24f64e-4">
+      <g transform="translate(226.38,47.67)" id="img-ee24f64e-5" class="color_MLStyle">
+        <g class="primitive">
+          <text dy="0.35em">MLStyle</text>
+        </g>
+      </g>
+      <g transform="translate(226.38,51.29)" id="img-ee24f64e-6" class="color_Rematch">
+        <g class="primitive">
+          <text dy="0.35em">Rematch</text>
+        </g>
+      </g>
+      <g transform="translate(226.38,54.92)" id="img-ee24f64e-7" class="color_Match.jl">
+        <g class="primitive">
+          <text dy="0.35em">Match.jl</text>
+        </g>
+      </g>
+      <g transform="translate(226.38,58.55)" id="img-ee24f64e-8" class="color_HandWritten">
+        <g class="primitive">
+          <text dy="0.35em">HandWritten</text>
+        </g>
+      </g>
+    </g>
+    <g fill-opacity="1" id="img-ee24f64e-9">
+      <g transform="translate(224.38,47.67)" id="img-ee24f64e-10" class="color_MLStyle" fill="#00BFFF" stroke="#FFFFFF">
+        <circle cx="0" cy="0" r="0.91" class="primitive"/>
+      </g>
+      <g transform="translate(224.38,51.29)" id="img-ee24f64e-11" class="color_Rematch" fill="#D4CA3A" stroke="#FFFFFF">
+        <circle cx="0" cy="0" r="0.91" class="primitive"/>
+      </g>
+      <g transform="translate(224.38,54.92)" id="img-ee24f64e-12" class="color_Match.jl" fill="#FF6DAE" stroke="#FFFFFF">
+        <circle cx="0" cy="0" r="0.91" class="primitive"/>
+      </g>
+      <g transform="translate(224.38,58.55)" id="img-ee24f64e-13" class="color_HandWritten" fill="#00B78D" stroke="#FFFFFF">
+        <circle cx="0" cy="0" r="0.91" class="primitive"/>
+      </g>
+    </g>
+    <g fill="#362A35" font-size="3.88" font-family="'PT Sans','Helvetica Neue','Helvetica',sans-serif" stroke="#000000" stroke-opacity="0.000" id="img-ee24f64e-14">
+      <g transform="translate(223.56,43.84)" id="img-ee24f64e-15">
+        <g class="primitive">
+          <text dy="-0em">implementation</text>
+        </g>
+      </g>
+    </g>
+  </g>
+  <g clip-path="url(#img-ee24f64e-16)">
+    <g id="img-ee24f64e-17">
+      <g pointer-events="visible" fill="#000000" fill-opacity="0.000" stroke="#000000" stroke-opacity="0.000" class="guide background" id="img-ee24f64e-18">
+        <g transform="translate(117.18,51.29)" id="img-ee24f64e-19">
+          <path d="M-105.38,-40.68 L 105.38 -40.68 105.38 40.68 -105.38 40.68 z" class="primitive"/>
+        </g>
+      </g>
+      <g class="guide ygridlines xfixed" stroke-dasharray="0.5,0.5" stroke-width="0.2" stroke="#D0D0E0" id="img-ee24f64e-20">
+        <g transform="translate(117.18,89.97)" id="img-ee24f64e-21">
+          <path fill="none" d="M-105.38,0 L 105.38 0" class="primitive"/>
+        </g>
+        <g transform="translate(117.18,70.63)" id="img-ee24f64e-22">
+          <path fill="none" d="M-105.38,0 L 105.38 0" class="primitive"/>
+        </g>
+        <g transform="translate(117.18,51.29)" id="img-ee24f64e-23">
+          <path fill="none" d="M-105.38,0 L 105.38 0" class="primitive"/>
+        </g>
+        <g transform="translate(117.18,31.95)" id="img-ee24f64e-24">
+          <path fill="none" d="M-105.38,0 L 105.38 0" class="primitive"/>
+        </g>
+        <g transform="translate(117.18,12.61)" id="img-ee24f64e-25">
+          <path fill="none" d="M-105.38,0 L 105.38 0" class="primitive"/>
+        </g>
+      </g>
+      <g class="guide xgridlines yfixed" stroke-dasharray="0.5,0.5" stroke-width="0.2" stroke="#D0D0E0" id="img-ee24f64e-26">
+        <g transform="translate(46.93,51.29)" id="img-ee24f64e-27">
+          <path fill="none" d="M0,-40.68 L 0 40.68" class="primitive"/>
+        </g>
+        <g transform="translate(82.05,51.29)" id="img-ee24f64e-28">
+          <path fill="none" d="M0,-40.68 L 0 40.68" class="primitive"/>
+        </g>
+        <g transform="translate(117.18,51.29)" id="img-ee24f64e-29">
+          <path fill="none" d="M0,-40.68 L 0 40.68" class="primitive"/>
+        </g>
+        <g transform="translate(152.31,51.29)" id="img-ee24f64e-30">
+          <path fill="none" d="M0,-40.68 L 0 40.68" class="primitive"/>
+        </g>
+        <g transform="translate(187.44,51.29)" id="img-ee24f64e-31">
+          <path fill="none" d="M0,-40.68 L 0 40.68" class="primitive"/>
+        </g>
+      </g>
+      <g class="plotpanel" id="img-ee24f64e-32">
+        <metadata>
+          <boundingbox value="11.800000000000011mm 10.611666666666665mm 210.76333333333332mm 81.36166666666666mm"/>
+          <unitbox value="0.5 15.517051942176359 6.0 -21.034103884352717"/>
+        </metadata>
+        <g class="geometry" id="img-ee24f64e-33">
+          <g stroke-width="0.3" id="img-ee24f64e-34">
+            <g class="color_HandWritten" fill-opacity="1" stroke="#FFFFFF" fill="#00B78D" id="img-ee24f64e-35">
+              <g class="marker" id="img-ee24f64e-36">
+                <g transform="translate(205,70.26)" id="img-ee24f64e-37">
+                  <circle cx="0" cy="0" r="1.32" class="primitive"/>
+                </g>
+              </g>
+            </g>
+            <g class="color_Match.jl" fill-opacity="1" stroke="#FFFFFF" fill="#FF6DAE" id="img-ee24f64e-38">
+              <g class="marker" id="img-ee24f64e-39">
+                <g transform="translate(205,69.96)" id="img-ee24f64e-40">
+                  <circle cx="0" cy="0" r="1.32" class="primitive"/>
+                </g>
+              </g>
+            </g>
+            <g class="color_Rematch" fill-opacity="1" stroke="#FFFFFF" fill="#D4CA3A" id="img-ee24f64e-41">
+              <g class="marker" id="img-ee24f64e-42">
+                <g transform="translate(205,69.72)" id="img-ee24f64e-43">
+                  <circle cx="0" cy="0" r="1.32" class="primitive"/>
+                </g>
+              </g>
+            </g>
+            <g class="color_MLStyle" fill-opacity="1" stroke="#FFFFFF" fill="#00BFFF" id="img-ee24f64e-44">
+              <g class="marker" id="img-ee24f64e-45">
+                <g transform="translate(205,70.63)" id="img-ee24f64e-46">
+                  <circle cx="0" cy="0" r="1.32" class="primitive"/>
+                </g>
+              </g>
+            </g>
+            <g class="color_HandWritten" fill-opacity="1" stroke="#FFFFFF" fill="#00B78D" id="img-ee24f64e-47">
+              <g class="marker" id="img-ee24f64e-48">
+                <g transform="translate(169.87,70.7)" id="img-ee24f64e-49">
+                  <circle cx="0" cy="0" r="1.32" class="primitive"/>
+                </g>
+              </g>
+            </g>
+            <g class="color_Match.jl" fill-opacity="1" stroke="#FFFFFF" fill="#FF6DAE" id="img-ee24f64e-50">
+              <g class="marker" id="img-ee24f64e-51">
+                <g transform="translate(169.87,70.89)" id="img-ee24f64e-52">
+                  <circle cx="0" cy="0" r="1.32" class="primitive"/>
+                </g>
+              </g>
+            </g>
+            <g class="color_Rematch" fill-opacity="1" stroke="#FFFFFF" fill="#D4CA3A" id="img-ee24f64e-53">
+              <g class="marker" id="img-ee24f64e-54">
+                <g transform="translate(169.87,70.76)" id="img-ee24f64e-55">
+                  <circle cx="0" cy="0" r="1.32" class="primitive"/>
+                </g>
+              </g>
+            </g>
+            <g class="color_MLStyle" fill-opacity="1" stroke="#FFFFFF" fill="#00BFFF" id="img-ee24f64e-56">
+              <g class="marker" id="img-ee24f64e-57">
+                <g transform="translate(169.87,70.63)" id="img-ee24f64e-58">
+                  <circle cx="0" cy="0" r="1.32" class="primitive"/>
+                </g>
+              </g>
+            </g>
+            <g class="color_HandWritten" fill-opacity="1" stroke="#FFFFFF" fill="#00B78D" id="img-ee24f64e-59">
+              <g class="marker" id="img-ee24f64e-60">
+                <g transform="translate(134.75,61.44)" id="img-ee24f64e-61">
+                  <circle cx="0" cy="0" r="1.32" class="primitive"/>
+                </g>
+              </g>
+            </g>
+            <g class="color_Match.jl" fill-opacity="1" stroke="#FFFFFF" fill="#FF6DAE" id="img-ee24f64e-62">
+              <g class="marker" id="img-ee24f64e-63">
+                <g transform="translate(134.75,68.77)" id="img-ee24f64e-64">
+                  <circle cx="0" cy="0" r="1.32" class="primitive"/>
+                </g>
+              </g>
+            </g>
+            <g class="color_Rematch" fill-opacity="1" stroke="#FFFFFF" fill="#D4CA3A" id="img-ee24f64e-65">
+              <g class="marker" id="img-ee24f64e-66">
+                <g transform="translate(134.75,68.71)" id="img-ee24f64e-67">
+                  <circle cx="0" cy="0" r="1.32" class="primitive"/>
+                </g>
+              </g>
+            </g>
+            <g class="color_MLStyle" fill-opacity="1" stroke="#FFFFFF" fill="#00BFFF" id="img-ee24f64e-68">
+              <g class="marker" id="img-ee24f64e-69">
+                <g transform="translate(134.75,70.63)" id="img-ee24f64e-70">
+                  <circle cx="0" cy="0" r="1.32" class="primitive"/>
+                </g>
+              </g>
+            </g>
+            <g class="color_HandWritten" fill-opacity="1" stroke="#FFFFFF" fill="#00B78D" id="img-ee24f64e-71">
+              <g class="marker" id="img-ee24f64e-72">
+                <g transform="translate(99.62,70.77)" id="img-ee24f64e-73">
+                  <circle cx="0" cy="0" r="1.32" class="primitive"/>
+                </g>
+              </g>
+            </g>
+            <g class="color_Match.jl" fill-opacity="1" stroke="#FFFFFF" fill="#FF6DAE" id="img-ee24f64e-74">
+              <g class="marker" id="img-ee24f64e-75">
+                <g transform="translate(99.62,30)" id="img-ee24f64e-76">
+                  <circle cx="0" cy="0" r="1.32" class="primitive"/>
+                </g>
+              </g>
+            </g>
+            <g class="color_Rematch" fill-opacity="1" stroke="#FFFFFF" fill="#D4CA3A" id="img-ee24f64e-77">
+              <g class="marker" id="img-ee24f64e-78">
+                <g transform="translate(99.62,30.12)" id="img-ee24f64e-79">
+                  <circle cx="0" cy="0" r="1.32" class="primitive"/>
+                </g>
+              </g>
+            </g>
+            <g class="color_MLStyle" fill-opacity="1" stroke="#FFFFFF" fill="#00BFFF" id="img-ee24f64e-80">
+              <g class="marker" id="img-ee24f64e-81">
+                <g transform="translate(99.62,70.63)" id="img-ee24f64e-82">
+                  <circle cx="0" cy="0" r="1.32" class="primitive"/>
+                </g>
+              </g>
+            </g>
+            <g class="color_HandWritten" fill-opacity="1" stroke="#FFFFFF" fill="#00B78D" id="img-ee24f64e-83">
+              <g class="marker" id="img-ee24f64e-84">
+                <g transform="translate(64.49,70.53)" id="img-ee24f64e-85">
+                  <circle cx="0" cy="0" r="1.32" class="primitive"/>
+                </g>
+              </g>
+            </g>
+            <g class="color_Match.jl" fill-opacity="1" stroke="#FFFFFF" fill="#FF6DAE" id="img-ee24f64e-86">
+              <g class="marker" id="img-ee24f64e-87">
+                <g transform="translate(64.49,68.72)" id="img-ee24f64e-88">
+                  <circle cx="0" cy="0" r="1.32" class="primitive"/>
+                </g>
+              </g>
+            </g>
+            <g class="color_Rematch" fill-opacity="1" stroke="#FFFFFF" fill="#D4CA3A" id="img-ee24f64e-89">
+              <g class="marker" id="img-ee24f64e-90">
+                <g transform="translate(64.49,68.71)" id="img-ee24f64e-91">
+                  <circle cx="0" cy="0" r="1.32" class="primitive"/>
+                </g>
+              </g>
+            </g>
+            <g class="color_MLStyle" fill-opacity="1" stroke="#FFFFFF" fill="#00BFFF" id="img-ee24f64e-92">
+              <g class="marker" id="img-ee24f64e-93">
+                <g transform="translate(64.49,70.63)" id="img-ee24f64e-94">
+                  <circle cx="0" cy="0" r="1.32" class="primitive"/>
+                </g>
+              </g>
+            </g>
+            <g class="color_HandWritten" fill-opacity="1" stroke="#FFFFFF" fill="#00B78D" id="img-ee24f64e-95">
+              <g class="marker" id="img-ee24f64e-96">
+                <g transform="translate(29.36,70.67)" id="img-ee24f64e-97">
+                  <circle cx="0" cy="0" r="1.32" class="primitive"/>
+                </g>
+              </g>
+            </g>
+            <g class="color_Match.jl" fill-opacity="1" stroke="#FFFFFF" fill="#FF6DAE" id="img-ee24f64e-98">
+              <g class="marker" id="img-ee24f64e-99">
+                <g transform="translate(29.36,68.07)" id="img-ee24f64e-100">
+                  <circle cx="0" cy="0" r="1.32" class="primitive"/>
+                </g>
+              </g>
+            </g>
+            <g class="color_Rematch" fill-opacity="1" stroke="#FFFFFF" fill="#D4CA3A" id="img-ee24f64e-101">
+              <g class="marker" id="img-ee24f64e-102">
+                <g transform="translate(29.36,68.43)" id="img-ee24f64e-103">
+                  <circle cx="0" cy="0" r="1.32" class="primitive"/>
+                </g>
+              </g>
+            </g>
+            <g class="color_MLStyle" fill-opacity="1" stroke="#FFFFFF" fill="#00BFFF" id="img-ee24f64e-104">
+              <g class="marker" id="img-ee24f64e-105">
+                <g transform="translate(29.36,70.63)" id="img-ee24f64e-106">
+                  <circle cx="0" cy="0" r="1.32" class="primitive"/>
+                </g>
+              </g>
+            </g>
+          </g>
+        </g>
+      </g>
+    </g>
+  </g>
+  <g class="guide ylabels" font-size="2.82" font-family="Consolas" fill="#6C606B" id="img-ee24f64e-107">
+    <g transform="translate(10.8,89.97)" id="img-ee24f64e-108">
+      <g class="primitive">
+        <text text-anchor="end" dy="0.35em">2<tspan style="dominant-baseline:inherit" dy="-0.6em" font-size="83%">-5</tspan><tspan dy="0.498000em"></tspan></text>
+      </g>
+    </g>
+    <g transform="translate(10.8,70.63)" id="img-ee24f64e-109">
+      <g class="primitive">
+        <text text-anchor="end" dy="0.35em">2<tspan style="dominant-baseline:inherit" dy="-0.6em" font-size="83%">0</tspan><tspan dy="0.498000em"></tspan></text>
+      </g>
+    </g>
+    <g transform="translate(10.8,51.29)" id="img-ee24f64e-110">
+      <g class="primitive">
+        <text text-anchor="end" dy="0.35em">2<tspan style="dominant-baseline:inherit" dy="-0.6em" font-size="83%">5</tspan><tspan dy="0.498000em"></tspan></text>
+      </g>
+    </g>
+    <g transform="translate(10.8,31.95)" id="img-ee24f64e-111">
+      <g class="primitive">
+        <text text-anchor="end" dy="0.35em">2<tspan style="dominant-baseline:inherit" dy="-0.6em" font-size="83%">10</tspan><tspan dy="0.498000em"></tspan></text>
+      </g>
+    </g>
+    <g transform="translate(10.8,12.61)" id="img-ee24f64e-112">
+      <g class="primitive">
+        <text text-anchor="end" dy="0.35em">2<tspan style="dominant-baseline:inherit" dy="-0.6em" font-size="83%">15</tspan><tspan dy="0.498000em"></tspan></text>
+      </g>
+    </g>
+  </g>
+  <g font-size="3.88" font-family="Consolas" fill="#564A55" stroke="#000000" stroke-opacity="0.000" id="img-ee24f64e-113">
+    <g transform="translate(117.18,5)" id="img-ee24f64e-114">
+      <g class="primitive">
+        <text text-anchor="middle" dy="0.6em">Tuples</text>
+      </g>
+    </g>
+  </g>
+</g>
+<defs>
+  <clipPath id="img-ee24f64e-16">
+    <path d="M11.8,10.61 L 222.56 10.61 222.56 91.97 11.8 91.97" />
+  </clipPath>
+</defs>
+</svg>

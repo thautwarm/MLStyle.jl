@@ -1,0 +1,12 @@
+8×3 DataFrames.DataFrame
+│ Row │ time_mean │ implementation │ case         │
+│     │ Float64   │ Symbol         │ Symbol       │
+├─────┼───────────┼────────────────┼──────────────┤
+│ 1   │ 1307.94   │ MLStyle        │ N(fields)=2  │
+│ 2   │ 273424.0  │ MacroTools     │ N(fields)=2  │
+│ 3   │ 3986.56   │ MLStyle        │ N(fields)=5  │
+│ 4   │ 285083.0  │ MacroTools     │ N(fields)=5  │
+│ 5   │ 7106.74   │ MLStyle        │ N(fields)=10 │
+│ 6   │ 268767.0  │ MacroTools     │ N(fields)=10 │
+│ 7   │ 47588.1   │ MLStyle        │ N(fields)=50 │
+│ 8   │ 295722.0  │ MacroTools     │ N(fields)=50 │

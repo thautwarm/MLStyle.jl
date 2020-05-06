@@ -3,8 +3,9 @@
 #    pkg> add https://github.com/thautwarm/Benchmarkplotting.jl
 using MLStyle
 using ArgParse
-
-versus_items = ("misc", "hw-tuple", "hw-array", "macrotools", "match", "match-datatype")
+include("matrix-benchmark/sampler.jl")
+export ArbitrarySampler
+versus_items = ("misc", "tuple", "array", "structfields", "vs-match", "datatype")
 
 function parse_cmd()
     s = ArgParseSettings()
@@ -21,7 +22,7 @@ end
 check_versus(x) = x in versus_items
 
 function benchmark(x)
-    filename = "matrix-benchmark/versus-$x.jl"
+    filename = "matrix-benchmark/bench-$x.jl"
     open(filename) do f
         include_string(Main, read(f, String), filename);
     end

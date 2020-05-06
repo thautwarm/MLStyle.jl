@@ -1,0 +1,25 @@
+21×3 DataFrames.DataFrame
+│ Row │ time_mean │ implementation │ case   │
+│     │ Float64   │ Symbol         │ Symbol │
+├─────┼───────────┼────────────────┼────────┤
+│ 1   │ 15.4019   │ MLStyle        │ s1     │
+│ 2   │ 15.0245   │ Rematch        │ s1     │
+│ 3   │ 311.568   │ Match.jl       │ s1     │
+│ 4   │ 13.8093   │ MLStyle        │ s2     │
+│ 5   │ 13.7919   │ Rematch        │ s2     │
+│ 6   │ 821.164   │ Match.jl       │ s2     │
+│ 7   │ 20.0405   │ MLStyle        │ s3     │
+│ 8   │ 29.4239   │ Rematch        │ s3     │
+│ 9   │ 30.1532   │ Match.jl       │ s3     │
+│ 10  │ 50.6336   │ MLStyle        │ s4     │
+│ 11  │ 207.784   │ Rematch        │ s4     │
+│ 12  │ 300.283   │ Match.jl       │ s4     │
+│ 13  │ 22.5969   │ MLStyle        │ s5     │
+│ 14  │ 31.4151   │ Rematch        │ s5     │
+│ 15  │ 46.3087   │ Match.jl       │ s5     │
+│ 16  │ 21.5415   │ MLStyle        │ s6     │
+│ 17  │ 26.4241   │ Rematch        │ s6     │
+│ 18  │ 76.7833   │ Match.jl       │ s6     │
+│ 19  │ 24.0243   │ MLStyle        │ _      │
+│ 20  │ 25.9398   │ Rematch        │ _      │
+│ 21  │ 28.1421   │ Match.jl       │ _      │

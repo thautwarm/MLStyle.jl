@@ -26,7 +26,7 @@ end
 function record_def(Struct, line::LineNumberNode, ::Module)
     quote
         $line
-        function $MatchImpl.pattern_uncall(t::Type{$Struct}, self::Function, type_params, type_args, args)
+        function $MLStyle.pattern_uncall(t::Type{$Struct}, self::Function, type_params, type_args, args)
             $line
             isempty(type_params) || return begin
                 call = Expr(:call, t, args...)
@@ -36,7 +36,7 @@ function record_def(Struct, line::LineNumberNode, ::Module)
             all_field_names = fieldnames(t)
             partial_field_names = Symbol[]
             patterns = Function[]
-            $MatchImpl.@switch args begin    
+            $MLStyle.@switch args begin    
             @case [Expr(:parameters, kwargs...), args...]
                 @goto endswitch
             @case let kwargs = [] end
@@ -59,7 +59,7 @@ function record_def(Struct, line::LineNumberNode, ::Module)
                 error("count of positional fields should be 0 or the same as the fields($all_field_names)")
             end
             for e in kwargs
-                $MatchImpl.@switch e begin
+                $MLStyle.@switch e begin
                 @case :: Symbol
                     e in all_field_names || error("unknown field name $e for $t when field punnning.")
                     push!(partial_field_names, e)

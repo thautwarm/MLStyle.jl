@@ -41,6 +41,8 @@ end
 macro reexport(m)
     m = __module__.eval(m)
     ns = names(m)
+    m_name = nameof(m)
+    ns = [n for n in ns if n !== m_name]
     isempty(ns) ? nothing : esc(:(export $(ns...)))
 end
 
