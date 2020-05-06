@@ -12,15 +12,15 @@ makedocs(
 
         # standard patterns
         MLStyle.Active,
-        MLStyle.Uncomprehensions,
         MLStyle.LambdaCases,
         MLStyle.WhenCases
     ],
     clean = false,
-    format = :html,
+    format = Documenter.HTML(
+        prettyurls = !("local" in ARGS)
+    ),
     sitename = "MLStyle.jl",
     linkcheck = !("skiplinks" in ARGS),
-    analytics = "UA-89508993-1",
     pages = [
         "Home"   => "index.md",
         "Syntax" => Any[
@@ -39,7 +39,6 @@ makedocs(
             "modules/cond.md"
         ]
     ],
-    html_prettyurls = !("local" in ARGS),
 )
 
 deploydocs(
