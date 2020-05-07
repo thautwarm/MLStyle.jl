@@ -3,7 +3,7 @@
 <html xmlns="http://www.w3.org/1999/xhtml">
   <head>
     <meta charset="utf-8" />
-    <title>MLStyle.jl &#8212; MLStyle.jl Documentation</title>
+    <title>What is MLStyle.jl? &#8212; MLStyle.jl Documentation</title>
     <link rel="stylesheet" href="_static/bootstrap-sphinx.css" type="text/css" />
     <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
     <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
@@ -13,7 +13,8 @@
     <script src="_static/language_data.js"></script>
     <link rel="index" title="Index" href="genindex.html" />
     <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="What is MLStyle.jl?" href="what.html" />
+    <link rel="next" title="Why use MLStyle.jl?" href="why.html" />
+    <link rel="prev" title="MLStyle.jl" href="index.html" />
 <meta charset='utf-8'>
 <meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
 <meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
@@ -34,7 +35,7 @@
           <span class="icon-bar"></span>
           <span class="icon-bar"></span>
         </button>
-        <a class="navbar-brand" href="#">
+        <a class="navbar-brand" href="index.html">
           MLStyle.jl</a>
         <span class="navbar-text navbar-version pull-left"><b></b></span>
       </div>
@@ -50,12 +51,12 @@
      id="dLabelGlobalToc"
      data-toggle="dropdown"
      data-target="#"
-     href="#">MLStyle.jl <b class="caret"></b></a>
+     href="index.html">MLStyle.jl <b class="caret"></b></a>
   <ul class="dropdown-menu globaltoc"
       role="menu"
-      aria-labelledby="dLabelGlobalToc"><ul>
-<li class="toctree-l1"><a class="reference internal" href="what.html">What is MLStyle.jl?</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="what.html#motivations">Motivations</a></li>
+      aria-labelledby="dLabelGlobalToc"><ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">What is MLStyle.jl?</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#motivations">Motivations</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="why.html">Why use MLStyle.jl?</a><ul>
@@ -155,14 +156,8 @@
   <ul class="dropdown-menu localtoc"
       role="menu"
       aria-labelledby="dLabelLocalToc"><ul>
-<li><a class="reference internal" href="#">MLStyle.jl</a><ul>
-<li><a class="reference internal" href="#introduction">Introduction</a></li>
-</ul>
-</li>
-<li><a class="reference internal" href="#syntax">Syntax</a></li>
-<li><a class="reference internal" href="#modules">Modules</a><ul>
-<li><a class="reference internal" href="#others">Others</a></li>
-<li><a class="reference internal" href="#indices-and-tables">Indices and tables</a></li>
+<li><a class="reference internal" href="#">What is MLStyle.jl?</a><ul>
+<li><a class="reference internal" href="#motivations">Motivations</a></li>
 </ul>
 </li>
 </ul>
@@ -174,7 +169,11 @@
               
                 
   <li>
-    <a href="what.html" title="Next Chapter: What is MLStyle.jl?"><span class="glyphicon glyphicon-chevron-right visible-sm"></span><span class="hidden-sm hidden-tablet">What is MLStyle.jl? &raquo;</span>
+    <a href="index.html" title="Previous Chapter: MLStyle.jl"><span class="glyphicon glyphicon-chevron-left visible-sm"></span><span class="hidden-sm hidden-tablet">&laquo; MLStyle.jl</span>
+    </a>
+  </li>
+  <li>
+    <a href="why.html" title="Next Chapter: Why use MLStyle.jl?"><span class="glyphicon glyphicon-chevron-right visible-sm"></span><span class="hidden-sm hidden-tablet">Why use MLStyle.jl? &raquo;</span>
     </a>
   </li>
               
@@ -202,131 +201,23 @@
   <div class="row">
     <div class="body col-md-12 content" role="main">
       
-  <div class="section" id="mlstyle-jl">
-<h1>MLStyle.jl<a class="headerlink" href="#mlstyle-jl" title="Permalink to this headline">¶</a></h1>
-<blockquote>
-<div><p><em>If I have a chance to rename it, I’d change it to “FunctionalProgramming.jl”</em>.</p>
-</div></blockquote>
-<p>MLStyle is a Julia library which provides pattern matching and other infrastructures for functional programming.</p>
-<p>It is also generally considered as a library that provides efficient, easy-to-use,
-advanced and consistent facilities for metaprogramming.</p>
-<div class="section" id="introduction">
-<h2>Introduction<a class="headerlink" href="#introduction" title="Permalink to this headline">¶</a></h2>
-<div class="toctree-wrapper compound">
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="what.html">What is MLStyle.jl?</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="what.html#motivations">Motivations</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="why.html">Why use MLStyle.jl?</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="why.html#straightforward">Straightforward</a></li>
-<li class="toctree-l2"><a class="reference internal" href="why.html#performance-gain">Performance Gain</a></li>
-<li class="toctree-l2"><a class="reference internal" href="why.html#extensibility">Extensibility</a></li>
-<li class="toctree-l2"><a class="reference internal" href="why.html#referential-transparency">Referential Transparency</a></li>
-<li class="toctree-l2"><a class="reference internal" href="why.html#intuition-of-ast-manipulations">Intuition of AST Manipulations</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="how.html">Installation, Documentations and Tutorials</a></li>
-<li class="toctree-l1"><a class="reference internal" href="preview.html">Preview</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="preview.html#rock-paper-scissors">Rock Paper Scissors</a></li>
-<li class="toctree-l2"><a class="reference internal" href="preview.html#homoiconic-pattern-matching-for-julia-asts">Homoiconic pattern matching for Julia ASTs</a></li>
-<li class="toctree-l2"><a class="reference internal" href="preview.html#generalized-algebraic-data-types">Generalized Algebraic Data Types</a></li>
-<li class="toctree-l2"><a class="reference internal" href="preview.html#active-patterns">Active Patterns</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="benchmark.html">Benchmark</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="benchmark.html#arrays">Arrays</a></li>
-<li class="toctree-l2"><a class="reference internal" href="benchmark.html#tuples">Tuples</a></li>
-<li class="toctree-l2"><a class="reference internal" href="benchmark.html#data-types">Data Types</a></li>
-<li class="toctree-l2"><a class="reference internal" href="benchmark.html#extracting-struct-definitions">Extracting Struct Definitions</a></li>
-<li class="toctree-l2"><a class="reference internal" href="benchmark.html#misc">Misc</a></li>
-<li class="toctree-l2"><a class="reference internal" href="benchmark.html#an-example-from-match-jl-documentation">An Example from Match.jl Documentation</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="contribute.html">Contributing to MLStyle</a></li>
-</ul>
-</div>
-</div>
-</div>
-<div class="section" id="syntax">
-<h1>Syntax<a class="headerlink" href="#syntax" title="Permalink to this headline">¶</a></h1>
-<div class="toctree-wrapper compound">
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="syntax/adt.html">Algebraic Data Types</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="syntax/adt.html#cheat-sheet">Cheat Sheet</a></li>
-<li class="toctree-l2"><a class="reference internal" href="syntax/adt.html#examples">Examples</a></li>
-<li class="toctree-l2"><a class="reference internal" href="syntax/adt.html#example-modeling-arithmetic-operations">Example: Modeling Arithmetic Operations</a></li>
-<li class="toctree-l2"><a class="reference internal" href="syntax/adt.html#about-type-parameters">About Type Parameters</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="syntax/pattern.html">Patterns</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="syntax/pattern.html#literal-patterns">Literal Patterns</a></li>
-<li class="toctree-l2"><a class="reference internal" href="syntax/pattern.html#capturing-patterns">Capturing Patterns</a></li>
-<li class="toctree-l2"><a class="reference internal" href="syntax/pattern.html#type-patterns">Type Patterns</a></li>
-<li class="toctree-l2"><a class="reference internal" href="syntax/pattern.html#as-patterns">As-Patterns</a></li>
-<li class="toctree-l2"><a class="reference internal" href="syntax/pattern.html#guards">Guards</a></li>
-<li class="toctree-l2"><a class="reference internal" href="syntax/pattern.html#predicates">Predicates</a></li>
-<li class="toctree-l2"><a class="reference internal" href="syntax/pattern.html#range-patterns">Range Patterns</a></li>
-<li class="toctree-l2"><a class="reference internal" href="syntax/pattern.html#reference-patterns">Reference Patterns</a></li>
-<li class="toctree-l2"><a class="reference internal" href="syntax/pattern.html#custom-patterns">Custom Patterns</a></li>
-<li class="toctree-l2"><a class="reference internal" href="syntax/pattern.html#dicts-tuples-arrays">Dicts, Tuples, Arrays</a></li>
-<li class="toctree-l2"><a class="reference internal" href="syntax/pattern.html#or-patterns">Or Patterns</a></li>
-<li class="toctree-l2"><a class="reference internal" href="syntax/pattern.html#deconstructions-of-composite-data">Deconstructions of Composite Data</a></li>
-<li class="toctree-l2"><a class="reference internal" href="syntax/pattern.html#advanced-type-patterns">Advanced Type Patterns</a></li>
-<li class="toctree-l2"><a class="reference internal" href="syntax/pattern.html#side-effect">Side-Effect</a></li>
-<li class="toctree-l2"><a class="reference internal" href="syntax/pattern.html#do-patterns-and-many-patterns">Do-Patterns and Many-Patterns</a></li>
-<li class="toctree-l2"><a class="reference internal" href="syntax/pattern.html#let-patterns">Let Patterns</a></li>
-<li class="toctree-l2"><a class="reference internal" href="syntax/pattern.html#active-patterns">Active Patterns</a></li>
-<li class="toctree-l2"><a class="reference internal" href="syntax/pattern.html#expr-patterns">Expr Patterns</a></li>
-<li class="toctree-l2"><a class="reference internal" href="syntax/pattern.html#julia-code-as-expr-patterns">Julia Code as Expr Patterns</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="syntax/switch.html">The Switch Statements</a></li>
-<li class="toctree-l1"><a class="reference internal" href="syntax/records.html">Records</a></li>
-<li class="toctree-l1"><a class="reference internal" href="syntax/when.html">When Destructuring</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="syntax/when.html#allow-destructuring-in-let-binding">Allow Destructuring in Let-Binding</a></li>
-<li class="toctree-l2"><a class="reference internal" href="syntax/when.html#sole-destructuring">Sole Destructuring</a></li>
-<li class="toctree-l2"><a class="reference internal" href="syntax/when.html#multiple-branches">Multiple Branches</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="syntax/pattern-function.html">Pattern Functions</a></li>
-</ul>
-</div>
-</div>
-<div class="section" id="modules">
-<h1>Modules<a class="headerlink" href="#modules" title="Permalink to this headline">¶</a></h1>
-<div class="toctree-wrapper compound">
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="modules/ast.html">MLStyle.Modules.AST</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="modules/ast.html#matchast">&#64;matchast</a></li>
-<li class="toctree-l2"><a class="reference internal" href="modules/ast.html#capture">&#64;capture</a></li>
-</ul>
-</li>
-<li class="toctree-l1"><a class="reference internal" href="modules/cond.html">MLStyle.Modules.Cond</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="modules/cond.html#cond">&#64;cond</a></li>
-</ul>
-</li>
-</ul>
-</div>
-<div class="section" id="others">
-<h2>Others<a class="headerlink" href="#others" title="Permalink to this headline">¶</a></h2>
-<div class="toctree-wrapper compound">
-<ul>
-<li class="toctree-l1"><a class="reference internal" href="tutorials/capture.html">Static Capturing</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="tutorials/capture.html#capture-pattern-from-mlstyle-modules-ast"><code class="docutils literal notranslate"><span class="pre">Capture</span></code> Pattern from <code class="docutils literal notranslate"><span class="pre">MLStyle.Modules.AST</span></code>:</a></li>
-<li class="toctree-l2"><a class="reference internal" href="tutorials/capture.html#raii-style">RAII-Style</a></li>
-</ul>
-</li>
-</ul>
-</div>
-</div>
-<div class="section" id="indices-and-tables">
-<h2>Indices and tables<a class="headerlink" href="#indices-and-tables" title="Permalink to this headline">¶</a></h2>
-<ul class="simple">
-<li><p><a class="reference internal" href="genindex.html"><span class="std std-ref">Index</span></a></p></li>
-<li><p><a class="reference internal" href="py-modindex.html"><span class="std std-ref">Module Index</span></a></p></li>
-<li><p><a class="reference internal" href="search.html"><span class="std std-ref">Search Page</span></a></p></li>
-</ul>
+  <div class="section" id="what-is-mlstyle-jl">
+<h1>What is MLStyle.jl?<a class="headerlink" href="#what-is-mlstyle-jl" title="Permalink to this headline">¶</a></h1>
+<p><a class="reference external" href="https://travis-ci.org/thautwarm/MLStyle.jl"><img alt="Build Status" src="https://travis-ci.org/thautwarm/MLStyle.jl.svg?branch=master" /></a>
+<a class="reference external" href="https://codecov.io/gh/thautwarm/MLStyle.jl"><img alt="codecov" src="https://codecov.io/gh/thautwarm/MLStyle.jl/branch/master/graph/badge.svg" /></a>
+<a class="reference external" href="https://github.com/thautwarm/MLStyle.jl/blob/master/LICENSE"><img alt="License" src="https://img.shields.io/badge/license-MIT-blue.svg" /></a>
+<a class="reference external" href="https://thautwarm.github.io/MLStyle.jl/latest/"><img alt="Docs" src="https://img.shields.io/badge/docs-latest-purple.svg" /></a>
+<a class="reference external" href="https://gitter.im/MLStyle-jl/community?utm_source=badge&amp;utm_medium=badge&amp;utm_campaign=pr-badge&amp;utm_content=badge"><img alt="Join the chat at https://gitter.im/MLStyle-jl/community" src="https://badges.gitter.im/MLStyle-jl/community.svg" /></a></p>
+<p><em><strong>This is the documentation for unreleased v0.4, which has a lot of improvements, i.e. “changes”.</strong></em></p>
+<p><em><strong>You may now check docs of v0.3.1.</strong></em>: <a class="reference external" href="https://thautwarm.github.io/MLStyle.jl/stable/">MLStyle v0.3.1</a></p>
+<p>MLStyle.jl is a Julia package that provides multiple productivity tools from ML (<a class="reference external" href="https://en.wikipedia.org/wiki/ML_(programming_language)">Meta Language</a>) like <a class="reference external" href="https://en.wikipedia.org/wiki/Pattern_matching">pattern matching</a> which is statically generated and extensible, ADTs/GADTs (<a class="reference external" href="https://en.wikipedia.org/wiki/Algebraic_data_type">Algebraic Data Type</a>, <a class="reference external" href="https://en.wikipedia.org/wiki/Generalized_algebraic_data_type">Generalized Algebraic Data Type</a>) and <a class="reference external" href="https://docs.microsoft.com/en-us/dotnet/fsharp/language-reference/active-patterns">Active Patterns</a>.</p>
+<p>Think of MLStyle.jl as a package bringing advanced functional programming idioms to Julia.</p>
+<div class="section" id="motivations">
+<h2>Motivations<a class="headerlink" href="#motivations" title="Permalink to this headline">¶</a></h2>
+<p>Those used to functional programming may feel limited when they don’t have pattern matching and ADTs, and of course I’m one of them.</p>
+<p>However, I don’t want to make a trade-off here by using some available alternatives that miss features or are not well-optimized. Just like <a class="reference external" href="https://julialang.org/blog/2012/02/why-we-created-julia">why those greedy people created Julia</a>, I’m also so greedy that <strong>I want to integrate all those useful features into one language, and make all of them convenient, efficient and extensible</strong>.</p>
+<p>On the other side, in recent years I was addicted to extending Python with metaprogramming and even internal mechanisms. Although I made something interesting like <a class="reference external" href="https://github.com/Xython/pattern-matching">pattern-matching</a>, <a class="reference external" href="https://github.com/thautwarm/Redy/blob/master/Redy/Opt/builtin_features/_goto.py">goto</a>, <a class="reference external" href="https://github.com/thautwarm/Redy/tree/master/Redy/ADT">ADTs</a>, <a class="reference external" href="https://github.com/thautwarm/Redy/blob/master/Redy/Opt/builtin_features/_constexpr.py">constexpr</a>, <a class="reference external" href="https://github.com/thautwarm/Redy/blob/master/Redy/Opt/builtin_features/_macro.py">macros</a>, etc., most of these implementations are also disgustingly evil. Fortunately, in Julia, all of them could be achieved straightforwardly without any black magic, at last, some of these ideas come into existence with MLStyle.jl.</p>
+<p>Finally, we have such a library that provides <strong>extensible pattern matching</strong> for such an efficient language.</p>
 </div>
 </div>
 
@@ -343,7 +234,7 @@ advanced and consistent facilities for metaprogramming.</p>
         <br/>
         
 <div id="sourcelink">
-  <a href="_sources/index.rst.txt"
+  <a href="_sources/what.md.txt"
      rel="nofollow">Source</a>
 </div>
       
