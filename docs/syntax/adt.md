@@ -96,41 +96,41 @@ Example: Modeling Arithmetic Operations
 
 ```julia
 using MLStyle
-@data internal Arith begin
+@data Arith begin
     Number(Int)
+    Add(Arith, Arith)
     Minus(Arith, Arith)
     Mult(Arith, Arith)
     Divide(Arith, Arith)
 end
 ```
 
-Above codes makes a clarified description about `Arithmetic` and provides a corresponding implementation.
+Above codes makes a clarified description about Arithmetic operations and provides a corresponding implementation.
 
 If you want to transpile above ADTs to some specific language, there is a clear step:
 
-```julia
+```julia-console
+julia> eval_arith(arith :: Arith) =
+          # locally and hygienically change the meaning of '!'
+           let ! = eval_arith
+               @match arith begin
+                   Number(v)        => v
+                   Add(fst, snd)    => !fst + !snd
+                   Minus(fst, snd)  => !fst - !snd
+                   Mult(fst, snd)   => !fst * !snd
+                   Divide(fst, snd) => !fst / !snd
+               end
+           end
+eval_arith (generic function with 1 method)
 
-eval_arith(arith :: Arith) =
-    let wrap_op(op)  = (a, b) -> op(eval_arith(a), eval_arith(b)),
-        (+, -, *, /) = map(wrap_op, (+, -, *, /))
-        @match arith begin
-            Number(v)        => v
-            Minus(fst, snd)  => fst - snd
-            Mult(fst, snd)   => fst * snd
-            Divide(fst, snd) => fst / snd
-        end
-    end
-
-eval_arith(
-    Minus(
-        Number(2),
-        Divide(Number(20),
-               Mult(Number(2),
-                    Number(5)))))
-# => 0
+julia> eval_arith(
+           Minus(
+               Number(2),
+               Divide(Number(20),
+                      Mult(Number(2),
+                           Number(5)))))
+0.0
 ```
-
-
 
 About Type Parameters
 ----------------------------------------------------

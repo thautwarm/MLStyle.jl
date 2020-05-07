@@ -8,7 +8,7 @@
 
 Providing intuitive, fast, consistent and extensible functional programming infrastructures, and metaprogramming facilities.
 
-Check everything in [Documentation Website](https://thautwarm.github.io/MLStyle.jl/latest/).
+Check everything in the [documentation website](https://thautwarm.github.io/MLStyle.jl/latest/).
 
 ## Preview
 

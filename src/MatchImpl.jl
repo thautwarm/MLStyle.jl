@@ -110,18 +110,9 @@ function ex2tf(m::Module, w::Where)
                     true
                 end
             end
+
+            tp_ret = Expr(:tuple, tp_vec...)
             
-            tp_guard = foldr(tps, init=true) do tp, last
-                tp isa Symbol && return last
-                last === true && return tp
-                Expr(:&&, tp, last)
-            end
-
-            tp_chk_ret = Expr(:tuple, tp_vec...)
-            if tp_guard !== true
-                tp_chk_ret = :($tp_guard ? $tp_chk_ret : nothing)
-            end
-
             targns = Symbol[]
             fn = gensym("extract type params")
             testn = gensym("test type params")
@@ -134,7 +125,7 @@ function ex2tf(m::Module, w::Where)
             end
             push!(
                 suite,
-                :($fn(::Type{$ty_accurate}) where {$(tp_vec...), $ty_accurate <: $t} = $tp_chk_ret),
+                :($fn(::Type{$ty_accurate}) where {$(tps...), $ty_accurate <: $t} = $tp_ret),
                 :($fn(_) = nothing),
                 :($testn = $fn(typeof($target))),
                 Expr(
