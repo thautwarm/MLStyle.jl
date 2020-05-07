@@ -1,0 +1,141 @@
+
+<a id='When-Destructuring-1'></a>
+
+# When Destructuring
+
+
+The `@when` is introduced to work with the scenarios where `@match` is a bit heavy.
+
+
+It's similar to [if-let](https://doc.rust-lang.org/rust-by-example/flow_control/if_let.html) construct in Rust language.
+
+
+There're three distinct syntaxes for `@when`.
+
+
+<a id='Allow-Destructuring-in-Let-Binding-1'></a>
+
+## Allow Destructuring in Let-Binding
+
+
+```julia
+tp = (2, 3)
+x = 2
+
+@assert 5 ===
+    @when let (2, a) = tp,
+                  b  = x
+        a + b
+    end
+
+@assert nothing ===
+    @when let (2, a) = 1,
+                   b = x
+        a + b
+    end
+```
+
+
+Note that only the binding formed as `$a = $b` would be treated as destructuring.
+
+
+```julia
+@data S begin
+    S1(Int)
+    S2(Int)
+end
+
+s = S1(5)
+
+@assert 500 ===
+    @when let S1(x) = s,
+              @inline fn(x) = 100x
+        fn(x)
+    end
+```
+
+
+In above snippet, `@inline fn(x) = 100x` is not regarded as destructuring.
+
+
+<a id='Sole-Destructuring-1'></a>
+
+## Sole Destructuring
+
+
+However, a let-binding could be also heavy when you just want to solely destructure something.
+
+
+Finally, we allowed another syntax for `@when`.
+
+
+```julia
+s = S1(5)
+@assert 5 === @when S1(x) = s x
+@assert 10 === @when S1(x) = s begin
+    2x
+end
+@assert nothing === @when S1(x) = S2(10) x
+```
+
+
+<a id='Multiple-Branches-1'></a>
+
+## Multiple Branches
+
+
+Sometimes we might have this kind of logic:
+
+
+  * If `a` matches pattern `A`, then do `Aa`
+  * else if `b` matches pattern `B`, then do `Bb`
+  * otherwise do `Cc`
+
+
+As there is now no pattern matching support for `if-else`, we cannot represent above logic literally in vallina Julia.
+
+
+MLStyle provides this, in such a syntax:
+
+
+```julia
+@when let A = a
+    Aa
+@when B = b
+    Bb
+@otherwise
+    Cc
+end
+```
+
+
+Also, predicates can be used here, thus it's superior than `if-else`:
+
+
+```julia
+@when let A = a,
+          condA.? # or if condA end
+    Aa
+@when begin B = b
+            condB.? # or `if condB end`
+      end
+    Bb
+@otherwise
+    Cc
+end
+```
+
+
+A concrete example is presented here:
+
+
+```julia
+a = 1
+b = 2
+@when let (t1, t2) = a, (t1 > 1).?
+    t2
+@when begin a::Int = b; (b < 10).? end
+    0
+end # => 0
+```
+
