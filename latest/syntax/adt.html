@@ -109,8 +109,7 @@
 <li class="toctree-l2"><a class="reference internal" href="pattern.html#or-patterns">Or Patterns</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pattern.html#deconstructions-of-composite-data">Deconstructions of Composite Data</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pattern.html#advanced-type-patterns">Advanced Type Patterns</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pattern.html#side-effect">Side-Effect</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pattern.html#do-patterns-and-many-patterns">Do-Patterns and Many-Patterns</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pattern.html#do-patterns-many-patterns">Do-Patterns &amp; Many-Patterns</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pattern.html#let-patterns">Let Patterns</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pattern.html#active-patterns">Active Patterns</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pattern.html#expr-patterns">Expr Patterns</a></li>
@@ -130,7 +129,8 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../modules/ast.html">MLStyle.Modules.AST</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../modules/ast.html#matchast">&#64;matchast</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../modules/ast.html#capture">&#64;capture</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../modules/ast.html#capture"><code class="docutils literal notranslate"><span class="pre">Capture</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../modules/ast.html#id1">&#64;capture</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../modules/cond.html">MLStyle.Modules.Cond</a><ul>
@@ -294,34 +294,37 @@
 <div class="section" id="example-modeling-arithmetic-operations">
 <h2>Example: Modeling Arithmetic Operations<a class="headerlink" href="#example-modeling-arithmetic-operations" title="Permalink to this headline">¶</a></h2>
 <div class="highlight-julia notranslate"><div class="highlight"><pre><span></span><span class="k">using</span> <span class="nv">MLStyle</span>
-<span class="nd">@data</span> <span class="nv">internal</span> <span class="nv">Arith</span> <span class="k">begin</span>
+<span class="nd">@data</span> <span class="nv">Arith</span> <span class="k">begin</span>
     <span class="nb">Number</span><span class="p">(</span><span class="nb">Int</span><span class="p">)</span>
+    <span class="nf">Add</span><span class="p">(</span><span class="nv">Arith</span><span class="p">,</span> <span class="nv">Arith</span><span class="p">)</span>
     <span class="nf">Minus</span><span class="p">(</span><span class="nv">Arith</span><span class="p">,</span> <span class="nv">Arith</span><span class="p">)</span>
     <span class="nf">Mult</span><span class="p">(</span><span class="nv">Arith</span><span class="p">,</span> <span class="nv">Arith</span><span class="p">)</span>
     <span class="nf">Divide</span><span class="p">(</span><span class="nv">Arith</span><span class="p">,</span> <span class="nv">Arith</span><span class="p">)</span>
 <span class="k">end</span>
 </pre></div>
 </div>
-<p>Above codes makes a clarified description about <code class="docutils literal notranslate"><span class="pre">Arithmetic</span></code> and provides a corresponding implementation.</p>
+<p>Above codes makes a clarified description about Arithmetic operations and provides a corresponding implementation.</p>
 <p>If you want to transpile above ADTs to some specific language, there is a clear step:</p>
-<div class="highlight-julia notranslate"><div class="highlight"><pre><span></span><span class="nf">eval_arith</span><span class="p">(</span><span class="nv">arith</span> <span class="o">::</span> <span class="nv">Arith</span><span class="p">)</span> <span class="o">=</span>
-    <span class="k">let</span> <span class="nf">wrap_op</span><span class="p">(</span><span class="nv">op</span><span class="p">)</span>  <span class="o">=</span> <span class="p">(</span><span class="nv">a</span><span class="p">,</span> <span class="nv">b</span><span class="p">)</span> <span class="o">-&gt;</span> <span class="nf">op</span><span class="p">(</span><span class="nf">eval_arith</span><span class="p">(</span><span class="nv">a</span><span class="p">),</span> <span class="nf">eval_arith</span><span class="p">(</span><span class="nv">b</span><span class="p">)),</span>
-        <span class="p">(</span><span class="o">+</span><span class="p">,</span> <span class="o">-</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="o">/</span><span class="p">)</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="nv">wrap_op</span><span class="p">,</span> <span class="p">(</span><span class="o">+</span><span class="p">,</span> <span class="o">-</span><span class="p">,</span> <span class="o">*</span><span class="p">,</span> <span class="o">/</span><span class="p">))</span>
-        <span class="nd">@match</span> <span class="nv">arith</span> <span class="k">begin</span>
-            <span class="nb">Number</span><span class="p">(</span><span class="nv">v</span><span class="p">)</span>        <span class="o">=&gt;</span> <span class="nv">v</span>
-            <span class="nf">Minus</span><span class="p">(</span><span class="nv">fst</span><span class="p">,</span> <span class="nv">snd</span><span class="p">)</span>  <span class="o">=&gt;</span> <span class="nv">fst</span> <span class="o">-</span> <span class="nv">snd</span>
-            <span class="nf">Mult</span><span class="p">(</span><span class="nv">fst</span><span class="p">,</span> <span class="nv">snd</span><span class="p">)</span>   <span class="o">=&gt;</span> <span class="nv">fst</span> <span class="o">*</span> <span class="nv">snd</span>
-            <span class="nf">Divide</span><span class="p">(</span><span class="nv">fst</span><span class="p">,</span> <span class="nv">snd</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="nv">fst</span> <span class="o">/</span> <span class="nv">snd</span>
-        <span class="k">end</span>
-    <span class="k">end</span>
+<div class="highlight-julia-console notranslate"><div class="highlight"><pre><span></span><span class="gp">julia&gt;</span> <span class="nf">eval_arith</span><span class="p">(</span><span class="nv">arith</span> <span class="o">::</span> <span class="nv">Arith</span><span class="p">)</span> <span class="o">=</span>
+          <span class="c"># locally and hygienically change the meaning of &#39;!&#39;</span>
+           <span class="k">let</span> <span class="o">!</span> <span class="o">=</span> <span class="nv">eval_arith</span>
+               <span class="nd">@match</span> <span class="nv">arith</span> <span class="k">begin</span>
+                   <span class="nb">Number</span><span class="p">(</span><span class="nv">v</span><span class="p">)</span>        <span class="o">=&gt;</span> <span class="nv">v</span>
+                   <span class="nf">Add</span><span class="p">(</span><span class="nv">fst</span><span class="p">,</span> <span class="nv">snd</span><span class="p">)</span>    <span class="o">=&gt;</span> <span class="o">!</span><span class="nv">fst</span> <span class="o">+</span> <span class="o">!</span><span class="nv">snd</span>
+                   <span class="nf">Minus</span><span class="p">(</span><span class="nv">fst</span><span class="p">,</span> <span class="nv">snd</span><span class="p">)</span>  <span class="o">=&gt;</span> <span class="o">!</span><span class="nv">fst</span> <span class="o">-</span> <span class="o">!</span><span class="nv">snd</span>
+                   <span class="nf">Mult</span><span class="p">(</span><span class="nv">fst</span><span class="p">,</span> <span class="nv">snd</span><span class="p">)</span>   <span class="o">=&gt;</span> <span class="o">!</span><span class="nv">fst</span> <span class="o">*</span> <span class="o">!</span><span class="nv">snd</span>
+                   <span class="nf">Divide</span><span class="p">(</span><span class="nv">fst</span><span class="p">,</span> <span class="nv">snd</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="o">!</span><span class="nv">fst</span> <span class="o">/</span> <span class="o">!</span><span class="nv">snd</span>
+               <span class="k">end</span>
+           <span class="k">end</span>
+<span class="nv">eval_arith</span> <span class="p">(</span><span class="nv">generic</span> <span class="k">function</span> <span class="nv">with</span> <span class="m">1</span> <span class="nv">method</span><span class="p">)</span>
 
-<span class="nf">eval_arith</span><span class="p">(</span>
-    <span class="nf">Minus</span><span class="p">(</span>
-        <span class="nb">Number</span><span class="p">(</span><span class="m">2</span><span class="p">),</span>
-        <span class="nf">Divide</span><span class="p">(</span><span class="nb">Number</span><span class="p">(</span><span class="m">20</span><span class="p">),</span>
-               <span class="nf">Mult</span><span class="p">(</span><span class="nb">Number</span><span class="p">(</span><span class="m">2</span><span class="p">),</span>
-                    <span class="nb">Number</span><span class="p">(</span><span class="m">5</span><span class="p">)))))</span>
-<span class="c"># =&gt; 0</span>
+<span class="gp">julia&gt;</span> <span class="nf">eval_arith</span><span class="p">(</span>
+           <span class="nf">Minus</span><span class="p">(</span>
+               <span class="nb">Number</span><span class="p">(</span><span class="m">2</span><span class="p">),</span>
+               <span class="nf">Divide</span><span class="p">(</span><span class="nb">Number</span><span class="p">(</span><span class="m">20</span><span class="p">),</span>
+                      <span class="nf">Mult</span><span class="p">(</span><span class="nb">Number</span><span class="p">(</span><span class="m">2</span><span class="p">),</span>
+                           <span class="nb">Number</span><span class="p">(</span><span class="m">5</span><span class="p">)))))</span>
+<span class="m">0</span><span class="p">.</span><span class="m">0</span>
 </pre></div>
 </div>
 </div>

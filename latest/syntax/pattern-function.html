@@ -109,8 +109,7 @@
 <li class="toctree-l2"><a class="reference internal" href="pattern.html#or-patterns">Or Patterns</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pattern.html#deconstructions-of-composite-data">Deconstructions of Composite Data</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pattern.html#advanced-type-patterns">Advanced Type Patterns</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pattern.html#side-effect">Side-Effect</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pattern.html#do-patterns-and-many-patterns">Do-Patterns and Many-Patterns</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pattern.html#do-patterns-many-patterns">Do-Patterns &amp; Many-Patterns</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pattern.html#let-patterns">Let Patterns</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pattern.html#active-patterns">Active Patterns</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pattern.html#expr-patterns">Expr Patterns</a></li>
@@ -130,7 +129,8 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../modules/ast.html">MLStyle.Modules.AST</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../modules/ast.html#matchast">&#64;matchast</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../modules/ast.html#capture">&#64;capture</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../modules/ast.html#capture"><code class="docutils literal notranslate"><span class="pre">Capture</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../modules/ast.html#id1">&#64;capture</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../modules/cond.html">MLStyle.Modules.Cond</a><ul>
@@ -202,31 +202,40 @@
   <div class="section" id="pattern-functions">
 <h1>Pattern Functions<a class="headerlink" href="#pattern-functions" title="Permalink to this headline">¶</a></h1>
 <p><code class="docutils literal notranslate"><span class="pre">Pattern</span> <span class="pre">function</span></code> is a convenient way to define a function with multiple entries.</p>
-<div class="highlight-julia notranslate"><div class="highlight"><pre><span></span><span class="nv">f</span> <span class="o">=</span> <span class="nd">@λ</span> <span class="k">begin</span>
-    <span class="c"># patterns here</span>
-    <span class="nv">x</span>                  <span class="o">=&gt;</span> <span class="m">1</span>
-    <span class="p">((</span><span class="nv">x</span><span class="p">,</span> <span class="p">(</span><span class="m">1</span><span class="p">,</span> <span class="m">2</span><span class="p">))</span> <span class="o">&amp;&amp;</span>
-        <span class="k">if</span> <span class="nv">x</span> <span class="o">&gt;</span> <span class="m">3</span> <span class="k">end</span><span class="p">)</span>  <span class="o">=&gt;</span> <span class="m">5</span>
-    <span class="p">(</span><span class="nv">x</span><span class="p">,</span> <span class="nv">y</span><span class="p">)</span>             <span class="o">=&gt;</span> <span class="m">2</span>
-    <span class="o">::</span><span class="nb">String</span>           <span class="o">=&gt;</span> <span class="s">&quot;is string&quot;</span>
-    <span class="nv">_</span>                  <span class="o">=&gt;</span> <span class="s">&quot;is any&quot;</span>
-<span class="k">end</span>
-<span class="nf">f</span><span class="p">(</span><span class="m">1</span><span class="p">)</span> <span class="c"># =&gt; 1</span>
-<span class="nf">f</span><span class="p">((</span><span class="m">4</span><span class="p">,</span> <span class="p">(</span><span class="m">1</span><span class="p">,</span> <span class="m">2</span><span class="p">)))</span> <span class="c"># =&gt; 5</span>
-<span class="nf">f</span><span class="p">((</span><span class="m">1</span><span class="p">,</span> <span class="p">(</span><span class="m">1</span><span class="p">,</span> <span class="m">2</span><span class="p">)))</span> <span class="c"># =&gt; 2</span>
-<span class="nf">f</span><span class="p">(</span><span class="s">&quot;&quot;</span><span class="p">)</span> <span class="c"># =&gt; &quot;is string&quot;</span>
+<div class="highlight-julia-console notranslate"><div class="highlight"><pre><span></span><span class="gp">julia&gt;</span> <span class="nv">f</span> <span class="o">=</span> <span class="nd">@λ</span> <span class="k">begin</span>
+           <span class="c"># patterns here</span>
+           <span class="nv">x</span>                  <span class="o">=&gt;</span> <span class="m">1</span>
+           <span class="p">((</span><span class="nv">x</span><span class="p">,</span> <span class="p">(</span><span class="m">1</span><span class="p">,</span> <span class="m">2</span><span class="p">))</span> <span class="o">&amp;&amp;</span>
+               <span class="k">if</span> <span class="nv">x</span> <span class="o">&gt;</span> <span class="m">3</span> <span class="k">end</span><span class="p">)</span>  <span class="o">=&gt;</span> <span class="m">5</span>
+           <span class="p">(</span><span class="nv">x</span><span class="p">,</span> <span class="nv">y</span><span class="p">)</span>             <span class="o">=&gt;</span> <span class="m">2</span>
+           <span class="o">::</span><span class="nb">String</span>           <span class="o">=&gt;</span> <span class="s">&quot;is string&quot;</span>
+           <span class="nv">_</span>                  <span class="o">=&gt;</span> <span class="s">&quot;is any&quot;</span>
+       <span class="k">end</span>
+<span class="c">##λ#365 (generic function with 1 method)</span>
+
+<span class="gp">julia&gt;</span> <span class="nf">f</span><span class="p">(</span><span class="m">1</span><span class="p">)</span> <span class="c"># =&gt; 1</span>
+<span class="m">1</span>
+
+<span class="gp">julia&gt;</span> <span class="nf">f</span><span class="p">((</span><span class="m">4</span><span class="p">,</span> <span class="p">(</span><span class="m">1</span><span class="p">,</span> <span class="m">2</span><span class="p">)))</span> <span class="c"># =&gt; 5</span>
+<span class="m">1</span>
+
+<span class="gp">julia&gt;</span> <span class="nf">f</span><span class="p">((</span><span class="m">1</span><span class="p">,</span> <span class="p">(</span><span class="m">1</span><span class="p">,</span> <span class="m">2</span><span class="p">)))</span> <span class="c"># =&gt; 2</span>
+<span class="m">1</span>
+
+<span class="gp">julia&gt;</span> <span class="nf">f</span><span class="p">(</span><span class="s">&quot;&quot;</span><span class="p">)</span> <span class="c"># =&gt; &quot;is string&quot;</span>
+<span class="m">1</span>
 </pre></div>
 </div>
 <p>Also, sometimes you might want to pass a single lambda which just matches the
 argument in one means:</p>
 <div class="highlight-julia notranslate"><div class="highlight"><pre><span></span><span class="nb">map</span><span class="p">((</span><span class="nd">@λ</span> <span class="p">[</span><span class="nv">a</span><span class="p">,</span> <span class="nv">b</span><span class="p">,</span> <span class="nv">c</span><span class="p">...]</span> <span class="o">-&gt;</span> <span class="nv">c</span><span class="p">),</span> <span class="p">[[</span><span class="m">1</span><span class="p">,</span> <span class="m">2</span><span class="p">,</span> <span class="m">3</span><span class="p">,</span> <span class="m">4</span><span class="p">],</span> <span class="p">[</span><span class="m">1</span><span class="p">,</span> <span class="m">2</span><span class="p">]])</span>
 <span class="c"># Or: map((@λ [a, b, c...] =&gt; c), [[1, 2, 3, 4], [1, 2]])</span>
-<span class="c"># =&gt; 2-element Array{SubArray{Int64,1,Array{Int64,1},Tuple{UnitRange{Int64}},true},1}:</span>
-<span class="c">#    [3, 4]</span>
-<span class="c">#    []</span>
+<span class="m">2</span><span class="o">-</span><span class="nv">element</span> <span class="nb">Array</span><span class="p">{</span><span class="nb">SubArray</span><span class="p">{</span><span class="nb">Int64</span><span class="p">,</span><span class="m">1</span><span class="p">,</span><span class="nb">Array</span><span class="p">{</span><span class="nb">Int64</span><span class="p">,</span><span class="m">1</span><span class="p">},</span><span class="nb">Tuple</span><span class="p">{</span><span class="nb">UnitRange</span><span class="p">{</span><span class="nb">Int64</span><span class="p">}},</span><span class="k">true</span><span class="p">},</span><span class="m">1</span><span class="p">}</span><span class="o">:</span>
+ <span class="p">[</span><span class="m">3</span><span class="p">,</span> <span class="m">4</span><span class="p">]</span>
+ <span class="p">[]</span>
 </pre></div>
 </div>
-<p>Functionally, A <code class="docutils literal notranslate"><span class="pre">pattern</span> <span class="pre">function</span></code> is no more than using a <code class="docutils literal notranslate"><span class="pre">&#64;match</span></code> inside some anonymous function.</p>
+<p>Functionally, a <code class="docutils literal notranslate"><span class="pre">pattern</span> <span class="pre">function</span></code> is no more than using a <code class="docutils literal notranslate"><span class="pre">&#64;match</span></code> inside an anonymous function.</p>
 <div class="highlight-julia notranslate"><div class="highlight"><pre><span></span><span class="k">function</span> <span class="p">(</span><span class="nv">x</span><span class="p">)</span>
     <span class="nd">@match</span> <span class="nv">x</span> <span class="k">begin</span>
         <span class="nv">pat1</span> <span class="o">=&gt;</span> <span class="nv">body1</span>

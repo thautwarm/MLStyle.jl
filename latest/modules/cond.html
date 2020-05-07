@@ -109,8 +109,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../syntax/pattern.html#or-patterns">Or Patterns</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../syntax/pattern.html#deconstructions-of-composite-data">Deconstructions of Composite Data</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../syntax/pattern.html#advanced-type-patterns">Advanced Type Patterns</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../syntax/pattern.html#side-effect">Side-Effect</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../syntax/pattern.html#do-patterns-and-many-patterns">Do-Patterns and Many-Patterns</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../syntax/pattern.html#do-patterns-many-patterns">Do-Patterns &amp; Many-Patterns</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../syntax/pattern.html#let-patterns">Let Patterns</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../syntax/pattern.html#active-patterns">Active Patterns</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../syntax/pattern.html#expr-patterns">Expr Patterns</a></li>
@@ -130,7 +129,8 @@
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="ast.html">MLStyle.Modules.AST</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="ast.html#matchast">&#64;matchast</a></li>
-<li class="toctree-l2"><a class="reference internal" href="ast.html#capture">&#64;capture</a></li>
+<li class="toctree-l2"><a class="reference internal" href="ast.html#capture"><code class="docutils literal notranslate"><span class="pre">Capture</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="ast.html#id1">&#64;capture</a></li>
 </ul>
 </li>
 <li class="toctree-l1 current"><a class="current reference internal" href="#">MLStyle.Modules.Cond</a><ul>
@@ -208,7 +208,7 @@
 <h2>&#64;cond<a class="headerlink" href="#cond" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
 <li><p>Description : Lisp-flavored conditional branches</p></li>
-<li><p>Usage: <code class="docutils literal notranslate"><span class="pre">&#64;cond</span> <span class="pre">begin</span> <span class="pre">cond1</span> <span class="pre">=&gt;</span> <span class="pre">br1,</span> <span class="pre">[cond2</span> <span class="pre">=&gt;</span> <span class="pre">br2,</span> <span class="pre">...]</span> <span class="pre">end</span></code></p></li>
+<li><p>Usage: <code class="docutils literal notranslate"><span class="pre">&#64;cond</span> <span class="pre">begin</span> <span class="pre">cond1</span> <span class="pre">=&gt;</span> <span class="pre">br1;</span> <span class="pre">[cond2</span> <span class="pre">=&gt;</span> <span class="pre">br2,</span> <span class="pre">...]</span> <span class="pre">end</span></code></p></li>
 </ul>
 <div class="highlight-julia notranslate"><div class="highlight"><pre><span></span><span class="k">using</span> <span class="nv">MLStyle</span><span class="p">.</span><span class="nv">Modules</span><span class="p">.</span><span class="nv">Cond</span>
 

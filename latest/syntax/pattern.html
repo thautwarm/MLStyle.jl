@@ -109,8 +109,7 @@
 <li class="toctree-l2"><a class="reference internal" href="#or-patterns">Or Patterns</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#deconstructions-of-composite-data">Deconstructions of Composite Data</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#advanced-type-patterns">Advanced Type Patterns</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#side-effect">Side-Effect</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#do-patterns-and-many-patterns">Do-Patterns and Many-Patterns</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#do-patterns-many-patterns">Do-Patterns &amp; Many-Patterns</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#let-patterns">Let Patterns</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#active-patterns">Active Patterns</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#expr-patterns">Expr Patterns</a></li>
@@ -130,7 +129,8 @@
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../modules/ast.html">MLStyle.Modules.AST</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../modules/ast.html#matchast">&#64;matchast</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../modules/ast.html#capture">&#64;capture</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../modules/ast.html#capture"><code class="docutils literal notranslate"><span class="pre">Capture</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="../modules/ast.html#id1">&#64;capture</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../modules/cond.html">MLStyle.Modules.Cond</a><ul>
@@ -171,8 +171,7 @@
 <li><a class="reference internal" href="#or-patterns">Or Patterns</a></li>
 <li><a class="reference internal" href="#deconstructions-of-composite-data">Deconstructions of Composite Data</a></li>
 <li><a class="reference internal" href="#advanced-type-patterns">Advanced Type Patterns</a></li>
-<li><a class="reference internal" href="#side-effect">Side-Effect</a></li>
-<li><a class="reference internal" href="#do-patterns-and-many-patterns">Do-Patterns and Many-Patterns</a></li>
+<li><a class="reference internal" href="#do-patterns-many-patterns">Do-Patterns &amp; Many-Patterns</a></li>
 <li><a class="reference internal" href="#let-patterns">Let Patterns</a></li>
 <li><a class="reference internal" href="#active-patterns">Active Patterns</a></li>
 <li><a class="reference internal" href="#expr-patterns">Expr Patterns</a></li>
@@ -225,49 +224,40 @@
 <p>Patterns provide convenient ways to manipulate data.</p>
 <div class="section" id="literal-patterns">
 <h2>Literal Patterns<a class="headerlink" href="#literal-patterns" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-julia notranslate"><div class="highlight"><pre><span></span><span class="nd">@match</span> <span class="m">10</span> <span class="p">{</span>
-    <span class="m">1</span>  <span class="o">=&gt;</span> <span class="s">&quot;wrong!&quot;</span>
-    <span class="m">2</span>  <span class="o">=&gt;</span> <span class="s">&quot;wrong!&quot;</span>
-    <span class="m">10</span> <span class="o">=&gt;</span> <span class="s">&quot;right!&quot;</span>
-<span class="p">}</span>
-
-<span class="c"># =&gt; &quot;right&quot;</span>
+<div class="highlight-julia-console notranslate"><div class="highlight"><pre><span></span><span class="gp">julia&gt;</span> <span class="nd">@match</span> <span class="m">10</span> <span class="k">begin</span>
+           <span class="m">1</span>  <span class="o">=&gt;</span> <span class="s">&quot;wrong!&quot;</span>
+           <span class="m">2</span>  <span class="o">=&gt;</span> <span class="s">&quot;wrong!&quot;</span>
+           <span class="m">10</span> <span class="o">=&gt;</span> <span class="s">&quot;right!&quot;</span>
+       <span class="k">end</span>
+<span class="s">&quot;right!&quot;</span>
 </pre></div>
 </div>
-<p>There are 3 distinct types whose literal data could be used as literal patterns:</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">Number</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">AbstractString</span></code></p></li>
-<li><p><code class="docutils literal notranslate"><span class="pre">Symbol</span></code></p></li>
-</ul>
+<p>All literal data introduced with Julia syntax could be matched by literal patterns.</p>
+<p>However, note that the equality is strict for primitive types(<code class="docutils literal notranslate"><span class="pre">Int8-64</span></code>, <code class="docutils literal notranslate"><span class="pre">UInt8-64</span></code>, <code class="docutils literal notranslate"><span class="pre">Bool</span></code>, etc.) and singleton types(<code class="docutils literal notranslate"><span class="pre">struct</span> <span class="pre">Data</span> <span class="pre">end;</span> <span class="pre">Data()</span></code>).</p>
+<p><strong>Substrings can match a literal string.</strong></p>
 </div>
 <div class="section" id="capturing-patterns">
 <h2>Capturing Patterns<a class="headerlink" href="#capturing-patterns" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-julia notranslate"><div class="highlight"><pre><span></span><span class="nd">@match</span> <span class="m">1</span> <span class="k">begin</span>
-    <span class="nv">x</span> <span class="o">=&gt;</span> <span class="nv">x</span> <span class="o">+</span> <span class="m">1</span>
-<span class="k">end</span>
-<span class="c"># =&gt; 2</span>
+<div class="highlight-julia-console notranslate"><div class="highlight"><pre><span></span><span class="gp">julia&gt;</span> <span class="nd">@match</span> <span class="m">1</span> <span class="k">begin</span>
+           <span class="nv">x</span> <span class="o">=&gt;</span> <span class="nv">x</span> <span class="o">+</span> <span class="m">1</span>
+       <span class="k">end</span>
+<span class="m">2</span>
 </pre></div>
 </div>
-<p>Note that, by default only symbols given in lower case could be used as capturing.</p>
-<p>If you prefer to capture via upper case symbols, you can enable this feature via</p>
-<div class="highlight-julia notranslate"><div class="highlight"><pre><span></span><span class="nd">@use</span> <span class="nv">UppercaseCapturing</span>
-</pre></div>
-</div>
-<p>Extension <code class="docutils literal notranslate"><span class="pre">UppercaseCapturing</span></code> conflicts with <code class="docutils literal notranslate"><span class="pre">Enum</span></code>.</p>
-<p>Any questions about <code class="docutils literal notranslate"><span class="pre">Enum</span></code>, check <a class="reference external" href="#active-patterns">Active Patterns</a>.</p>
+<p>However, sometimes a symbol might not be used for capturing.</p>
+<p>If and only if some visible global variable <code class="docutils literal notranslate"><span class="pre">x</span></code> satisfying <code class="docutils literal notranslate"><span class="pre">MLStyle.is_enum(typeof(x))</span> <span class="pre">==</span> <span class="pre">true</span></code>, <code class="docutils literal notranslate"><span class="pre">x</span></code> is used as a pattern. You can check <a class="reference external" href="#active-patterns">Active Patterns</a> or <a class="reference external" href="https://thautwarm.github.io/MLStyle.jl/latest/syntax/adt.html#cheat-sheet">ADT Cheat Sheet</a> for more details.</p>
 </div>
 <div class="section" id="type-patterns">
 <h2>Type Patterns<a class="headerlink" href="#type-patterns" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-julia notranslate"><div class="highlight"><pre><span></span><span class="nd">@match</span> <span class="m">1</span> <span class="k">begin</span>
-    <span class="o">::</span><span class="nv">Float</span>  <span class="o">=&gt;</span> <span class="k">nothing</span>
-    <span class="nv">b</span> <span class="o">::</span> <span class="nb">Int</span> <span class="o">=&gt;</span> <span class="nv">b</span>
-    <span class="nv">_</span>        <span class="o">=&gt;</span> <span class="k">nothing</span>
-<span class="k">end</span>
-<span class="c"># =&gt; 1</span>
+<div class="highlight-julia-console notranslate"><div class="highlight"><pre><span></span><span class="gp">julia&gt;</span> <span class="nd">@match</span> <span class="m">1</span> <span class="k">begin</span>
+           <span class="o">::</span><span class="nb">Float64</span>  <span class="o">=&gt;</span> <span class="k">nothing</span>
+           <span class="nv">b</span> <span class="o">::</span> <span class="nb">Int</span> <span class="o">=&gt;</span> <span class="nv">b</span>
+           <span class="nv">_</span>        <span class="o">=&gt;</span> <span class="k">nothing</span>
+       <span class="k">end</span>
+<span class="m">1</span>
 </pre></div>
 </div>
-<p>There is an advanced version of <code class="docutils literal notranslate"><span class="pre">Type-Pattern</span></code>s, which you can destruct types with fewer limitations. Check <a class="reference external" href="#advanced-type-patterns">Advanced Type Patterns</a>.</p>
+<p>Sometimes, in practice, you might want to introduce type variables into the scope, in this case use <code class="docutils literal notranslate"><span class="pre">where</span></code> clause, and see <a class="reference external" href="#advanced-type-patterns">Advanced Type Patterns</a> for more details.</p>
 </div>
 <div class="section" id="as-patterns">
 <h2>As-Patterns<a class="headerlink" href="#as-patterns" title="Permalink to this headline">¶</a></h2>
@@ -286,6 +276,10 @@
 <span class="k">end</span>
 </pre></div>
 </div>
+<p>Unlike most of ML languages or other libraries who only permit guards in the end of a case clause,
+MLStyle allows you to put guards anywhere during matching.</p>
+<p>However, remember, due to some Julia optimization details, even if the guards can be put
+in the middle of a matching process, still you’d better postpone it to the end of matching, for better performance.</p>
 </div>
 <div class="section" id="predicates">
 <h2>Predicates<a class="headerlink" href="#predicates" title="Permalink to this headline">¶</a></h2>
@@ -308,16 +302,17 @@
 </div>
 <div class="section" id="range-patterns">
 <h2>Range Patterns<a class="headerlink" href="#range-patterns" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-julia notranslate"><div class="highlight"><pre><span></span><span class="nd">@match</span> <span class="m">1</span> <span class="k">begin</span>
-    <span class="m">0</span><span class="o">:</span><span class="m">2</span><span class="o">:</span><span class="m">10</span> <span class="o">=&gt;</span> <span class="m">1</span>
-    <span class="m">1</span><span class="o">:</span><span class="m">10</span> <span class="o">=&gt;</span> <span class="m">2</span>
-<span class="k">end</span> <span class="c"># 2</span>
+<div class="highlight-julia-console notranslate"><div class="highlight"><pre><span></span><span class="gp">julia&gt;</span> <span class="nd">@match</span> <span class="m">1</span> <span class="k">begin</span>
+           <span class="m">0</span><span class="o">:</span><span class="m">2</span><span class="o">:</span><span class="m">10</span> <span class="o">=&gt;</span> <span class="m">1</span>
+           <span class="m">1</span><span class="o">:</span><span class="m">10</span> <span class="o">=&gt;</span> <span class="m">2</span>
+       <span class="k">end</span>
+<span class="m">2</span>
 </pre></div>
 </div>
 </div>
 <div class="section" id="reference-patterns">
 <h2>Reference Patterns<a class="headerlink" href="#reference-patterns" title="Permalink to this headline">¶</a></h2>
-<p>This feature is from <code class="docutils literal notranslate"><span class="pre">Elixir</span></code> which could slightly extends ML pattern matching.</p>
+<p>This feature is from <code class="docutils literal notranslate"><span class="pre">Elixir</span></code> which could slightly extends ML based pattern matching.</p>
 <div class="highlight-julia notranslate"><div class="highlight"><pre><span></span><span class="nv">c</span> <span class="o">=</span> <span class="p">...</span>
 <span class="nd">@match</span> <span class="p">(</span><span class="nv">x</span><span class="p">,</span> <span class="nv">y</span><span class="p">)</span> <span class="k">begin</span>
     <span class="p">(</span><span class="o">&amp;</span><span class="nv">c</span><span class="p">,</span> <span class="nv">_</span><span class="p">)</span>  <span class="o">=&gt;</span> <span class="s">&quot;x equals to c!&quot;</span>
@@ -336,28 +331,34 @@
 <ul class="simple">
 <li><p>Dict pattern(like <code class="docutils literal notranslate"><span class="pre">Elixir</span></code>’s dictionary matching or ML record matching)</p></li>
 </ul>
-<div class="highlight-julia notranslate"><div class="highlight"><pre><span></span><span class="nv">dict</span> <span class="o">=</span> <span class="nb">Dict</span><span class="p">(</span><span class="m">1</span> <span class="o">=&gt;</span> <span class="m">2</span><span class="p">,</span> <span class="s">&quot;3&quot;</span> <span class="o">=&gt;</span> <span class="m">4</span><span class="p">,</span> <span class="m">5</span> <span class="o">=&gt;</span> <span class="nb">Dict</span><span class="p">(</span><span class="m">6</span> <span class="o">=&gt;</span> <span class="m">7</span><span class="p">))</span>
-<span class="nd">@match</span> <span class="nv">dict</span> <span class="k">begin</span>
-    <span class="nb">Dict</span><span class="p">(</span><span class="s">&quot;3&quot;</span> <span class="o">=&gt;</span> <span class="nv">four</span><span class="o">::</span><span class="nb">Int</span><span class="p">,</span>
-          <span class="m">5</span>  <span class="o">=&gt;</span> <span class="nb">Dict</span><span class="p">(</span><span class="m">6</span> <span class="o">=&gt;</span> <span class="nv">sev</span><span class="p">))</span> <span class="o">&amp;&amp;</span> <span class="k">if</span> <span class="nv">four</span> <span class="o">&lt;</span> <span class="nv">sev</span> <span class="k">end</span> <span class="o">=&gt;</span> <span class="nv">sev</span>
-<span class="k">end</span>
-<span class="c"># =&gt; 7</span>
-</pre></div>
-</div>
-<ul class="simple">
-<li><p>Tuple pattern</p></li>
-</ul>
-<div class="highlight-julia notranslate"><div class="highlight"><pre><span></span><span class="nd">@match</span> <span class="p">(</span><span class="m">1</span><span class="p">,</span> <span class="m">2</span><span class="p">,</span> <span class="p">(</span><span class="m">3</span><span class="p">,</span> <span class="m">4</span><span class="p">,</span> <span class="p">(</span><span class="m">5</span><span class="p">,</span> <span class="p">)))</span> <span class="k">begin</span>
-    <span class="p">(</span><span class="nv">a</span><span class="p">,</span> <span class="nv">b</span><span class="p">,</span> <span class="p">(</span><span class="nv">c</span><span class="p">,</span> <span class="nv">d</span><span class="p">,</span> <span class="p">(</span><span class="m">5</span><span class="p">,</span> <span class="p">)))</span> <span class="o">=&gt;</span> <span class="p">(</span><span class="nv">a</span><span class="p">,</span> <span class="nv">b</span><span class="p">,</span> <span class="nv">c</span><span class="p">,</span> <span class="nv">d</span><span class="p">)</span>
+<div class="highlight-julia-console notranslate"><div class="highlight"><pre><span></span><span class="gp">julia&gt;</span> <span class="nv">dict</span> <span class="o">=</span> <span class="nb">Dict</span><span class="p">(</span><span class="m">1</span> <span class="o">=&gt;</span> <span class="m">2</span><span class="p">,</span> <span class="s">&quot;3&quot;</span> <span class="o">=&gt;</span> <span class="m">4</span><span class="p">,</span> <span class="m">5</span> <span class="o">=&gt;</span> <span class="nb">Dict</span><span class="p">(</span><span class="m">6</span> <span class="o">=&gt;</span> <span class="m">7</span><span class="p">))</span>
+<span class="nb">Dict</span><span class="p">{</span><span class="nb">Any</span><span class="p">,</span><span class="nb">Any</span><span class="p">}</span> <span class="nv">with</span> <span class="m">3</span> <span class="nv">entries</span><span class="o">:</span>
+  <span class="m">1</span>   <span class="o">=&gt;</span> <span class="m">2</span>
+  <span class="m">5</span>   <span class="o">=&gt;</span> <span class="nb">Dict</span><span class="p">(</span><span class="m">6</span><span class="o">=&gt;</span><span class="m">7</span><span class="p">)</span>
+  <span class="s">&quot;3&quot;</span> <span class="o">=&gt;</span> <span class="m">4</span>
 
-<span class="k">end</span>
-<span class="c"># =&gt; (1, 2, 3, 4)</span>
+<span class="gp">julia&gt;</span> <span class="nd">@match</span> <span class="nv">dict</span> <span class="k">begin</span>
+           <span class="nb">Dict</span><span class="p">(</span><span class="s">&quot;3&quot;</span> <span class="o">=&gt;</span> <span class="nv">four</span><span class="o">::</span><span class="nb">Int</span><span class="p">,</span>
+                 <span class="m">5</span>  <span class="o">=&gt;</span> <span class="nb">Dict</span><span class="p">(</span><span class="m">6</span> <span class="o">=&gt;</span> <span class="nv">sev</span><span class="p">))</span> <span class="o">&amp;&amp;</span> <span class="k">if</span> <span class="nv">four</span> <span class="o">&lt;</span> <span class="nv">sev</span> <span class="k">end</span> <span class="o">=&gt;</span> <span class="nv">sev</span>
+       <span class="k">end</span>
+<span class="m">7</span>
+</pre></div>
+</div>
+<p>Note that, due to the lack of an operation for distinguishing <code class="docutils literal notranslate"><span class="pre">nothing</span></code> from “key not found” in Julia’s standard library, the dictionary pattern has a little overhead. Things will get solved after <a class="reference external" href="https://github.com/JuliaLang/julia/pull/34821">Julia#34821</a> gets done.</p>
+<p><strong>P.S</strong>:  MLStyle will not refer an external package to solve this issue, as MLStyle is generating “runtime support free” code, which means that any code generated by MLStyle itself depends only on Stdlib. This feature allows MLStyle to be introduced as a dependency only in development, instead of being distributed together to downstream codes.</p>
+<ul class="simple">
+<li><p>Tuple Patterns</p></li>
+</ul>
+<div class="highlight-julia notranslate"><div class="highlight"><pre><span></span><span class="gp">julia&gt;</span> <span class="nd">@match</span> <span class="p">(</span><span class="m">1</span><span class="p">,</span> <span class="m">2</span><span class="p">,</span> <span class="p">(</span><span class="m">3</span><span class="p">,</span> <span class="m">4</span><span class="p">,</span> <span class="p">(</span><span class="m">5</span><span class="p">,</span> <span class="p">)))</span> <span class="k">begin</span>
+           <span class="p">(</span><span class="nv">a</span><span class="p">,</span> <span class="nv">b</span><span class="p">,</span> <span class="p">(</span><span class="nv">c</span><span class="p">,</span> <span class="nv">d</span><span class="p">,</span> <span class="p">(</span><span class="m">5</span><span class="p">,</span> <span class="p">)))</span> <span class="o">=&gt;</span> <span class="p">(</span><span class="nv">a</span><span class="p">,</span> <span class="nv">b</span><span class="p">,</span> <span class="nv">c</span><span class="p">,</span> <span class="nv">d</span><span class="p">)</span>
+       <span class="k">end</span>
+<span class="p">(</span><span class="m">1</span><span class="p">,</span> <span class="m">2</span><span class="p">,</span> <span class="m">3</span><span class="p">,</span> <span class="m">4</span><span class="p">)</span>
 </pre></div>
 </div>
 <ul class="simple">
-<li><p>Array pattern(much more efficient than Python for taking advantage of array views)</p></li>
+<li><p>Array Patterns</p></li>
 </ul>
-<div class="highlight-julia notranslate"><div class="highlight"><pre><span></span><span class="gp">julia&gt;</span> <span class="nv">it</span> <span class="o">=</span> <span class="nd">@match</span> <span class="p">[</span><span class="m">1</span><span class="p">,</span> <span class="m">2</span><span class="p">,</span> <span class="m">3</span><span class="p">,</span> <span class="m">4</span><span class="p">]</span> <span class="k">begin</span>
+<div class="highlight-julia-console notranslate"><div class="highlight"><pre><span></span><span class="gp">julia&gt;</span> <span class="nv">it</span> <span class="o">=</span> <span class="nd">@match</span> <span class="p">[</span><span class="m">1</span><span class="p">,</span> <span class="m">2</span><span class="p">,</span> <span class="m">3</span><span class="p">,</span> <span class="m">4</span><span class="p">]</span> <span class="k">begin</span>
          <span class="p">[</span><span class="m">1</span><span class="p">,</span> <span class="nv">pack</span><span class="p">...,</span> <span class="nv">a</span><span class="p">]</span> <span class="o">=&gt;</span> <span class="p">(</span><span class="nv">pack</span><span class="p">,</span> <span class="nv">a</span><span class="p">)</span>
        <span class="k">end</span>
 <span class="p">([</span><span class="m">2</span><span class="p">,</span> <span class="m">3</span><span class="p">],</span> <span class="m">4</span><span class="p">)</span>
@@ -396,38 +397,46 @@
 <div class="section" id="deconstructions-of-composite-data">
 <h2>Deconstructions of Composite Data<a class="headerlink" href="#deconstructions-of-composite-data" title="Permalink to this headline">¶</a></h2>
 <p>Here is an example, check more about ADTs(and GADTs) at <a class="reference external" href="https://thautwarm.github.io/MLStyle.jl/latest/syntax/adt">Algebraic Data Type Syntax in MLStyle</a>.</p>
-<div class="highlight-julia notranslate"><div class="highlight"><pre><span></span><span class="nd">@data</span> <span class="nv">Example</span> <span class="k">begin</span>
-    <span class="nf">Natural</span><span class="p">(</span><span class="nv">dimension</span> <span class="o">::</span> <span class="nb">Float32</span><span class="p">,</span> <span class="nv">climate</span> <span class="o">::</span> <span class="nb">String</span><span class="p">,</span> <span class="nv">altitude</span> <span class="o">::</span> <span class="nb">Int32</span><span class="p">)</span>
-    <span class="nf">Cultural</span><span class="p">(</span><span class="nv">region</span> <span class="o">::</span> <span class="nb">String</span><span class="p">,</span>  <span class="nv">kind</span> <span class="o">::</span> <span class="nb">String</span><span class="p">,</span> <span class="nv">country</span> <span class="o">::</span> <span class="nb">String</span><span class="p">,</span> <span class="nv">nature</span> <span class="o">::</span> <span class="nv">Natural</span><span class="p">)</span>
-<span class="k">end</span>
+<div class="highlight-julia-console notranslate"><div class="highlight"><pre><span></span><span class="gp">julia&gt;</span> <span class="nd">@data</span> <span class="nv">Color</span> <span class="k">begin</span>
+         <span class="nf">RGB</span><span class="p">(</span><span class="nv">r</span><span class="o">::</span><span class="nb">Int</span><span class="p">,</span> <span class="nv">g</span><span class="o">::</span><span class="nb">Int</span><span class="p">,</span> <span class="nv">b</span><span class="o">::</span><span class="nb">Int</span><span class="p">)</span>
+         <span class="nf">Gray</span><span class="p">(</span><span class="nb">Int</span><span class="p">)</span>
+       <span class="k">end</span>
 
-<span class="nv">神农架</span> <span class="o">=</span> <span class="nf">Cultural</span><span class="p">(</span><span class="s">&quot;湖北&quot;</span><span class="p">,</span> <span class="s">&quot;林区&quot;</span><span class="p">,</span> <span class="s">&quot;中国&quot;</span><span class="p">,</span> <span class="nf">Natural</span><span class="p">(</span><span class="m">31</span><span class="p">.</span><span class="m">744</span><span class="p">,</span> <span class="s">&quot;北亚热带季风气候&quot;</span><span class="p">,</span> <span class="m">3106</span><span class="p">))</span>
-<span class="nv">Yellostone</span> <span class="o">=</span> <span class="nf">Cultural</span><span class="p">(</span><span class="s">&quot;Yellowstone National Park&quot;</span><span class="p">,</span> <span class="s">&quot;Natural&quot;</span><span class="p">,</span> <span class="s">&quot;United States&quot;</span><span class="p">,</span> <span class="nf">Natural</span><span class="p">(</span><span class="m">44</span><span class="p">.</span><span class="m">36</span><span class="p">,</span> <span class="s">&quot;subarctic&quot;</span><span class="p">,</span> <span class="m">2357</span><span class="p">))</span>
+<span class="gp">julia&gt;</span> <span class="c"># treating those types as records for more flexible pattern matching</span>
 
-<span class="k">function</span> <span class="nf">my_data_query</span><span class="p">(</span><span class="nv">data_lst</span> <span class="o">::</span> <span class="nb">Vector</span><span class="p">{</span><span class="nv">Cultural</span><span class="p">})</span>
-    <span class="nb">filter</span><span class="p">(</span><span class="nv">data_lst</span><span class="p">)</span> <span class="k">do</span> <span class="nv">data</span>
-        <span class="nd">@match</span> <span class="nv">data</span> <span class="k">begin</span>
-            <span class="nf">Cultural</span><span class="p">(</span><span class="nv">_</span><span class="p">,</span> <span class="s">&quot;林区&quot;</span><span class="p">,</span> <span class="s">&quot;中国&quot;</span><span class="p">,</span> <span class="nf">Natural</span><span class="p">(</span><span class="nv">dim</span><span class="o">=</span><span class="nv">dim</span><span class="p">,</span> <span class="nv">altitude</span><span class="p">))</span> <span class="o">&amp;&amp;</span>
-            <span class="k">if</span> <span class="nv">dim</span> <span class="o">&gt;</span> <span class="m">30</span><span class="p">.</span><span class="m">0</span> <span class="o">&amp;&amp;</span> <span class="nv">altitude</span> <span class="o">&gt;</span> <span class="m">1000</span> <span class="k">end</span> <span class="o">=&gt;</span> <span class="k">true</span>
+<span class="gp">julia&gt;</span> <span class="nd">@as_record</span> <span class="nv">RGB</span>
 
-            <span class="nf">Cultural</span><span class="p">(</span><span class="nv">_</span><span class="p">,</span> <span class="nv">_</span><span class="p">,</span> <span class="s">&quot;United States&quot;</span><span class="p">,</span> <span class="nf">Natural</span><span class="p">(</span><span class="nv">altitude</span><span class="o">=</span><span class="nv">altitude</span><span class="p">))</span> <span class="o">&amp;&amp;</span>
-            <span class="k">if</span> <span class="nv">altitude</span> <span class="o">&gt;</span> <span class="m">2000</span> <span class="k">end</span>  <span class="o">=&gt;</span> <span class="k">true</span>
-            <span class="nv">_</span> <span class="o">=&gt;</span> <span class="k">false</span>
+<span class="gp">julia&gt;</span> <span class="nd">@as_record</span> <span class="nv">Gray</span>
 
-        <span class="k">end</span>
-    <span class="k">end</span>
-<span class="k">end</span>
-<span class="nf">my_data_query</span><span class="p">([</span><span class="nv">神农架</span><span class="p">,</span> <span class="nv">Yellostone</span><span class="p">])</span>
-<span class="p">...</span>
+<span class="gp">julia&gt;</span> <span class="nf">color_to_int</span><span class="p">(</span><span class="nv">x</span><span class="p">)</span> <span class="o">=</span> <span class="nd">@match</span> <span class="nv">x</span> <span class="k">begin</span>
+           <span class="nf">RGB</span><span class="p">(;</span><span class="nv">r</span><span class="p">,</span> <span class="nv">g</span><span class="p">,</span> <span class="nv">b</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="m">16</span> <span class="o">+</span> <span class="nv">b</span> <span class="o">+</span> <span class="m">6</span><span class="nv">g</span> <span class="o">+</span> <span class="m">36</span><span class="nv">r</span>
+           <span class="nf">Gray</span><span class="p">(</span><span class="nv">i</span><span class="p">)</span>       <span class="o">=&gt;</span> <span class="m">232</span> <span class="o">+</span> <span class="nv">i</span>
+       <span class="k">end</span>
+<span class="nv">color_to_int</span> <span class="p">(</span><span class="nv">generic</span> <span class="k">function</span> <span class="nv">with</span> <span class="m">1</span> <span class="nv">method</span><span class="p">)</span>
+
+<span class="gp">julia&gt;</span> <span class="nf">RGB</span><span class="p">(</span><span class="m">200</span><span class="p">,</span> <span class="m">0</span><span class="p">,</span> <span class="m">200</span><span class="p">)</span> <span class="o">|&gt;</span> <span class="nv">color_to_int</span>
+<span class="m">7416</span>
+
+<span class="gp">julia&gt;</span> <span class="nf">Gray</span><span class="p">(</span><span class="m">10</span><span class="p">)</span>         <span class="o">|&gt;</span> <span class="nv">color_to_int</span>
+<span class="m">242</span>
 </pre></div>
 </div>
+<p>In above cases, after <code class="docutils literal notranslate"><span class="pre">&#64;as_record</span> <span class="pre">T</span></code>, we can use something called <a class="reference external" href="https://dev.realworldocaml.org/records.html#field-punning">field punning</a> to match structures very conveniently.</p>
+<div class="highlight-julia notranslate"><div class="highlight"><pre><span></span><span class="nd">@match</span> <span class="nv">rbg_datum</span> <span class="k">begin</span>
+    <span class="nf">RGB</span><span class="p">(;</span><span class="nv">r</span><span class="p">)</span> <span class="o">&amp;&amp;</span> <span class="k">if</span> <span class="nv">r</span> <span class="o">&lt;</span> <span class="m">20</span> <span class="k">end</span> <span class="o">=&gt;</span> <span class="p">...</span>
+    <span class="nf">RGB</span><span class="p">(;</span><span class="nv">r</span><span class="p">,</span> <span class="nv">g</span><span class="p">)</span> <span class="o">&amp;&amp;</span> <span class="k">if</span> <span class="m">10</span><span class="nv">r</span> <span class="o">&lt;</span> <span class="nv">g</span> <span class="k">end</span> <span class="o">=&gt;</span> <span class="p">...</span>
+    <span class="p">...</span>
+<span class="k">end</span>
+</pre></div>
+</div>
+<p>As you can see, field punning can be partial.</p>
 </div>
 <div class="section" id="advanced-type-patterns">
 <h2>Advanced Type Patterns<a class="headerlink" href="#advanced-type-patterns" title="Permalink to this headline">¶</a></h2>
 <p>We can introduce type parameters via <code class="docutils literal notranslate"><span class="pre">where</span></code> syntax.</p>
 <div class="highlight-julia notranslate"><div class="highlight"><pre><span></span><span class="nd">@match</span> <span class="m">1</span> <span class="k">begin</span>
     <span class="nv">a</span> <span class="o">::</span> <span class="nv">T</span> <span class="nv">where</span> <span class="nv">T</span> <span class="o">=&gt;</span> <span class="nv">T</span>
-<span class="k">end</span> <span class="c"># =&gt; T</span>
+<span class="k">end</span> <span class="c"># =&gt; Int64</span>
 </pre></div>
 </div>
 <p>However, whenever you’re using <code class="docutils literal notranslate"><span class="pre">where</span></code>, DO NOT use locally captured type arguments in the right side of <code class="docutils literal notranslate"><span class="pre">::</span></code>, when <code class="docutils literal notranslate"><span class="pre">::</span></code> is directly under a <code class="docutils literal notranslate"><span class="pre">where</span></code>.</p>
@@ -454,14 +463,28 @@
 <span class="c"># (Int64, Int64)</span>
 </pre></div>
 </div>
+<p>Some other examples:</p>
+<div class="highlight-julia-console notranslate"><div class="highlight"><pre><span></span><span class="gp">julia&gt;</span> <span class="nd">@match</span> <span class="m">1</span> <span class="k">begin</span>
+           <span class="o">::</span><span class="nv">T</span> <span class="nv">where</span> <span class="nv">T</span> <span class="o">=&gt;</span> <span class="nv">T</span>
+       <span class="k">end</span>
+<span class="nb">Int64</span>
+
+<span class="gp">julia&gt;</span> <span class="nd">@match</span> <span class="m">1</span> <span class="k">begin</span>
+           <span class="o">::</span><span class="nv">T</span> <span class="nv">where</span> <span class="nv">T</span> <span class="o">&lt;:</span> <span class="nb">Number</span> <span class="o">=&gt;</span> <span class="nv">T</span>
+       <span class="k">end</span>
+<span class="nb">Int64</span>
+
+<span class="gp">julia&gt;</span> <span class="nd">@match</span> <span class="m">1</span> <span class="k">begin</span>
+           <span class="o">::</span><span class="nv">T</span> <span class="nv">where</span> <span class="nv">T</span> <span class="o">&lt;:</span> <span class="nb">AbstractFloat</span> <span class="o">=&gt;</span> <span class="nv">T</span>
+       <span class="k">end</span>
+<span class="nv">ERROR</span><span class="o">:</span> <span class="nv">matching</span> <span class="nv">non</span><span class="o">-</span><span class="nv">exhaustive</span><span class="p">,</span> <span class="nv">at</span> <span class="cm">#= REPL[n]:1 =#</span>
+</pre></div>
 </div>
-<div class="section" id="side-effect">
-<h2>Side-Effect<a class="headerlink" href="#side-effect" title="Permalink to this headline">¶</a></h2>
-<p>To introduce side-effects into pattern matching, we provide a built-in pattern called <code class="docutils literal notranslate"><span class="pre">Do</span></code> pattern to achieve this.
-Also, a pattern called <code class="docutils literal notranslate"><span class="pre">Many</span></code> can work with <code class="docutils literal notranslate"><span class="pre">Do</span></code> pattern in a perfect way.</p>
 </div>
-<div class="section" id="do-patterns-and-many-patterns">
-<h2>Do-Patterns and Many-Patterns<a class="headerlink" href="#do-patterns-and-many-patterns" title="Permalink to this headline">¶</a></h2>
+<div class="section" id="do-patterns-many-patterns">
+<h2>Do-Patterns &amp; Many-Patterns<a class="headerlink" href="#do-patterns-many-patterns" title="Permalink to this headline">¶</a></h2>
+<p>To introduce side-effects into pattern matching, we provide a built-in pattern called <code class="docutils literal notranslate"><span class="pre">Do</span></code> pattern to achieve this.</p>
+<p>Also, a pattern called <code class="docutils literal notranslate"><span class="pre">Many</span></code> can work with <code class="docutils literal notranslate"><span class="pre">Do</span></code> pattern in a perfect way.</p>
 <div class="highlight-julia notranslate"><div class="highlight"><pre><span></span><span class="nd">@match</span> <span class="p">[</span><span class="m">1</span><span class="p">,</span> <span class="m">2</span><span class="p">,</span> <span class="m">3</span><span class="p">]</span> <span class="k">begin</span>
     <span class="nf">Many</span><span class="p">(</span><span class="o">::</span><span class="nb">Int</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="k">true</span>
     <span class="nv">_</span> <span class="o">=&gt;</span> <span class="k">false</span>
@@ -469,11 +492,11 @@ Also, a pattern called <code class="docutils literal notranslate"><span class="p
 
 <span class="nd">@match</span> <span class="p">[</span><span class="m">1</span><span class="p">,</span> <span class="m">2</span><span class="p">,</span> <span class="m">3</span><span class="p">,</span>  <span class="s">&quot;a&quot;</span><span class="p">,</span> <span class="s">&quot;b&quot;</span><span class="p">,</span> <span class="s">&quot;c&quot;</span><span class="p">,</span> <span class="p">:</span><span class="nv">a</span><span class="p">,</span> <span class="p">:</span><span class="nv">b</span><span class="p">,</span> <span class="p">:</span><span class="nv">c</span><span class="p">]</span> <span class="k">begin</span>
     <span class="nf">Do</span><span class="p">(</span><span class="nv">count</span> <span class="o">=</span> <span class="m">0</span><span class="p">)</span> <span class="o">&amp;&amp;</span>
-    <span class="nf">Many</span><span class="p">(</span>
+    <span class="nv">Many</span><span class="p">[</span>
         <span class="nv">a</span><span class="o">::</span><span class="nb">Int</span> <span class="o">&amp;&amp;</span> <span class="nf">Do</span><span class="p">(</span><span class="nv">count</span> <span class="o">=</span> <span class="nv">count</span> <span class="o">+</span> <span class="nv">a</span><span class="p">)</span> <span class="o">||</span>
         <span class="o">::</span><span class="nb">String</span>                        <span class="o">||</span>
         <span class="o">::</span><span class="nb">Symbol</span> <span class="o">&amp;&amp;</span> <span class="nf">Do</span><span class="p">(</span><span class="nv">count</span> <span class="o">=</span> <span class="nv">count</span> <span class="o">+</span> <span class="m">1</span><span class="p">)</span>
-    <span class="p">)</span> <span class="o">=&gt;</span> <span class="nv">count</span>
+    <span class="p">]</span> <span class="o">=&gt;</span> <span class="nv">count</span>
 <span class="k">end</span> <span class="c"># 9</span>
 </pre></div>
 </div>

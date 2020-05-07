@@ -109,8 +109,7 @@
 <li class="toctree-l2"><a class="reference internal" href="../syntax/pattern.html#or-patterns">Or Patterns</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../syntax/pattern.html#deconstructions-of-composite-data">Deconstructions of Composite Data</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../syntax/pattern.html#advanced-type-patterns">Advanced Type Patterns</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../syntax/pattern.html#side-effect">Side-Effect</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../syntax/pattern.html#do-patterns-and-many-patterns">Do-Patterns and Many-Patterns</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../syntax/pattern.html#do-patterns-many-patterns">Do-Patterns &amp; Many-Patterns</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../syntax/pattern.html#let-patterns">Let Patterns</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../syntax/pattern.html#active-patterns">Active Patterns</a></li>
 <li class="toctree-l2"><a class="reference internal" href="../syntax/pattern.html#expr-patterns">Expr Patterns</a></li>
@@ -130,7 +129,8 @@
 <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">MLStyle.Modules.AST</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="#matchast">&#64;matchast</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#capture">&#64;capture</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#capture"><code class="docutils literal notranslate"><span class="pre">Capture</span></code></a></li>
+<li class="toctree-l2"><a class="reference internal" href="#id1">&#64;capture</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="cond.html">MLStyle.Modules.Cond</a><ul>
@@ -159,7 +159,8 @@
       aria-labelledby="dLabelLocalToc"><ul>
 <li><a class="reference internal" href="#">MLStyle.Modules.AST</a><ul>
 <li><a class="reference internal" href="#matchast">&#64;matchast</a></li>
-<li><a class="reference internal" href="#capture">&#64;capture</a></li>
+<li><a class="reference internal" href="#capture"><code class="docutils literal notranslate"><span class="pre">Capture</span></code></a></li>
+<li><a class="reference internal" href="#id1">&#64;capture</a></li>
 </ul>
 </li>
 </ul>
@@ -212,20 +213,37 @@
 <li><p>Usage: <code class="docutils literal notranslate"><span class="pre">&#64;matchast</span> <span class="pre">ast_to_match</span> <span class="pre">(begin</span> <span class="pre">cases...</span> <span class="pre">end)</span></code></p></li>
 <li><p>Examples:</p></li>
 </ul>
-<div class="highlight-julia notranslate"><div class="highlight"><pre><span></span><span class="nd">@matchast</span> <span class="o">:</span><span class="p">(</span><span class="m">1</span> <span class="o">+</span> <span class="m">1</span><span class="p">)</span> <span class="k">quote</span>
-    <span class="o">$</span><span class="nv">a</span> <span class="o">+</span> <span class="m">1</span> <span class="o">=&gt;</span> <span class="nv">a</span> <span class="o">+</span> <span class="m">2</span>
-<span class="k">end</span>
+<div class="highlight-julia notranslate"><div class="highlight"><pre><span></span><span class="gp">julia&gt;</span> <span class="nd">@matchast</span> <span class="o">:</span><span class="p">(</span><span class="m">1</span> <span class="o">+</span> <span class="m">1</span><span class="p">)</span> <span class="k">quote</span>
+           <span class="o">$</span><span class="nv">a</span> <span class="o">+</span> <span class="m">1</span> <span class="o">=&gt;</span> <span class="nv">a</span> <span class="o">+</span> <span class="m">2</span>
+       <span class="k">end</span>
+<span class="m">3</span>
 </pre></div>
 </div>
 <p>is equivalent to</p>
-<div class="highlight-julia notranslate"><div class="highlight"><pre><span></span><span class="nd">@match</span> <span class="o">:</span><span class="p">(</span><span class="m">1</span> <span class="o">+</span> <span class="m">1</span><span class="p">)</span> <span class="k">begin</span>
-    <span class="o">:</span><span class="p">(</span><span class="o">$</span><span class="nv">a</span> <span class="o">+</span> <span class="m">1</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="nv">a</span> <span class="o">+</span> <span class="m">2</span>
-<span class="k">end</span>
+<div class="highlight-julia-console notranslate"><div class="highlight"><pre><span></span><span class="gp">julia&gt;</span> <span class="nd">@match</span> <span class="o">:</span><span class="p">(</span><span class="m">1</span> <span class="o">+</span> <span class="m">1</span><span class="p">)</span> <span class="k">begin</span>
+           <span class="o">:</span><span class="p">(</span><span class="o">$</span><span class="nv">a</span> <span class="o">+</span> <span class="m">1</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="nv">a</span> <span class="o">+</span> <span class="m">2</span>
+       <span class="k">end</span>
+<span class="m">3</span>
 </pre></div>
 </div>
 </div>
 <div class="section" id="capture">
-<h2>&#64;capture<a class="headerlink" href="#capture" title="Permalink to this headline">¶</a></h2>
+<h2><code class="docutils literal notranslate"><span class="pre">Capture</span></code><a class="headerlink" href="#capture" title="Permalink to this headline">¶</a></h2>
+<p><code class="docutils literal notranslate"><span class="pre">Capture</span></code> is a pattern, which could peek the scope(a <code class="docutils literal notranslate"><span class="pre">Dict{Symbol,</span> <span class="pre">T}</span></code>) at some point during the pattern matching. The scope only consists of the variables that MLStyle can aware of. Outer local variables and global variables cannot appear in the returned dictionary.</p>
+<div class="highlight-julia-console notranslate"><div class="highlight"><pre><span></span><span class="gp">julia&gt;</span> <span class="nd">@switch</span> <span class="p">(</span><span class="m">1</span><span class="p">,</span> <span class="m">2</span><span class="p">,</span> <span class="m">3</span><span class="p">)</span> <span class="k">begin</span>
+           <span class="nd">@case</span> <span class="p">(</span><span class="nf">Capture</span><span class="p">(</span><span class="nv">s1</span><span class="p">),</span> <span class="nf">Capture</span><span class="p">(</span><span class="nv">s2</span><span class="p">),</span> <span class="nf">Capture</span><span class="p">(</span><span class="nv">s3</span><span class="p">))</span>
+               <span class="nb">println</span><span class="p">(</span><span class="nv">s1</span><span class="p">)</span>
+               <span class="nb">println</span><span class="p">(</span><span class="nv">s2</span><span class="p">)</span>
+               <span class="nb">println</span><span class="p">(</span><span class="nv">s3</span><span class="p">)</span>
+       <span class="k">end</span>       
+<span class="nb">Dict</span><span class="p">{</span><span class="nb">Any</span><span class="p">,</span><span class="nb">Any</span><span class="p">}()</span>
+<span class="nb">Dict</span><span class="p">{</span><span class="nb">Symbol</span><span class="p">,</span><span class="nb">Dict</span><span class="p">{</span><span class="nb">Any</span><span class="p">,</span><span class="nb">Any</span><span class="p">}}(</span><span class="o">:</span><span class="nv">s1</span> <span class="o">=&gt;</span> <span class="nb">Dict</span><span class="p">())</span>
+<span class="nb">Dict</span><span class="p">{</span><span class="nb">Symbol</span><span class="p">,</span><span class="nb">Dict</span><span class="p">}(</span><span class="o">:</span><span class="nv">s1</span> <span class="o">=&gt;</span> <span class="nb">Dict</span><span class="p">{</span><span class="nb">Any</span><span class="p">,</span><span class="nb">Any</span><span class="p">}(),</span><span class="o">:</span><span class="nv">s2</span> <span class="o">=&gt;</span> <span class="nb">Dict</span><span class="p">{</span><span class="nb">Symbol</span><span class="p">,</span><span class="nb">Dict</span><span class="p">{</span><span class="nb">Any</span><span class="p">,</span><span class="nb">Any</span><span class="p">}}(</span><span class="o">:</span><span class="nv">s1</span> <span class="o">=&gt;</span> <span class="nb">Dict</span><span class="p">()))</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="id1">
+<h2>&#64;capture<a class="headerlink" href="#id1" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
 <li><p>Description: Similar to <code class="docutils literal notranslate"><span class="pre">MacroTools.&#64;capture</span></code>, but provided with a more regex-flavored matching.</p></li>
 <li><p>Usage: <code class="docutils literal notranslate"><span class="pre">&#64;capture</span> <span class="pre">template</span> <span class="pre">input_ast</span></code>,  note that <code class="docutils literal notranslate"><span class="pre">template</span></code> is purely static and cannot be a variable from current context.</p></li>
@@ -238,7 +256,7 @@
 </pre></div>
 </div>
 <p>outputs</p>
-<div class="highlight-julia notranslate"><div class="highlight"><pre><span></span><span class="nv">┌</span> <span class="nv">Info</span><span class="o">:</span> <span class="k">function</span>
+<div class="highlight-julia-console notranslate"><div class="highlight"><pre><span></span><span class="nv">┌</span> <span class="nv">Info</span><span class="o">:</span> <span class="k">function</span>
 <span class="nv">│</span>   <span class="cm">#= REPL[9]:1 =#</span> <span class="nd">@capture</span> <span class="p">(</span><span class="o">$</span><span class="p">(</span><span class="nb">Expr</span><span class="p">(</span><span class="o">:$</span><span class="p">,</span> <span class="o">:</span><span class="nv">fn</span><span class="p">)))(</span><span class="o">$</span><span class="p">(</span><span class="nb">Expr</span><span class="p">(</span><span class="o">:$</span><span class="p">,</span> <span class="o">:</span><span class="p">(</span><span class="nv">args</span><span class="p">...))))</span> <span class="nv">func_node</span> <span class="o">=</span>
 <span class="nv">│</span>    <span class="nb">Dict</span><span class="p">{</span><span class="nb">Symbol</span><span class="p">,</span><span class="nb">Any</span><span class="p">}</span> <span class="nv">with</span> <span class="m">2</span> <span class="nv">entries</span><span class="o">:</span>
 <span class="nv">│</span>      <span class="o">:</span><span class="nv">args</span> <span class="o">=&gt;</span> <span class="nb">Any</span><span class="p">[:</span><span class="nv">a</span><span class="p">,</span> <span class="p">:</span><span class="nv">b</span><span class="p">,</span> <span class="p">:</span><span class="nv">c</span><span class="p">]</span>
