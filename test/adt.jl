@@ -127,32 +127,32 @@ end
             _ => true
         end
 
-        @test match E1 begin
+        @test @match E1 begin
             E1 => true
             _ => false
         end
         
-        @test match E2 begin
+        @test @match E2 begin
             E2 => true
             _ => false
         end
 
-        @test match E3 begin
+        @test @match E3 begin
             E3 => true
             _ => false
         end
 
-        @test match E4 begin
+        @test @match E4 begin
             E4 => true
             _ => false
         end
 
-        @test match E1 begin
+        @test @match E1 begin
             E2 => false 
             _ => true
         end
 
-        @test match E3 begin
+        @test @match E3 begin
             E4 => false 
             _ => true
         end
