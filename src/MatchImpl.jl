@@ -40,8 +40,19 @@ end
 function guess_type_from_expr(m::Module, ex::Any, tps::Set{Symbol})
     @sswitch ex begin
         @case :($t{$(targs...)})
-        # TODO: check if it is a type
-        return true, guess_type_from_expr(m, t, tps)[2]
+        t′ =  guess_type_from_expr(m, t, tps)[2]
+        t′ isa Type || error("$t should be a type!")
+        t = t′
+        rt_type_check = true
+        if t === Union
+            # Issue 87
+            targs = map(targs) do targ
+                t′ = guess_type_from_expr(m, targ, tps)[2]
+                t′ isa Type ? t′ : Any
+            end
+            t = Union{targs...}
+        end
+        return true, t
         @case t::Type
         return false, t
         @case ::Symbol
@@ -50,7 +61,8 @@ function guess_type_from_expr(m::Module, ex::Any, tps::Set{Symbol})
             return (false, getfield(m, ex))
         return true, Any
         @case _
-        error("unrecognised type expression $ex")
+        # TODO: for better performance we should guess types smartly.
+        return true, Any
     end
 end
 

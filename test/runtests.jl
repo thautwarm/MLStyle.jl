@@ -75,4 +75,7 @@ include("typelevel.jl")
 include("nothing.jl")
 
 include("MQuery/test.jl")
+
+include("issues/87.jl")
+
 end
