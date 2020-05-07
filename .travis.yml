@@ -9,19 +9,6 @@ julia:
   - 1.4
 notifications:
   email: false
-env:
-  global:
-    - DOCUMENTER_DEBUG=true
-
-jobs:
-  include:
-    - stage: "Documentation"
-      julia: 1.4
-      os: linux
-      script:
-        - julia --project=docs/ -e 'using Pkg; Pkg.instantiate(); Pkg.add(PackageSpec(path=pwd()))'
-        - julia --project=docs/ docs/make.jl
-      after_success: skip
 
 after_success:
   - julia -e 'using Pkg; Pkg.add("Coverage"); using Coverage; Codecov.submit(process_folder())'
