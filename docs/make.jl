@@ -42,4 +42,5 @@ deploydocs(
     repo="github.com/thautwarm/MLStyle.jl",
     target="build",
     deps=nothing,
-    make=nothing)
+    make=nothing,
+    julia="1.4")
