@@ -1,0 +1,916 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>Write You A Query Language &#8212; MLStyle.jl Documentation</title>
+    <link rel="stylesheet" href="../_static/bootstrap-sphinx.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/language_data.js"></script>
+    <link rel="canonical" href="https://thautwarm.github.io/MLStyle.jl/lastest/tutorials/query-lang.html" />
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="../_static/js/jquery-1.11.0.min.js "></script>
+<script type="text/javascript" src="../_static/js/jquery-fix.js "></script>
+<script type="text/javascript" src="../_static/bootstrap-3.3.7/js/bootstrap.min.js "></script>
+<script type="text/javascript" src="../_static/bootstrap-sphinx.js "></script>
+
+  </head><body>
+
+  <div id="navbar" class="navbar navbar-inverse navbar-default ">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../index.html">
+          MLStyle.jl</a>
+        <span class="navbar-text navbar-version pull-left"><b>lastest</b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+                <li><a href="https://github.com/thautwarm/MLStyle.jl">GitHub</a></li>
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../index.html">MLStyle.jl <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul>
+<li class="toctree-l1"><a class="reference internal" href="../what.html">What is MLStyle.jl?</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../what.html#motivations">Motivations</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../why.html">Why use MLStyle.jl?</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../why.html#straightforward">Straightforward</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../why.html#performance-gain">Performance Gain</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../why.html#extensibility">Extensibility</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../why.html#referential-transparency">Referential Transparency</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../why.html#intuition-of-ast-manipulations">Intuition of AST Manipulations</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../how.html">Installation, Documentations and Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../preview.html">Preview</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../preview.html#rock-paper-scissors">Rock Paper Scissors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../preview.html#homoiconic-pattern-matching-for-julia-asts">Homoiconic pattern matching for Julia ASTs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../preview.html#generalized-algebraic-data-types">Generalized Algebraic Data Types</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../preview.html#active-patterns">Active Patterns</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../benchmark.html">Benchmark</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../benchmark.html#arrays">Arrays</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../benchmark.html#tuples">Tuples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../benchmark.html#data-types">Data Types</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../benchmark.html#extracting-struct-definitions">Extracting Struct Definitions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../benchmark.html#misc">Misc</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../benchmark.html#an-example-from-match-jl-documentation">An Example from Match.jl Documentation</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../contribute.html">Contributing to MLStyle</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../syntax/adt.html">Algebraic Data Types</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../syntax/adt.html#cheat-sheet">Cheat Sheet</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../syntax/adt.html#examples">Examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../syntax/adt.html#example-modeling-arithmetic-operations">Example: Modeling Arithmetic Operations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../syntax/adt.html#about-type-parameters">About Type Parameters</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../syntax/pattern.html">Patterns</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../syntax/pattern.html#literal-patterns">Literal Patterns</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../syntax/pattern.html#capturing-patterns">Capturing Patterns</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../syntax/pattern.html#type-patterns">Type Patterns</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../syntax/pattern.html#as-patterns">As-Patterns</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../syntax/pattern.html#guards">Guards</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../syntax/pattern.html#predicates">Predicates</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../syntax/pattern.html#range-patterns">Range Patterns</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../syntax/pattern.html#reference-patterns">Reference Patterns</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../syntax/pattern.html#custom-patterns">Custom Patterns</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../syntax/pattern.html#dicts-tuples-arrays">Dicts, Tuples, Arrays</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../syntax/pattern.html#or-patterns">Or Patterns</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../syntax/pattern.html#deconstructions-of-composite-data">Deconstructions of Composite Data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../syntax/pattern.html#advanced-type-patterns">Advanced Type Patterns</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../syntax/pattern.html#side-effect">Side-Effect</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../syntax/pattern.html#do-patterns-and-many-patterns">Do-Patterns and Many-Patterns</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../syntax/pattern.html#let-patterns">Let Patterns</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../syntax/pattern.html#active-patterns">Active Patterns</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../syntax/pattern.html#expr-patterns">Expr Patterns</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../syntax/pattern.html#julia-code-as-expr-patterns">Julia Code as Expr Patterns</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../syntax/switch.html">The Switch Statements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../syntax/records.html">Records</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../syntax/when.html">When Destructuring</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../syntax/when.html#allow-destructuring-in-let-binding">Allow Destructuring in Let-Binding</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../syntax/when.html#sole-destructuring">Sole Destructuring</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../syntax/when.html#multiple-branches">Multiple Branches</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../syntax/pattern-function.html">Pattern Functions</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../modules/ast.html">MLStyle.Modules.AST</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../modules/ast.html#matchast">&#64;matchast</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../modules/ast.html#capture">&#64;capture</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../modules/cond.html">MLStyle.Modules.Cond</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../modules/cond.html#cond">&#64;cond</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="capture.html">Static Capturing</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="capture.html#capture-pattern-from-mlstyle-modules-ast"><code class="docutils literal notranslate"><span class="pre">Capture</span></code> Pattern from <code class="docutils literal notranslate"><span class="pre">MLStyle.Modules.AST</span></code>:</a></li>
+<li class="toctree-l2"><a class="reference internal" href="capture.html#raii-style">RAII-Style</a></li>
+</ul>
+</li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Structure <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"><ul>
+<li><a class="reference internal" href="#">Write You A Query Language</a><ul>
+<li><a class="reference internal" href="#definition-of-syntaxes">Definition of Syntaxes</a></li>
+<li><a class="reference internal" href="#codegen-target">Codegen Target</a></li>
+<li><a class="reference internal" href="#refinement-of-codegen-typed-columns">Refinement of Codegen: Typed Columns</a></li>
+<li><a class="reference internal" href="#implementation">Implementation</a></li>
+<li><a class="reference internal" href="#enjoy-you-a-query-language">Enjoy You A Query Language</a></li>
+</ul>
+</li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+              
+                
+              
+            
+            
+            
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="body col-md-12 content" role="main">
+      
+  <div class="section" id="write-you-a-query-language">
+<h1>Write You A Query Language<a class="headerlink" href="#write-you-a-query-language" title="Permalink to this headline">¶</a></h1>
+<p><strong>P.S</strong>: <em>this document hasn’t got up-to-date</em>.</p>
+<p>You may have heard of LINQ or extension methods before, and they’re all embedded query languages.</p>
+<p>In terms of Julia ecosystem, there’re already Query.jl, LightQuery.jl, DataFramesMeta.jl, etc., each of which reaches the partial or full features of a query language.</p>
+<p>This document is provided for you to create a concise and efficient implementation of query language, which is a way for me to exhibit the power of MLStyle.jl on AST manipulations. Additionally, I think this tutorial can be also extremely helpful to those who’re developing query languages for Julia.</p>
+<div class="section" id="definition-of-syntaxes">
+<h2>Definition of Syntaxes<a class="headerlink" href="#definition-of-syntaxes" title="Permalink to this headline">¶</a></h2>
+<p>Firstly, we can refer to the the T-SQL syntax and, introduce it into Julia.</p>
+<div class="highlight-Julia notranslate"><div class="highlight"><pre><span></span><span class="n">df</span> <span class="o">|&gt;</span>
+<span class="nd">@select</span> <span class="n">selectors</span><span class="o">...</span><span class="p">,</span>
+<span class="nd">@where</span> <span class="n">predicates</span><span class="o">...</span><span class="p">,</span>
+<span class="nd">@groupby</span> <span class="n">mappings</span><span class="o">...</span><span class="p">,</span>
+<span class="nd">@orderby</span> <span class="n">mappings</span><span class="o">...</span><span class="p">,</span>
+<span class="nd">@having</span> <span class="n">mappings</span><span class="o">...</span><span class="p">,</span>
+<span class="nd">@limit</span> <span class="n">JuliaExpr</span>
+</pre></div>
+</div>
+<p>A <code class="docutils literal notranslate"><span class="pre">selector</span></code> could be one of the following cases.</p>
+<ol>
+<li><p>select the field <code class="docutils literal notranslate"><span class="pre">x</span></code> / select the 1-fst field</p>
+<p><code class="docutils literal notranslate"><span class="pre">_.x</span> <span class="pre">/</span> <span class="pre">_.(1)</span></code></p>
+</li>
+<li><p>select the field <code class="docutils literal notranslate"><span class="pre">x</span></code>(to support field name that’re not an identifier)</p>
+<p><code class="docutils literal notranslate"><span class="pre">_.&quot;x&quot;</span></code></p>
+</li>
+<li><p>select an expression binded as <code class="docutils literal notranslate"><span class="pre">x</span> <span class="pre">+</span> <span class="pre">_.x</span></code>, where <code class="docutils literal notranslate"><span class="pre">x</span></code> is from current scope</p>
+<p><code class="docutils literal notranslate"><span class="pre">x</span> <span class="pre">+</span> <span class="pre">_.x</span></code></p>
+</li>
+<li><p>select something and bind it to symbol <code class="docutils literal notranslate"><span class="pre">a</span></code></p>
+<p><code class="docutils literal notranslate"><span class="pre">&lt;selector</span> <span class="pre">1-3&gt;</span> <span class="pre">=&gt;</span> <span class="pre">a</span> <span class="pre">/</span> <span class="pre">&lt;selector</span> <span class="pre">1-3&gt;</span> <span class="pre">=&gt;</span> <span class="pre">&quot;a&quot;</span></code></p>
+</li>
+<li><p>select any field <code class="docutils literal notranslate"><span class="pre">col</span></code> that <code class="docutils literal notranslate"><span class="pre">predicate1(col,</span> <span class="pre">args1...)</span> <span class="pre">&amp;&amp;</span> <span class="pre">!predicate2(col,</span> <span class="pre">args2...)</span> <span class="pre">&amp;&amp;</span> <span class="pre">...</span></code> is true</p>
+<p><code class="docutils literal notranslate"><span class="pre">_.(predicate1(args...),</span> <span class="pre">!predicate2(args2...,</span> <span class="pre">),</span>&#160;&#160; <span class="pre">...)</span></code></p>
+</li>
+</ol>
+<p>With E-BNF notation, we can formalize the synax,</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span><span class="n">FieldPredicate</span> <span class="p">:</span><span class="o">:=</span> <span class="p">[</span><span class="s1">&#39;!&#39;</span><span class="p">]</span> <span class="n">QueryExpr</span> <span class="s1">&#39;(&#39;</span> <span class="n">QueryExprList</span> <span class="s1">&#39;)&#39;</span> <span class="p">[</span><span class="s1">&#39;,&#39;</span> <span class="n">FieldPredicate</span><span class="p">]</span>
+
+<span class="n">Field</span>          <span class="p">:</span><span class="o">:=</span> <span class="p">(</span><span class="n">Symbol</span> <span class="o">|</span> <span class="n">String</span> <span class="o">|</span> <span class="n">Int</span><span class="p">)</span>
+
+
+<span class="n">QueryExpr</span>      <span class="p">:</span><span class="o">:=</span>  <span class="s1">&#39;_&#39;</span> <span class="s1">&#39;.&#39;</span> <span class="n">Field</span>
+                  <span class="o">|</span> <span class="o">&lt;</span><span class="n">substitute</span> <span class="n">QueryExpr</span> <span class="ow">in</span> <span class="k">for</span> <span class="n">JuliaExpr</span><span class="o">&gt;</span>
+
+<span class="n">QueryExprList</span>  <span class="p">:</span><span class="o">:=</span> <span class="p">[</span> <span class="n">QueryExpr</span> <span class="p">(</span><span class="s1">&#39;,&#39;</span> <span class="n">QueryExpr</span><span class="p">)</span><span class="o">*</span> <span class="p">]</span>
+
+<span class="n">selector</span>       <span class="p">:</span><span class="o">:=</span> <span class="s1">&#39;_&#39;</span> <span class="s1">&#39;.&#39;</span> <span class="n">FieldPredicate</span>
+                  <span class="o">|</span> <span class="n">QueryExpr</span>
+</pre></div>
+</div>
+<p>A <code class="docutils literal notranslate"><span class="pre">predicate</span></code> is a <code class="docutils literal notranslate"><span class="pre">QueryExpr</span></code>, but should be evaluated to a boolean.</p>
+<p>A <code class="docutils literal notranslate"><span class="pre">mapping</span></code>  is a <code class="docutils literal notranslate"><span class="pre">QueryExpr</span></code>, but shouldn’t be evaluated to a nothing.</p>
+<p>FYI, here’re some valid instances about <code class="docutils literal notranslate"><span class="pre">selector</span></code>.</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>_.foo,
+_.1,
+_.(startswith(&quot;bar&quot;), !endswith(&quot;foo&quot;)),
+x + _.foo,
+let y = _.foo + y; y + _.(2) end
+</pre></div>
+</div>
+</div>
+<div class="section" id="codegen-target">
+<h2>Codegen Target<a class="headerlink" href="#codegen-target" title="Permalink to this headline">¶</a></h2>
+<p>Before implementing code generation, we should have a sketch about the target. The <strong>target</strong> here means the final shape of the code generated from a sequence of query clauses.</p>
+<p>I’ll take you to the travel within the inference about the final shape of code generation.</p>
+<p>Firstly, for we want this:</p>
+<div class="highlight-julia notranslate"><div class="highlight"><pre><span></span><span class="nv">df</span> <span class="o">|&gt;</span>
+<span class="nd">@select</span> <span class="nv">_</span><span class="p">.</span><span class="nv">foo</span> <span class="o">+</span> <span class="nv">x</span><span class="p">,</span> <span class="nv">_</span><span class="p">.</span><span class="nv">bar</span>
+</pre></div>
+</div>
+<p>We can infer out that the generated code is an anonymous function which takes only one argument.</p>
+<p>Okay, cool. We’ve known that the final shape of generated code should be:</p>
+<div class="highlight-julia notranslate"><div class="highlight"><pre><span></span><span class="k">function</span> <span class="p">(</span><span class="nv">ARG</span><span class="p">)</span>
+    <span class="c"># implementations</span>
+<span class="k">end</span>
+</pre></div>
+</div>
+<p>Then, let’s think about the <code class="docutils literal notranslate"><span class="pre">select</span></code> clause. You might find it’s a <code class="docutils literal notranslate"><span class="pre">map</span></code>(if we don’t take aggregate function into consideration). However, for we don’t want to
+make redundant allocations when executing the queries, so we should use <code class="docutils literal notranslate"><span class="pre">Base.Generator</span></code> as the data representation.</p>
+<p>For <code class="docutils literal notranslate"><span class="pre">&#64;select</span> <span class="pre">_.foo</span> <span class="pre">+</span> <span class="pre">x,</span> <span class="pre">_.bar</span></code>, it should be generated to something like</p>
+<div class="highlight-julia notranslate"><div class="highlight"><pre><span></span><span class="p">((</span><span class="nv">RECORD</span><span class="p">[:</span><span class="nv">foo</span><span class="p">]</span> <span class="o">+</span> <span class="nv">x</span><span class="p">,</span> <span class="nv">RECORD</span><span class="p">[:</span><span class="nv">bar</span><span class="p">])</span>   <span class="k">for</span> <span class="nv">RECORD</span> <span class="k">in</span> <span class="nv">IN_SOURCE</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>Where <code class="docutils literal notranslate"><span class="pre">IN_SOURCE</span></code> is the data representation, <code class="docutils literal notranslate"><span class="pre">RECORD</span></code> is the record(row) of <code class="docutils literal notranslate"><span class="pre">IN_SOURCE</span></code>, and <code class="docutils literal notranslate"><span class="pre">x</span></code> is the variable captured by the closure.</p>
+<p>Now, a smart reader might observe that there’s a trick for optimization! If we can have the actual indices of the fields <code class="docutils literal notranslate"><span class="pre">foo</span></code> and <code class="docutils literal notranslate"><span class="pre">bar</span></code> in the record(each row of <code class="docutils literal notranslate"><span class="pre">IN_SOURCE</span></code>), then they can be indexed via integers, which could avoid reflections in some degree.</p>
+<p>I don’t have much knowledge about NamedTuple’s implementation, but indexing via names on unknown datatypes cannot be faster than simply indexing via integers.</p>
+<p>So, the generated code of <code class="docutils literal notranslate"><span class="pre">select</span></code> could be</p>
+<div class="highlight-julia notranslate"><div class="highlight"><pre><span></span><span class="k">let</span> <span class="nv">idx_of_foo</span> <span class="o">=</span> <span class="nb">findfirst</span><span class="p">(</span><span class="o">==</span><span class="p">(</span><span class="o">:</span><span class="nv">foo</span><span class="p">),</span> <span class="nv">IN_FIELDS</span><span class="p">),</span>
+    <span class="nv">idx_of_bar</span> <span class="o">=</span> <span class="nb">findfirst</span><span class="p">(</span><span class="o">==</span><span class="p">(</span><span class="o">:</span><span class="nv">bar</span><span class="p">),</span> <span class="nv">IN_FIELDS</span><span class="p">),</span>
+    <span class="nd">@inline</span> <span class="nf">FN</span><span class="p">(</span><span class="nv">_foo</span><span class="p">,</span> <span class="nv">_bar</span><span class="p">)</span> <span class="o">=</span> <span class="p">(</span><span class="nv">_foo</span> <span class="o">+</span> <span class="nv">x</span><span class="p">,</span> <span class="nv">_bar</span><span class="p">)</span>
+    <span class="p">(</span>
+    <span class="k">let</span> <span class="nv">_foo</span> <span class="o">=</span> <span class="nv">RECORD</span><span class="p">[</span><span class="nv">idx_of_foo</span><span class="p">],</span>
+        <span class="nv">_bar</span> <span class="o">=</span> <span class="nv">RECORD</span><span class="p">[</span><span class="nv">idx_of_bar</span><span class="p">]</span>
+        <span class="nf">FN</span><span class="p">(</span><span class="nv">_foo</span><span class="p">,</span> <span class="nv">_bar</span><span class="p">)</span>
+    <span class="k">end</span>
+    <span class="k">for</span> <span class="nv">RECORD</span> <span class="k">in</span> <span class="nv">IN_SOURCE</span><span class="p">)</span>
+<span class="k">end</span>
+</pre></div>
+</div>
+<p>Where we introduce a new requirement of the query’s code generation, <code class="docutils literal notranslate"><span class="pre">IN_FIELDS</span></code>, which denotes the field names of <code class="docutils literal notranslate"><span class="pre">IN_SOURCE</span></code>.</p>
+<p>Now, to have a consistent code generation, let’s think about stacked <code class="docutils literal notranslate"><span class="pre">select</span></code> clauses.</p>
+<div class="highlight-julia notranslate"><div class="highlight"><pre><span></span><span class="nv">df</span> <span class="o">|&gt;</span>
+<span class="nd">@select</span> <span class="nv">_</span><span class="p">,</span> <span class="nv">_</span><span class="p">.</span><span class="nv">foo</span> <span class="o">+</span> <span class="m">1</span><span class="p">,</span> <span class="o">=&gt;</span> <span class="nv">foo1</span><span class="p">,</span>
+<span class="c"># `select _` here means `SELECT *` in T-SQL.</span>
+<span class="nd">@select</span> <span class="nv">_</span><span class="p">.</span><span class="nv">foo1</span> <span class="o">+</span> <span class="m">2</span> <span class="o">=&gt;</span> <span class="nv">foo2</span>
+</pre></div>
+</div>
+<p>I don’t know how to explain the iteration in my mind, but I’ve figured out such a way.</p>
+<div class="highlight-julia notranslate"><div class="highlight"><pre><span></span><span class="k">let</span> <span class="p">(</span><span class="nv">IN_FIELDS</span><span class="p">,</span> <span class="nv">IN_SOURCE</span><span class="p">)</span> <span class="o">=</span>
+    <span class="k">let</span> <span class="p">(</span><span class="nv">IN_FIELDS</span><span class="p">,</span> <span class="nv">IN_SOURCE</span><span class="p">)</span> <span class="o">=</span> <span class="nf">process</span><span class="p">(</span><span class="nv">df</span><span class="p">),</span>
+        <span class="nv">idx_of_foo</span> <span class="o">=</span> <span class="nb">findfirst</span><span class="p">(</span><span class="o">==</span><span class="p">(</span><span class="o">:</span><span class="nv">foo</span><span class="p">),</span> <span class="nv">IN_FIELDS</span><span class="p">),</span>
+        <span class="nd">@inline</span> <span class="nf">FN</span><span class="p">(</span><span class="nv">_record</span><span class="p">,</span> <span class="nv">_foo</span><span class="p">)</span> <span class="o">=</span> <span class="p">(</span><span class="nv">_record</span><span class="p">...,</span> <span class="nv">_foo</span> <span class="o">+</span> <span class="m">1</span><span class="p">)</span>
+        <span class="p">[</span><span class="nv">IN_FIELDS</span><span class="p">...,</span> <span class="p">:</span><span class="nv">foo1</span><span class="p">],</span>
+        <span class="p">(</span>
+            <span class="k">let</span> <span class="nv">_foo</span> <span class="o">=</span> <span class="nv">RECORD</span><span class="p">[</span><span class="nv">idx_of_foo</span><span class="p">]</span>
+                <span class="nf">FN</span><span class="p">(</span><span class="nv">RECORD</span><span class="p">,</span> <span class="nv">_foo</span><span class="p">)</span>
+            <span class="k">end</span>
+            <span class="k">for</span> <span class="nv">RECORD</span> <span class="k">in</span> <span class="nv">IN_SOURCE</span>
+        <span class="p">)</span>
+    <span class="k">end</span><span class="p">,</span>
+    <span class="nv">idx_of_foo1</span> <span class="o">=</span> <span class="nb">findfirst</span><span class="p">(</span><span class="o">==</span><span class="p">(</span><span class="o">:</span><span class="nv">foo1</span><span class="p">),</span> <span class="nv">IN_FIELDS</span><span class="p">),</span>
+    <span class="nd">@inline</span> <span class="nf">FN</span><span class="p">(</span><span class="nv">_foo1</span><span class="p">)</span> <span class="o">=</span> <span class="p">(</span><span class="nv">_foo1</span> <span class="o">+</span> <span class="m">2</span><span class="p">,</span> <span class="p">)</span>
+
+    <span class="p">[:</span><span class="nv">foo2</span><span class="p">],</span>
+    <span class="p">(</span>
+        <span class="k">let</span> <span class="nv">_foo1</span> <span class="o">=</span> <span class="nv">RECORD</span><span class="p">[</span><span class="nv">idx_of_foo1</span><span class="p">]</span>
+            <span class="nf">FN</span><span class="p">(</span><span class="nv">_foo1</span><span class="p">)</span>
+        <span class="k">end</span>
+        <span class="k">for</span> <span class="nv">RECORD</span> <span class="k">in</span> <span class="nv">IN_SOURCE</span>
+    <span class="p">)</span>
+<span class="k">end</span>
+</pre></div>
+</div>
+<p>Oh, perfect! I’m so excited! That’s so beautiful!</p>
+<p>If the output field names are a list of meta variables <code class="docutils literal notranslate"><span class="pre">[:foo2]</span></code>, then output expression inside the comprehension should be a list of terms <code class="docutils literal notranslate"><span class="pre">[foo2]</span></code>. For <code class="docutils literal notranslate"><span class="pre">foo2</span> <span class="pre">=</span> <span class="pre">_.foo1</span> <span class="pre">+</span> <span class="pre">2</span></code> which is generated as <code class="docutils literal notranslate"><span class="pre">RECORD[idx_of_foo1]</span> <span class="pre">+</span> <span class="pre">2</span></code>, so it comes into the shape of above code snippet.</p>
+<p>Let’s think about the <code class="docutils literal notranslate"><span class="pre">where</span></code> clause.</p>
+<p>If we want this:</p>
+<div class="highlight-julia notranslate"><div class="highlight"><pre><span></span><span class="nv">df</span> <span class="o">|&gt;</span>
+<span class="nd">@where</span> <span class="nv">_</span><span class="p">.</span><span class="nv">foo</span> <span class="o">&lt;</span> <span class="m">2</span>
+</pre></div>
+</div>
+<p>That’s similar to <code class="docutils literal notranslate"><span class="pre">select</span></code>:</p>
+<div class="highlight-julia notranslate"><div class="highlight"><pre><span></span><span class="k">let</span> <span class="p">(</span><span class="nv">IN_FIELDS</span><span class="p">,</span> <span class="nv">IN_SOURCE</span><span class="p">)</span> <span class="o">=</span> <span class="nf">process</span><span class="p">(</span><span class="nv">df</span><span class="p">),</span>
+    <span class="nv">idx_of_foo</span> <span class="o">=</span> <span class="nb">findfirst</span><span class="p">(</span><span class="o">==</span><span class="p">(</span><span class="o">:</span><span class="nv">foo</span><span class="p">),</span> <span class="nv">IN_FIELDS</span><span class="p">)</span>
+    <span class="nv">IN_FIELDS</span><span class="p">,</span>
+    <span class="p">(</span>
+        <span class="nv">RECORD</span> <span class="k">for</span> <span class="nv">RECORD</span> <span class="k">in</span> <span class="nv">SOURCE</span>
+        <span class="k">if</span>  <span class="k">let</span> <span class="nv">_foo</span> <span class="o">=</span> <span class="nv">RECORD</span><span class="p">[</span><span class="nv">idx_of_foo</span><span class="p">]</span>
+                <span class="nv">_foo</span> <span class="o">&lt;</span> <span class="m">2</span>
+            <span class="k">end</span>
+    <span class="p">)</span>
+<span class="k">end</span>
+</pre></div>
+</div>
+<p>Obviously that <code class="docutils literal notranslate"><span class="pre">where</span></code> clauses generated in this way could be stacked.</p>
+<p>Next, it’s the turn of <code class="docutils literal notranslate"><span class="pre">groupby</span></code>. It could be much more complex, for we should make it consistent with code generation
+for <code class="docutils literal notranslate"><span class="pre">select</span></code> and <code class="docutils literal notranslate"><span class="pre">where</span></code>.</p>
+<p>Let’s think about the case below.</p>
+<div class="highlight-julia notranslate"><div class="highlight"><pre><span></span><span class="nv">df</span> <span class="o">|&gt;</span>
+<span class="nd">@groupby</span> <span class="nb">startswith</span><span class="p">(</span><span class="nv">_</span><span class="p">.</span><span class="nv">name</span><span class="p">,</span> <span class="s">&quot;Ruby&quot;</span><span class="p">)</span>  <span class="o">=&gt;</span> <span class="nv">is_ruby</span>
+</pre></div>
+</div>
+<p>Yep, we want to group data frames(of course, any other datatypes that can be processed via this pipeline) by whether its field <code class="docutils literal notranslate"><span class="pre">name</span></code> starts with a string “Ruby” like, “Ruby Rose”.</p>
+<p>Ha, I’d like to use a dictionary here to store the groups.</p>
+<div class="highlight-julia notranslate"><div class="highlight"><pre><span></span><span class="k">let</span> <span class="nv">IN_FIELDS</span><span class="p">,</span> <span class="nv">IN_SOURCE</span> <span class="o">=</span> <span class="nf">process</span><span class="p">(</span><span class="nv">df</span><span class="p">),</span>
+    <span class="nv">idx_of_name</span> <span class="o">=</span> <span class="nb">findfirst</span><span class="p">(</span><span class="o">==</span><span class="p">(</span><span class="o">:</span><span class="nv">name</span><span class="p">),</span> <span class="nv">IN_FIELDS</span><span class="p">),</span>
+    <span class="nd">@inline</span> <span class="nf">FN</span><span class="p">(</span><span class="nv">_name</span><span class="p">)</span> <span class="o">=</span> <span class="p">(</span><span class="nb">startswith</span><span class="p">(</span><span class="nv">_</span><span class="p">.</span><span class="nv">name</span><span class="p">,</span> <span class="s">&quot;Ruby&quot;</span><span class="p">),</span> <span class="p">)</span>
+
+    <span class="nv">GROUPS</span> <span class="o">=</span> <span class="nb">Dict</span><span class="p">()</span> <span class="c"># the type issues will be discussed later.</span>
+    <span class="k">for</span> <span class="nv">RECORD</span> <span class="k">in</span> <span class="nv">IN_SOURCE</span>
+        <span class="nv">_name</span> <span class="o">=</span> <span class="nv">RECORD</span><span class="p">[</span><span class="nv">idx_of_name</span><span class="p">]</span>
+        <span class="nv">GROUP_KEY</span> <span class="o">=</span> <span class="p">(</span><span class="nv">is_ruby</span><span class="p">,</span> <span class="p">)</span> <span class="o">=</span> <span class="nf">FN</span><span class="p">(</span><span class="nv">_name</span><span class="p">)</span>
+        <span class="nv">AGGREGATES</span> <span class="o">=</span> <span class="nb">get!</span><span class="p">(</span><span class="nv">GROUPS</span><span class="p">,</span> <span class="nv">GROUP_KEY</span><span class="p">)</span> <span class="k">do</span>
+            <span class="nb">Tuple</span><span class="p">([]</span> <span class="k">for</span> <span class="nv">_</span> <span class="k">in</span> <span class="nv">IN_FIELDS</span><span class="p">)</span>
+        <span class="k">end</span>
+        <span class="nv">push!</span><span class="p">.(</span><span class="nv">AGGREGATES</span><span class="p">,</span> <span class="nv">RECORD</span><span class="p">)</span>
+    <span class="k">end</span>
+    <span class="c"># then output fields and source here</span>
+<span class="k">end</span>
+</pre></div>
+</div>
+<p>I think it perfect, so let’s go ahead. The reason why we make an inline function would be given
+later, I’d disclosed that it’s for type inference.</p>
+<p>So, what should the output field names and the source be?</p>
+<p>An implementation is,</p>
+<div class="highlight-julia notranslate"><div class="highlight"><pre><span></span><span class="nv">IN_FIELDS</span><span class="p">,</span> <span class="nb">values</span><span class="p">(</span><span class="nv">GROUPS</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>But if so, we will lose the information of group keys, which is not that good.</p>
+<p>So, if we want to persist the group keys, we can do this:</p>
+<div class="highlight-julia notranslate"><div class="highlight"><pre><span></span><span class="p">[[:</span><span class="nv">is_ruby</span><span class="p">];</span> <span class="nv">IN_FIELDS</span><span class="p">],</span> <span class="p">((</span><span class="nv">k</span><span class="p">...,</span> <span class="nv">v</span><span class="p">...)</span> <span class="k">for</span> <span class="p">(</span><span class="nv">k</span><span class="p">,</span> <span class="nv">v</span><span class="p">)</span> <span class="k">in</span> <span class="nv">GROUPS</span><span class="p">)</span>
+</pre></div>
+</div>
+<p>I think the latter could be sufficiently powerful, although it might not be that efficient. You can have
+different implementations of <code class="docutils literal notranslate"><span class="pre">groupby</span></code> if you have more specific use cases, just use the extensible system
+which will be introduced later.</p>
+<p>So, the code generation of <code class="docutils literal notranslate"><span class="pre">groupby</span></code> could be:</p>
+<div class="highlight-julia notranslate"><div class="highlight"><pre><span></span><span class="k">let</span> <span class="nv">IN_FIELDS</span><span class="p">,</span> <span class="nv">IN_SOURCE</span> <span class="o">=</span> <span class="nf">process</span><span class="p">(</span><span class="nv">df</span><span class="p">),</span>
+    <span class="nv">idx_of_name</span> <span class="o">=</span> <span class="nb">findfirst</span><span class="p">(</span><span class="o">==</span><span class="p">(</span><span class="o">:</span><span class="nv">name</span><span class="p">),</span> <span class="nv">IN_FIELDS</span><span class="p">),</span>
+    <span class="nd">@inline</span> <span class="nf">FN</span><span class="p">(</span><span class="nv">_name</span><span class="p">)</span> <span class="o">=</span> <span class="p">(</span><span class="nb">startswith</span><span class="p">(</span><span class="nv">_</span><span class="p">.</span><span class="nv">name</span><span class="p">,</span> <span class="s">&quot;Ruby&quot;</span><span class="p">),</span> <span class="p">)</span>
+
+    <span class="nv">GROUPS</span> <span class="o">=</span> <span class="nb">Dict</span><span class="p">()</span> <span class="c"># the type issues will be discussed later.</span>
+    <span class="k">for</span> <span class="nv">RECORD</span> <span class="k">in</span> <span class="nv">IN_SOURCE</span>
+        <span class="nv">_name</span> <span class="o">=</span> <span class="nv">RECORD</span><span class="p">[</span><span class="nv">idx_of_name</span><span class="p">]</span>
+        <span class="nv">GROUP_KEY</span> <span class="o">=</span> <span class="p">(</span><span class="nv">is_ruby</span><span class="p">,</span> <span class="p">)</span> <span class="o">=</span> <span class="nf">FN</span><span class="p">(</span><span class="nv">_name</span><span class="p">)</span>
+        <span class="nv">AGGREGATES</span> <span class="o">=</span> <span class="nb">get!</span><span class="p">(</span><span class="nv">GROUPS</span><span class="p">,</span> <span class="nv">GROUP_KEY</span><span class="p">)</span> <span class="k">do</span>
+            <span class="nb">Tuple</span><span class="p">([]</span> <span class="k">for</span> <span class="nv">_</span> <span class="k">in</span> <span class="nv">IN_FIELDS</span><span class="p">)</span>
+        <span class="k">end</span>
+        <span class="nv">push!</span><span class="p">.(</span><span class="nv">AGGREGATES</span><span class="p">,</span> <span class="nv">RECORD</span><span class="p">)</span>
+    <span class="k">end</span>
+    <span class="p">[[:</span><span class="nv">is_ruby</span><span class="p">];</span> <span class="nv">IN_FIELDS</span><span class="p">],</span> <span class="p">((</span><span class="nv">k</span><span class="p">...,</span> <span class="nv">v</span><span class="p">...)</span> <span class="k">for</span> <span class="p">(</span><span class="nv">k</span><span class="p">,</span> <span class="nv">v</span><span class="p">)</span> <span class="k">in</span> <span class="nv">GROUPS</span><span class="p">)</span>
+<span class="k">end</span>
+</pre></div>
+</div>
+<p>However, subsequently, we comes to the <code class="docutils literal notranslate"><span class="pre">having</span></code> clause, in fact, I’d regard it as a sub-clause of
+<code class="docutils literal notranslate"><span class="pre">groupby</span></code>, which means it cannot take place independently, but co-appear with a <code class="docutils literal notranslate"><span class="pre">groupby</span></code> clause.</p>
+<p>Given such a case:</p>
+<div class="highlight-julia notranslate"><div class="highlight"><pre><span></span><span class="nv">df</span> <span class="o">|&gt;</span>
+<span class="nd">@groupby</span> <span class="nb">startswith</span><span class="p">(</span><span class="nv">_</span><span class="p">.</span><span class="nv">name</span><span class="p">,</span> <span class="s">&quot;Ruby&quot;</span><span class="p">)</span>  <span class="o">=&gt;</span> <span class="nv">is_ruby</span>
+<span class="nd">@having</span> <span class="nv">is_ruby</span> <span class="o">||</span> <span class="nb">count</span><span class="p">(</span><span class="nv">_</span><span class="p">.</span><span class="nv">is_rose</span><span class="p">)</span> <span class="o">&gt;</span> <span class="m">5</span>
+</pre></div>
+</div>
+<p>The generated code should be:</p>
+<div class="highlight-julia notranslate"><div class="highlight"><pre><span></span><span class="k">let</span> <span class="nv">IN_FIELDS</span><span class="p">,</span> <span class="nv">IN_SOURCE</span> <span class="o">=</span> <span class="nf">process</span><span class="p">(</span><span class="nv">df</span><span class="p">),</span>
+    <span class="nv">idx_of_name</span> <span class="o">=</span> <span class="nb">findfirst</span><span class="p">(</span><span class="o">==</span><span class="p">(</span><span class="o">:</span><span class="nv">name</span><span class="p">),</span> <span class="nv">IN_FIELDS</span><span class="p">),</span>
+    <span class="nv">idx_of_is_rose</span> <span class="o">=</span> <span class="nb">findfirst</span><span class="p">(</span><span class="o">==</span><span class="p">(</span><span class="o">:</span><span class="nv">is_rose</span><span class="p">),</span> <span class="nv">IN_FIELDS</span><span class="p">)</span>
+    <span class="nd">@inline</span> <span class="nf">FN</span><span class="p">(</span><span class="nv">_name</span><span class="p">)</span> <span class="o">=</span> <span class="p">(</span><span class="nb">startswith</span><span class="p">(</span><span class="nv">_name</span><span class="p">,</span> <span class="s">&quot;Ruby&quot;</span><span class="p">),</span> <span class="p">)</span>
+
+    <span class="nv">GROUPS</span> <span class="o">=</span> <span class="nb">Dict</span><span class="p">()</span> <span class="c"># the type issues will be discussed later.</span>
+    <span class="k">for</span> <span class="nv">RECORD</span> <span class="k">in</span> <span class="nv">IN_SOURCE</span>
+        <span class="nv">_name</span> <span class="o">=</span> <span class="nv">RECORD</span><span class="p">[</span><span class="nv">idx_of_name</span><span class="p">]</span>
+        <span class="nv">_is_rose</span> <span class="o">=</span> <span class="nv">RECORD</span><span class="p">[</span><span class="nv">idx_of_rose</span><span class="p">]</span>
+        <span class="nv">GROUP_KEY</span> <span class="o">=</span> <span class="p">(</span><span class="nv">is_ruby</span><span class="p">,</span> <span class="p">)</span> <span class="o">=</span> <span class="nf">GROUP_FN</span><span class="p">(</span><span class="nv">RECORD</span><span class="p">)</span>
+        <span class="k">if</span> <span class="o">!</span><span class="p">(</span><span class="nv">is_ruby</span> <span class="o">||</span> <span class="nb">count</span><span class="p">(</span><span class="nv">is_rose</span><span class="p">)</span> <span class="o">&gt;</span> <span class="m">5</span><span class="p">)</span>
+            <span class="k">continue</span>
+        <span class="k">end</span>
+        <span class="nv">AGGREGATES</span> <span class="o">=</span> <span class="nb">get!</span><span class="p">(</span><span class="nv">GROUPS</span><span class="p">,</span> <span class="nv">GROUP_KEY</span><span class="p">)</span> <span class="k">do</span>
+            <span class="nb">Tuple</span><span class="p">([]</span> <span class="k">for</span> <span class="nv">_</span> <span class="k">in</span> <span class="nv">IN_FIELDS</span><span class="p">)</span>
+        <span class="k">end</span>
+        <span class="nv">push!</span><span class="p">.(</span><span class="nv">AGGREGATES</span><span class="p">,</span> <span class="nv">RECORD</span><span class="p">)</span>
+    <span class="k">end</span>
+    <span class="p">[[:</span><span class="nv">is_ruby</span><span class="p">];</span> <span class="nv">IN_FIELDS</span><span class="p">],</span> <span class="p">((</span><span class="nv">k</span><span class="p">...,</span> <span class="nv">v</span><span class="p">...)</span> <span class="k">for</span> <span class="p">(</span><span class="nv">k</span><span class="p">,</span> <span class="nv">v</span><span class="p">)</span> <span class="k">in</span> <span class="nv">GROUPS</span><span class="p">)</span>
+<span class="k">end</span>
+</pre></div>
+</div>
+<p>The conditional code generation of <code class="docutils literal notranslate"><span class="pre">groupby</span></code> could be achieved very concisely via AST patterns of MLStyle, we’ll refer to this later.</p>
+<p>After introducing the generation for above 4 clauses, <code class="docutils literal notranslate"><span class="pre">orderby</span></code> and <code class="docutils literal notranslate"><span class="pre">limit</span></code> then become quite trivial, and I don’t want to repeat myself if not necessary.</p>
+<p>Now we know that multiple  clauses could be generated to produce a <code class="docutils literal notranslate"><span class="pre">Tuple</span></code> result, first of which is the field names, the
+second is the lazy computation of the query. We can resume this tuple to the corresponding types, for instance,</p>
+<div class="highlight-julia notranslate"><div class="highlight"><pre><span></span><span class="k">function</span> <span class="p">(</span><span class="nv">ARG</span> <span class="o">::</span> <span class="nv">DataFrame</span><span class="p">)</span>
+    <span class="p">(</span><span class="nv">IN_FIELDS</span><span class="p">,</span> <span class="nv">IN_SOURCE</span><span class="p">)</span> <span class="o">=</span> <span class="k">let</span> <span class="nv">IN_FIELDS</span><span class="p">,</span> <span class="nv">IN_SOURCE</span> <span class="o">=</span> <span class="p">...</span>
+        <span class="p">...</span>
+    <span class="k">end</span>
+
+    <span class="nv">res</span> <span class="o">=</span> <span class="nb">Tuple</span><span class="p">([]</span> <span class="k">for</span> <span class="nv">_</span> <span class="k">in</span> <span class="nv">IN_FIELDS</span><span class="p">)</span>
+    <span class="k">for</span> <span class="nv">each</span> <span class="k">in</span> <span class="nv">IN_SOURCE</span>
+        <span class="nv">push!</span><span class="p">.(</span><span class="nv">res</span><span class="p">,</span> <span class="nv">each</span><span class="p">)</span>
+    <span class="k">end</span>
+    <span class="nf">DataFrame</span><span class="p">(</span><span class="nb">collect</span><span class="p">(</span><span class="nv">res</span><span class="p">),</span> <span class="nv">IN_FIELDS</span><span class="p">)</span>
+<span class="k">end</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="refinement-of-codegen-typed-columns">
+<h2>Refinement of Codegen: Typed Columns<a class="headerlink" href="#refinement-of-codegen-typed-columns" title="Permalink to this headline">¶</a></h2>
+<p>Last section introduce a framework of code generation for implementing query languages, but in Julia, there’s still a fatal problem.</p>
+<p>Look at the value to be return(when input is a <code class="docutils literal notranslate"><span class="pre">DataFrame</span></code>):</p>
+<div class="highlight-julia notranslate"><div class="highlight"><pre><span></span><span class="nv">res</span> <span class="o">=</span> <span class="nb">Tuple</span><span class="p">([]</span> <span class="k">for</span> <span class="nv">_</span> <span class="k">in</span> <span class="nv">IN_FIELDS</span><span class="p">)</span>
+<span class="k">for</span> <span class="nv">each</span> <span class="k">in</span> <span class="nv">SOURCE</span>
+    <span class="nv">push!</span><span class="p">.(</span><span class="nv">res</span><span class="p">,</span> <span class="nv">each</span><span class="p">)</span>
+<span class="k">end</span>
+<span class="nf">DataFrame</span><span class="p">(</span><span class="nb">collect</span><span class="p">(</span><span class="nv">res</span><span class="p">),</span> <span class="nb">collect</span><span class="p">(</span><span class="nv">IN_FIELDS</span><span class="p">))</span>
+</pre></div>
+</div>
+<p>I can promise you that, each column of your data frames is a <code class="docutils literal notranslate"><span class="pre">Vector{Any}</span></code>, yes, not its actual type.
+You may prefer to calculate the type of a column using the common super type of all elements, but there’re
+2 problems if you try this:</p>
+<ul class="simple">
+<li><p>If the column is empty, emmmm…</p></li>
+<li><p>Calculating the super type of all elements causes unaffordable cost!</p></li>
+</ul>
+<p>Yet, I’ll introduce a new requirement <code class="docutils literal notranslate"><span class="pre">IN_TYPES</span></code> of the query’s code generation, which perfectly solves problems of column types.</p>
+<p>Let’s have a look at code generation for <code class="docutils literal notranslate"><span class="pre">select</span></code> after introducing the <code class="docutils literal notranslate"><span class="pre">IN_TYPES</span></code>.</p>
+<p>Given that</p>
+<div class="highlight-julia notranslate"><div class="highlight"><pre><span></span><span class="nd">@select</span> <span class="nv">_</span><span class="p">,</span> <span class="nv">_</span><span class="p">.</span><span class="nv">foo</span> <span class="o">+</span> <span class="m">1</span>
+<span class="c"># `@select _` is regarded as `SELECT *` in T-SQL.</span>
+</pre></div>
+</div>
+<div class="highlight-julia notranslate"><div class="highlight"><pre><span></span><span class="nf">return_type</span><span class="p">(</span><span class="nv">f</span><span class="p">,</span> <span class="nv">ts</span><span class="p">)</span> <span class="o">=</span>
+    <span class="k">let</span> <span class="nv">ts</span> <span class="o">=</span> <span class="nb">Base</span><span class="p">.</span><span class="nf">return_types</span><span class="p">(</span><span class="nv">f</span><span class="p">,</span> <span class="nv">ts</span><span class="p">)</span>
+        <span class="nb">length</span><span class="p">(</span><span class="nv">ts</span><span class="p">)</span> <span class="o">===</span> <span class="m">1</span> <span class="o">?</span>
+            <span class="nv">ts</span><span class="p">[</span><span class="m">1</span><span class="p">]</span>        <span class="o">:</span>
+            <span class="nb">Union</span><span class="p">{</span><span class="nv">ts</span><span class="p">...}</span>
+    <span class="k">end</span>
+<span class="nf">type_unpack</span><span class="p">(</span><span class="nv">n</span><span class="p">,</span> <span class="o">::</span><span class="nb">Type</span><span class="p">{</span><span class="nb">Tuple</span><span class="p">{}})</span> <span class="o">=</span> <span class="nb">throw</span><span class="p">(</span><span class="s">&quot;error&quot;</span><span class="p">)</span>
+<span class="nf">type_unpack</span><span class="p">(</span><span class="nv">n</span><span class="p">,</span> <span class="o">::</span><span class="nb">Type</span><span class="p">{</span><span class="nb">Tuple</span><span class="p">{</span><span class="nv">T1</span><span class="p">}})</span> <span class="nv">where</span> <span class="nv">T1</span> <span class="o">=</span> <span class="p">[</span><span class="nv">T1</span><span class="p">]</span>
+<span class="nf">type_unpack</span><span class="p">(</span><span class="nv">n</span><span class="p">,</span> <span class="o">::</span><span class="nb">Type</span><span class="p">{</span><span class="nb">Tuple</span><span class="p">{</span><span class="nv">T1</span><span class="p">,</span> <span class="nv">T2</span><span class="p">}})</span> <span class="nv">where</span> <span class="p">{</span><span class="nv">T1</span><span class="p">,</span> <span class="nv">T2</span><span class="p">}</span> <span class="o">=</span> <span class="p">[</span><span class="nv">T1</span><span class="p">,</span> <span class="nv">T2</span><span class="p">]</span>
+<span class="c"># type_unpack(::Type{Tuple{T1, T2, ...}}) where {T1, T2, ...} = [T1, T2, ...]</span>
+<span class="nf">type_unpack</span><span class="p">(</span><span class="nv">n</span><span class="p">,</span> <span class="o">::</span><span class="nb">Type</span><span class="p">{</span><span class="nb">Any</span><span class="p">})</span> <span class="o">=</span> <span class="nb">fill</span><span class="p">(</span><span class="nb">Any</span><span class="p">,</span> <span class="nv">n</span><span class="p">)</span>
+
+<span class="k">let</span> <span class="p">(</span><span class="nv">IN_FIELDS</span><span class="p">,</span> <span class="nv">IN_TYPES</span><span class="p">,</span> <span class="nv">SOURCE</span><span class="p">)</span> <span class="o">=</span> <span class="nf">process</span><span class="p">(</span><span class="nv">df</span><span class="p">),</span>
+    <span class="nv">idx_of_foo</span> <span class="o">=</span> <span class="nb">findfirst</span><span class="p">(</span><span class="o">==</span><span class="p">(</span><span class="o">:</span><span class="nv">foo</span><span class="p">),</span>  <span class="nv">IN_FIELDS</span><span class="p">),</span>
+    <span class="p">(</span><span class="nd">@inline</span> <span class="nf">FN</span><span class="p">(</span><span class="nv">_record</span><span class="p">,</span> <span class="nv">_foo</span><span class="p">)</span> <span class="o">=</span> <span class="p">(</span><span class="nv">_record</span><span class="p">...,</span> <span class="nv">_foo</span><span class="p">)),</span>
+    <span class="nv">FN_OUT_FIELDS</span> <span class="o">=</span> <span class="p">[</span><span class="nv">IN_FIELDS</span><span class="p">...,</span> <span class="p">:</span><span class="nv">foo1</span><span class="p">],</span>
+    <span class="nv">FN_OUT_TYPES</span> <span class="o">=</span> <span class="nf">type_unpack</span><span class="p">(</span><span class="nb">length</span><span class="p">(</span><span class="nv">FN_OUT_FIELDS</span><span class="p">),</span> <span class="nf">return_type</span><span class="p">(</span><span class="nb">Tuple</span><span class="p">{</span><span class="nv">IN_TYPES</span><span class="p">...},</span> <span class="nv">IN_TYPES</span><span class="p">[</span><span class="nv">idx_of_foo</span><span class="p">]))</span>
+
+    <span class="nv">FN_OUT_FILEDS</span><span class="p">,</span>
+    <span class="nv">FN_OUT_TYPES</span><span class="p">,</span>
+    <span class="p">(</span><span class="k">let</span> <span class="nv">_foo</span> <span class="o">=</span> <span class="nv">RECORD</span><span class="p">[</span><span class="nv">idx_of_foo</span><span class="p">];</span> <span class="nf">FN</span><span class="p">(</span><span class="nv">RECORD</span><span class="p">,</span> <span class="nv">_foo</span><span class="p">)</span> <span class="k">end</span> <span class="k">for</span> <span class="nv">RECORD</span> <span class="k">in</span> <span class="nv">SOURCE</span><span class="p">)</span>
+<span class="k">end</span>
+</pre></div>
+</div>
+<p>For <code class="docutils literal notranslate"><span class="pre">groupby</span></code>, it could be a bit more complex, but it does nothing new towards what <code class="docutils literal notranslate"><span class="pre">select</span></code> does. You can check <a class="reference external" href="https://github.com/thautwarm/MLStyle-Playground/tree/master/MQuery">the repo</a> for codes.</p>
+</div>
+<div class="section" id="implementation">
+<h2>Implementation<a class="headerlink" href="#implementation" title="Permalink to this headline">¶</a></h2>
+<p>Firstly, we should define something like constants and helper functions.</p>
+<p>FYI, some constants and interfaces are defined at <a class="reference external" href="https://github.com/thautwarm/MLStyle-Playground/blob/master/MQuery/MQuery.ConstantNames.jl">MQuery.ConstantNames.jl</a>
+and <a class="reference external" href="https://github.com/thautwarm/MLStyle-Playground/blob/master/MQuery/MQuery.Interfaces.jl">MQuery.Interfaces.jl</a>,
+you might want to refer to them if any unknown symbol prevents you from understanding this sketch.</p>
+<p>Then we should extract all clauses from a piece of given julia codes.</p>
+<p>Given following codes,</p>
+<div class="highlight-julia notranslate"><div class="highlight"><pre><span></span><span class="nd">@select</span> <span class="nv">args1</span><span class="p">,</span>
+<span class="nd">@where</span> <span class="nv">args2</span><span class="p">,</span>
+<span class="nd">@select</span> <span class="nv">args3</span>
+</pre></div>
+</div>
+<p>, we transform them into</p>
+<div class="highlight-julia notranslate"><div class="highlight"><pre><span></span><span class="p">[(</span><span class="nv">generate_select</span><span class="p">,</span> <span class="nv">args</span><span class="p">),</span> <span class="p">(</span><span class="nv">generate_where</span><span class="p">,</span> <span class="nv">args2</span><span class="p">),</span> <span class="p">(</span><span class="nv">generate_select</span><span class="p">,</span> <span class="nv">args3</span><span class="p">)]</span>
+</pre></div>
+</div>
+<div class="highlight-julia notranslate"><div class="highlight"><pre><span></span><span class="k">function</span> <span class="nv">generate_select</span>
+<span class="k">end</span>
+<span class="k">function</span> <span class="nv">generate_where</span>
+<span class="k">end</span>
+<span class="k">function</span> <span class="nv">generate_groupby</span>
+<span class="k">end</span>
+<span class="k">function</span> <span class="nv">generate_orderby</span>
+<span class="k">end</span>
+<span class="k">function</span> <span class="nv">generate_having</span>
+<span class="k">end</span>
+<span class="k">function</span> <span class="nv">generate_limit</span>
+<span class="k">end</span>
+
+<span class="k">const</span> <span class="nv">registered_ops</span> <span class="o">=</span> <span class="nb">Dict</span><span class="p">{</span><span class="nb">Symbol</span><span class="p">,</span> <span class="nb">Any</span><span class="p">}(</span>
+    <span class="nb">Symbol</span><span class="p">(</span><span class="s">&quot;@select&quot;</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="nv">generate_select</span><span class="p">,</span>
+    <span class="nb">Symbol</span><span class="p">(</span><span class="s">&quot;@where&quot;</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="nv">generate_where</span><span class="p">,</span>
+    <span class="nb">Symbol</span><span class="p">(</span><span class="s">&quot;@groupby&quot;</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="nv">generate_groupby</span><span class="p">,</span>
+    <span class="nb">Symbol</span><span class="p">(</span><span class="s">&quot;@having&quot;</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="nv">generate_having</span><span class="p">,</span>
+    <span class="nb">Symbol</span><span class="p">(</span><span class="s">&quot;@limit&quot;</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="nv">generate_limit</span><span class="p">,</span>
+    <span class="nb">Symbol</span><span class="p">(</span><span class="s">&quot;@orderby&quot;</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="nv">generate_orderby</span>
+<span class="p">)</span>
+
+<span class="k">function</span> <span class="nf">get_op</span><span class="p">(</span><span class="nv">op_name</span><span class="p">)</span>
+    <span class="nv">registered_ops</span><span class="p">[</span><span class="nv">op_name</span><span class="p">]</span>
+<span class="k">end</span>
+
+<span class="nf">ismacro</span><span class="p">(</span><span class="nv">x</span> <span class="o">::</span> <span class="nb">Expr</span><span class="p">)</span> <span class="o">=</span> <span class="nb">Meta</span><span class="p">.</span><span class="nf">isexpr</span><span class="p">(</span><span class="nv">x</span><span class="p">,</span> <span class="o">:</span><span class="nv">macrocall</span><span class="p">)</span>
+<span class="nf">ismacro</span><span class="p">(</span><span class="nv">_</span><span class="p">)</span> <span class="o">=</span> <span class="k">false</span>
+
+<span class="k">function</span> <span class="nf">flatten_macros</span><span class="p">(</span><span class="nv">node</span> <span class="o">::</span> <span class="nb">Expr</span><span class="p">)</span>
+    <span class="nd">@match</span> <span class="nv">node</span> <span class="k">begin</span>
+    <span class="nb">Expr</span><span class="p">(</span><span class="o">:</span><span class="nv">macrocall</span><span class="p">,</span> <span class="nv">op</span> <span class="o">::</span> <span class="nb">Symbol</span><span class="p">,</span> <span class="o">::</span><span class="nb">LineNumberNode</span><span class="p">,</span> <span class="nv">arg</span><span class="p">)</span> <span class="o">||</span>
+    <span class="nb">Expr</span><span class="p">(</span><span class="o">:</span><span class="nv">macrocall</span><span class="p">,</span> <span class="nv">op</span> <span class="o">::</span> <span class="nb">Symbol</span><span class="p">,</span> <span class="nv">arg</span><span class="p">)</span> <span class="o">=&gt;</span>
+
+    <span class="nd">@match</span> <span class="nv">arg</span> <span class="k">begin</span>
+    <span class="nb">Expr</span><span class="p">(</span><span class="o">:</span><span class="nv">tuple</span><span class="p">,</span> <span class="nv">args</span><span class="p">...)</span> <span class="o">||</span> <span class="nv">a</span> <span class="o">&amp;&amp;</span> <span class="nf">Do</span><span class="p">(</span><span class="nv">args</span> <span class="o">=</span> <span class="p">[</span><span class="nv">a</span><span class="p">])</span> <span class="o">=&gt;</span>
+
+    <span class="nd">@match</span> <span class="nv">args</span> <span class="k">begin</span>
+    <span class="p">[</span><span class="nv">args</span><span class="p">...,</span> <span class="nv">tl</span> <span class="o">&amp;&amp;</span> <span class="nv">if</span> <span class="nf">ismacro</span><span class="p">(</span><span class="nv">tl</span><span class="p">)</span> <span class="nb">end</span><span class="p">]</span> <span class="o">=&gt;</span> <span class="p">[(</span><span class="nv">op</span> <span class="o">|&gt;</span> <span class="nv">get_op</span><span class="p">,</span> <span class="nv">args</span><span class="p">),</span> <span class="nf">flatten_macros</span><span class="p">(</span><span class="nv">tl</span><span class="p">)...]</span>
+    <span class="nv">_</span> <span class="o">=&gt;</span> <span class="p">[(</span><span class="nv">op</span> <span class="o">|&gt;</span> <span class="nv">get_op</span><span class="p">,</span> <span class="nv">args</span><span class="p">)]</span>
+    <span class="k">end</span>
+    <span class="k">end</span>
+    <span class="k">end</span>
+<span class="k">end</span>
+</pre></div>
+</div>
+<p>The core is <code class="docutils literal notranslate"><span class="pre">flatten_macros</span></code>, it destructures <code class="docutils literal notranslate"><span class="pre">macrocall</span></code> expressions and then we can simply flatten the <code class="docutils literal notranslate"><span class="pre">macrocall</span></code>s.</p>
+<p>Next, we could have a common behaviour of code generation.</p>
+<div class="highlight-julia notranslate"><div class="highlight"><pre><span></span><span class="k">struct</span> <span class="nv">Field</span>
+    <span class="nv">name</span>      <span class="o">::</span> <span class="nb">Any</span>    <span class="c"># an expr to represent the field name from IN_FIELDS.</span>
+    <span class="nv">make</span>      <span class="o">::</span> <span class="nb">Any</span>    <span class="c"># an expression to assign the value into `var` like, `RECORD[idx_of_foo]`.</span>
+    <span class="nv">var</span>       <span class="o">::</span> <span class="nb">Symbol</span> <span class="c"># a generated symbol via mangling</span>
+    <span class="nv">typ</span>       <span class="o">::</span> <span class="nb">Any</span>    <span class="c"># an expression to get the type of the field like, `IN_TYPES[idx_of_foo]`.</span>
+<span class="k">end</span>
+
+<span class="k">function</span> <span class="nf">query_routine</span><span class="p">(</span><span class="nv">assigns</span>            <span class="o">::</span> <span class="nv">OrderedDict</span><span class="p">{</span><span class="nb">Symbol</span><span class="p">,</span> <span class="nb">Any</span><span class="p">},</span>
+                       <span class="nv">fn_in_fields</span>       <span class="o">::</span> <span class="nb">Vector</span><span class="p">{</span><span class="nv">Field</span><span class="p">},</span>
+                       <span class="nv">fn_returns</span>         <span class="o">::</span> <span class="nb">Any</span><span class="p">,</span>
+                       <span class="nv">result</span><span class="p">;</span> <span class="nv">infer_type</span> <span class="o">=</span> <span class="k">true</span><span class="p">)</span>
+    <span class="nd">@assert</span> <span class="nb">haskey</span><span class="p">(</span><span class="nv">assigns</span><span class="p">,</span> <span class="nv">FN_OUT_FIELDS</span><span class="p">)</span>
+
+    <span class="nv">fn_arguments</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="nv">x</span> <span class="o">-&gt;</span> <span class="nv">x</span><span class="p">.</span><span class="nv">var</span><span class="p">,</span> <span class="nv">fn_in_fields</span><span class="p">)</span>
+    <span class="nv">fn_arg_types</span> <span class="o">=</span> <span class="nb">Expr</span><span class="p">(</span><span class="o">:</span><span class="nv">vect</span><span class="p">,</span> <span class="nb">map</span><span class="p">(</span><span class="nv">x</span> <span class="o">-&gt;</span> <span class="nv">x</span><span class="p">.</span><span class="nv">typ</span><span class="p">,</span> <span class="nv">fn_in_fields</span><span class="p">)...)</span>
+
+    <span class="k">function</span> <span class="p">(</span><span class="nv">inner_expr</span><span class="p">)</span>
+        <span class="nv">let_seq</span> <span class="o">=</span> <span class="p">[</span>
+            <span class="nb">Expr</span><span class="p">(</span><span class="o">:</span><span class="p">(</span><span class="o">=</span><span class="p">),</span> <span class="nb">Expr</span><span class="p">(</span><span class="o">:</span><span class="nv">tuple</span><span class="p">,</span> <span class="nv">IN_FIELDS</span><span class="p">,</span> <span class="nv">IN_TYPES</span><span class="p">,</span> <span class="nv">IN_SOURCE</span><span class="p">),</span> <span class="nv">inner_expr</span><span class="p">),</span>
+            <span class="p">(</span><span class="o">:</span><span class="p">(</span><span class="o">$</span><span class="nv">name</span> <span class="o">=</span> <span class="o">$</span><span class="nv">value</span><span class="p">)</span> <span class="k">for</span> <span class="p">(</span><span class="nv">name</span><span class="p">,</span> <span class="nv">value</span><span class="p">)</span> <span class="k">in</span> <span class="nv">assigns</span><span class="p">)...,</span>
+            <span class="o">:</span><span class="p">(</span><span class="nd">@inline</span> <span class="o">$</span><span class="nf">FN</span><span class="p">(</span><span class="o">$</span><span class="p">(</span><span class="nv">fn_arguments</span><span class="p">...))</span> <span class="o">=</span>  <span class="o">$</span><span class="nv">fn_returns</span><span class="p">),</span>
+        <span class="p">]</span>
+        <span class="k">if</span> <span class="nv">infer_type</span>
+            <span class="k">let</span> <span class="nv">type_infer</span> <span class="o">=</span> <span class="o">:</span><span class="p">(</span><span class="o">$</span><span class="nv">FN_RETURN_TYPES</span> <span class="o">=</span> <span class="o">$</span><span class="nf">type_unpack</span><span class="p">(</span><span class="o">$</span><span class="nb">length</span><span class="p">(</span><span class="o">$</span><span class="nv">FN_OUT_FIELDS</span><span class="p">,</span> <span class="p">),</span> <span class="o">$</span><span class="nf">return_type</span><span class="p">(</span><span class="o">$</span><span class="nv">FN</span><span class="p">,</span> <span class="o">$</span><span class="nv">fn_arg_types</span><span class="p">)))</span>
+                <span class="nb">push!</span><span class="p">(</span><span class="nv">let_seq</span><span class="p">,</span> <span class="nv">type_infer</span><span class="p">)</span>
+            <span class="k">end</span>
+        <span class="k">end</span>
+        <span class="nb">Expr</span><span class="p">(</span><span class="o">:</span><span class="k">let</span><span class="p">,</span>
+            <span class="nb">Expr</span><span class="p">(</span>
+                <span class="o">:</span><span class="nv">block</span><span class="p">,</span>
+                <span class="nv">let_seq</span><span class="p">...</span>
+            <span class="p">),</span>
+            <span class="nv">result</span>
+        <span class="p">)</span>
+    <span class="k">end</span>
+<span class="k">end</span>
+</pre></div>
+</div>
+<p>In fact, <code class="docutils literal notranslate"><span class="pre">query_routine</span></code> generates code like</p>
+<div class="highlight-julia notranslate"><div class="highlight"><pre><span></span><span class="k">let</span> <span class="nv">IN_FIELDS</span><span class="p">,</span> <span class="nv">IN_TYPES</span><span class="p">,</span> <span class="nv">IN_SOURCE</span> <span class="o">=</span> <span class="o">&lt;</span><span class="nv">inner</span> <span class="nv">query</span><span class="o">&gt;</span><span class="p">,</span>
+    <span class="nv">idx_of_foo</span> <span class="o">=</span> <span class="p">...,</span>
+    <span class="nv">idx_of_bar</span> <span class="o">=</span> <span class="p">...,</span>
+    <span class="nd">@inline</span> <span class="nf">FN</span><span class="p">(</span><span class="nv">x</span><span class="p">)</span> <span class="o">=</span> <span class="p">...</span>
+
+    <span class="p">...</span>
+<span class="k">end</span>
+</pre></div>
+</div>
+<p>Then, we should generate the final code from such a sequence given as the return of <code class="docutils literal notranslate"><span class="pre">flatten_macros</span></code>.</p>
+<p>Note that <code class="docutils literal notranslate"><span class="pre">get_records</span></code>, <code class="docutils literal notranslate"><span class="pre">get_fields</span></code> and <code class="docutils literal notranslate"><span class="pre">build_result</span></code> should be implemented by your own to support datatypes that you want to query on.</p>
+<div class="highlight-julia notranslate"><div class="highlight"><pre><span></span><span class="k">function</span> <span class="nf">codegen</span><span class="p">(</span><span class="nv">node</span><span class="p">)</span>
+    <span class="nv">ops</span> <span class="o">=</span> <span class="nf">flatten_macros</span><span class="p">(</span><span class="nv">node</span><span class="p">)</span>
+    <span class="k">let</span> <span class="nf">rec</span><span class="p">(</span><span class="nv">vec</span><span class="p">)</span> <span class="o">=</span>
+        <span class="nd">@match</span> <span class="nv">vec</span> <span class="k">begin</span>
+            <span class="p">[]</span> <span class="o">=&gt;</span> <span class="p">[]</span>
+            <span class="p">[(</span><span class="o">&amp;</span><span class="nv">generate_groupby</span><span class="p">,</span> <span class="nv">args1</span><span class="p">),</span> <span class="p">(</span><span class="o">&amp;</span><span class="nv">generate_having</span><span class="p">,</span> <span class="nv">args2</span><span class="p">),</span> <span class="nv">tl</span><span class="p">...]</span> <span class="o">=&gt;</span>
+                <span class="p">[</span><span class="nf">generate_groupby</span><span class="p">(</span><span class="nv">args1</span><span class="p">,</span> <span class="nv">args2</span><span class="p">),</span> <span class="nf">rec</span><span class="p">(</span><span class="nv">tl</span><span class="p">)...]</span>
+            <span class="p">[(</span><span class="nv">hd</span><span class="p">,</span> <span class="nv">args</span><span class="p">),</span> <span class="nv">tl</span><span class="p">...]</span> <span class="o">=&gt;</span>
+                <span class="p">[</span><span class="nf">hd</span><span class="p">(</span><span class="nv">args</span><span class="p">),</span> <span class="nf">rec</span><span class="p">(</span><span class="nv">tl</span><span class="p">)...]</span>
+        <span class="k">end</span>
+        <span class="nv">init</span> <span class="o">=</span> <span class="k">quote</span>
+            <span class="k">let</span> <span class="nv">iter</span> <span class="o">=</span> <span class="o">$</span><span class="nf">get_records</span><span class="p">(</span><span class="o">$</span><span class="nv">ARG</span><span class="p">),</span>
+                <span class="nv">fields</span> <span class="o">=</span> <span class="o">$</span><span class="nf">get_fields</span><span class="p">(</span><span class="o">$</span><span class="nv">ARG</span><span class="p">),</span>
+                <span class="nv">types</span> <span class="o">=$</span><span class="nf">type_unpack</span><span class="p">(</span><span class="o">$</span><span class="nb">length</span><span class="p">(</span><span class="nv">fields</span><span class="p">),</span> <span class="o">$</span><span class="nb">eltype</span><span class="p">(</span><span class="nv">iter</span><span class="p">))</span>
+                <span class="p">(</span><span class="nv">fields</span><span class="p">,</span> <span class="nv">types</span><span class="p">,</span> <span class="nv">iter</span><span class="p">)</span>
+            <span class="k">end</span>
+        <span class="k">end</span>
+        <span class="nv">fn_body</span> <span class="o">=</span> <span class="nb">foldl</span><span class="p">(</span><span class="nf">rec</span><span class="p">(</span><span class="nv">ops</span><span class="p">),</span> <span class="nv">init</span> <span class="o">=</span> <span class="nv">init</span><span class="p">)</span> <span class="k">do</span> <span class="nv">last</span><span class="p">,</span> <span class="nv">mk</span>
+            <span class="nf">mk</span><span class="p">(</span><span class="nv">last</span><span class="p">)</span>
+        <span class="k">end</span>
+        <span class="k">quote</span>
+            <span class="nd">@inline</span> <span class="k">function</span> <span class="p">(</span><span class="o">$</span><span class="nv">ARG</span> <span class="o">::</span> <span class="o">$</span><span class="nv">TYPE_ROOT</span><span class="p">,</span> <span class="p">)</span> <span class="nv">where</span> <span class="p">{</span><span class="o">$</span><span class="nv">TYPE_ROOT</span><span class="p">}</span>
+                <span class="k">let</span> <span class="p">(</span><span class="o">$</span><span class="nv">IN_FIELDS</span><span class="p">,</span> <span class="o">$</span><span class="nv">IN_TYPES</span><span class="p">,</span> <span class="o">$</span><span class="nv">IN_SOURCE</span><span class="p">)</span> <span class="o">=</span> <span class="o">$</span><span class="nv">fn_body</span>
+                    <span class="o">$</span><span class="nf">build_result</span><span class="p">(</span>
+                        <span class="o">$</span><span class="nv">TYPE_ROOT</span><span class="p">,</span>
+                        <span class="o">$</span><span class="nv">IN_FIELDS</span><span class="p">,</span>
+                        <span class="o">$</span><span class="nv">IN_TYPES</span><span class="p">,</span>
+                        <span class="o">$</span><span class="nv">IN_SOURCE</span>
+                    <span class="p">)</span>
+                <span class="k">end</span>
+            <span class="k">end</span>
+        <span class="k">end</span>
+    <span class="k">end</span>
+<span class="k">end</span>
+</pre></div>
+</div>
+<p>Then, we need a visitor to transform the patterns shaped as <code class="docutils literal notranslate"><span class="pre">_.foo</span></code> inside an expression to a mangled symbol whose value is <code class="docutils literal notranslate"><span class="pre">RECORD[idx_of_foo]</span></code>.</p>
+<div class="highlight-julia notranslate"><div class="highlight"><pre><span></span><span class="c"># visitor to process the pattern `_.x, _,&quot;x&quot;, _.(1)` inside an expression</span>
+<span class="k">function</span> <span class="nf">mk_visit</span><span class="p">(</span><span class="nv">fields</span> <span class="o">::</span> <span class="nb">Dict</span><span class="p">{</span><span class="nb">Any</span><span class="p">,</span> <span class="nv">Field</span><span class="p">},</span> <span class="nv">assigns</span> <span class="o">::</span> <span class="nv">OrderedDict</span><span class="p">{</span><span class="nb">Symbol</span><span class="p">,</span> <span class="nb">Any</span><span class="p">})</span>
+    <span class="nv">visit</span> <span class="o">=</span> <span class="nv">expr</span> <span class="o">-&gt;</span>
+    <span class="nd">@match</span> <span class="nv">expr</span> <span class="k">begin</span>
+        <span class="nb">Expr</span><span class="p">(</span><span class="o">:</span><span class="p">.</span> <span class="p">,</span> <span class="o">:</span><span class="nv">_</span><span class="p">,</span> <span class="nv">q</span> <span class="o">::</span> <span class="nb">QuoteNode</span><span class="p">)</span> <span class="o">&amp;&amp;</span> <span class="nf">Do</span><span class="p">(</span><span class="nv">a</span> <span class="o">=</span> <span class="nv">q</span><span class="p">.</span><span class="nv">value</span><span class="p">)</span> <span class="o">||</span>
+        <span class="nb">Expr</span><span class="p">(</span><span class="o">:</span><span class="p">.,</span> <span class="o">:</span><span class="nv">_</span><span class="p">,</span> <span class="nb">Expr</span><span class="p">(</span><span class="o">:</span><span class="nv">tuple</span><span class="p">,</span> <span class="nv">a</span><span class="p">))</span> <span class="o">=&gt;</span>
+            <span class="nd">@match</span> <span class="nv">a</span> <span class="k">begin</span>
+                <span class="nv">a</span> <span class="o">::</span> <span class="nb">Int</span> <span class="o">=&gt;</span>
+                    <span class="k">let</span> <span class="nv">field</span> <span class="o">=</span> <span class="nb">get!</span><span class="p">(</span><span class="nv">fields</span><span class="p">,</span> <span class="nv">a</span><span class="p">)</span> <span class="k">do</span>
+                            <span class="nv">var_sym</span> <span class="o">=</span> <span class="nf">gen_sym</span><span class="p">(</span><span class="nv">a</span><span class="p">)</span>
+                            <span class="nf">Field</span><span class="p">(</span>
+                                <span class="nv">a</span><span class="p">,</span>
+                                <span class="nb">Expr</span><span class="p">(</span><span class="o">:</span><span class="nv">ref</span><span class="p">,</span> <span class="nv">RECORD</span><span class="p">,</span> <span class="nv">a</span><span class="p">),</span>
+                                <span class="nv">var_sym</span><span class="p">,</span>
+                                <span class="nb">Expr</span><span class="p">(</span><span class="o">:</span><span class="nv">ref</span><span class="p">,</span> <span class="nv">IN_TYPES</span><span class="p">,</span> <span class="nv">a</span><span class="p">)</span>
+                            <span class="p">)</span>
+                        <span class="k">end</span>
+                        <span class="nv">field</span><span class="p">.</span><span class="nv">var</span>
+                    <span class="k">end</span>
+
+                <span class="o">::</span><span class="nb">String</span> <span class="o">&amp;&amp;</span> <span class="nf">Do</span><span class="p">(</span><span class="nv">b</span> <span class="o">=</span> <span class="nb">Symbol</span><span class="p">(</span><span class="nv">a</span><span class="p">))</span> <span class="o">||</span>
+                <span class="nv">b</span><span class="o">::</span><span class="nb">Symbol</span> <span class="o">=&gt;</span>
+                    <span class="k">let</span> <span class="nv">field</span> <span class="o">=</span> <span class="nb">get!</span><span class="p">(</span><span class="nv">fields</span><span class="p">,</span> <span class="nv">b</span><span class="p">)</span> <span class="k">do</span>
+                            <span class="nv">idx_sym</span> <span class="o">=</span> <span class="nf">gen_sym</span><span class="p">()</span>
+                            <span class="nv">var_sym</span> <span class="o">=</span> <span class="nf">gen_sym</span><span class="p">(</span><span class="nv">b</span><span class="p">)</span>
+                            <span class="nv">assigns</span><span class="p">[</span><span class="nv">idx_sym</span><span class="p">]</span> <span class="o">=</span> <span class="nb">Expr</span><span class="p">(</span><span class="o">:</span><span class="nv">call</span><span class="p">,</span> <span class="nv">findfirst</span><span class="p">,</span> <span class="nv">x</span> <span class="o">-&gt;</span> <span class="nv">x</span> <span class="o">===</span> <span class="nv">b</span><span class="p">,</span> <span class="nv">IN_FIELDS</span><span class="p">)</span>
+                            <span class="nf">Field</span><span class="p">(</span>
+                                <span class="nv">b</span><span class="p">,</span>
+                                <span class="nb">Expr</span><span class="p">(</span><span class="o">:</span><span class="nv">ref</span><span class="p">,</span> <span class="nv">RECORD</span><span class="p">,</span> <span class="nv">idx_sym</span><span class="p">),</span>
+                                <span class="nv">var_sym</span><span class="p">,</span>
+                                <span class="nb">Expr</span><span class="p">(</span><span class="o">:</span><span class="nv">ref</span><span class="p">,</span> <span class="nv">IN_TYPES</span><span class="p">,</span> <span class="nv">idx_sym</span><span class="p">)</span>
+                            <span class="p">)</span>
+                        <span class="k">end</span>
+                        <span class="nv">field</span><span class="p">.</span><span class="nv">var</span>
+                    <span class="k">end</span>
+            <span class="k">end</span>
+        <span class="nb">Expr</span><span class="p">(</span><span class="nv">head</span><span class="p">,</span> <span class="nv">args</span><span class="p">...)</span> <span class="o">=&gt;</span> <span class="nb">Expr</span><span class="p">(</span><span class="nv">head</span><span class="p">,</span> <span class="nb">map</span><span class="p">(</span><span class="nv">visit</span><span class="p">,</span> <span class="nv">args</span><span class="p">)...)</span>
+        <span class="nv">a</span> <span class="o">=&gt;</span> <span class="nv">a</span>
+    <span class="k">end</span>
+<span class="k">end</span>
+</pre></div>
+</div>
+<p>You might not be able to understand what the meanings of <code class="docutils literal notranslate"><span class="pre">fields</span></code> and <code class="docutils literal notranslate"><span class="pre">assigns</span></code> are, don’t worry too much, and I’m to explain it for you.</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">fields</span> <span class="pre">:</span> <span class="pre">Dict{Any,</span> <span class="pre">Field}</span></code></p>
+<p>Think about you want such a query <code class="docutils literal notranslate"><span class="pre">&#64;select</span> <span class="pre">_.foo</span> <span class="pre">*</span> <span class="pre">2,</span> <span class="pre">_.foo</span> <span class="pre">+</span> <span class="pre">2</span></code>, you can see that field <code class="docutils literal notranslate"><span class="pre">foo</span></code> is referred twice, but you shouldn’t make 2 symbols to represent the index of <code class="docutils literal notranslate"><span class="pre">foo</span></code> field. So I introduce a dictionary <code class="docutils literal notranslate"><span class="pre">fields</span></code> here to
+avoid re-calculation.</p>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">assigns</span> <span class="pre">:</span> <span class="pre">OrderedDict{Any,</span> <span class="pre">Expr}</span></code></p>
+<p>When you want to bind the index of <code class="docutils literal notranslate"><span class="pre">foo</span></code> to a given symbol <code class="docutils literal notranslate"><span class="pre">idx_of_foo</span></code>, you should set an expression <code class="docutils literal notranslate"><span class="pre">$findfirst(==(:foo),</span> <span class="pre">$IN_FIELDS)</span></code> to <code class="docutils literal notranslate"><span class="pre">assigns</span></code> on key <code class="docutils literal notranslate"><span class="pre">idx_of_foo</span></code>. The reason why we don’t use a <code class="docutils literal notranslate"><span class="pre">Vector{Expr}</span></code> to represent <code class="docutils literal notranslate"><span class="pre">assigns</span></code> is, we can avoid re-assignments in some cases(you can find an instance in <code class="docutils literal notranslate"><span class="pre">generate_groupby</span></code>).</p>
+<p>Finally, <code class="docutils literal notranslate"><span class="pre">assigns</span></code> would be generated to the binding section of
+a <code class="docutils literal notranslate"><span class="pre">let</span></code> sentence.</p>
+</li>
+</ul>
+<p>Now, following previous discussions, we can firstly implement the easiest one, codegen method for <code class="docutils literal notranslate"><span class="pre">where</span></code> clause.</p>
+<div class="highlight-julia notranslate"><div class="highlight"><pre><span></span><span class="k">function</span> <span class="nf">generate_where</span><span class="p">(</span><span class="nv">args</span> <span class="o">::</span> <span class="nb">AbstractArray</span><span class="p">)</span>
+    <span class="nv">field_getted</span> <span class="o">=</span> <span class="nb">Dict</span><span class="p">{</span><span class="nb">Symbol</span><span class="p">,</span> <span class="nb">Symbol</span><span class="p">}()</span>
+    <span class="nv">assign</span>       <span class="o">::</span> <span class="nb">Vector</span><span class="p">{</span><span class="nb">Any</span><span class="p">}</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="nv">visit</span> <span class="o">=</span> <span class="nf">mk_visit</span><span class="p">(</span><span class="nv">field_getted</span><span class="p">,</span> <span class="nv">assign</span><span class="p">)</span>
+
+    <span class="nv">pred</span> <span class="o">=</span> <span class="nb">foldl</span><span class="p">(</span><span class="nv">args</span><span class="p">,</span> <span class="nv">init</span><span class="o">=</span><span class="k">true</span><span class="p">)</span> <span class="k">do</span> <span class="nv">last</span><span class="p">,</span> <span class="nv">arg</span>
+        <span class="nv">boolean</span> <span class="o">=</span> <span class="nf">visit</span><span class="p">(</span><span class="nv">arg</span><span class="p">)</span>
+        <span class="k">if</span> <span class="nv">last</span> <span class="o">===</span> <span class="k">true</span>
+            <span class="nv">boolean</span>
+        <span class="k">else</span>
+            <span class="nb">Expr</span><span class="p">(</span><span class="o">:&amp;&amp;</span><span class="p">,</span> <span class="nv">last</span><span class="p">,</span> <span class="nv">boolean</span><span class="p">)</span>
+        <span class="k">end</span>
+    <span class="k">end</span>
+
+    <span class="c"># where expression generation</span>
+    <span class="nf">query_routine</span><span class="p">(</span>
+        <span class="nv">assign</span><span class="p">,</span>
+        <span class="nb">Expr</span><span class="p">(</span><span class="o">:</span><span class="nv">tuple</span><span class="p">,</span>
+             <span class="nv">IN_FIELDS</span><span class="p">,</span>
+             <span class="nv">TYPE</span><span class="p">,</span>
+             <span class="o">:</span><span class="p">(</span><span class="o">$</span><span class="nv">RECORD</span> <span class="k">for</span> <span class="o">$</span><span class="nv">RECORD</span> <span class="k">in</span> <span class="o">$</span><span class="nv">SOURCE</span> <span class="k">if</span> <span class="o">$</span><span class="nv">pred</span><span class="p">)</span>
+        <span class="p">)</span>
+    <span class="p">)</span>
+<span class="k">end</span>
+</pre></div>
+</div>
+<p>Then <code class="docutils literal notranslate"><span class="pre">select</span></code>:</p>
+<div class="highlight-julia notranslate"><div class="highlight"><pre><span></span><span class="k">function</span> <span class="nf">generate_select</span><span class="p">(</span><span class="nv">args</span> <span class="o">::</span> <span class="nb">AbstractArray</span><span class="p">)</span>
+    <span class="nv">map_in_fields</span> <span class="o">=</span> <span class="nb">Dict</span><span class="p">{</span><span class="nb">Any</span><span class="p">,</span> <span class="nv">Field</span><span class="p">}()</span>
+    <span class="nv">assigns</span> <span class="o">=</span> <span class="nv">OrderedDict</span><span class="p">{</span><span class="nb">Symbol</span><span class="p">,</span> <span class="nb">Any</span><span class="p">}()</span>
+    <span class="nv">fn_return_elts</span>   <span class="o">::</span> <span class="nb">Vector</span><span class="p">{</span><span class="nb">Any</span><span class="p">}</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="nv">fn_return_fields</span> <span class="o">::</span> <span class="nb">Vector</span><span class="p">{</span><span class="nb">Any</span><span class="p">}</span> <span class="o">=</span> <span class="p">[]</span>
+    <span class="nv">visit</span> <span class="o">=</span> <span class="nf">mk_visit</span><span class="p">(</span><span class="nv">map_in_fields</span><span class="p">,</span> <span class="nv">assigns</span><span class="p">)</span>
+    <span class="c"># process selectors</span>
+    <span class="nf">predicate_process</span><span class="p">(</span><span class="nv">arg</span><span class="p">)</span> <span class="o">=</span>
+        <span class="nd">@match</span> <span class="nv">arg</span> <span class="k">begin</span>
+        <span class="o">:</span><span class="p">(</span><span class="o">!$</span><span class="nf">pred</span><span class="p">(</span><span class="o">$</span> <span class="p">(</span><span class="nv">args</span><span class="p">...)</span> <span class="p">))</span> <span class="o">&amp;&amp;</span> <span class="nf">Do</span><span class="p">(</span><span class="nv">ab</span><span class="o">=</span><span class="k">true</span><span class="p">)</span>  <span class="o">||</span>
+        <span class="o">:</span><span class="p">(</span><span class="o">$</span><span class="nf">pred</span><span class="p">(</span><span class="o">$</span> <span class="p">(</span><span class="nv">args</span><span class="p">...)</span> <span class="p">))</span>  <span class="o">&amp;&amp;</span> <span class="nf">Do</span><span class="p">(</span><span class="nv">ab</span><span class="o">=</span><span class="k">false</span><span class="p">)</span> <span class="o">||</span>
+        <span class="o">:</span><span class="p">(</span><span class="o">!$</span><span class="nv">pred</span><span class="p">)</span> <span class="o">&amp;&amp;</span> <span class="nf">Do</span><span class="p">(</span><span class="nv">ab</span><span class="o">=</span><span class="k">true</span><span class="p">,</span> <span class="nv">args</span><span class="o">=</span><span class="p">[])</span>       <span class="o">||</span>
+        <span class="o">:</span><span class="p">(</span><span class="o">$</span><span class="nv">pred</span><span class="p">)</span>  <span class="o">&amp;&amp;</span> <span class="nf">Do</span><span class="p">(</span><span class="nv">ab</span><span class="o">=</span><span class="k">false</span><span class="p">,</span> <span class="nv">args</span><span class="o">=</span><span class="p">[])</span>      <span class="o">=&gt;</span>
+            <span class="k">let</span> <span class="nv">idx_sym</span> <span class="o">=</span> <span class="nf">gen_sym</span><span class="p">()</span>
+                <span class="nv">assigns</span><span class="p">[</span><span class="nv">idx_sym</span><span class="p">]</span> <span class="o">=</span>
+                    <span class="nb">Expr</span><span class="p">(</span>
+                        <span class="o">:</span><span class="nv">call</span><span class="p">,</span>
+                        <span class="nv">findall</span><span class="p">,</span>
+                        <span class="nv">ab</span> <span class="o">?</span>
+                            <span class="o">:</span><span class="p">(</span><span class="nd">@inline</span> <span class="k">function</span> <span class="p">(</span><span class="o">$</span><span class="nv">ARG</span><span class="p">,)</span> <span class="o">!$</span><span class="nf">pred</span><span class="p">(</span><span class="o">$</span><span class="nb">string</span><span class="p">(</span><span class="o">$</span><span class="nv">ARG</span><span class="p">,),</span> <span class="o">$</span><span class="p">(</span><span class="nv">args</span><span class="p">...))</span> <span class="k">end</span><span class="p">)</span> <span class="o">:</span>
+                            <span class="o">:</span><span class="p">(</span><span class="nd">@inline</span> <span class="k">function</span> <span class="p">(</span><span class="o">$</span><span class="nv">ARG</span><span class="p">,)</span> <span class="o">$</span><span class="nf">pred</span><span class="p">(</span><span class="o">$</span><span class="nb">string</span><span class="p">(</span><span class="o">$</span><span class="nv">ARG</span><span class="p">,),</span> <span class="o">$</span><span class="p">(</span><span class="nv">args</span><span class="p">...))</span> <span class="k">end</span><span class="p">)</span>
+                        <span class="p">,</span> <span class="nv">IN_FIELDS</span>
+                    <span class="p">)</span>
+                <span class="nv">idx_sym</span>
+            <span class="k">end</span>
+        <span class="k">end</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">fn_return_elts</span></code> will be finally evaluated as the return of <code class="docutils literal notranslate"><span class="pre">FN</span></code>, while <code class="docutils literal notranslate"><span class="pre">FN</span></code> will be used to be generate the next <code class="docutils literal notranslate"><span class="pre">IN_SOURCE</span></code> with <code class="docutils literal notranslate"><span class="pre">:(let</span> <span class="pre">...</span> <span class="pre">;</span> <span class="pre">$FN($args...)</span> <span class="pre">end</span> <span class="pre">for</span> <span class="pre">$RECORD</span> <span class="pre">in</span> <span class="pre">$SOURCE)</span></code>, while <code class="docutils literal notranslate"><span class="pre">fn_retrun_fields</span></code> will be finally used to generate the next <code class="docutils literal notranslate"><span class="pre">IN_FIELDS</span></code> with <code class="docutils literal notranslate"><span class="pre">Expr(:vect,</span> <span class="pre">fn_return_fields...)</span></code>.</p>
+<p>Let’s go ahead.</p>
+<div class="highlight-julia notranslate"><div class="highlight"><pre><span></span>    <span class="nb">foreach</span><span class="p">(</span><span class="nv">args</span><span class="p">)</span> <span class="k">do</span> <span class="nv">arg</span>
+        <span class="nd">@match</span> <span class="nv">arg</span> <span class="k">begin</span>
+            <span class="o">:</span><span class="nv">_</span> <span class="o">=&gt;</span>
+                <span class="k">let</span> <span class="nv">field</span> <span class="o">=</span> <span class="nb">get!</span><span class="p">(</span><span class="nv">map_in_fields</span><span class="p">,</span> <span class="nv">all</span><span class="p">)</span> <span class="k">do</span>
+                        <span class="nv">var_sym</span> <span class="o">=</span> <span class="nf">gen_sym</span><span class="p">()</span>
+                        <span class="nb">push!</span><span class="p">(</span><span class="nv">fn_return_elts</span><span class="p">,</span> <span class="nb">Expr</span><span class="p">(</span><span class="o">:</span><span class="p">...,</span> <span class="nv">var_sym</span><span class="p">))</span>
+                        <span class="nb">push!</span><span class="p">(</span><span class="nv">fn_return_fields</span><span class="p">,</span> <span class="nb">Expr</span><span class="p">(</span><span class="o">:</span><span class="p">...,</span> <span class="nv">IN_FIELDS</span><span class="p">))</span>
+                        <span class="nf">Field</span><span class="p">(</span>
+                            <span class="nv">all</span><span class="p">,</span>
+                            <span class="nv">RECORD</span><span class="p">,</span>
+                            <span class="nv">var_sym</span><span class="p">,</span>
+                            <span class="o">:</span><span class="p">(</span><span class="o">$</span><span class="nb">Tuple</span><span class="p">{</span><span class="o">$</span><span class="nv">IN_TYPES</span><span class="p">...})</span>
+                        <span class="p">)</span>
+                    <span class="k">end</span>
+                    <span class="k">nothing</span>
+                <span class="k">end</span>
+</pre></div>
+</div>
+<p>We’ve said that <code class="docutils literal notranslate"><span class="pre">&#64;select</span> <span class="pre">_</span></code> here is equivalent to <code class="docutils literal notranslate"><span class="pre">SELECT</span> <span class="pre">*</span></code> in T-SQL.</p>
+<p>The remaining is also implemented with a concise case splitting via pattern matchings on ASTs.</p>
+<div class="highlight-julia notranslate"><div class="highlight"><pre><span></span>            <span class="o">:</span><span class="p">(</span><span class="nv">_</span><span class="p">.(</span><span class="o">$</span><span class="p">(</span><span class="nv">args</span><span class="p">...)))</span> <span class="o">=&gt;</span>
+                <span class="k">let</span> <span class="nv">indices</span> <span class="o">=</span> <span class="nb">map</span><span class="p">(</span><span class="nv">predicate_process</span><span class="p">,</span> <span class="nv">args</span><span class="p">)</span>
+                    <span class="k">if</span> <span class="nb">haskey</span><span class="p">(</span><span class="nv">map_in_fields</span><span class="p">,</span> <span class="nv">arg</span><span class="p">)</span>
+                        <span class="nb">throw</span><span class="p">(</span><span class="s">&quot;The columns `</span><span class="si">$</span><span class="p">(</span><span class="nb">string</span><span class="p">(</span><span class="nv">arg</span><span class="p">))</span><span class="s">` are selected twice!&quot;</span><span class="p">)</span>
+                    <span class="k">elseif</span> <span class="o">!</span><span class="nb">isempty</span><span class="p">(</span><span class="nv">indices</span><span class="p">)</span>
+                        <span class="nv">idx_sym</span> <span class="o">=</span> <span class="nf">gen_sym</span><span class="p">()</span>
+                        <span class="nv">var_sym</span> <span class="o">=</span> <span class="nf">gen_sym</span><span class="p">()</span>
+                        <span class="nv">field</span> <span class="o">=</span> <span class="k">begin</span>
+                            <span class="nv">assigns</span><span class="p">[</span><span class="nv">idx_sym</span><span class="p">]</span> <span class="o">=</span>
+                                <span class="nb">length</span><span class="p">(</span><span class="nv">indices</span><span class="p">)</span> <span class="o">===</span> <span class="m">1</span> <span class="o">?</span>
+                                <span class="nv">indices</span><span class="p">[</span><span class="m">1</span><span class="p">]</span> <span class="o">:</span>
+                                <span class="nb">Expr</span><span class="p">(</span><span class="o">:</span><span class="nv">call</span><span class="p">,</span> <span class="nv">intersect</span><span class="p">,</span> <span class="nv">indices</span><span class="p">...)</span>
+                            <span class="nb">push!</span><span class="p">(</span><span class="nv">fn_return_elts</span><span class="p">,</span> <span class="nb">Expr</span><span class="p">(</span><span class="o">:</span><span class="p">...,</span> <span class="nv">var_sym</span><span class="p">))</span>
+                            <span class="nb">push!</span><span class="p">(</span><span class="nv">fn_return_fields</span><span class="p">,</span> <span class="nb">Expr</span><span class="p">(</span><span class="o">:</span><span class="p">...,</span> <span class="nb">Expr</span><span class="p">(</span><span class="o">:</span><span class="nv">ref</span><span class="p">,</span> <span class="nv">IN_FIELDS</span><span class="p">,</span> <span class="nv">idx_sym</span><span class="p">)))</span>
+                            <span class="nf">Field</span><span class="p">(</span>
+                                <span class="nv">arg</span><span class="p">,</span>
+                                <span class="nb">Expr</span><span class="p">(</span><span class="o">:</span><span class="nv">ref</span><span class="p">,</span> <span class="nv">RECORD</span><span class="p">,</span> <span class="nv">idx_sym</span><span class="p">),</span>
+                                <span class="nv">var_sym</span><span class="p">,</span>
+                                <span class="nb">Expr</span><span class="p">(</span><span class="o">:</span><span class="nv">curly</span><span class="p">,</span> <span class="nb">Tuple</span><span class="p">,</span> <span class="nb">Expr</span><span class="p">(</span><span class="o">:</span><span class="p">...,</span> <span class="nb">Expr</span><span class="p">(</span><span class="o">:</span><span class="nv">ref</span><span class="p">,</span> <span class="nv">IN_TYPES</span><span class="p">,</span> <span class="nv">idx_sym</span><span class="p">)))</span>
+                            <span class="p">)</span>
+                        <span class="k">end</span>
+                        <span class="nv">map_in_fields</span><span class="p">[</span><span class="nv">arg</span><span class="p">]</span> <span class="o">=</span> <span class="nv">field</span>
+                        <span class="k">nothing</span>
+                    <span class="k">end</span>
+                <span class="k">end</span>
+</pre></div>
+</div>
+<p>Above case is for handling with field filters, like
+<code class="docutils literal notranslate"><span class="pre">&#64;select</span> <span class="pre">_.(!startswith(&quot;Java&quot;),</span> <span class="pre">endswith(&quot;#&quot;))</span></code>.</p>
+<div class="highlight-julia notranslate"><div class="highlight"><pre><span></span>           <span class="o">:</span><span class="p">(</span><span class="o">$</span><span class="nv">a</span> <span class="o">=&gt;</span> <span class="o">$</span><span class="nv">new_field</span><span class="p">)</span> <span class="o">||</span> <span class="nv">a</span> <span class="o">&amp;&amp;</span> <span class="nf">Do</span><span class="p">(</span><span class="nv">new_field</span> <span class="o">=</span> <span class="nb">Symbol</span><span class="p">(</span><span class="nb">string</span><span class="p">(</span><span class="nv">a</span><span class="p">)))</span> <span class="o">=&gt;</span>
+                <span class="k">let</span> <span class="nv">new_value</span> <span class="o">=</span> <span class="nf">visit</span><span class="p">(</span><span class="nv">a</span><span class="p">)</span>
+                    <span class="nb">push!</span><span class="p">(</span><span class="nv">fn_return_fields</span><span class="p">,</span> <span class="nb">QuoteNode</span><span class="p">(</span><span class="nv">new_field</span><span class="p">))</span>
+                    <span class="nb">push!</span><span class="p">(</span><span class="nv">fn_return_elts</span><span class="p">,</span> <span class="nv">new_value</span><span class="p">)</span>
+                    <span class="k">nothing</span>
+                <span class="k">end</span>
+        <span class="k">end</span>
+    <span class="k">end</span>
+
+    <span class="nv">fields</span> <span class="o">=</span> <span class="nv">map_in_fields</span> <span class="o">|&gt;</span> <span class="nv">values</span> <span class="o">|&gt;</span> <span class="nv">collect</span>
+    <span class="nv">assigns</span><span class="p">[</span><span class="nv">FN_OUT_FIELDS</span><span class="p">]</span> <span class="o">=</span> <span class="nb">Expr</span><span class="p">(</span><span class="o">:</span><span class="nv">vect</span><span class="p">,</span> <span class="nv">fn_return_fields</span><span class="p">...)</span>
+    <span class="c"># select expression generation</span>
+    <span class="nf">query_routine</span><span class="p">(</span>
+        <span class="nv">assigns</span><span class="p">,</span>
+        <span class="nv">fields</span><span class="p">,</span>
+        <span class="nb">Expr</span><span class="p">(</span><span class="o">:</span><span class="nv">tuple</span><span class="p">,</span> <span class="nv">fn_return_elts</span><span class="p">...),</span>
+        <span class="nb">Expr</span><span class="p">(</span>
+            <span class="o">:</span><span class="nv">tuple</span><span class="p">,</span>
+            <span class="nv">FN_OUT_FIELDS</span><span class="p">,</span>
+            <span class="nv">FN_RETURN_TYPES</span><span class="p">,</span>
+            <span class="o">:</span><span class="p">(</span><span class="o">$</span><span class="p">(</span><span class="nf">fn_apply</span><span class="p">(</span><span class="nv">fields</span><span class="p">))</span> <span class="k">for</span> <span class="o">$</span><span class="nv">RECORD</span> <span class="k">in</span> <span class="o">$</span><span class="nv">IN_SOURCE</span><span class="p">)</span>
+        <span class="p">);</span> <span class="nv">infer_type</span> <span class="o">=</span> <span class="k">true</span>
+    <span class="p">)</span>
+<span class="k">end</span>
+</pre></div>
+</div>
+<p>Above case is for handling with regular expressions which might contain something like <code class="docutils literal notranslate"><span class="pre">_.x</span></code>, <code class="docutils literal notranslate"><span class="pre">_.(1)</span></code> or <code class="docutils literal notranslate"><span class="pre">_.&quot;is</span> <span class="pre">ruby&quot;</span></code>.</p>
+<p>Meanwhile, <code class="docutils literal notranslate"><span class="pre">=&gt;</span></code> allows you to alias the expression with the name you prefer. Note that, in terms of <code class="docutils literal notranslate"><span class="pre">&#64;select</span> <span class="pre">(_.foo</span> <span class="pre">=&gt;</span> <span class="pre">:a)</span> <span class="pre">=&gt;</span> <span class="pre">a</span></code>, the first <code class="docutils literal notranslate"><span class="pre">=&gt;</span></code> is a normal infix operator, which denotes the built-in object <code class="docutils literal notranslate"><span class="pre">Pair</span></code>, but the second is <em>alias</em>.</p>
+<p>If you have problems with <code class="docutils literal notranslate"><span class="pre">$</span></code> in AST patterns, just remember that, inside a <code class="docutils literal notranslate"><span class="pre">quote</span> <span class="pre">...</span> <span class="pre">end</span></code> or <code class="docutils literal notranslate"><span class="pre">:(...)</span></code>, ASTs/Expressions are compared by literal, except for <code class="docutils literal notranslate"><span class="pre">$(...)</span></code> things are matched via normal patterns, for instance, <code class="docutils literal notranslate"><span class="pre">:($(a</span> <span class="pre">::</span> <span class="pre">Symbol)</span> <span class="pre">=</span> <span class="pre">1)</span></code> can match <code class="docutils literal notranslate"><span class="pre">:($a</span> <span class="pre">=</span> <span class="pre">1)</span></code> if the available variable <code class="docutils literal notranslate"><span class="pre">a</span></code> has type <code class="docutils literal notranslate"><span class="pre">Symbol</span></code>.</p>
+<p>With respect of <code class="docutils literal notranslate"><span class="pre">groupby</span></code> and <code class="docutils literal notranslate"><span class="pre">having</span></code>, they’re too long to put in this article, so you might want to check them at <a class="reference external" href="https://github.com/thautwarm/MLStyle-Playground/blob/master/MQuery/MQuery.Impl.jl#L217">MQuery.Impl.jl#L217</a>.</p>
+</div>
+<div class="section" id="enjoy-you-a-query-language">
+<h2>Enjoy You A Query Language<a class="headerlink" href="#enjoy-you-a-query-language" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-julia notranslate"><div class="highlight"><pre><span></span><span class="k">using</span> <span class="nv">Enums</span>
+<span class="nd">@enum</span> <span class="nv">TypeChecking</span> <span class="nv">Dynamic</span> <span class="nv">Static</span>
+
+<span class="nf">include</span><span class="p">(</span><span class="s">&quot;MQuery.jl&quot;</span><span class="p">)</span>
+<span class="nv">df</span> <span class="o">=</span> <span class="nf">DataFrame</span><span class="p">(</span>
+        <span class="nb">Symbol</span><span class="p">(</span><span class="s">&quot;Type checking&quot;</span><span class="p">)</span> <span class="o">=&gt;</span>
+            <span class="p">[</span><span class="nv">Dynamic</span><span class="p">,</span> <span class="nv">Static</span><span class="p">,</span> <span class="nv">Static</span><span class="p">,</span> <span class="nv">Dynamic</span><span class="p">,</span> <span class="nv">Static</span><span class="p">,</span> <span class="nv">Dynamic</span><span class="p">,</span> <span class="nv">Dynamic</span><span class="p">,</span> <span class="nv">Static</span><span class="p">],</span>
+        <span class="o">:</span><span class="nv">name</span> <span class="o">=&gt;</span>
+            <span class="p">[</span><span class="s">&quot;Julia&quot;</span><span class="p">,</span> <span class="s">&quot;C#&quot;</span><span class="p">,</span> <span class="s">&quot;F#&quot;</span><span class="p">,</span> <span class="s">&quot;Ruby&quot;</span><span class="p">,</span> <span class="s">&quot;Java&quot;</span><span class="p">,</span> <span class="s">&quot;JavaScript&quot;</span><span class="p">,</span> <span class="s">&quot;Python&quot;</span><span class="p">,</span> <span class="s">&quot;Haskell&quot;</span><span class="p">]),</span>
+        <span class="o">:</span><span class="nv">year</span> <span class="o">=&gt;</span> <span class="p">[</span><span class="m">2012</span><span class="p">,</span> <span class="m">2000</span><span class="p">,</span> <span class="m">2005</span><span class="p">,</span> <span class="m">1995</span><span class="p">,</span> <span class="m">1995</span><span class="p">,</span> <span class="m">1995</span><span class="p">,</span> <span class="m">1990</span><span class="p">,</span> <span class="m">1990</span><span class="p">]</span>
+<span class="p">)</span>
+
+<span class="nv">df</span> <span class="o">|&gt;</span>
+<span class="nd">@where</span> <span class="o">!</span><span class="nb">startswith</span><span class="p">(</span><span class="nv">_</span><span class="p">.</span><span class="nv">name</span><span class="p">,</span> <span class="s">&quot;Java&quot;</span><span class="p">),</span>
+<span class="nd">@groupby</span> <span class="nv">_</span><span class="p">.</span><span class="s">&quot;Type checking&quot;</span> <span class="o">=&gt;</span> <span class="nv">TC</span><span class="p">,</span> <span class="nb">endswith</span><span class="p">(</span><span class="nv">_</span><span class="p">.</span><span class="nv">name</span><span class="p">,</span> <span class="s">&quot;#&quot;</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="nv">is_sharp</span><span class="p">,</span>
+<span class="nd">@having</span> <span class="nv">TC</span> <span class="o">===</span> <span class="nv">Dynamic</span> <span class="o">||</span> <span class="nv">is_sharp</span><span class="p">,</span>
+<span class="nd">@select</span> <span class="nb">join</span><span class="p">(</span><span class="nv">_</span><span class="p">.</span><span class="nv">name</span><span class="p">,</span> <span class="s">&quot; and &quot;</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="nv">result</span><span class="p">,</span> <span class="nv">_</span><span class="p">.</span><span class="nv">TC</span> <span class="o">=&gt;</span> <span class="nv">TC</span>
+</pre></div>
+</div>
+<p>outputs</p>
+<div class="highlight-default notranslate"><div class="highlight"><pre><span></span>2×2 DataFrame
+│ Row │ result                    │ TC        │
+│     │ String                    │ TypeChec… │
+├─────┼───────────────────────────┼───────────┤
+│ 1   │ Julia and Ruby and Python │ Dynamic   │
+│ 2   │ C# and F#                 │ Static    │
+</pre></div>
+</div>
+</div>
+</div>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+        <br/>
+        
+<div id="sourcelink">
+  <a href="../_sources/tutorials/query-lang.md.txt"
+     rel="nofollow">Source</a>
+</div>
+      
+    </p>
+    <p>
+        &copy; Copyright 2020, thautwarm.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.4.4.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>
