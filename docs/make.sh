@@ -1,0 +1,1 @@
+sphinx-build -b html ./ ../`python version.py`
