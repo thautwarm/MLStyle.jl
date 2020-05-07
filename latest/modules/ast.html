@@ -1,0 +1,285 @@
+<!DOCTYPE html>
+
+<html xmlns="http://www.w3.org/1999/xhtml">
+  <head>
+    <meta charset="utf-8" />
+    <title>MLStyle.Modules.AST &#8212; MLStyle.jl Documentation</title>
+    <link rel="stylesheet" href="../_static/bootstrap-sphinx.css" type="text/css" />
+    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
+    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
+    <script src="../_static/jquery.js"></script>
+    <script src="../_static/underscore.js"></script>
+    <script src="../_static/doctools.js"></script>
+    <script src="../_static/language_data.js"></script>
+    <link rel="index" title="Index" href="../genindex.html" />
+    <link rel="search" title="Search" href="../search.html" />
+    <link rel="next" title="MLStyle.Modules.Cond" href="cond.html" />
+    <link rel="prev" title="Pattern Functions" href="../syntax/pattern-function.html" />
+<meta charset='utf-8'>
+<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
+<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
+<meta name="apple-mobile-web-app-capable" content="yes">
+<script type="text/javascript" src="../_static/js/jquery-1.11.0.min.js "></script>
+<script type="text/javascript" src="../_static/js/jquery-fix.js "></script>
+<script type="text/javascript" src="../_static/bootstrap-3.3.7/js/bootstrap.min.js "></script>
+<script type="text/javascript" src="../_static/bootstrap-sphinx.js "></script>
+
+  </head><body>
+
+  <div id="navbar" class="navbar navbar-inverse navbar-default ">
+    <div class="container">
+      <div class="navbar-header">
+        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+          <span class="icon-bar"></span>
+        </button>
+        <a class="navbar-brand" href="../index.html">
+          MLStyle.jl</a>
+        <span class="navbar-text navbar-version pull-left"><b></b></span>
+      </div>
+
+        <div class="collapse navbar-collapse nav-collapse">
+          <ul class="nav navbar-nav">
+            
+                <li><a href="https://github.com/thautwarm/MLStyle.jl">GitHub</a></li>
+            
+            
+              <li class="dropdown globaltoc-container">
+  <a role="button"
+     id="dLabelGlobalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="../index.html">MLStyle.jl <b class="caret"></b></a>
+  <ul class="dropdown-menu globaltoc"
+      role="menu"
+      aria-labelledby="dLabelGlobalToc"><ul>
+<li class="toctree-l1"><a class="reference internal" href="../what.html">What is MLStyle.jl?</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../what.html#motivations">Motivations</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../why.html">Why use MLStyle.jl?</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../why.html#straightforward">Straightforward</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../why.html#performance-gain">Performance Gain</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../why.html#extensibility">Extensibility</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../why.html#referential-transparency">Referential Transparency</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../why.html#intuition-of-ast-manipulations">Intuition of AST Manipulations</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../how.html">Installation, Documentations and Tutorials</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../preview.html">Preview</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../preview.html#rock-paper-scissors">Rock Paper Scissors</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../preview.html#homoiconic-pattern-matching-for-julia-asts">Homoiconic pattern matching for Julia ASTs</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../preview.html#generalized-algebraic-data-types">Generalized Algebraic Data Types</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../preview.html#active-patterns">Active Patterns</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../benchmark.html">Benchmark</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../benchmark.html#arrays">Arrays</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../benchmark.html#tuples">Tuples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../benchmark.html#data-types">Data Types</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../benchmark.html#extracting-struct-definitions">Extracting Struct Definitions</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../benchmark.html#misc">Misc</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../benchmark.html#an-example-from-match-jl-documentation">An Example from Match.jl Documentation</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../contribute.html">Contributing to MLStyle</a></li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../syntax/adt.html">Algebraic Data Types</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../syntax/adt.html#cheat-sheet">Cheat Sheet</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../syntax/adt.html#examples">Examples</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../syntax/adt.html#example-modeling-arithmetic-operations">Example: Modeling Arithmetic Operations</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../syntax/adt.html#about-type-parameters">About Type Parameters</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../syntax/pattern.html">Patterns</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../syntax/pattern.html#literal-patterns">Literal Patterns</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../syntax/pattern.html#capturing-patterns">Capturing Patterns</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../syntax/pattern.html#type-patterns">Type Patterns</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../syntax/pattern.html#as-patterns">As-Patterns</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../syntax/pattern.html#guards">Guards</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../syntax/pattern.html#predicates">Predicates</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../syntax/pattern.html#range-patterns">Range Patterns</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../syntax/pattern.html#reference-patterns">Reference Patterns</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../syntax/pattern.html#custom-patterns">Custom Patterns</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../syntax/pattern.html#dicts-tuples-arrays">Dicts, Tuples, Arrays</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../syntax/pattern.html#or-patterns">Or Patterns</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../syntax/pattern.html#deconstructions-of-composite-data">Deconstructions of Composite Data</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../syntax/pattern.html#advanced-type-patterns">Advanced Type Patterns</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../syntax/pattern.html#side-effect">Side-Effect</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../syntax/pattern.html#do-patterns-and-many-patterns">Do-Patterns and Many-Patterns</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../syntax/pattern.html#let-patterns">Let Patterns</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../syntax/pattern.html#active-patterns">Active Patterns</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../syntax/pattern.html#expr-patterns">Expr Patterns</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../syntax/pattern.html#julia-code-as-expr-patterns">Julia Code as Expr Patterns</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../syntax/switch.html">The Switch Statements</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../syntax/records.html">Records</a></li>
+<li class="toctree-l1"><a class="reference internal" href="../syntax/when.html">When Destructuring</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../syntax/when.html#allow-destructuring-in-let-binding">Allow Destructuring in Let-Binding</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../syntax/when.html#sole-destructuring">Sole Destructuring</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../syntax/when.html#multiple-branches">Multiple Branches</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="../syntax/pattern-function.html">Pattern Functions</a></li>
+</ul>
+<ul class="current">
+<li class="toctree-l1 current"><a class="current reference internal" href="#">MLStyle.Modules.AST</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#matchast">&#64;matchast</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#capture">&#64;capture</a></li>
+</ul>
+</li>
+<li class="toctree-l1"><a class="reference internal" href="cond.html">MLStyle.Modules.Cond</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="cond.html#cond">&#64;cond</a></li>
+</ul>
+</li>
+</ul>
+<ul>
+<li class="toctree-l1"><a class="reference internal" href="../tutorials/capture.html">Static Capturing</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/capture.html#capture-pattern-from-mlstyle-modules-ast"><code class="docutils literal notranslate"><span class="pre">Capture</span></code> Pattern from <code class="docutils literal notranslate"><span class="pre">MLStyle.Modules.AST</span></code>:</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../tutorials/capture.html#raii-style">RAII-Style</a></li>
+</ul>
+</li>
+</ul>
+</ul>
+</li>
+              
+                <li class="dropdown">
+  <a role="button"
+     id="dLabelLocalToc"
+     data-toggle="dropdown"
+     data-target="#"
+     href="#">Structure <b class="caret"></b></a>
+  <ul class="dropdown-menu localtoc"
+      role="menu"
+      aria-labelledby="dLabelLocalToc"><ul>
+<li><a class="reference internal" href="#">MLStyle.Modules.AST</a><ul>
+<li><a class="reference internal" href="#matchast">&#64;matchast</a></li>
+<li><a class="reference internal" href="#capture">&#64;capture</a></li>
+</ul>
+</li>
+</ul>
+</ul>
+</li>
+              
+            
+            
+              
+                
+  <li>
+    <a href="../syntax/pattern-function.html" title="Previous Chapter: Pattern Functions"><span class="glyphicon glyphicon-chevron-left visible-sm"></span><span class="hidden-sm hidden-tablet">&laquo; Pattern Functions</span>
+    </a>
+  </li>
+  <li>
+    <a href="cond.html" title="Next Chapter: MLStyle.Modules.Cond"><span class="glyphicon glyphicon-chevron-right visible-sm"></span><span class="hidden-sm hidden-tablet">MLStyle.Modules.Cond &raquo;</span>
+    </a>
+  </li>
+              
+            
+            
+            
+            
+          </ul>
+
+          
+            
+<form class="navbar-form navbar-right" action="../search.html" method="get">
+ <div class="form-group">
+  <input type="text" name="q" class="form-control" placeholder="Search" />
+ </div>
+  <input type="hidden" name="check_keywords" value="yes" />
+  <input type="hidden" name="area" value="default" />
+</form>
+          
+        </div>
+    </div>
+  </div>
+
+<div class="container">
+  <div class="row">
+    <div class="body col-md-12 content" role="main">
+      
+  <div class="section" id="mlstyle-modules-ast">
+<h1>MLStyle.Modules.AST<a class="headerlink" href="#mlstyle-modules-ast" title="Permalink to this headline">¶</a></h1>
+<div class="section" id="matchast">
+<h2>&#64;matchast<a class="headerlink" href="#matchast" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><p>Description: Similar to <code class="docutils literal notranslate"><span class="pre">&#64;match</span></code>, but focus on AST matching. No need to quote patterns with <code class="docutils literal notranslate"><span class="pre">quote</span> <span class="pre">...</span> <span class="pre">end</span></code> or <code class="docutils literal notranslate"><span class="pre">:(...)</span></code>.</p></li>
+<li><p>Usage: <code class="docutils literal notranslate"><span class="pre">&#64;matchast</span> <span class="pre">ast_to_match</span> <span class="pre">(begin</span> <span class="pre">cases...</span> <span class="pre">end)</span></code></p></li>
+<li><p>Examples:</p></li>
+</ul>
+<div class="highlight-julia notranslate"><div class="highlight"><pre><span></span><span class="nd">@matchast</span> <span class="o">:</span><span class="p">(</span><span class="m">1</span> <span class="o">+</span> <span class="m">1</span><span class="p">)</span> <span class="k">quote</span>
+    <span class="o">$</span><span class="nv">a</span> <span class="o">+</span> <span class="m">1</span> <span class="o">=&gt;</span> <span class="nv">a</span> <span class="o">+</span> <span class="m">2</span>
+<span class="k">end</span>
+</pre></div>
+</div>
+<p>is equivalent to</p>
+<div class="highlight-julia notranslate"><div class="highlight"><pre><span></span><span class="nd">@match</span> <span class="o">:</span><span class="p">(</span><span class="m">1</span> <span class="o">+</span> <span class="m">1</span><span class="p">)</span> <span class="k">begin</span>
+    <span class="o">:</span><span class="p">(</span><span class="o">$</span><span class="nv">a</span> <span class="o">+</span> <span class="m">1</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="nv">a</span> <span class="o">+</span> <span class="m">2</span>
+<span class="k">end</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="capture">
+<h2>&#64;capture<a class="headerlink" href="#capture" title="Permalink to this headline">¶</a></h2>
+<ul class="simple">
+<li><p>Description: Similar to <code class="docutils literal notranslate"><span class="pre">MacroTools.&#64;capture</span></code>, but provided with a more regex-flavored matching.</p></li>
+<li><p>Usage: <code class="docutils literal notranslate"><span class="pre">&#64;capture</span> <span class="pre">template</span> <span class="pre">input_ast</span></code>,  note that <code class="docutils literal notranslate"><span class="pre">template</span></code> is purely static and cannot be a variable from current context.</p></li>
+<li><p>Examples:</p></li>
+</ul>
+<div class="highlight-julia notranslate"><div class="highlight"><pre><span></span><span class="nv">func_node</span> <span class="o">=</span> <span class="o">:</span><span class="p">(</span><span class="nf">f</span><span class="p">(</span><span class="nv">a</span><span class="p">,</span> <span class="nv">b</span><span class="p">,</span> <span class="nv">c</span><span class="p">))</span>
+<span class="nv">let_node</span> <span class="o">=</span> <span class="o">:</span><span class="p">(</span><span class="k">let</span> <span class="nv">a</span> <span class="o">=</span> <span class="nv">b</span><span class="p">;</span> <span class="nv">a</span> <span class="o">+</span> <span class="nv">b</span> <span class="k">end</span><span class="p">)</span>
+<span class="nd">@info</span> <span class="o">:</span><span class="k">function</span> <span class="nd">@capture</span> <span class="o">$</span><span class="nf">fn</span><span class="p">(</span><span class="o">$</span><span class="p">(</span><span class="nv">args</span><span class="p">...))</span> <span class="nv">func_node</span>
+<span class="nd">@info</span> <span class="o">:</span><span class="k">let</span> <span class="nd">@capture</span> <span class="k">let</span> <span class="o">$</span><span class="nv">a</span> <span class="o">=</span> <span class="o">$</span><span class="nv">b</span><span class="p">;</span> <span class="o">$</span><span class="p">(</span><span class="nv">stmts</span><span class="p">...)</span> <span class="k">end</span> <span class="nv">let_node</span>
+</pre></div>
+</div>
+<p>outputs</p>
+<div class="highlight-julia notranslate"><div class="highlight"><pre><span></span><span class="nv">┌</span> <span class="nv">Info</span><span class="o">:</span> <span class="k">function</span>
+<span class="nv">│</span>   <span class="cm">#= REPL[9]:1 =#</span> <span class="nd">@capture</span> <span class="p">(</span><span class="o">$</span><span class="p">(</span><span class="nb">Expr</span><span class="p">(</span><span class="o">:$</span><span class="p">,</span> <span class="o">:</span><span class="nv">fn</span><span class="p">)))(</span><span class="o">$</span><span class="p">(</span><span class="nb">Expr</span><span class="p">(</span><span class="o">:$</span><span class="p">,</span> <span class="o">:</span><span class="p">(</span><span class="nv">args</span><span class="p">...))))</span> <span class="nv">func_node</span> <span class="o">=</span>
+<span class="nv">│</span>    <span class="nb">Dict</span><span class="p">{</span><span class="nb">Symbol</span><span class="p">,</span><span class="nb">Any</span><span class="p">}</span> <span class="nv">with</span> <span class="m">2</span> <span class="nv">entries</span><span class="o">:</span>
+<span class="nv">│</span>      <span class="o">:</span><span class="nv">args</span> <span class="o">=&gt;</span> <span class="nb">Any</span><span class="p">[:</span><span class="nv">a</span><span class="p">,</span> <span class="p">:</span><span class="nv">b</span><span class="p">,</span> <span class="p">:</span><span class="nv">c</span><span class="p">]</span>
+<span class="nv">└</span>      <span class="o">:</span><span class="nv">fn</span>   <span class="o">=&gt;</span> <span class="o">:</span><span class="nv">f</span>
+
+<span class="nv">┌</span> <span class="nv">Info</span><span class="o">:</span> <span class="k">let</span>
+<span class="nv">│</span>   <span class="cm">#= REPL[10]:1 =#</span> <span class="nd">@capture</span> <span class="k">let</span> <span class="o">$</span><span class="p">(</span><span class="nb">Expr</span><span class="p">(</span><span class="o">:$</span><span class="p">,</span> <span class="o">:</span><span class="nv">a</span><span class="p">))</span> <span class="o">=</span> <span class="o">$</span><span class="p">(</span><span class="nb">Expr</span><span class="p">(</span><span class="o">:$</span><span class="p">,</span> <span class="o">:</span><span class="nv">b</span><span class="p">))</span>
+        <span class="cm">#= REPL[10]:1 =#</span>
+        <span class="o">$</span><span class="p">(</span><span class="nb">Expr</span><span class="p">(</span><span class="o">:$</span><span class="p">,</span> <span class="o">:</span><span class="p">(</span><span class="nv">stmts</span><span class="p">...)))</span>
+    <span class="k">end</span> <span class="nv">let_node</span> <span class="o">=</span>
+<span class="nv">│</span>    <span class="nb">Dict</span><span class="p">{</span><span class="nb">Symbol</span><span class="p">,</span><span class="nb">Any</span><span class="p">}</span> <span class="nv">with</span> <span class="m">3</span> <span class="nv">entries</span><span class="o">:</span>
+<span class="nv">│</span>      <span class="o">:</span><span class="nv">a</span>     <span class="o">=&gt;</span> <span class="o">:</span><span class="nv">a</span>
+<span class="nv">│</span>      <span class="o">:</span><span class="nv">b</span>     <span class="o">=&gt;</span> <span class="o">:</span><span class="nv">b</span>
+<span class="nv">└</span>      <span class="o">:</span><span class="nv">stmts</span> <span class="o">=&gt;</span> <span class="nb">Any</span><span class="p">[:(</span><span class="err">#</span><span class="o">=</span> <span class="nv">REPL</span><span class="p">[</span><span class="m">8</span><span class="p">]:</span><span class="m">1</span> <span class="o">=</span><span class="err">#</span><span class="p">),</span> <span class="p">:(</span><span class="nv">a</span> <span class="p">+</span> <span class="nv">b</span><span class="p">)]</span>
+</pre></div>
+</div>
+</div>
+</div>
+
+
+    </div>
+      
+  </div>
+</div>
+<footer class="footer">
+  <div class="container">
+    <p class="pull-right">
+      <a href="#">Back to top</a>
+      
+        <br/>
+        
+<div id="sourcelink">
+  <a href="../_sources/modules/ast.md.txt"
+     rel="nofollow">Source</a>
+</div>
+      
+    </p>
+    <p>
+        &copy; Copyright 2020, thautwarm.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.4.4.<br/>
+    </p>
+  </div>
+</footer>
+  </body>
+</html>
