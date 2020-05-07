@@ -1,9 +1,9 @@
 import sys
 import os
-ver, orig, target = sys.argv[1:4]
+ver = sys.argv[1]
 from bs4 import BeautifulSoup
 def predicate(x: str):
-    return x and x.startswith(orig)
+    return x and "_static/" in x
 for dirpath, _, files in os.walk(ver):
     for each in files:
         if not each.endswith('.html'):
@@ -12,9 +12,9 @@ for dirpath, _, files in os.walk(ver):
         with open(each) as f:
             bs = BeautifulSoup(f.read())
             for tag in bs.find_all(attrs={'src': predicate}):
-                tag['src'] = target + tag['src'][len(orig):]
+                tag['src'] = tag['src'].replace("_static/", "static/")
 
             for tag in bs.find_all(attrs={'href': predicate}):
-                tag['href'] = target + tag['href'][len(orig):]
+                tag['href'] = tag['href'].replace("_static/", "static/")
         with open(each, 'w') as f:
             f.write(str(bs))
