@@ -105,7 +105,56 @@ end
     end)
 
     @testset "enum: #85" begin
+        @lift @data Es{T} begin
+            E1 :: Es{Int}
+            E2 :: Es{Char}
+        end
+        
+        @lift @data Es′ begin
+            E3
+            E4
+        end
+        e1 = E1
+        e2 = E2
+        e3 = E3
+        e4 = E4
+        
+        @test @match 1 begin
+            E1 => false
+            E2 => false
+            E3 => false
+            E4 => false
+            _ => true
+        end
 
+        @test match E1 begin
+            E1 => true
+            _ => false
+        end
+        
+        @test match E2 begin
+            E2 => true
+            _ => false
+        end
 
+        @test match E3 begin
+            E3 => true
+            _ => false
+        end
+
+        @test match E4 begin
+            E4 => true
+            _ => false
+        end
+
+        @test match E1 begin
+            E2 => false 
+            _ => true
+        end
+
+        @test match E3 begin
+            E4 => false 
+            _ => true
+        end
     end
 end

@@ -209,7 +209,7 @@ function impl!(
                         :($Base.show(io::$IO, ::$ctor_name) = $Base.print(io, $(string(case))))
                     )
                 else
-                    as_record(:($Type{$ctor_name}), ln, mod)
+                    as_record(ctor_name, ln, mod)
                 end
 
                 push!(
