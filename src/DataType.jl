@@ -1,4 +1,5 @@
 module DataType
+using MLStyle
 using MLStyle.MatchImpl
 using MLStyle.Qualification
 using MLStyle.Record: as_record
@@ -186,13 +187,23 @@ function impl!(
                 end
 
                 expr_setup_record = as_record(case, ln, mod)
+
+                expr_is_enum = if is_enum
+                    :($MLStyle.is_enum(::Type{$case}) = true)
+                else
+                    nothing
+                end
                 push!(
                     suite,
                     expr_struct_def,
                     expr_infer_constructor,
-                    expr_setup_record
+                    expr_setup_record,
+                    expr_is_enum
                 )
-            # TODO: @case _
+                continue
+            @case :($case{$(_...)}) && if error("invalid enum constructor $each, use $case instead.") end
+            @case _
+                error("unrecognised data constructor $each.")
         end
     end
 end
