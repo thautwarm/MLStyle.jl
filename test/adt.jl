@@ -103,4 +103,9 @@ end
             SSS_1(_) => :ok
         end
     end)
+
+    @testset "enum: #85" begin
+
+
+    end
 end
