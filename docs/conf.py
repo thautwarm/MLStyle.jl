@@ -7,6 +7,7 @@ from sphinx.highlighting import lexers
 from pygments.style import Style
 from re import escape
 from pygments_julia import *
+from version import version
 
 lexers['julia'] = Julia1Lexer(startinline=True)
 lexers['julia-console'] = Julia1Lexer(startinline=True)
@@ -53,7 +54,7 @@ exclude_patterns = ["build", "_build", "_sources", ".shadow", "Thumbs.db", ".DS_
 # pygments_monkeypatch_style("wurusai", WurusaiStyle)
 pygments_style = "colorful"
 
-extensions = ["sphinx.ext.mathjax", "recommonmark"]
+extensions = ["sphinx.ext.mathjax", "recommonmark", "sphinx.ext.githubpages"]
 templates_path = ["_templates"]
 master_doc = "index"
 todo_include_todos = True
@@ -141,7 +142,7 @@ html_sidebars = {"**": []}
 
 # Output file base name for HTML help builder.
 htmlhelp_basename = "mlstyle_"
-
+html_baseurl = f"https://thautwarm.github.io/MLStyle.jl/{version}/"
 
 # -- Options for LaTeX output ---------------------------------------------
 
