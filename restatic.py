@@ -19,8 +19,8 @@ ver = sys.argv[1]
 #         with open(each, 'w') as f:
 #             f.write(str(bs))
 
-with open(f'{ver}/static/bootstrap-sphinx.css') as f:
+with open(f'{ver}/_static/bootstrap-sphinx.css') as f:
     src = f.read()
 
-with open(f'{ver}/static/bootstrap-sphinx.css', 'w') as f:
+with open(f'{ver}/_static/bootstrap-sphinx.css', 'w') as f:
     f.write(src.replace("Readable", 'readable'))
