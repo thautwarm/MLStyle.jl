@@ -16,9 +16,6 @@ makedocs(
         MLStyle.WhenCases
     ],
     clean = false,
-    format = Documenter.HTML(
-        prettyurls = !("local" in ARGS)
-    ),
     sitename = "MLStyle.jl",
     linkcheck = !("skiplinks" in ARGS),
     pages = [
@@ -44,6 +41,5 @@ makedocs(
 deploydocs(
     repo="github.com/thautwarm/MLStyle.jl",
     target="build",
-    julia="1.0",
     deps=nothing,
     make=nothing)
