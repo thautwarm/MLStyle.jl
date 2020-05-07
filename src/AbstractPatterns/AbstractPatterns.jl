@@ -1,4 +1,4 @@
-module AbstractPattern
+module AbstractPatterns
 export spec_gen, runterm, MK, RedyFlavoured, TypeObject
 export and, or, literal, and, wildcard, decons,
        guard, effect

@@ -1,7 +1,7 @@
 module Pervasives
 using MLStyle
-using MLStyle.AbstractPattern
-using MLStyle.AbstractPattern
+using MLStyle.AbstractPatterns
+using MLStyle.AbstractPatterns
 struct Many end
 struct Do end
 struct GuardBy end

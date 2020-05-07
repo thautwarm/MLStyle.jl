@@ -1,6 +1,6 @@
 module Sugars
 using MLStyle
-using MLStyle.AbstractPattern
+using MLStyle.AbstractPatterns
 
 export Q, And, Or
 

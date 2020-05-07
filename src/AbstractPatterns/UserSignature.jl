@@ -1,5 +1,5 @@
 module UserSitgnature
-import MLStyle.AbstractPattern: PComp
+import MLStyle.AbstractPatterns: PComp
 export and, or, literal, and, wildcard, decons,
        guard, effect, self
 

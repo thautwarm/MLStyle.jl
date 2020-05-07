@@ -71,4 +71,13 @@
         end
 
     end
+
+    @testset "drop Union{T, Nothing}" begin
+        @lift @active F(x) begin
+            x
+        end
+        @test_throws Any @match 1 begin
+            F(1) => 1
+        end
+    end
 end

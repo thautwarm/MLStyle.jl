@@ -1,6 +1,6 @@
 module BasicPatterns
-using MLStyle.AbstractPattern
-using MLStyle.AbstractPattern.RedyFlavoured
+using MLStyle.AbstractPatterns
+using MLStyle.AbstractPatterns.RedyFlavoured
 
 export P_bind, P_tuple, P_type_of, P_vector, P_capture, P_vector3, P_slow_view, P_fast_view
 export P_svec, P_svec3

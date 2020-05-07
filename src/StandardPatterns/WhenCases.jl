@@ -1,7 +1,7 @@
 module WhenCases
 using MLStyle
 using MLStyle.Sugars: Q
-using MLStyle.AbstractPattern: init_cfg
+using MLStyle.AbstractPatterns: init_cfg
 
 export @when, @otherwise, gen_when
 

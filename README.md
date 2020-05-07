@@ -74,9 +74,6 @@ Finally, we have such a library that provides **extensible pattern matching** fo
 
 - **You can use MLStyle only in development time** by expanding the macros(MLStyle generates **enclosed** codes which requires no runtime support, which means **the generated code can run without MLStyle installed**!)
 
-    Now there's a code generation tool called `bootstrap` available at [MLStyle/bootstrap](https://github.com/thautwarm/MLStyle.jl/tree/master/bootstrap), which
-    you can take advantage of to remove MLStyle dependency when making distributions.
-
     Also, MLStyle is implemented by itself now, via the bootstrap method.
 
 - \* Modern Ways about AST Manipulations
@@ -104,10 +101,26 @@ using MLStyle
 end
 
 # Determine who wins a game of rock paper scissors with pattern matching
-play(a::Shape, b::Shape) = @match (a,b) begin
-    (Paper(), Rock())     => "Paper Wins!";
-    (Rock(), Scissors())  => "Rock Wins!";
-    (Scissors(), Paper()) => "Scissors Wins!";
+play(a::Shape, b::Shape) = @match (a, b) begin
+    (Paper(),    Rock())      => "Paper Wins!";
+    (Rock(),     Scissors())  => "Rock Wins!";
+    (Scissors(), Paper())     => "Scissors Wins!";
+    (a, b)                => a == b ? "Tie!" : play(b, a)
+end
+```
+
+For a pattern like `A()`, there's a chance for them to get used with `A`:
+
+```julia
+# use pattern `A()` with the syntax `A`
+MLStyle.is_enum(::Type{Rock}) = true
+MLStyle.is_enum(::Type{Paper}) = true
+MLStyle.is_enum(::Type{Scissors}) = true
+
+play(a::Shape, b::Shape) = @match (a, b) begin
+    (Paper,    Rock)      => "Paper Wins!";
+    (Rock,     Scissors)  => "Rock Wins!";
+    (Scissors, Paper)     => "Scissors Wins!";
     (a, b)                => a == b ? "Tie!" : play(b, a)
 end
 ```

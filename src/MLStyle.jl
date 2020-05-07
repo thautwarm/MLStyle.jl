@@ -8,7 +8,7 @@ include("Qualification.jl")
 include("Render.jl")
 # =========================================
 
-include("AbstractPatterns/AbstractPattern.jl")
+include("AbstractPatterns/AbstractPatterns.jl")
 include("MatchCore.jl")
 include("ExprTools.jl")
 include("MatchImpl.jl")

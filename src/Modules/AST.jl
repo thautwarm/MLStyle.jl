@@ -1,6 +1,6 @@
 module AST
 using MLStyle
-using MLStyle.AbstractPattern
+using MLStyle.AbstractPatterns
 using MLStyle.Err
 export @matchast, @capture, Capture
 

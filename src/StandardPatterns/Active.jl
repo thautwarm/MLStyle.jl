@@ -2,7 +2,7 @@
 module Active
 using MLStyle
 using MLStyle.Qualification
-using MLStyle.AbstractPattern
+using MLStyle.AbstractPatterns
 
 export @active, active_def
 
@@ -48,7 +48,16 @@ function active_def(P, body, mod::Module, line::LineNumberNode)
                 if n_args === 0
                     :($expr isa Bool && $expr)
                 elseif n_args === 1
-                    :($expr isa Some && $expr !== nothing)
+                    expr_s = "$t(x)"
+                    msg = "invalid use of active patterns: " *
+                          "1-ary view pattern($expr_s) should accept Union{Some{T}, Nothing} " *
+                          "instead of Union{T, Nothing}! " *
+                           "A simple solution is:\n" *
+                           "  (@active $expr_s ex) =>\n  (@active $expr_s let r=ex; r === nothing? r : Some(r)) end"
+                            
+                    :($expr !== nothing && ($expr isa $Some || begin
+                        $error($msg)
+                    end))
                 else
                     :($expr isa $Tuple && length($expr) === $n_args)
                 end

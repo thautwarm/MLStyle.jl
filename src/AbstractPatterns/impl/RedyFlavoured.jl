@@ -1,5 +1,5 @@
 module RedyFlavoured
-using MLStyle.AbstractPattern
+using MLStyle.AbstractPatterns
 using MLStyle.Err: PatternCompilationError
 
 

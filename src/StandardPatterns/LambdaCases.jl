@@ -1,7 +1,7 @@
 module LambdaCases
 using MLStyle
 using MLStyle.Sugars
-using MLStyle.AbstractPattern: init_cfg
+using MLStyle.AbstractPatterns: init_cfg
 
 export gen_lambda, @λ
 

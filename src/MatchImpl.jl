@@ -6,8 +6,8 @@ using MLStyle.Err
 using MLStyle.MatchCore
 using MLStyle.ExprTools
 
-using MLStyle.AbstractPattern
-using MLStyle.AbstractPattern.BasicPatterns
+using MLStyle.AbstractPatterns
+using MLStyle.AbstractPatterns.BasicPatterns
 OptionalLn = Union{LineNumberNode,Nothing}
 
 is_enum(_)::Bool = false

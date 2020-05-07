@@ -3,8 +3,8 @@ using MLStyle
 using MLStyle.Err
 
 export @sswitch, ellipsis_split, backend, P_partial_struct_decons
-using MLStyle.AbstractPattern
-using MLStyle.AbstractPattern.BasicPatterns
+using MLStyle.AbstractPatterns
+using MLStyle.AbstractPatterns.BasicPatterns
 
 """
 [a, b..., c] -> :vec3 => [a], b, [c]

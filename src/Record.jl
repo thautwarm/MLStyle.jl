@@ -2,8 +2,8 @@ module Record
 using MLStyle
 using MLStyle.MatchCore
 using MLStyle.MatchImpl
-using MLStyle.AbstractPattern
-using MLStyle.AbstractPattern.BasicPatterns
+using MLStyle.AbstractPatterns
+using MLStyle.AbstractPatterns.BasicPatterns
 using MLStyle.Qualification
 
 export @as_record, record_def

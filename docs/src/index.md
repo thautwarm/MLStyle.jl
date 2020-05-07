@@ -12,13 +12,11 @@ MLStyle.jl
 
 ***You may now check docs of v0.3.1.***
 
-
 ## What is MLStyle.jl?
 
 MLStyle.jl is a Julia package that provides multiple productivity tools from ML ([Meta Language](https://en.wikipedia.org/wiki/ML_(programming_language))) like [pattern matching](https://en.wikipedia.org/wiki/Pattern_matching) which is statically generated and extensible, ADTs/GADTs ([Algebraic Data Type](https://en.wikipedia.org/wiki/Algebraic_data_type), [Generalized Algebraic Data Type](https://en.wikipedia.org/wiki/Generalized_algebraic_data_type)) and [Active Patterns](https://docs.microsoft.com/en-us/dotnet/fsharp/language-reference/active-patterns).
 
 Think of MLStyle.jl as a package bringing advanced functional programming idioms to Julia.
-
 
 ## Motivation
 
@@ -34,22 +32,22 @@ Finally, we have such a library that provides **extensible pattern matching** fo
 
 - Straightforward
 
-    I think there is no need to talk about why we should use pattern matching instead of manually writing something like conditional branches and nested visitors for datatypes.
+    I think there is no need to talk about why we should use pattern matching instead of manually writing something like conditional branches and nested data visitors.
 
 - Performance Gain
 
-    When dealing with complex conditional logics and visiting nested datatypes, the codes compiled via `MLStyle.jl` is usually as fast as handwritten code. You can check the [benchmarks](#benchmark) for details.
+    When dealing with conditional logics or visiting nested data, the codes compiled via `MLStyle.jl` is usually faster than the handwritten code. You can check the [benchmarks](#benchmark) section for details.
 
 - Extensibility and Hygienic Scoping
 
-    You can define your own patterns via the interfaces `def_pattern`, `def_app_pattern` and `def_gapp_pattern`. Almost all built-in patterns are defined at [Pervasives.jl](https://github.com/thautwarm/MLStyle.jl/blob/master/src/Pervasives.jl).
+    You can define your own patterns via the interfaces:
 
-    Once you define a pattern, you're tasked with giving some qualifiers to your own patterns to prevent visiting them from unexpected modules.
+    - `pattern_uncall(::Type{P}, self, type_params, type_args, args)`
+    - `pattern_unref(::Type{P}, self, args)`
 
-- You can use MLStyle in development via [Bootstrap mechanism](https://github.com/thautwarm/MLStyle.jl/tree/master/bootstrap):
+    Check documentations for details.
 
-    Now there's a code generation tool called `bootstrap` available at [MLStyle/bootstrap](https://github.com/thautwarm/MLStyle.jl/tree/master/bootstrap), which
-    you can take advantage of to remove MLStyle dependency when making distributions.
+- **You can use MLStyle only in development time** by expanding the macros(MLStyle generates **enclosed** codes which requires no runtime support, which means **the generated code can run without MLStyle installed**!)
 
     Also, MLStyle is implemented by itself now, via the bootstrap method.
 
@@ -78,22 +76,37 @@ using MLStyle
 end
 
 # Determine who wins a game of rock paper scissors with pattern matching
-play(a::Shape, b::Shape) = @match (a,b) begin
-    (Paper(), Rock())     => "Paper Wins!";
-    (Rock(), Scissors())  => "Rock Wins!";
-    (Scissors(), Paper()) => "Scissors Wins!";
+play(a::Shape, b::Shape) = @match (a, b) begin
+    (Paper(),    Rock())      => "Paper Wins!";
+    (Rock(),     Scissors())  => "Rock Wins!";
+    (Scissors(), Paper())     => "Scissors Wins!";
     (a, b)                => a == b ? "Tie!" : play(b, a)
 end
 ```
 
+For a pattern like `A()`, there's a chance for them to get used with `A`:
+
+```julia
+# use pattern `A()` with the syntax `A`
+MLStyle.is_enum(::Type{Rock}) = true
+MLStyle.is_enum(::Type{Paper}) = true
+MLStyle.is_enum(::Type{Scissors}) = true
+
+play(a::Shape, b::Shape) = @match (a, b) begin
+    (Paper,    Rock)      => "Paper Wins!";
+    (Rock,     Scissors)  => "Rock Wins!";
+    (Scissors, Paper)     => "Scissors Wins!";
+    (a, b)                => a == b ? "Tie!" : play(b, a)
+end
+```
 
 ### Homoiconic pattern matching for Julia ASTs
-Here's a less trivial use of MLStyle.jl for deconstructing and pattern matching Julia code.
+Here's a less trivial use of MLStyle.jl for deconstructing and pattern matching Julia code. 
 ```julia
 rmlines = @λ begin
-    e :: Expr           -> Expr(e.head, filter(x -> x !== nothing, map(rmlines, e.args))...)
-      :: LineNumberNode -> nothing
-    a                   -> a
+    e :: Expr           => Expr(e.head, filter(x -> x !== :magic_symbol_oh_really, map(rmlines, e.args))...)
+      :: LineNumberNode => :magic_symbol_oh_really
+    a                   => a
 end
 expr = quote
     struct S{T}
@@ -124,13 +137,12 @@ end
 @use GADT
 
 @data public Exp{T} begin
-    Sym{A}    :: Symbol                        => Exp{A}
-    Val{A}    :: A                             => Exp{A}
-    App{A, B, A_} :: (Exp{Fun{A, B}}, Exp{A_}) => Exp{B}
-    Lam{A, B} :: (Symbol, Exp{B})              => Exp{Fun{A, B}}
-    If{A}     :: (Exp{Bool}, Exp{A}, Exp{A})   => Exp{A}
+    Sym{A}    :: Symbol                           => Exp{A}
+    Val{A}    :: A                                => Exp{A}
+    Lam{A, B} :: (Symbol, Exp{B})                 => Exp{Fun{A, B}}
+    If{A}     :: (Exp{Bool}, Exp{A}, Exp{A})      => Exp{A}
+    App{A, B, A′<:A} :: (Exp{Fun{A, B}}, Exp{A′}) => Exp{B}
 end
-
 ```
 
 A simple interpreter implemented via GADTs could be found at `test/untyped_lam.jl`.
@@ -142,35 +154,27 @@ Currently, MLStyle does not have [fully featured](https://docs.microsoft.com/en-
 
 ```julia
 @active Re{r :: Regex}(x) begin
-    match(r, x)
+    ret = match(r, x)
+    ret !== nothing && return Some(ret)
 end
 
 @match "123" begin
     Re{r"\d+"}(x) => x
     _ => @error ""
 end # RegexMatch("123")
+
+@active IsEven(x) begin
+    x % 2 == 0
+end
+
+@match (1, 2, 3) begin
+    (1, IsEven, a) => a
+end # => 3
 ```
 
 ## Benchmark
 
-### Prerequisite
-
-Recent benchmarks have been run, showing that MLStyle.jl can be extremely fast for complicated pattern matching, but due to its advanced machinery has noticeable overhead in some very simple cases such as straightforwardly destructuring shallow tuples, arrays and datatypes without recursive invocations.
-
-All benchmark scripts are provided in the directory [Matrix-Benchmark](https://github.com/thautwarm/MLStyle.jl/blob/master/matrix-benchmark).
-
-
-To run these cross-implementation benchmarks, some extra dependencies should be installed:
-
-- `(v1.1) pkg> add https://github.com/thautwarm/Benchmarkplotting.jl#master` for making cross-implementation benchmark methods and plotting.
-
-- `(v1.1) pkg> add Gadfly MacroTools Match BenchmarkTools StatsBase Statistics ArgParse DataFrames`.
-
-- `(v1.1) pkg> add MLStyle#base` for a specific version of MLStyle.jl is required.
-
-After installing dependencies, you can directly benchmark them with `julia matrix_benchmark.jl hw-tuple hw-array match macrotools match-datatype` in the root directory.
-
-The benchmarks presented here are made by Julia **v1.1** on **Fedora 28**. For reports made on **Win10**, check [stats/windows/](https://github.com/thautwarm/MLStyle.jl/tree/master/stats/windows) directory.
+See [Benchmark](https://github.com/thautwarm/MLStyle.jl#benchmark).
 
 ## Contributing to MLStyle
 

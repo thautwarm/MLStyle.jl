@@ -47,7 +47,7 @@ struct StructField end
     end
 end
 
-using MLStyle.AbstractPattern: effect
+using MLStyle.AbstractPatterns: effect
 struct PushTo end
 function MLStyle.pattern_uncall(::Type{PushTo}, self, _, _, args)
     length(args) === 1 || error("PushTo accepts 1 arg.")
