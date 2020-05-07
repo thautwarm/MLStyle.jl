@@ -30,7 +30,6 @@ The benchmark results in dataframe format are available at [this directory](http
 
 [![matrix-benchmark/bench-array.jl](https://raw.githubusercontent.com/thautwarm/MLStyle.jl/master/stats/bench-array.svg)](https://github.com/thautwarm/MLStyle.jl/blob/master/stats/bench-array.txt)
 
-
 ## Tuples
 
 - code: [matrix-benchmark/bench-tuple.jl](https://github.com/thautwarm/MLStyle.jl/blob/master/matrix-benchmark/bench-tuple.jl)
@@ -49,13 +48,11 @@ The benchmark results in dataframe format are available at [this directory](http
 
 [![matrix-benchmark/bench-structfields.jl](https://raw.githubusercontent.com/thautwarm/MLStyle.jl/master/stats/bench-structfields.svg)](https://github.com/thautwarm/MLStyle.jl/blob/master/stats/bench-structfields.txt)
 
-
 ## Misc
 
 - code: [matrix-benchmark/bench-misc.jl](https://github.com/thautwarm/MLStyle.jl/blob/master/matrix-benchmark/bench-misc.jl)
 
 [![matrix-benchmark/bench-misc.jl](https://raw.githubusercontent.com/thautwarm/MLStyle.jl/master/stats/bench-misc.svg)](https://github.com/thautwarm/MLStyle.jl/blob/master/stats/bench-misc.txt)
-
 
 ## An Example from Match.jl Documentation
 
