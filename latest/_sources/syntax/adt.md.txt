@@ -9,9 +9,9 @@ Cheat sheet for regular ADT definitions:
 
 ```julia
 @data A <: B begin
-    C1 # is an enum(**WIP**)
+    C1 # is an enum
     
-    # similar to C1 but cannot match without a call
+    # C1 is a value but C2 is a constructor
     C2()
     
     # the capitalized means types(field names are "_1", "_2", ...)
@@ -33,7 +33,7 @@ Cheat sheet for GADT definitions:
 ```julia
 @data Ab{T} <: AB begin
     
-    C1{X, Y} :: Ab{X}   # is an enum(**WIP**)
+    C1 :: Ab{X} #  C1 is an enum. X is not type variable!
     C2 :: () => Ab{Int}
 
     # where is for inference, the clauses must be assignments
@@ -47,6 +47,21 @@ Examples
 -------------------------
 
 ```julia
+@data E begin
+    E1
+    E2(Int)
+end
+
+@assert E1 isa E && E2 <: E
+@match E1 begin
+    E2(x) => x
+    E1 => 2
+end # => 2
+
+@match E2(10) begin
+    E2(x) => x
+    E1 => 2
+end # => 10
 
 @data A begin
     A1(Int, Int)

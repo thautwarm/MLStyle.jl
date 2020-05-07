@@ -210,9 +210,9 @@
 <h2>Cheat Sheet<a class="headerlink" href="#cheat-sheet" title="Permalink to this headline">¶</a></h2>
 <p>Cheat sheet for regular ADT definitions:</p>
 <div class="highlight-julia notranslate"><div class="highlight"><pre><span></span><span class="nd">@data</span> <span class="nv">A</span> <span class="o">&lt;:</span> <span class="nv">B</span> <span class="k">begin</span>
-    <span class="nv">C1</span> <span class="c"># is an enum(**WIP**)</span>
+    <span class="nv">C1</span> <span class="c"># is an enum</span>
     
-    <span class="c"># similar to C1 but cannot match without a call</span>
+    <span class="c"># C1 is a value but C2 is a constructor</span>
     <span class="nf">C2</span><span class="p">()</span>
     
     <span class="c"># the capitalized means types(field names are &quot;_1&quot;, &quot;_2&quot;, ...)</span>
@@ -232,7 +232,7 @@
 <p>Cheat sheet for GADT definitions:</p>
 <div class="highlight-julia notranslate"><div class="highlight"><pre><span></span><span class="nd">@data</span> <span class="nv">Ab</span><span class="p">{</span><span class="nv">T</span><span class="p">}</span> <span class="o">&lt;:</span> <span class="nv">AB</span> <span class="k">begin</span>
     
-    <span class="nv">C1</span><span class="p">{</span><span class="nv">X</span><span class="p">,</span> <span class="nv">Y</span><span class="p">}</span> <span class="o">::</span> <span class="nv">Ab</span><span class="p">{</span><span class="nv">X</span><span class="p">}</span>   <span class="c"># is an enum(**WIP**)</span>
+    <span class="nv">C1</span> <span class="o">::</span> <span class="nv">Ab</span><span class="p">{</span><span class="nv">X</span><span class="p">}</span> <span class="c">#  C1 is an enum. X is not type variable!</span>
     <span class="nv">C2</span> <span class="o">::</span> <span class="p">()</span> <span class="o">=&gt;</span> <span class="nv">Ab</span><span class="p">{</span><span class="nb">Int</span><span class="p">}</span>
 
     <span class="c"># where is for inference, the clauses must be assignments</span>
@@ -245,7 +245,23 @@
 </div>
 <div class="section" id="examples">
 <h2>Examples<a class="headerlink" href="#examples" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-julia notranslate"><div class="highlight"><pre><span></span><span class="nd">@data</span> <span class="nv">A</span> <span class="k">begin</span>
+<div class="highlight-julia notranslate"><div class="highlight"><pre><span></span><span class="nd">@data</span> <span class="nv">E</span> <span class="k">begin</span>
+    <span class="nv">E1</span>
+    <span class="nf">E2</span><span class="p">(</span><span class="nb">Int</span><span class="p">)</span>
+<span class="k">end</span>
+
+<span class="nd">@assert</span> <span class="nv">E1</span> <span class="nv">isa</span> <span class="nv">E</span> <span class="o">&amp;&amp;</span> <span class="nv">E2</span> <span class="o">&lt;:</span> <span class="nv">E</span>
+<span class="nd">@match</span> <span class="nv">E1</span> <span class="k">begin</span>
+    <span class="nf">E2</span><span class="p">(</span><span class="nv">x</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="nv">x</span>
+    <span class="nv">E1</span> <span class="o">=&gt;</span> <span class="m">2</span>
+<span class="k">end</span> <span class="c"># =&gt; 2</span>
+
+<span class="nd">@match</span> <span class="nf">E2</span><span class="p">(</span><span class="m">10</span><span class="p">)</span> <span class="k">begin</span>
+    <span class="nf">E2</span><span class="p">(</span><span class="nv">x</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="nv">x</span>
+    <span class="nv">E1</span> <span class="o">=&gt;</span> <span class="m">2</span>
+<span class="k">end</span> <span class="c"># =&gt; 10</span>
+
+<span class="nd">@data</span> <span class="nv">A</span> <span class="k">begin</span>
     <span class="nf">A1</span><span class="p">(</span><span class="nb">Int</span><span class="p">,</span> <span class="nb">Int</span><span class="p">)</span>
     <span class="nf">A2</span><span class="p">(</span><span class="nv">a</span> <span class="o">::</span> <span class="nb">Int</span><span class="p">,</span> <span class="nv">b</span> <span class="o">::</span> <span class="nb">Int</span><span class="p">)</span>
     <span class="nf">A3</span><span class="p">(</span><span class="nv">a</span><span class="p">,</span> <span class="nv">b</span><span class="p">)</span> <span class="c"># equals to `A3(a::Any, b::Any)`</span>
