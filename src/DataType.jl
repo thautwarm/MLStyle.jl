@@ -5,6 +5,7 @@ using MLStyle.Qualification
 using MLStyle.Record: as_record
 using MLStyle.ExprTools
 
+UNREACHABLE = nothing
 export @data
 
 """
@@ -117,21 +118,28 @@ function impl!(
                   end ||
                   :($case($(params...))) &&
                   let ret_ty = abst(), constraints = [], generic_tvars = abs_tvars
-                  end &&
-                  :($case{$generic_tvars...}::$ret_ty where {$(constraints...)}) &&
-                  Do[is_enum = true] && let params = []
                   end ||
-                  :($case{$generic_tvars...}::$ret_ty) && Do[is_enum = true] &&
+                  :($case{$generic_tvars...}::$ret_ty where {$(constraints...)}) &&
+                  if error("Defining generic enum $each is invalid as Julia does not support generic value.")
+                  end && let params = []
+                  end ||
+                  :($case{$generic_tvars...}::$ret_ty) &&
+                  if error("Defining generic enum $each is invalid as Julia does not support generic value.")
+                  end &&
                   let params = [], constraints = []
                   end ||
-                  :($case::$ret_ty) && Do[is_enum = true] &&
+                  :($(case::Symbol)::$ret_ty) && Do[is_enum = true] &&
                   let params = [], constraints = [], generic_tvars = []
                   end ||
                   (case::Symbol) && Do[is_enum = true] &&
-                  let ret_ty = abst(), params = [], constraints = [], generic_tvars = abs_tvars
+                  if isempty(abs_tvars) ||
+                        error("Defining generic enum $case <: $(abst()) is invalid, as Julia does not support generic value.")
+                  end &&
+                  Do[is_enum = true] &&
+                  let ret_ty = abst(), params = [], constraints = [], generic_tvars = []
                   end)
                 
-                
+                ctor_name = is_enum ? Symbol(case, "'s constructor") : case
                 expr_field_def = Expr(:block, ln)
                 suite_field_def = expr_field_def.args
                 field_symbols = Symbol[]
@@ -159,16 +167,16 @@ function impl!(
                     :struct,
                     false,
                     Expr(:(<:),
-                        Expr(:curly, case, generic_tvars...),
+                        Expr(:curly, ctor_name, generic_tvars...),
                         ret_ty
                     ),
                     expr_field_def
                 )
                 
                 expr_infer_constructor = if isempty(constraints)
-                     nothing
+                     UNREACHABLE
                 else
-                    call = Expr(:call, case, suite_field_def[2:end]...)
+                    call = Expr(:call, ctor_name, suite_field_def[2:end]...)
                     type_arguments = get_type_parameters_ordered(generic_tvars)
                     fn_sig = Expr(:where, call, generic_tvars...)
                     Expr(
@@ -178,7 +186,7 @@ function impl!(
                             Expr(:let,
                                 Expr(:block, constraints...),
                                 Expr(:call,
-                                    :($case{$(type_arguments...)}),
+                                    :($ctor_name{$(type_arguments...)}),
                                     field_symbols...
                                 )
                             )
@@ -186,19 +194,29 @@ function impl!(
                     )
                 end
 
-                expr_setup_record = as_record(case, ln, mod)
-
-                expr_is_enum = if is_enum
-                    :($MLStyle.is_enum(::Type{$case}) = true)
+                expr_setup_record = if is_enum
+                    err_msg = "Enumeration $case should take 0 argument, type parameter or type argument."
+                    Expr(
+                        :block,
+                        ln,
+                        :($MLStyle.pattern_uncall(::$ctor_name, _, tparams, targs, args) =
+                            isempty(targs) && isempty(tparams) && isempty(args) && (
+                                return $MLStyle.AbstractPatterns.literal($case)
+                            ) || error($err_msg)),
+                        :($MLStyle.is_enum(::$ctor_name) = true),
+                        :(const $case = $reinterpret($ctor_name, nothing)),
+                        :($ctor_name() = $case),
+                        :($Base.show(io::$IO, ::$ctor_name) = $Base.print(io, $(string(case))))
+                    )
                 else
-                    nothing
+                    as_record(:($Type{$ctor_name}), ln, mod)
                 end
+
                 push!(
                     suite,
                     expr_struct_def,
                     expr_infer_constructor,
-                    expr_setup_record,
-                    expr_is_enum
+                    expr_setup_record
                 )
                 continue
             @case :($case{$(_...)}) && if error("invalid enum constructor $each, use $case instead.") end

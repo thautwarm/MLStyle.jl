@@ -197,10 +197,11 @@ function myimpl()
     wildcard(::Config) = (::CompileEnv, target::Target) -> TrueCond()
 
     literal(v, config::Config) = function ap_literal(::CompileEnv, target::Target)::Cond
+        ty = typeof(v)
         if v isa Symbol
             v = QuoteNode(v)
         end
-        isprimitivetype(config.type) ?
+        (isprimitivetype(ty) || ty.size == 0 && !ty.mutable) ?
             CheckCond(:($(target.repr) === $v)) :
             CheckCond(:($(target.repr) == $v))
     end
