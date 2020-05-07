@@ -12,25 +12,25 @@ include("AbstractPatterns/AbstractPatterns.jl")
 include("MatchCore.jl")
 include("ExprTools.jl")
 include("MatchImpl.jl")
+using .ExprTools
+using .MatchImpl
+@reexport MatchImpl
+
+include("Pervasives.jl")
+using .Pervasives: Do, Many, GuardBy
+export Do, Many, GuardBy
+
 include("Record.jl")
 include("DataType.jl")
-
-using .ExprTools
 
 @reexport Err
 
 using .DataType
 @reexport DataType
 
-using .MatchImpl
-@reexport MatchImpl
 
 using .Record
 @reexport Record
-
-include("Pervasives.jl")
-using .Pervasives: Do, Many, GuardBy
-export Do, Many, GuardBy
 
 include("Sugars.jl")
 

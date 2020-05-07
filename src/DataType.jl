@@ -87,7 +87,8 @@ function impl!(
             ln = each
             continue
 
-            @case :($case{$(generic_tvars...)}::($(params...),) =>
+            @case let is_enum = false end && (
+                 :($case{$(generic_tvars...)}::($(params...),) =>
                           $(ret_ty) where {$(constraints...)}
                   )   ||
                   :($case{$(generic_tvars...)}::($(params...),) => $ret_ty) &&
@@ -115,7 +116,19 @@ function impl!(
                   end ||
                   :($case($(params...))) &&
                   let ret_ty = abst(), constraints = [], generic_tvars = abs_tvars
-                  end
+                  end &&
+                  :($case{$generic_tvars...}::$ret_ty where {$(constraints...)}) &&
+                  Do[is_enum = true] && let params = []
+                  end ||
+                  :($case{$generic_tvars...}::$ret_ty) && Do[is_enum = true] &&
+                  let params = [], constraints = []
+                  end ||
+                  :($case::$ret_ty) && Do[is_enum = true] &&
+                  let params = [], constraints = [], generic_tvars = []
+                  end ||
+                  (case::Symbol) && Do[is_enum = true] &&
+                  let ret_ty = abst(), params = [], constraints = [], generic_tvars = abs_tvars
+                  end)
                 
                 
                 expr_field_def = Expr(:block, ln)
