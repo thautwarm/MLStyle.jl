@@ -58,7 +58,7 @@ end
 # => 1
 ```
 
-There is an advanced version of `Type-Patterns`s, which you can destruct types with fewer limitations. Check [Advanced Type Patterns](#advanced-type-patterns).
+There is an advanced version of `Type-Pattern`s, which you can destruct types with fewer limitations. Check [Advanced Type Patterns](#advanced-type-patterns).
 
 As-Patterns
 ----------
