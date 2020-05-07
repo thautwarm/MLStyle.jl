@@ -1,61 +1,48 @@
 <!DOCTYPE html>
-
 <html xmlns="http://www.w3.org/1999/xhtml">
-  <head>
-    <meta charset="utf-8" />
-    <title>The Switch Statements &#8212; MLStyle.jl Documentation</title>
-    <link rel="stylesheet" href="../_static/bootstrap-sphinx.css" type="text/css" />
-    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
-    <script src="../_static/jquery.js"></script>
-    <script src="../_static/underscore.js"></script>
-    <script src="../_static/doctools.js"></script>
-    <script src="../_static/language_data.js"></script>
-    <link rel="canonical" href="https://thautwarm.github.io/MLStyle.jl/latest/syntax/switch.html" />
-    <link rel="index" title="Index" href="../genindex.html" />
-    <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="Records" href="records.html" />
-    <link rel="prev" title="Patterns" href="pattern.html" />
-<meta charset='utf-8'>
-<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
-<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
-<meta name="apple-mobile-web-app-capable" content="yes">
-<script type="text/javascript" src="../_static/js/jquery-1.11.0.min.js "></script>
-<script type="text/javascript" src="../_static/js/jquery-fix.js "></script>
-<script type="text/javascript" src="../_static/bootstrap-3.3.7/js/bootstrap.min.js "></script>
-<script type="text/javascript" src="../_static/bootstrap-sphinx.js "></script>
-
-  </head><body>
-
-  <div id="navbar" class="navbar navbar-inverse navbar-default ">
-    <div class="container">
-      <div class="navbar-header">
-        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
-        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
-          <span class="icon-bar"></span>
-          <span class="icon-bar"></span>
-          <span class="icon-bar"></span>
-        </button>
-        <a class="navbar-brand" href="../index.html">
+<head>
+<meta charset="utf-8"/>
+<title>The Switch Statements — MLStyle.jl Documentation</title>
+<link href="../_static/bootstrap-sphinx.css" rel="stylesheet" type="text/css"/>
+<link href="../_static/pygments.css" rel="stylesheet" type="text/css"/>
+<script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+<script src="../_static/jquery.js"></script>
+<script src="../_static/underscore.js"></script>
+<script src="../_static/doctools.js"></script>
+<script src="../_static/language_data.js"></script>
+<link href="https://thautwarm.github.io/MLStyle.jl/latest/syntax/switch.html" rel="canonical"/>
+<link href="../genindex.html" rel="index" title="Index"/>
+<link href="../search.html" rel="search" title="Search"/>
+<link href="records.html" rel="next" title="Records"/>
+<link href="pattern.html" rel="prev" title="Patterns"/>
+<meta charset="utf-8"/>
+<meta content="IE=edge,chrome=1" http-equiv="X-UA-Compatible"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1" name="viewport"/>
+<meta content="yes" name="apple-mobile-web-app-capable"/>
+<script src="../_static/js/jquery-1.11.0.min.js " type="text/javascript"></script>
+<script src="../_static/js/jquery-fix.js " type="text/javascript"></script>
+<script src="../_static/bootstrap-3.3.7/js/bootstrap.min.js " type="text/javascript"></script>
+<script src="../_static/bootstrap-sphinx.js " type="text/javascript"></script>
+</head><body>
+<div class="navbar navbar-inverse navbar-default" id="navbar">
+<div class="container">
+<div class="navbar-header">
+<!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+<button class="navbar-toggle" data-target=".nav-collapse" data-toggle="collapse" type="button">
+<span class="icon-bar"></span>
+<span class="icon-bar"></span>
+<span class="icon-bar"></span>
+</button>
+<a class="navbar-brand" href="../index.html">
           MLStyle.jl</a>
-        <span class="navbar-text navbar-version pull-left"><b>latest</b></span>
-      </div>
-
-        <div class="collapse navbar-collapse nav-collapse">
-          <ul class="nav navbar-nav">
-            
-                <li><a href="https://github.com/thautwarm/MLStyle.jl">GitHub</a></li>
-            
-            
-              <li class="dropdown globaltoc-container">
-  <a role="button"
-     id="dLabelGlobalToc"
-     data-toggle="dropdown"
-     data-target="#"
-     href="../index.html">MLStyle.jl <b class="caret"></b></a>
-  <ul class="dropdown-menu globaltoc"
-      role="menu"
-      aria-labelledby="dLabelGlobalToc"><ul>
+<span class="navbar-text navbar-version pull-left"><b>latest</b></span>
+</div>
+<div class="collapse navbar-collapse nav-collapse">
+<ul class="nav navbar-nav">
+<li><a href="https://github.com/thautwarm/MLStyle.jl">GitHub</a></li>
+<li class="dropdown globaltoc-container">
+<a data-target="#" data-toggle="dropdown" href="../index.html" id="dLabelGlobalToc" role="button">MLStyle.jl <b class="caret"></b></a>
+<ul aria-labelledby="dLabelGlobalToc" class="dropdown-menu globaltoc" role="menu"><ul>
 <li class="toctree-l1"><a class="reference internal" href="../what.html">What is MLStyle.jl?</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../what.html#motivations">Motivations</a></li>
 </ul>
@@ -129,12 +116,12 @@
 </ul>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../modules/ast.html">MLStyle.Modules.AST</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="../modules/ast.html#matchast">&#64;matchast</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../modules/ast.html#capture">&#64;capture</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../modules/ast.html#matchast">@matchast</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../modules/ast.html#capture">@capture</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../modules/cond.html">MLStyle.Modules.Cond</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="../modules/cond.html#cond">&#64;cond</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../modules/cond.html#cond">@cond</a></li>
 </ul>
 </li>
 </ul>
@@ -147,62 +134,39 @@
 </ul>
 </ul>
 </li>
-              
-                <li class="dropdown">
-  <a role="button"
-     id="dLabelLocalToc"
-     data-toggle="dropdown"
-     data-target="#"
-     href="#">Structure <b class="caret"></b></a>
-  <ul class="dropdown-menu localtoc"
-      role="menu"
-      aria-labelledby="dLabelLocalToc"><ul>
+<li class="dropdown">
+<a data-target="#" data-toggle="dropdown" href="#" id="dLabelLocalToc" role="button">Structure <b class="caret"></b></a>
+<ul aria-labelledby="dLabelLocalToc" class="dropdown-menu localtoc" role="menu"><ul>
 <li><a class="reference internal" href="#">The Switch Statements</a></li>
 </ul>
 </ul>
 </li>
-              
-            
-            
-              
-                
-  <li>
-    <a href="pattern.html" title="Previous Chapter: Patterns"><span class="glyphicon glyphicon-chevron-left visible-sm"></span><span class="hidden-sm hidden-tablet">&laquo; Patterns</span>
-    </a>
-  </li>
-  <li>
-    <a href="records.html" title="Next Chapter: Records"><span class="glyphicon glyphicon-chevron-right visible-sm"></span><span class="hidden-sm hidden-tablet">Records &raquo;</span>
-    </a>
-  </li>
-              
-            
-            
-            
-            
-          </ul>
-
-          
-            
-<form class="navbar-form navbar-right" action="../search.html" method="get">
- <div class="form-group">
-  <input type="text" name="q" class="form-control" placeholder="Search" />
- </div>
-  <input type="hidden" name="check_keywords" value="yes" />
-  <input type="hidden" name="area" value="default" />
+<li>
+<a href="pattern.html" title="Previous Chapter: Patterns"><span class="glyphicon glyphicon-chevron-left visible-sm"></span><span class="hidden-sm hidden-tablet">« Patterns</span>
+</a>
+</li>
+<li>
+<a href="records.html" title="Next Chapter: Records"><span class="glyphicon glyphicon-chevron-right visible-sm"></span><span class="hidden-sm hidden-tablet">Records »</span>
+</a>
+</li>
+</ul>
+<form action="../search.html" class="navbar-form navbar-right" method="get">
+<div class="form-group">
+<input class="form-control" name="q" placeholder="Search" type="text"/>
+</div>
+<input name="check_keywords" type="hidden" value="yes"/>
+<input name="area" type="hidden" value="default"/>
 </form>
-          
-        </div>
-    </div>
-  </div>
-
+</div>
+</div>
+</div>
 <div class="container">
-  <div class="row">
-    <div class="body col-md-12 content" role="main">
-      
-  <div class="section" id="the-switch-statements">
+<div class="row">
+<div class="body col-md-12 content" role="main">
+<div class="section" id="the-switch-statements">
 <h1>The Switch Statements<a class="headerlink" href="#the-switch-statements" title="Permalink to this headline">¶</a></h1>
 <p>In the real use of pattern matching provided by MLStyle,
-things can sometimes becomes painful. To end this, we have <code class="docutils literal notranslate"><span class="pre">&#64;when</span></code>, and now even <strong><code class="docutils literal notranslate"><span class="pre">&#64;switch</span></code></strong>.</p>
+things can sometimes becomes painful. To end this, we have <code class="docutils literal notranslate"><span class="pre">@when</span></code>, and now even <strong><code class="docutils literal notranslate"><span class="pre">@switch</span></code></strong>.</p>
 <p>Following code is quite stupid in many aspects:</p>
 <div class="highlight-julia notranslate"><div class="highlight"><pre><span></span><span class="nv">var</span> <span class="o">=</span> <span class="m">1</span>
 <span class="nd">@match</span> <span class="nv">x</span> <span class="k">begin</span>
@@ -212,9 +176,9 @@ things can sometimes becomes painful. To end this, we have <code class="docutils
     <span class="k">end</span>
 </pre></div>
 </div>
-<p>Firstly, capturing in <code class="docutils literal notranslate"><span class="pre">&#64;match</span></code> just shadows outer variables, but sometimes you just want to change them.</p>
-<p>Secondly, <code class="docutils literal notranslate"><span class="pre">&#64;match</span></code> is an expression, and the right side of <code class="docutils literal notranslate"><span class="pre">=&gt;</span></code> can be only an expression, and writing a <code class="docutils literal notranslate"><span class="pre">begin</span> <span class="pre">end</span></code> there can bring bad code format.</p>
-<p>To address these issues, we present the <code class="docutils literal notranslate"><span class="pre">&#64;switch</span></code> macro:</p>
+<p>Firstly, capturing in <code class="docutils literal notranslate"><span class="pre">@match</span></code> just shadows outer variables, but sometimes you just want to change them.</p>
+<p>Secondly, <code class="docutils literal notranslate"><span class="pre">@match</span></code> is an expression, and the right side of <code class="docutils literal notranslate"><span class="pre">=&gt;</span></code> can be only an expression, and writing a <code class="docutils literal notranslate"><span class="pre">begin</span> <span class="pre">end</span></code> there can bring bad code format.</p>
+<p>To address these issues, we present the <code class="docutils literal notranslate"><span class="pre">@switch</span></code> macro:</p>
 <div class="highlight-julia notranslate"><div class="highlight"><pre><span></span><span class="nv">var</span> <span class="o">=</span> <span class="m">1</span>
 <span class="nv">x</span> <span class="o">=</span> <span class="p">(</span><span class="m">33</span><span class="p">,</span> <span class="m">44</span><span class="p">)</span>
 <span class="nd">@switch</span> <span class="nv">x</span> <span class="k">begin</span>
@@ -232,30 +196,22 @@ things can sometimes becomes painful. To end this, we have <code class="docutils
 </pre></div>
 </div>
 </div>
-
-
-    </div>
-      
-  </div>
+</div>
+</div>
 </div>
 <footer class="footer">
-  <div class="container">
-    <p class="pull-right">
-      <a href="#">Back to top</a>
-      
-        <br/>
-        
-<div id="sourcelink">
-  <a href="../_sources/syntax/switch.md.txt"
-     rel="nofollow">Source</a>
+<div class="container">
+<p class="pull-right">
+<a href="#">Back to top</a>
+<br/>
+</p><div id="sourcelink">
+<a href="../_sources/syntax/switch.md.txt" rel="nofollow">Source</a>
 </div>
-      
-    </p>
-    <p>
-        &copy; Copyright 2020, thautwarm.<br/>
+<p>
+        © Copyright 2020, thautwarm.<br/>
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.4.4.<br/>
-    </p>
-  </div>
+</p>
+</div>
 </footer>
-  </body>
+</body>
 </html>

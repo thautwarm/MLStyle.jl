@@ -1,61 +1,48 @@
 <!DOCTYPE html>
-
 <html xmlns="http://www.w3.org/1999/xhtml">
-  <head>
-    <meta charset="utf-8" />
-    <title>Benchmark &#8212; MLStyle.jl Documentation</title>
-    <link rel="stylesheet" href="_static/bootstrap-sphinx.css" type="text/css" />
-    <link rel="stylesheet" href="_static/pygments.css" type="text/css" />
-    <script id="documentation_options" data-url_root="./" src="_static/documentation_options.js"></script>
-    <script src="_static/jquery.js"></script>
-    <script src="_static/underscore.js"></script>
-    <script src="_static/doctools.js"></script>
-    <script src="_static/language_data.js"></script>
-    <link rel="canonical" href="https://thautwarm.github.io/MLStyle.jl/latest/benchmark.html" />
-    <link rel="index" title="Index" href="genindex.html" />
-    <link rel="search" title="Search" href="search.html" />
-    <link rel="next" title="Contributing to MLStyle" href="contribute.html" />
-    <link rel="prev" title="Preview" href="preview.html" />
-<meta charset='utf-8'>
-<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
-<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
-<meta name="apple-mobile-web-app-capable" content="yes">
-<script type="text/javascript" src="_static/js/jquery-1.11.0.min.js "></script>
-<script type="text/javascript" src="_static/js/jquery-fix.js "></script>
-<script type="text/javascript" src="_static/bootstrap-3.3.7/js/bootstrap.min.js "></script>
-<script type="text/javascript" src="_static/bootstrap-sphinx.js "></script>
-
-  </head><body>
-
-  <div id="navbar" class="navbar navbar-inverse navbar-default ">
-    <div class="container">
-      <div class="navbar-header">
-        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
-        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
-          <span class="icon-bar"></span>
-          <span class="icon-bar"></span>
-          <span class="icon-bar"></span>
-        </button>
-        <a class="navbar-brand" href="index.html">
+<head>
+<meta charset="utf-8"/>
+<title>Benchmark — MLStyle.jl Documentation</title>
+<link href="static/bootstrap-sphinx.css" rel="stylesheet" type="text/css"/>
+<link href="static/pygments.css" rel="stylesheet" type="text/css"/>
+<script data-url_root="./" id="documentation_options" src="static/documentation_options.js"></script>
+<script src="static/jquery.js"></script>
+<script src="static/underscore.js"></script>
+<script src="static/doctools.js"></script>
+<script src="static/language_data.js"></script>
+<link href="https://thautwarm.github.io/MLStyle.jl/latest/benchmark.html" rel="canonical"/>
+<link href="genindex.html" rel="index" title="Index"/>
+<link href="search.html" rel="search" title="Search"/>
+<link href="contribute.html" rel="next" title="Contributing to MLStyle"/>
+<link href="preview.html" rel="prev" title="Preview"/>
+<meta charset="utf-8"/>
+<meta content="IE=edge,chrome=1" http-equiv="X-UA-Compatible"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1" name="viewport"/>
+<meta content="yes" name="apple-mobile-web-app-capable"/>
+<script src="static/js/jquery-1.11.0.min.js " type="text/javascript"></script>
+<script src="static/js/jquery-fix.js " type="text/javascript"></script>
+<script src="static/bootstrap-3.3.7/js/bootstrap.min.js " type="text/javascript"></script>
+<script src="static/bootstrap-sphinx.js " type="text/javascript"></script>
+</head><body>
+<div class="navbar navbar-inverse navbar-default" id="navbar">
+<div class="container">
+<div class="navbar-header">
+<!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+<button class="navbar-toggle" data-target=".nav-collapse" data-toggle="collapse" type="button">
+<span class="icon-bar"></span>
+<span class="icon-bar"></span>
+<span class="icon-bar"></span>
+</button>
+<a class="navbar-brand" href="index.html">
           MLStyle.jl</a>
-        <span class="navbar-text navbar-version pull-left"><b>latest</b></span>
-      </div>
-
-        <div class="collapse navbar-collapse nav-collapse">
-          <ul class="nav navbar-nav">
-            
-                <li><a href="https://github.com/thautwarm/MLStyle.jl">GitHub</a></li>
-            
-            
-              <li class="dropdown globaltoc-container">
-  <a role="button"
-     id="dLabelGlobalToc"
-     data-toggle="dropdown"
-     data-target="#"
-     href="index.html">MLStyle.jl <b class="caret"></b></a>
-  <ul class="dropdown-menu globaltoc"
-      role="menu"
-      aria-labelledby="dLabelGlobalToc"><ul class="current">
+<span class="navbar-text navbar-version pull-left"><b>latest</b></span>
+</div>
+<div class="collapse navbar-collapse nav-collapse">
+<ul class="nav navbar-nav">
+<li><a href="https://github.com/thautwarm/MLStyle.jl">GitHub</a></li>
+<li class="dropdown globaltoc-container">
+<a data-target="#" data-toggle="dropdown" href="index.html" id="dLabelGlobalToc" role="button">MLStyle.jl <b class="caret"></b></a>
+<ul aria-labelledby="dLabelGlobalToc" class="dropdown-menu globaltoc" role="menu"><ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="what.html">What is MLStyle.jl?</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="what.html#motivations">Motivations</a></li>
 </ul>
@@ -129,12 +116,12 @@
 </ul>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="modules/ast.html">MLStyle.Modules.AST</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="modules/ast.html#matchast">&#64;matchast</a></li>
-<li class="toctree-l2"><a class="reference internal" href="modules/ast.html#capture">&#64;capture</a></li>
+<li class="toctree-l2"><a class="reference internal" href="modules/ast.html#matchast">@matchast</a></li>
+<li class="toctree-l2"><a class="reference internal" href="modules/ast.html#capture">@capture</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="modules/cond.html">MLStyle.Modules.Cond</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="modules/cond.html#cond">&#64;cond</a></li>
+<li class="toctree-l2"><a class="reference internal" href="modules/cond.html#cond">@cond</a></li>
 </ul>
 </li>
 </ul>
@@ -147,16 +134,9 @@
 </ul>
 </ul>
 </li>
-              
-                <li class="dropdown">
-  <a role="button"
-     id="dLabelLocalToc"
-     data-toggle="dropdown"
-     data-target="#"
-     href="#">Structure <b class="caret"></b></a>
-  <ul class="dropdown-menu localtoc"
-      role="menu"
-      aria-labelledby="dLabelLocalToc"><ul>
+<li class="dropdown">
+<a data-target="#" data-toggle="dropdown" href="#" id="dLabelLocalToc" role="button">Structure <b class="caret"></b></a>
+<ul aria-labelledby="dLabelLocalToc" class="dropdown-menu localtoc" role="menu"><ul>
 <li><a class="reference internal" href="#">Benchmark</a><ul>
 <li><a class="reference internal" href="#arrays">Arrays</a></li>
 <li><a class="reference internal" href="#tuples">Tuples</a></li>
@@ -169,45 +149,29 @@
 </ul>
 </ul>
 </li>
-              
-            
-            
-              
-                
-  <li>
-    <a href="preview.html" title="Previous Chapter: Preview"><span class="glyphicon glyphicon-chevron-left visible-sm"></span><span class="hidden-sm hidden-tablet">&laquo; Preview</span>
-    </a>
-  </li>
-  <li>
-    <a href="contribute.html" title="Next Chapter: Contributing to MLStyle"><span class="glyphicon glyphicon-chevron-right visible-sm"></span><span class="hidden-sm hidden-tablet">Contributing ... &raquo;</span>
-    </a>
-  </li>
-              
-            
-            
-            
-            
-          </ul>
-
-          
-            
-<form class="navbar-form navbar-right" action="search.html" method="get">
- <div class="form-group">
-  <input type="text" name="q" class="form-control" placeholder="Search" />
- </div>
-  <input type="hidden" name="check_keywords" value="yes" />
-  <input type="hidden" name="area" value="default" />
+<li>
+<a href="preview.html" title="Previous Chapter: Preview"><span class="glyphicon glyphicon-chevron-left visible-sm"></span><span class="hidden-sm hidden-tablet">« Preview</span>
+</a>
+</li>
+<li>
+<a href="contribute.html" title="Next Chapter: Contributing to MLStyle"><span class="glyphicon glyphicon-chevron-right visible-sm"></span><span class="hidden-sm hidden-tablet">Contributing ... »</span>
+</a>
+</li>
+</ul>
+<form action="search.html" class="navbar-form navbar-right" method="get">
+<div class="form-group">
+<input class="form-control" name="q" placeholder="Search" type="text"/>
+</div>
+<input name="check_keywords" type="hidden" value="yes"/>
+<input name="area" type="hidden" value="default"/>
 </form>
-          
-        </div>
-    </div>
-  </div>
-
+</div>
+</div>
+</div>
 <div class="container">
-  <div class="row">
-    <div class="body col-md-12 content" role="main">
-      
-  <div class="section" id="benchmark">
+<div class="row">
+<div class="body col-md-12 content" role="main">
+<div class="section" id="benchmark">
 <h1>Benchmark<a class="headerlink" href="#benchmark" title="Permalink to this headline">¶</a></h1>
 <p>In terms of data shape validation, MLStyle can be strictly faster than even a carefully optimized handwritten code.</p>
 <p>All benchmark scripts are provided in the directory <a class="reference external" href="https://github.com/thautwarm/MLStyle.jl/blob/master/matrix-benchmark">Matrix-Benchmark</a>.</p>
@@ -228,68 +192,60 @@
 <ul class="simple">
 <li><p>code: <a class="reference external" href="https://github.com/thautwarm/MLStyle.jl/blob/master/matrix-benchmark/bench-array.jl">matrix-benchmark/bench-array.jl</a></p></li>
 </ul>
-<p><a class="reference external" href="https://github.com/thautwarm/MLStyle.jl/blob/master/stats/bench-array.txt"><img alt="matrix-benchmark/bench-array.jl" src="https://raw.githubusercontent.com/thautwarm/MLStyle.jl/master/stats/bench-array.svg" /></a></p>
+<p><a class="reference external" href="https://github.com/thautwarm/MLStyle.jl/blob/master/stats/bench-array.txt"><img alt="matrix-benchmark/bench-array.jl" src="https://raw.githubusercontent.com/thautwarm/MLStyle.jl/master/stats/bench-array.svg"/></a></p>
 </div>
 <div class="section" id="tuples">
 <h2>Tuples<a class="headerlink" href="#tuples" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
 <li><p>code: <a class="reference external" href="https://github.com/thautwarm/MLStyle.jl/blob/master/matrix-benchmark/bench-tuple.jl">matrix-benchmark/bench-tuple.jl</a></p></li>
 </ul>
-<p><a class="reference external" href="https://github.com/thautwarm/MLStyle.jl/blob/master/stats/bench-tuple.txt"><img alt="matrix-benchmark/bench-tuple.jl" src="https://raw.githubusercontent.com/thautwarm/MLStyle.jl/master/stats/bench-tuple.svg" /></a></p>
+<p><a class="reference external" href="https://github.com/thautwarm/MLStyle.jl/blob/master/stats/bench-tuple.txt"><img alt="matrix-benchmark/bench-tuple.jl" src="https://raw.githubusercontent.com/thautwarm/MLStyle.jl/master/stats/bench-tuple.svg"/></a></p>
 </div>
 <div class="section" id="data-types">
 <h2>Data Types<a class="headerlink" href="#data-types" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
 <li><p>code: <a class="reference external" href="https://github.com/thautwarm/MLStyle.jl/blob/master/matrix-benchmark/bench-datatype.jl">matrix-benchmark/bench-datatype.jl</a></p></li>
 </ul>
-<p><a class="reference external" href="https://github.com/thautwarm/MLStyle.jl/blob/master/stats/bench-datatype.txt"><img alt="matrix-benchmark/bench-datatype.jl" src="https://raw.githubusercontent.com/thautwarm/MLStyle.jl/master/stats/bench-datatype.svg" /></a></p>
+<p><a class="reference external" href="https://github.com/thautwarm/MLStyle.jl/blob/master/stats/bench-datatype.txt"><img alt="matrix-benchmark/bench-datatype.jl" src="https://raw.githubusercontent.com/thautwarm/MLStyle.jl/master/stats/bench-datatype.svg"/></a></p>
 </div>
 <div class="section" id="extracting-struct-definitions">
 <h2>Extracting Struct Definitions<a class="headerlink" href="#extracting-struct-definitions" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
 <li><p>code: <a class="reference external" href="https://github.com/thautwarm/MLStyle.jl/blob/master/matrix-benchmark/bench-structfields.jl">matrix-benchmark/bench-structfields.jl</a></p></li>
 </ul>
-<p><a class="reference external" href="https://github.com/thautwarm/MLStyle.jl/blob/master/stats/bench-structfields.txt"><img alt="matrix-benchmark/bench-structfields.jl" src="https://raw.githubusercontent.com/thautwarm/MLStyle.jl/master/stats/bench-structfields.svg" /></a></p>
+<p><a class="reference external" href="https://github.com/thautwarm/MLStyle.jl/blob/master/stats/bench-structfields.txt"><img alt="matrix-benchmark/bench-structfields.jl" src="https://raw.githubusercontent.com/thautwarm/MLStyle.jl/master/stats/bench-structfields.svg"/></a></p>
 </div>
 <div class="section" id="misc">
 <h2>Misc<a class="headerlink" href="#misc" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
 <li><p>code: <a class="reference external" href="https://github.com/thautwarm/MLStyle.jl/blob/master/matrix-benchmark/bench-misc.jl">matrix-benchmark/bench-misc.jl</a></p></li>
 </ul>
-<p><a class="reference external" href="https://github.com/thautwarm/MLStyle.jl/blob/master/stats/bench-misc.txt"><img alt="matrix-benchmark/bench-misc.jl" src="https://raw.githubusercontent.com/thautwarm/MLStyle.jl/master/stats/bench-misc.svg" /></a></p>
+<p><a class="reference external" href="https://github.com/thautwarm/MLStyle.jl/blob/master/stats/bench-misc.txt"><img alt="matrix-benchmark/bench-misc.jl" src="https://raw.githubusercontent.com/thautwarm/MLStyle.jl/master/stats/bench-misc.svg"/></a></p>
 </div>
 <div class="section" id="an-example-from-match-jl-documentation">
 <h2>An Example from Match.jl Documentation<a class="headerlink" href="#an-example-from-match-jl-documentation" title="Permalink to this headline">¶</a></h2>
 <ul class="simple">
 <li><p>code: <a class="reference external" href="https://github.com/thautwarm/MLStyle.jl/blob/master/matrix-benchmark/bench-vs-match.jl">matrix-benchmark/bench-vs-match.jl</a></p></li>
 </ul>
-<p><a class="reference external" href="https://github.com/thautwarm/MLStyle.jl/blob/master/stats/bench-vs-match.txt"><img alt="matrix-benchmark/bench-versus-match.jl" src="https://raw.githubusercontent.com/thautwarm/MLStyle.jl/master/stats/bench-versus-match.svg" /></a></p>
+<p><a class="reference external" href="https://github.com/thautwarm/MLStyle.jl/blob/master/stats/bench-vs-match.txt"><img alt="matrix-benchmark/bench-versus-match.jl" src="https://raw.githubusercontent.com/thautwarm/MLStyle.jl/master/stats/bench-versus-match.svg"/></a></p>
 </div>
 </div>
-
-
-    </div>
-      
-  </div>
+</div>
+</div>
 </div>
 <footer class="footer">
-  <div class="container">
-    <p class="pull-right">
-      <a href="#">Back to top</a>
-      
-        <br/>
-        
-<div id="sourcelink">
-  <a href="_sources/benchmark.md.txt"
-     rel="nofollow">Source</a>
+<div class="container">
+<p class="pull-right">
+<a href="#">Back to top</a>
+<br/>
+</p><div id="sourcelink">
+<a href="_sources/benchmark.md.txt" rel="nofollow">Source</a>
 </div>
-      
-    </p>
-    <p>
-        &copy; Copyright 2020, thautwarm.<br/>
+<p>
+        © Copyright 2020, thautwarm.<br/>
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.4.4.<br/>
-    </p>
-  </div>
+</p>
+</div>
 </footer>
-  </body>
+</body>
 </html>

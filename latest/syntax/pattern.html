@@ -1,61 +1,48 @@
 <!DOCTYPE html>
-
 <html xmlns="http://www.w3.org/1999/xhtml">
-  <head>
-    <meta charset="utf-8" />
-    <title>Patterns &#8212; MLStyle.jl Documentation</title>
-    <link rel="stylesheet" href="../_static/bootstrap-sphinx.css" type="text/css" />
-    <link rel="stylesheet" href="../_static/pygments.css" type="text/css" />
-    <script id="documentation_options" data-url_root="../" src="../_static/documentation_options.js"></script>
-    <script src="../_static/jquery.js"></script>
-    <script src="../_static/underscore.js"></script>
-    <script src="../_static/doctools.js"></script>
-    <script src="../_static/language_data.js"></script>
-    <link rel="canonical" href="https://thautwarm.github.io/MLStyle.jl/latest/syntax/pattern.html" />
-    <link rel="index" title="Index" href="../genindex.html" />
-    <link rel="search" title="Search" href="../search.html" />
-    <link rel="next" title="The Switch Statements" href="switch.html" />
-    <link rel="prev" title="Algebraic Data Types" href="adt.html" />
-<meta charset='utf-8'>
-<meta http-equiv='X-UA-Compatible' content='IE=edge,chrome=1'>
-<meta name='viewport' content='width=device-width, initial-scale=1.0, maximum-scale=1'>
-<meta name="apple-mobile-web-app-capable" content="yes">
-<script type="text/javascript" src="../_static/js/jquery-1.11.0.min.js "></script>
-<script type="text/javascript" src="../_static/js/jquery-fix.js "></script>
-<script type="text/javascript" src="../_static/bootstrap-3.3.7/js/bootstrap.min.js "></script>
-<script type="text/javascript" src="../_static/bootstrap-sphinx.js "></script>
-
-  </head><body>
-
-  <div id="navbar" class="navbar navbar-inverse navbar-default ">
-    <div class="container">
-      <div class="navbar-header">
-        <!-- .btn-navbar is used as the toggle for collapsed navbar content -->
-        <button type="button" class="navbar-toggle" data-toggle="collapse" data-target=".nav-collapse">
-          <span class="icon-bar"></span>
-          <span class="icon-bar"></span>
-          <span class="icon-bar"></span>
-        </button>
-        <a class="navbar-brand" href="../index.html">
+<head>
+<meta charset="utf-8"/>
+<title>Patterns — MLStyle.jl Documentation</title>
+<link href="../_static/bootstrap-sphinx.css" rel="stylesheet" type="text/css"/>
+<link href="../_static/pygments.css" rel="stylesheet" type="text/css"/>
+<script data-url_root="../" id="documentation_options" src="../_static/documentation_options.js"></script>
+<script src="../_static/jquery.js"></script>
+<script src="../_static/underscore.js"></script>
+<script src="../_static/doctools.js"></script>
+<script src="../_static/language_data.js"></script>
+<link href="https://thautwarm.github.io/MLStyle.jl/latest/syntax/pattern.html" rel="canonical"/>
+<link href="../genindex.html" rel="index" title="Index"/>
+<link href="../search.html" rel="search" title="Search"/>
+<link href="switch.html" rel="next" title="The Switch Statements"/>
+<link href="adt.html" rel="prev" title="Algebraic Data Types"/>
+<meta charset="utf-8"/>
+<meta content="IE=edge,chrome=1" http-equiv="X-UA-Compatible"/>
+<meta content="width=device-width, initial-scale=1.0, maximum-scale=1" name="viewport"/>
+<meta content="yes" name="apple-mobile-web-app-capable"/>
+<script src="../_static/js/jquery-1.11.0.min.js " type="text/javascript"></script>
+<script src="../_static/js/jquery-fix.js " type="text/javascript"></script>
+<script src="../_static/bootstrap-3.3.7/js/bootstrap.min.js " type="text/javascript"></script>
+<script src="../_static/bootstrap-sphinx.js " type="text/javascript"></script>
+</head><body>
+<div class="navbar navbar-inverse navbar-default" id="navbar">
+<div class="container">
+<div class="navbar-header">
+<!-- .btn-navbar is used as the toggle for collapsed navbar content -->
+<button class="navbar-toggle" data-target=".nav-collapse" data-toggle="collapse" type="button">
+<span class="icon-bar"></span>
+<span class="icon-bar"></span>
+<span class="icon-bar"></span>
+</button>
+<a class="navbar-brand" href="../index.html">
           MLStyle.jl</a>
-        <span class="navbar-text navbar-version pull-left"><b>latest</b></span>
-      </div>
-
-        <div class="collapse navbar-collapse nav-collapse">
-          <ul class="nav navbar-nav">
-            
-                <li><a href="https://github.com/thautwarm/MLStyle.jl">GitHub</a></li>
-            
-            
-              <li class="dropdown globaltoc-container">
-  <a role="button"
-     id="dLabelGlobalToc"
-     data-toggle="dropdown"
-     data-target="#"
-     href="../index.html">MLStyle.jl <b class="caret"></b></a>
-  <ul class="dropdown-menu globaltoc"
-      role="menu"
-      aria-labelledby="dLabelGlobalToc"><ul>
+<span class="navbar-text navbar-version pull-left"><b>latest</b></span>
+</div>
+<div class="collapse navbar-collapse nav-collapse">
+<ul class="nav navbar-nav">
+<li><a href="https://github.com/thautwarm/MLStyle.jl">GitHub</a></li>
+<li class="dropdown globaltoc-container">
+<a data-target="#" data-toggle="dropdown" href="../index.html" id="dLabelGlobalToc" role="button">MLStyle.jl <b class="caret"></b></a>
+<ul aria-labelledby="dLabelGlobalToc" class="dropdown-menu globaltoc" role="menu"><ul>
 <li class="toctree-l1"><a class="reference internal" href="../what.html">What is MLStyle.jl?</a><ul>
 <li class="toctree-l2"><a class="reference internal" href="../what.html#motivations">Motivations</a></li>
 </ul>
@@ -129,12 +116,12 @@
 </ul>
 <ul>
 <li class="toctree-l1"><a class="reference internal" href="../modules/ast.html">MLStyle.Modules.AST</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="../modules/ast.html#matchast">&#64;matchast</a></li>
-<li class="toctree-l2"><a class="reference internal" href="../modules/ast.html#capture">&#64;capture</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../modules/ast.html#matchast">@matchast</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../modules/ast.html#capture">@capture</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="../modules/cond.html">MLStyle.Modules.Cond</a><ul>
-<li class="toctree-l2"><a class="reference internal" href="../modules/cond.html#cond">&#64;cond</a></li>
+<li class="toctree-l2"><a class="reference internal" href="../modules/cond.html#cond">@cond</a></li>
 </ul>
 </li>
 </ul>
@@ -147,16 +134,9 @@
 </ul>
 </ul>
 </li>
-              
-                <li class="dropdown">
-  <a role="button"
-     id="dLabelLocalToc"
-     data-toggle="dropdown"
-     data-target="#"
-     href="#">Structure <b class="caret"></b></a>
-  <ul class="dropdown-menu localtoc"
-      role="menu"
-      aria-labelledby="dLabelLocalToc"><ul>
+<li class="dropdown">
+<a data-target="#" data-toggle="dropdown" href="#" id="dLabelLocalToc" role="button">Structure <b class="caret"></b></a>
+<ul aria-labelledby="dLabelLocalToc" class="dropdown-menu localtoc" role="menu"><ul>
 <li><a class="reference internal" href="#">Patterns</a><ul>
 <li><a class="reference internal" href="#literal-patterns">Literal Patterns</a></li>
 <li><a class="reference internal" href="#capturing-patterns">Capturing Patterns</a></li>
@@ -182,56 +162,40 @@
 </ul>
 </ul>
 </li>
-              
-            
-            
-              
-                
-  <li>
-    <a href="adt.html" title="Previous Chapter: Algebraic Data Types"><span class="glyphicon glyphicon-chevron-left visible-sm"></span><span class="hidden-sm hidden-tablet">&laquo; Algebraic Data Types</span>
-    </a>
-  </li>
-  <li>
-    <a href="switch.html" title="Next Chapter: The Switch Statements"><span class="glyphicon glyphicon-chevron-right visible-sm"></span><span class="hidden-sm hidden-tablet">The Switch Statements &raquo;</span>
-    </a>
-  </li>
-              
-            
-            
-            
-            
-          </ul>
-
-          
-            
-<form class="navbar-form navbar-right" action="../search.html" method="get">
- <div class="form-group">
-  <input type="text" name="q" class="form-control" placeholder="Search" />
- </div>
-  <input type="hidden" name="check_keywords" value="yes" />
-  <input type="hidden" name="area" value="default" />
+<li>
+<a href="adt.html" title="Previous Chapter: Algebraic Data Types"><span class="glyphicon glyphicon-chevron-left visible-sm"></span><span class="hidden-sm hidden-tablet">« Algebraic Data Types</span>
+</a>
+</li>
+<li>
+<a href="switch.html" title="Next Chapter: The Switch Statements"><span class="glyphicon glyphicon-chevron-right visible-sm"></span><span class="hidden-sm hidden-tablet">The Switch Statements »</span>
+</a>
+</li>
+</ul>
+<form action="../search.html" class="navbar-form navbar-right" method="get">
+<div class="form-group">
+<input class="form-control" name="q" placeholder="Search" type="text"/>
+</div>
+<input name="check_keywords" type="hidden" value="yes"/>
+<input name="area" type="hidden" value="default"/>
 </form>
-          
-        </div>
-    </div>
-  </div>
-
+</div>
+</div>
+</div>
 <div class="container">
-  <div class="row">
-    <div class="body col-md-12 content" role="main">
-      
-  <div class="section" id="patterns">
+<div class="row">
+<div class="body col-md-12 content" role="main">
+<div class="section" id="patterns">
 <h1>Patterns<a class="headerlink" href="#patterns" title="Permalink to this headline">¶</a></h1>
 <p>Patterns provide convenient ways to manipulate data.</p>
 <div class="section" id="literal-patterns">
 <h2>Literal Patterns<a class="headerlink" href="#literal-patterns" title="Permalink to this headline">¶</a></h2>
 <div class="highlight-julia notranslate"><div class="highlight"><pre><span></span><span class="nd">@match</span> <span class="m">10</span> <span class="p">{</span>
-    <span class="m">1</span>  <span class="o">=&gt;</span> <span class="s">&quot;wrong!&quot;</span>
-    <span class="m">2</span>  <span class="o">=&gt;</span> <span class="s">&quot;wrong!&quot;</span>
-    <span class="m">10</span> <span class="o">=&gt;</span> <span class="s">&quot;right!&quot;</span>
+    <span class="m">1</span>  <span class="o">=&gt;</span> <span class="s">"wrong!"</span>
+    <span class="m">2</span>  <span class="o">=&gt;</span> <span class="s">"wrong!"</span>
+    <span class="m">10</span> <span class="o">=&gt;</span> <span class="s">"right!"</span>
 <span class="p">}</span>
 
-<span class="c"># =&gt; &quot;right&quot;</span>
+<span class="c"># =&gt; "right"</span>
 </pre></div>
 </div>
 <p>There are 3 distinct types whose literal data could be used as literal patterns:</p>
@@ -320,9 +284,9 @@
 <p>This feature is from <code class="docutils literal notranslate"><span class="pre">Elixir</span></code> which could slightly extends ML pattern matching.</p>
 <div class="highlight-julia notranslate"><div class="highlight"><pre><span></span><span class="nv">c</span> <span class="o">=</span> <span class="p">...</span>
 <span class="nd">@match</span> <span class="p">(</span><span class="nv">x</span><span class="p">,</span> <span class="nv">y</span><span class="p">)</span> <span class="k">begin</span>
-    <span class="p">(</span><span class="o">&amp;</span><span class="nv">c</span><span class="p">,</span> <span class="nv">_</span><span class="p">)</span>  <span class="o">=&gt;</span> <span class="s">&quot;x equals to c!&quot;</span>
-    <span class="p">(</span><span class="nv">_</span><span class="p">,</span>  <span class="o">&amp;</span><span class="nv">c</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="s">&quot;y equals to c!&quot;</span>
-    <span class="nv">_</span>        <span class="o">=&gt;</span> <span class="s">&quot;none of x and y equal to c&quot;</span>
+    <span class="p">(</span><span class="o">&amp;</span><span class="nv">c</span><span class="p">,</span> <span class="nv">_</span><span class="p">)</span>  <span class="o">=&gt;</span> <span class="s">"x equals to c!"</span>
+    <span class="p">(</span><span class="nv">_</span><span class="p">,</span>  <span class="o">&amp;</span><span class="nv">c</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="s">"y equals to c!"</span>
+    <span class="nv">_</span>        <span class="o">=&gt;</span> <span class="s">"none of x and y equal to c"</span>
 <span class="k">end</span>
 </pre></div>
 </div>
@@ -336,9 +300,9 @@
 <ul class="simple">
 <li><p>Dict pattern(like <code class="docutils literal notranslate"><span class="pre">Elixir</span></code>’s dictionary matching or ML record matching)</p></li>
 </ul>
-<div class="highlight-julia notranslate"><div class="highlight"><pre><span></span><span class="nv">dict</span> <span class="o">=</span> <span class="nb">Dict</span><span class="p">(</span><span class="m">1</span> <span class="o">=&gt;</span> <span class="m">2</span><span class="p">,</span> <span class="s">&quot;3&quot;</span> <span class="o">=&gt;</span> <span class="m">4</span><span class="p">,</span> <span class="m">5</span> <span class="o">=&gt;</span> <span class="nb">Dict</span><span class="p">(</span><span class="m">6</span> <span class="o">=&gt;</span> <span class="m">7</span><span class="p">))</span>
+<div class="highlight-julia notranslate"><div class="highlight"><pre><span></span><span class="nv">dict</span> <span class="o">=</span> <span class="nb">Dict</span><span class="p">(</span><span class="m">1</span> <span class="o">=&gt;</span> <span class="m">2</span><span class="p">,</span> <span class="s">"3"</span> <span class="o">=&gt;</span> <span class="m">4</span><span class="p">,</span> <span class="m">5</span> <span class="o">=&gt;</span> <span class="nb">Dict</span><span class="p">(</span><span class="m">6</span> <span class="o">=&gt;</span> <span class="m">7</span><span class="p">))</span>
 <span class="nd">@match</span> <span class="nv">dict</span> <span class="k">begin</span>
-    <span class="nb">Dict</span><span class="p">(</span><span class="s">&quot;3&quot;</span> <span class="o">=&gt;</span> <span class="nv">four</span><span class="o">::</span><span class="nb">Int</span><span class="p">,</span>
+    <span class="nb">Dict</span><span class="p">(</span><span class="s">"3"</span> <span class="o">=&gt;</span> <span class="nv">four</span><span class="o">::</span><span class="nb">Int</span><span class="p">,</span>
           <span class="m">5</span>  <span class="o">=&gt;</span> <span class="nb">Dict</span><span class="p">(</span><span class="m">6</span> <span class="o">=&gt;</span> <span class="nv">sev</span><span class="p">))</span> <span class="o">&amp;&amp;</span> <span class="k">if</span> <span class="nv">four</span> <span class="o">&lt;</span> <span class="nv">sev</span> <span class="k">end</span> <span class="o">=&gt;</span> <span class="nv">sev</span>
 <span class="k">end</span>
 <span class="c"># =&gt; 7</span>
@@ -388,7 +352,7 @@
 <span class="nf">test</span><span class="p">(</span><span class="m">2</span><span class="p">)</span>   <span class="c"># true</span>
 <span class="nf">test</span><span class="p">(</span><span class="m">1</span><span class="p">.</span><span class="m">0</span><span class="p">)</span> <span class="c"># true</span>
 <span class="nf">test</span><span class="p">(</span><span class="m">3</span><span class="p">)</span>   <span class="c"># false</span>
-<span class="nf">test</span><span class="p">(</span><span class="s">&quot;&quot;</span><span class="p">)</span>  <span class="c"># false</span>
+<span class="nf">test</span><span class="p">(</span><span class="s">""</span><span class="p">)</span>  <span class="c"># false</span>
 </pre></div>
 </div>
 <p>Tips: <code class="docutils literal notranslate"><span class="pre">Or</span> <span class="pre">Patterns</span></code>s could nested.</p>
@@ -401,16 +365,16 @@
     <span class="nf">Cultural</span><span class="p">(</span><span class="nv">region</span> <span class="o">::</span> <span class="nb">String</span><span class="p">,</span>  <span class="nv">kind</span> <span class="o">::</span> <span class="nb">String</span><span class="p">,</span> <span class="nv">country</span> <span class="o">::</span> <span class="nb">String</span><span class="p">,</span> <span class="nv">nature</span> <span class="o">::</span> <span class="nv">Natural</span><span class="p">)</span>
 <span class="k">end</span>
 
-<span class="nv">神农架</span> <span class="o">=</span> <span class="nf">Cultural</span><span class="p">(</span><span class="s">&quot;湖北&quot;</span><span class="p">,</span> <span class="s">&quot;林区&quot;</span><span class="p">,</span> <span class="s">&quot;中国&quot;</span><span class="p">,</span> <span class="nf">Natural</span><span class="p">(</span><span class="m">31</span><span class="p">.</span><span class="m">744</span><span class="p">,</span> <span class="s">&quot;北亚热带季风气候&quot;</span><span class="p">,</span> <span class="m">3106</span><span class="p">))</span>
-<span class="nv">Yellostone</span> <span class="o">=</span> <span class="nf">Cultural</span><span class="p">(</span><span class="s">&quot;Yellowstone National Park&quot;</span><span class="p">,</span> <span class="s">&quot;Natural&quot;</span><span class="p">,</span> <span class="s">&quot;United States&quot;</span><span class="p">,</span> <span class="nf">Natural</span><span class="p">(</span><span class="m">44</span><span class="p">.</span><span class="m">36</span><span class="p">,</span> <span class="s">&quot;subarctic&quot;</span><span class="p">,</span> <span class="m">2357</span><span class="p">))</span>
+<span class="nv">神农架</span> <span class="o">=</span> <span class="nf">Cultural</span><span class="p">(</span><span class="s">"湖北"</span><span class="p">,</span> <span class="s">"林区"</span><span class="p">,</span> <span class="s">"中国"</span><span class="p">,</span> <span class="nf">Natural</span><span class="p">(</span><span class="m">31</span><span class="p">.</span><span class="m">744</span><span class="p">,</span> <span class="s">"北亚热带季风气候"</span><span class="p">,</span> <span class="m">3106</span><span class="p">))</span>
+<span class="nv">Yellostone</span> <span class="o">=</span> <span class="nf">Cultural</span><span class="p">(</span><span class="s">"Yellowstone National Park"</span><span class="p">,</span> <span class="s">"Natural"</span><span class="p">,</span> <span class="s">"United States"</span><span class="p">,</span> <span class="nf">Natural</span><span class="p">(</span><span class="m">44</span><span class="p">.</span><span class="m">36</span><span class="p">,</span> <span class="s">"subarctic"</span><span class="p">,</span> <span class="m">2357</span><span class="p">))</span>
 
 <span class="k">function</span> <span class="nf">my_data_query</span><span class="p">(</span><span class="nv">data_lst</span> <span class="o">::</span> <span class="nb">Vector</span><span class="p">{</span><span class="nv">Cultural</span><span class="p">})</span>
     <span class="nb">filter</span><span class="p">(</span><span class="nv">data_lst</span><span class="p">)</span> <span class="k">do</span> <span class="nv">data</span>
         <span class="nd">@match</span> <span class="nv">data</span> <span class="k">begin</span>
-            <span class="nf">Cultural</span><span class="p">(</span><span class="nv">_</span><span class="p">,</span> <span class="s">&quot;林区&quot;</span><span class="p">,</span> <span class="s">&quot;中国&quot;</span><span class="p">,</span> <span class="nf">Natural</span><span class="p">(</span><span class="nv">dim</span><span class="o">=</span><span class="nv">dim</span><span class="p">,</span> <span class="nv">altitude</span><span class="p">))</span> <span class="o">&amp;&amp;</span>
+            <span class="nf">Cultural</span><span class="p">(</span><span class="nv">_</span><span class="p">,</span> <span class="s">"林区"</span><span class="p">,</span> <span class="s">"中国"</span><span class="p">,</span> <span class="nf">Natural</span><span class="p">(</span><span class="nv">dim</span><span class="o">=</span><span class="nv">dim</span><span class="p">,</span> <span class="nv">altitude</span><span class="p">))</span> <span class="o">&amp;&amp;</span>
             <span class="k">if</span> <span class="nv">dim</span> <span class="o">&gt;</span> <span class="m">30</span><span class="p">.</span><span class="m">0</span> <span class="o">&amp;&amp;</span> <span class="nv">altitude</span> <span class="o">&gt;</span> <span class="m">1000</span> <span class="k">end</span> <span class="o">=&gt;</span> <span class="k">true</span>
 
-            <span class="nf">Cultural</span><span class="p">(</span><span class="nv">_</span><span class="p">,</span> <span class="nv">_</span><span class="p">,</span> <span class="s">&quot;United States&quot;</span><span class="p">,</span> <span class="nf">Natural</span><span class="p">(</span><span class="nv">altitude</span><span class="o">=</span><span class="nv">altitude</span><span class="p">))</span> <span class="o">&amp;&amp;</span>
+            <span class="nf">Cultural</span><span class="p">(</span><span class="nv">_</span><span class="p">,</span> <span class="nv">_</span><span class="p">,</span> <span class="s">"United States"</span><span class="p">,</span> <span class="nf">Natural</span><span class="p">(</span><span class="nv">altitude</span><span class="o">=</span><span class="nv">altitude</span><span class="p">))</span> <span class="o">&amp;&amp;</span>
             <span class="k">if</span> <span class="nv">altitude</span> <span class="o">&gt;</span> <span class="m">2000</span> <span class="k">end</span>  <span class="o">=&gt;</span> <span class="k">true</span>
             <span class="nv">_</span> <span class="o">=&gt;</span> <span class="k">false</span>
 
@@ -467,7 +431,7 @@ Also, a pattern called <code class="docutils literal notranslate"><span class="p
     <span class="nv">_</span> <span class="o">=&gt;</span> <span class="k">false</span>
 <span class="k">end</span> <span class="c"># true</span>
 
-<span class="nd">@match</span> <span class="p">[</span><span class="m">1</span><span class="p">,</span> <span class="m">2</span><span class="p">,</span> <span class="m">3</span><span class="p">,</span>  <span class="s">&quot;a&quot;</span><span class="p">,</span> <span class="s">&quot;b&quot;</span><span class="p">,</span> <span class="s">&quot;c&quot;</span><span class="p">,</span> <span class="p">:</span><span class="nv">a</span><span class="p">,</span> <span class="p">:</span><span class="nv">b</span><span class="p">,</span> <span class="p">:</span><span class="nv">c</span><span class="p">]</span> <span class="k">begin</span>
+<span class="nd">@match</span> <span class="p">[</span><span class="m">1</span><span class="p">,</span> <span class="m">2</span><span class="p">,</span> <span class="m">3</span><span class="p">,</span>  <span class="s">"a"</span><span class="p">,</span> <span class="s">"b"</span><span class="p">,</span> <span class="s">"c"</span><span class="p">,</span> <span class="p">:</span><span class="nv">a</span><span class="p">,</span> <span class="p">:</span><span class="nv">b</span><span class="p">,</span> <span class="p">:</span><span class="nv">c</span><span class="p">]</span> <span class="k">begin</span>
     <span class="nf">Do</span><span class="p">(</span><span class="nv">count</span> <span class="o">=</span> <span class="m">0</span><span class="p">)</span> <span class="o">&amp;&amp;</span>
     <span class="nf">Many</span><span class="p">(</span>
         <span class="nv">a</span><span class="o">::</span><span class="nb">Int</span> <span class="o">&amp;&amp;</span> <span class="nf">Do</span><span class="p">(</span><span class="nv">count</span> <span class="o">=</span> <span class="nv">count</span> <span class="o">+</span> <span class="nv">a</span><span class="p">)</span> <span class="o">||</span>
@@ -482,7 +446,7 @@ Also, a pattern called <code class="docutils literal notranslate"><span class="p
 <p><strong>P.S 2</strong>: <code class="docutils literal notranslate"><span class="pre">Do[x...]</span></code> is an eye candy for <code class="docutils literal notranslate"><span class="pre">Do(x)</span></code>, and so does <code class="docutils literal notranslate"><span class="pre">Many[x]</span></code> for <code class="docutils literal notranslate"><span class="pre">Many(x)</span></code>. <strong>HOWEVER</strong>, do not use <code class="docutils literal notranslate"><span class="pre">begin</span> <span class="pre">end</span></code> syntax in <code class="docutils literal notranslate"><span class="pre">Do[...]</span></code> or <code class="docutils literal notranslate"><span class="pre">Many[...]</span></code>. Julia restricts the parser and it’ll not get treated as a <code class="docutils literal notranslate"><span class="pre">begin</span> <span class="pre">end</span></code> block.</p>
 <p><strong>P.S 3</strong>: The <a class="reference external" href="#let-patterns"><code class="docutils literal notranslate"><span class="pre">let</span></code> pattern</a> is different from the <code class="docutils literal notranslate"><span class="pre">Do</span></code> pattern.</p>
 <ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">Do[x=y]</span></code> changes <code class="docutils literal notranslate"><span class="pre">x</span></code>, but <code class="docutils literal notranslate"><span class="pre">let</span> <span class="pre">x</span> <span class="pre">=</span> <span class="pre">y</span> <span class="pre">end</span></code> shadows <code class="docutils literal notranslate"><span class="pre">x</span></code>. <code class="docutils literal notranslate"><span class="pre">let</span></code> may also change a variable’s value. Check the documents of <code class="docutils literal notranslate"><span class="pre">&#64;switch</span></code> macro.</p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">Do[x=y]</span></code> changes <code class="docutils literal notranslate"><span class="pre">x</span></code>, but <code class="docutils literal notranslate"><span class="pre">let</span> <span class="pre">x</span> <span class="pre">=</span> <span class="pre">y</span> <span class="pre">end</span></code> shadows <code class="docutils literal notranslate"><span class="pre">x</span></code>. <code class="docutils literal notranslate"><span class="pre">let</span></code> may also change a variable’s value. Check the documents of <code class="docutils literal notranslate"><span class="pre">@switch</span></code> macro.</p></li>
 <li><p>You can write non-binding in <code class="docutils literal notranslate"><span class="pre">Do</span></code>: <code class="docutils literal notranslate"><span class="pre">Do[println(1)]</span></code>, but you cannot do this in <code class="docutils literal notranslate"><span class="pre">let</span></code> patterns.</p></li>
 </ul>
 </div>
@@ -494,7 +458,7 @@ Also, a pattern called <code class="docutils literal notranslate"><span class="p
 </pre></div>
 </div>
 <p>Bind a variable without changing the value of existing variables, i.e., <code class="docutils literal notranslate"><span class="pre">let</span></code> patterns shadow symbols.</p>
-<p><code class="docutils literal notranslate"><span class="pre">let</span></code> may also change a variable’s value. Check the documents of <code class="docutils literal notranslate"><span class="pre">&#64;switch</span></code> macro.</p>
+<p><code class="docutils literal notranslate"><span class="pre">let</span></code> may also change a variable’s value. Check the documents of <code class="docutils literal notranslate"><span class="pre">@switch</span></code> macro.</p>
 </div>
 <div class="section" id="active-patterns">
 <h2>Active Patterns<a class="headerlink" href="#active-patterns" title="Permalink to this headline">¶</a></h2>
@@ -560,10 +524,10 @@ Also, a pattern called <code class="docutils literal notranslate"><span class="p
     <span class="k">end</span>
 <span class="k">end</span>
 
-<span class="nd">@match</span> <span class="s">&quot;123&quot;</span> <span class="k">begin</span>
-    <span class="nv">Re</span><span class="p">{</span><span class="sr">r&quot;\d+&quot;</span><span class="p">}(</span><span class="nv">x</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="nv">x</span>
-    <span class="nv">_</span> <span class="o">=&gt;</span> <span class="nd">@error</span> <span class="s">&quot;&quot;</span>
-<span class="k">end</span> <span class="c"># RegexMatch(&quot;123&quot;)</span>
+<span class="nd">@match</span> <span class="s">"123"</span> <span class="k">begin</span>
+    <span class="nv">Re</span><span class="p">{</span><span class="sr">r"\d+"</span><span class="p">}(</span><span class="nv">x</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="nv">x</span>
+    <span class="nv">_</span> <span class="o">=&gt;</span> <span class="nd">@error</span> <span class="s">""</span>
+<span class="k">end</span> <span class="c"># RegexMatch("123")</span>
 </pre></div>
 </div>
 <p>Sometimes the enum syntax is useful and convenient:</p>
@@ -593,9 +557,9 @@ Also, a pattern called <code class="docutils literal notranslate"><span class="p
             <span class="nb">Expr</span><span class="p">(</span><span class="o">:</span><span class="k">function</span><span class="p">,</span> <span class="nv">sig</span><span class="p">,</span> <span class="nv">_</span><span class="p">...)</span>         <span class="o">=&gt;</span> <span class="nf">extract_name</span><span class="p">(</span><span class="nv">sig</span><span class="p">)</span>
             <span class="nb">Expr</span><span class="p">(</span><span class="o">:</span><span class="k">const</span><span class="p">,</span> <span class="nv">assn</span><span class="p">,</span> <span class="nv">_</span><span class="p">...)</span>           <span class="o">=&gt;</span> <span class="nf">extract_name</span><span class="p">(</span><span class="nv">assn</span><span class="p">)</span>
             <span class="nb">Expr</span><span class="p">(</span><span class="o">:</span><span class="p">(</span><span class="o">=</span><span class="p">),</span> <span class="nv">fn</span><span class="p">,</span> <span class="nv">body</span><span class="p">,</span> <span class="nv">_</span><span class="p">...)</span>         <span class="o">=&gt;</span> <span class="nf">extract_name</span><span class="p">(</span><span class="nv">fn</span><span class="p">)</span>
-            <span class="nb">Expr</span><span class="p">(</span><span class="nv">expr_type</span><span class="p">,</span>  <span class="nv">_</span><span class="p">...)</span>             <span class="o">=&gt;</span> <span class="nb">error</span><span class="p">(</span><span class="s">&quot;Can&#39;t extract name from &quot;</span><span class="p">,</span>
-                                                        <span class="nv">expr_type</span><span class="p">,</span> <span class="s">&quot; expression:</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">,</span>
-                                                        <span class="s">&quot;    </span><span class="si">$e</span><span class="se">\n</span><span class="s">&quot;</span><span class="p">)</span>
+            <span class="nb">Expr</span><span class="p">(</span><span class="nv">expr_type</span><span class="p">,</span>  <span class="nv">_</span><span class="p">...)</span>             <span class="o">=&gt;</span> <span class="nb">error</span><span class="p">(</span><span class="s">"Can't extract name from "</span><span class="p">,</span>
+                                                        <span class="nv">expr_type</span><span class="p">,</span> <span class="s">" expression:</span><span class="se">\n</span><span class="s">"</span><span class="p">,</span>
+                                                        <span class="s">"    </span><span class="si">$e</span><span class="se">\n</span><span class="s">"</span><span class="p">)</span>
         <span class="k">end</span>
 <span class="k">end</span>
 <span class="nd">@assert</span> <span class="o">:</span><span class="nv">f</span> <span class="o">==</span> <span class="nf">extract_name</span><span class="p">(</span><span class="o">:</span><span class="p">(</span>
@@ -696,30 +660,22 @@ Also, a pattern called <code class="docutils literal notranslate"><span class="p
 </ul>
 </div>
 </div>
-
-
-    </div>
-      
-  </div>
+</div>
+</div>
 </div>
 <footer class="footer">
-  <div class="container">
-    <p class="pull-right">
-      <a href="#">Back to top</a>
-      
-        <br/>
-        
-<div id="sourcelink">
-  <a href="../_sources/syntax/pattern.md.txt"
-     rel="nofollow">Source</a>
+<div class="container">
+<p class="pull-right">
+<a href="#">Back to top</a>
+<br/>
+</p><div id="sourcelink">
+<a href="../_sources/syntax/pattern.md.txt" rel="nofollow">Source</a>
 </div>
-      
-    </p>
-    <p>
-        &copy; Copyright 2020, thautwarm.<br/>
+<p>
+        © Copyright 2020, thautwarm.<br/>
       Created using <a href="http://sphinx-doc.org/">Sphinx</a> 2.4.4.<br/>
-    </p>
-  </div>
+</p>
+</div>
 </footer>
-  </body>
+</body>
 </html>
