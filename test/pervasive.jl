@@ -255,3 +255,25 @@ end
         end
     end
 end
+
+@testcase "variable mutation in Many(..)" begin
+    @test @match [1, 2, 3] begin
+        Many(::Int) => true
+        _ => false
+    end
+
+    @test 9 == @match [1, 2, 3,  "a", "b", "c", :a, :b, :c] begin
+        Do(count = 0) &&
+        Many[
+            a::Int && Do(count = count + a) ||
+            ::String                        ||
+            ::Symbol && Do(count = count + 1)
+        ] => count
+    end
+    @test @test_logs (:warn, r"[d|D]eprecated") begin
+        @match 1 begin
+            let x = 1 end && Do[x = 2] => (x==2)
+            _ => false
+        end
+    end
+end
