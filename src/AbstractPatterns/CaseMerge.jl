@@ -1,7 +1,7 @@
 abstract type AbstractCase end
 export AbstractCase, EnumCase, SwitchCase, Leaf, Shaped
 
-Continuation = Symbol
+Continuation = Int
 Branch = Pair{PatternInfo,Tuple{LineNumberNode,Continuation}}
 
 """for generating patterns with one-by-one checks

@@ -38,11 +38,8 @@ function record_def(Struct, line::LineNumberNode, ::Module)
             patterns = Function[]
             $MLStyle.@switch args begin    
             @case [Expr(:parameters, kwargs...), args...]
-                @goto endswitch
             @case let kwargs = [] end
-                @goto endswitch
             end
-            @label endswitch
             n_args = length(args)
             if all(Meta.isexpr(arg, :kw) for arg in args)
                 for arg in args

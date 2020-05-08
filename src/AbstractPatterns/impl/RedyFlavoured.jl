@@ -2,11 +2,10 @@ module RedyFlavoured
 using MLStyle.AbstractPatterns
 using MLStyle.Err: PatternCompilationError
 
-
 Config = NamedTuple{(:type, :ln)}
 Scope = ChainDict{Symbol,Symbol}
 ViewCache = ChainDict{Pair{TypeObject,Any},Tuple{Symbol,Bool}}
-
+Terminal = Dict{Int, Any}
 function update_parent!(view_cache::ViewCache)
     parent = view_cache.init[]
     for (typed_viewer, (sym, _)) in view_cache.cur
@@ -19,28 +18,44 @@ struct CompileEnv
     scope::Scope
     # Dict(view => (viewed_cache_symbol => guarantee_of_defined?))
     view_cache::ViewCache
-    terminal_scope::Dict{Symbol,Vector{Pair{Dict{Symbol,Symbol},Expr}}}
+    terminal :: Dict{Int, Any}
+    hygienic :: Bool
+    ret      :: Symbol
+    final    :: Symbol
+end
+
+function CompileEnv(terminal::Terminal, hygienic::Bool, ret::Symbol, final::Symbol)
+    CompileEnv(Scope(), ViewCache(), terminal, hygienic, ret, final)
+end
+
+function (env::CompileEnv)(;
+    scope::Union{Nothing, Scope}=nothing,
+    view_cache::Union{Nothing, ViewCache}=nothing
+)
+    scope === nothing && (scope = env.scope)
+    view_cache === nothing && (view_cache = env.view_cache)
+    CompileEnv(scope, view_cache, env.terminal, env.hygienic, env.ret, env.final)
 end
 
 abstract type Cond end
 struct AndCond <: Cond
-    left::Cond
-    right::Cond
+    left :: Cond
+    right :: Cond
 end
 
 struct OrCond <: Cond
-    left::Cond
-    right::Cond
+    left :: Cond
+    right :: Cond
 end
 
 struct TrueCond <: Cond
-    stmt::Any
+    stmt :: Any
 end
 
 TrueCond() = TrueCond(true)
 
 struct CheckCond <: Cond
-    expr::Any
+    expr :: Any
 end
 
 """
@@ -222,16 +237,16 @@ function myimpl()
                 foldl(tl, init = (true, env, init)) do (computed_guarantee, env, last), p
                     # `TrueCond` means the return expression must be evaluated to `true`
                     computed_guarantee′ = computed_guarantee && last isa TrueCond
-                    if computed_guarantee′ === false && computed_guarantee === true
+                    if !computed_guarantee′ && computed_guarantee
                         view_cache = env.view_cache
                         view_cache′ = child(view_cache)
                         view_cache_change = view_cache′.cur
-                        env = CompileEnv(env.scope, view_cache′, env.terminal_scope)
+                        env = env(view_cache = view_cache′)
                     end
                     computed_guarantee′, env, AndCond(last, p(env, target))
                 end
 
-            if computed_guarantee′ === false
+            if !computed_guarantee′
                 update_parent!(env′.view_cache)
             end
             ret
@@ -250,33 +265,26 @@ function myimpl()
             n_ps = length(ps)
             for p in ps
                 scope′ = child(scope)
-                env′ = CompileEnv(scope′, view_cache, env.terminal_scope)
+                env′ = env(;scope=scope′, view_cache=view_cache)
                 push!(or_checks, p(env′, target.clone))
                 push!(scopes, scope′.cur)
             end
 
-
             # check the change of scope discrepancies for all branches
             intersected_new_names =
-                intersect!(Set(keys(scopes[1])), map(keys, view(scopes, 2:n_ps))...)
+                reduce(intersect!, (keys(scope) for scope in scopes[2:n_ps]), init=Set(keys(scopes[1])))
+
             for key in intersected_new_names
                 refresh = gensym(key)
                 for i in eachindex(or_checks)
                     check = or_checks[i]
-                    old_name = get(scopes[i], key) do
-                        throw(PatternCompilationError(
-                            config.ln,
-                            "Variables such as $key not bound in some branch!",
-                        ))
-                    end
+                    old_name = scopes[i][key]
                     or_checks[i] =
                         AndCond(or_checks[i], TrueCond(:($refresh = $old_name)))
                 end
                 scope[key] = refresh
-
             end
             foldr(OrCond, or_checks)
-
         end |> cache
     end
 
@@ -385,7 +393,7 @@ function myimpl()
                 field_target =
                     Target{true}(extract(viewed_sym, i, scope, ln), Ref{TypeObject}(Any))
                 view_cache′ = ViewCache()
-                env′ = CompileEnv(scope, view_cache′, env.terminal_scope)
+                env′ = env(;view_cache=view_cache′)
                 elt_chk = p(env′, field_target)
                 chk = AndCond(chk, AndCond(TrueCond(init_cache(view_cache′)), elt_chk))
             end
@@ -444,23 +452,23 @@ function compile_spec!(
 end
 
 function compile_spec!(env::CompileEnv, suite::Vector{Any}, x::Leaf, target::Target)
-
-
-    scope = Dict{Symbol,Symbol}()
-    for_chaindict(env.scope) do k, v
-        scope[k] = v
-    end
-    if !isempty(scope)
-        terminal_scope = env.terminal_scope
-        move = Expr(:block)
-        branched_terminal = get!(terminal_scope, x.cont) do
-            Pair{Dict{Symbol,Symbol},Expr}[]
+    body = env.terminal[x.cont]
+    ret = env.ret
+    if env.hygienic
+        bind_body = Expr(:block)
+        bind = Expr(:let, Expr(:block), bind_body)
+        for_chaindict(env.scope) do k, v
+            push!(bind_body.args, :(local $k = $v))
         end
-        push!(branched_terminal, scope => move)
-        push!(suite, move)
+        push!(bind_body.args, body)
+        push!(suite, :($ret = $bind))
+    else
+        for_chaindict(env.scope) do k, v
+            push!(suite, :($k = $v))
+        end
+        push!(suite, :($ret = $body))
     end
-
-    push!(suite, CFGJump(x.cont))
+    push!(suite, CFGJump(env.final))
 end
 
 function compile_spec!(
@@ -481,7 +489,7 @@ function compile_spec!(
         true_clause = Expr(:block)
         # create new `view_cache` as only one case will be executed
         view_cache′ = child(env.view_cache)
-        env′ = CompileEnv(child(env.scope), view_cache′, env.terminal_scope)
+        env′ = env(;scope=child(env.scope), view_cache=view_cache′)
         compile_spec!(env′, true_clause.args, case, target.with_type(ty))
         update_parent!(view_cache′)
         push!(suite, Expr(:if, :($sym isa $ty), true_clause))
@@ -503,74 +511,47 @@ function compile_spec!(
         # use old view_cache:
         # cases are tried in order,
         # hence `view_cache` can inherit from the previous case
-        env′ = CompileEnv(child(env.scope), env.view_cache, env.terminal_scope)
+        env′ = env(;scope=child(env.scope))
         compile_spec!(env′, suite, case, target.clone)
     end
 end
 
-function compile_spec(target::Any, case::AbstractCase, ln::Union{LineNumberNode,Nothing})
+function compile_spec(
+    env::CompileEnv,
+    target::Any,
+    case::AbstractCase,
+    ln::LineNumberNode
+)
     target = Target{true}(target, Ref{TypeObject}(Any))
-
-
     ret = Expr(:block)
     suite = ret.args
-
-    scope = Scope()
-    view_cache = ViewCache()
-    terminal_scope = Dict{Symbol,Vector{Pair{Dict{Symbol,Symbol},Expr}}}()
-    env = CompileEnv(scope, view_cache, terminal_scope)
-
+    if env.hygienic
+        push!(suite, :($(env.ret) = nothing))
+    end
+    view_cache = env.view_cache
+    
     compile_spec!(env, suite, case, target)
     pushfirst!(suite, init_cache(view_cache))
 
-    terminal_scope′ = Dict{Symbol,Dict{Symbol,Symbol}}()
-    for (br, move_semantics) in terminal_scope
-        n_merge = length(move_semantics)
-        if n_merge === 1
-            name_map, _ = move_semantics[1]
-            terminal_scope′[br] = name_map
-            continue
-        end
-        hd_name_map = move_semantics[1].first
-        ∩ˢ =
-            intersect!(
-                Set(keys(hd_name_map)),
-                (keys(name_map) for (name_map, _) in move_semantics)...,
-            )::Set{Symbol}
-        adjusted_move = Dict{Symbol,Symbol}()
-        ∩ⱽ = sort!(collect(∩ˢ))
-        for γᵢ in ∩ⱽ # γᵢ: the i-th captured user symbol
-            γᵢ∞′ = move_semantics[1].first[γᵢ] # the finally mangled of γᵢ
-            adjusted_move[γᵢ] = γᵢ∞′
-            for i in 2:n_merge
-                (name_map, move) = move_semantics[i]
-                γᵢ′ = name_map[γᵢ] # outdated move record
-                push!(move.args, :($γᵢ∞′ = $γᵢ′))
-            end
-        end
-        terminal_scope′[br] = adjusted_move
-    end
-
-    if ln !== nothing
-        # TODO: better trace
-        msg = "matching non-exhaustive, at $ln"
-        push!(suite, :(error($msg)))
-    else
-        push!(suite, :(error("no pattern matched")))
-    end
-
-    ret = length(suite) === 1 ? suite[1] : ret
-    terminal_scope′, ret
+    msg = "matching non-exhaustive, at $ln"
+    push!(suite, Expr(:call, error, msg))
+    push!(suite, CFGLabel(env.final))
+    push!(suite, env.ret)
+    CFGSpec(ret)
 end
 
-"""compile a series of `Term => Symbol`(branches) to a Julia expression
+"""compile a series of `Term => Symbol`(match clauses/branches) to a Julia expression
 """
 function backend(
     expr_to_match::Any,
-    branches::Vector,
-    ln::Union{LineNumberNode,Nothing} = nothing,
+    clauses::Vector{Pair{Function, Tuple{LineNumberNode, Int}}},
+    terminal::Terminal,
+    ln::LineNumberNode;
+    hygienic::Bool=true
 )
-    spec = spec_gen(branches)
-    compile_spec(expr_to_match, spec, ln)
+    
+    spec = spec_gen(clauses)
+    env = CompileEnv(terminal, hygienic, gensym(:return), gensym(:final))
+    compile_spec(env, expr_to_match, spec, ln)
 end
 end

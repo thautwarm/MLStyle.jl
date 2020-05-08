@@ -13,11 +13,10 @@ function active_def(P, body, mod::Module, line::LineNumberNode)
             Expr(:curly, t, type_args...) || t && let type_args = [] end,
             arg
         ) && if t isa Symbol end
-            @goto endwitch
+
         @case _
             error("malformed active pattern definition: $P")
     end
-    @label endwitch
     
     definition = if isdefined(mod, t)
         line

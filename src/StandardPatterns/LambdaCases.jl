@@ -26,7 +26,6 @@ function gen_lambda(cases, source :: LineNumberNode, mod :: Module)
             pair = make_pair_expr(a, bs)
             cbl = Expr(:block, source, pair)
             match_expr = gen_match(TARGET, cbl, source, mod)
-            @goto AA
             
         @case let stmts=[] end && Expr(:block,        
             Many[
@@ -38,9 +37,8 @@ function gen_lambda(cases, source :: LineNumberNode, mod :: Module)
         
             cbl = Expr(:block, source, stmts...)
             match_expr = gen_match(TARGET, cbl, source, mod)
-            @goto AA
     end
-    @label AA
+
     Expr(:function,
         Expr(:call, TARGET, TARGET), 
         Expr(:block, source, init_cfg(match_expr))

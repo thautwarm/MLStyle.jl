@@ -42,7 +42,7 @@ function qt2ex(ex::Any)
 end
 
 
-const backend = MK(RedyFlavoured)
+const backend = RedyFlavoured.backend
 
 function P_partial_struct_decons(t, partial_fields, ps, prepr::AbstractString = "$t")
     function tcons(_...)
@@ -178,19 +178,17 @@ this is incomplete and only for bootstrapping, do not use it.
 """
 macro sswitch(val, ex)
     @assert Meta.isexpr(ex, :block)
-    clauses = Union{LineNumberNode,Pair{<:Function,Symbol}}[]
-    body = Expr(:block)
-    alphabeta = 'a':'z'
+    branches = Pair{Function,Tuple{LineNumberNode,Int}}[]
     k = 0
     ln = __source__
-    variable_init_blocks = Dict{Symbol,Expr}()
+    terminal = Dict{Int,Any}()
+    body = nothing
     for i in eachindex(ex.args)
         stmt = ex.args[i]
         if Meta.isexpr(stmt, :macrocall) &&
            stmt.args[1] === case_sym &&
            length(stmt.args) == 3
 
-            push!(clauses, ln)
             k += 1
             pattern = try
                 basic_ex2tf(__module__.eval, stmt.args[3])
@@ -198,31 +196,16 @@ macro sswitch(val, ex)
                 e isa ErrorException && throw(PatternCompilationError(ln, e.msg))
                 rethrow()
             end
-            br::Symbol = Symbol(string(alphabeta[k%26]), k)
-            push!(clauses, pattern => br)
-            push!(body.args, CFGLabel(br))
-            variable_init_block = Expr(:block)
-            push!(body.args, variable_init_block)
-            variable_init_blocks[br] = variable_init_block
+            push!(branches, (pattern => (ln, k)))
+            body = terminal[k] = Expr(:block)
         else
-            if stmt isa LineNumberNode
-                ln = stmt
-            end
-            push!(body.args, stmt)
+            stmt isa LineNumberNode && (ln = stmt)
+            k === 0 || push!(body.args, stmt)
         end
     end
 
-    terminal_scope, match_logic = backend(val, clauses, __source__)
-    for (br, branches_terminal_scope) in terminal_scope
-        variable_init = variable_init_blocks[br].args
-        for (actual_sym, mangled_sym) in branches_terminal_scope
-            push!(variable_init, :($actual_sym = $mangled_sym))
-        end
-    end
-    ret = Expr(:let, Expr(:block), Expr(:block, match_logic, body))
-    ret = CFGSpec(ret)
-    ret = init_cfg(ret)
-    esc(ret)
+    block = backend(val, branches, terminal, __source__; hygienic = false)
+    esc(init_cfg(block))
 end
 
 end # module end

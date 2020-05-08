@@ -1,5 +1,5 @@
 module AbstractPatterns
-export spec_gen, runterm, MK, RedyFlavoured, TypeObject
+export spec_gen, RedyFlavoured, TypeObject
 export and, or, literal, and, wildcard, decons,
        guard, effect
 export PatternCompilationError, Target, PatternImpl, PComp
@@ -63,30 +63,13 @@ include("impl/RedyFlavoured.jl")
 include("impl/BasicPatterns.jl")
 using .BasicPatterns
 
-@nospecialize
-function MK(m::Any)
-    m.backend
-end
-
-function runterm(term, xs)
-    points_of_view = Dict{Function, Int}(x => i for (i, x) in enumerate(xs))
-    impls = Tuple(x(points_of_view) for x in xs)
-    term(impls)
-end
-
-function spec_gen(branches :: Vector)
+const _points_of_view = Dict{Function, Int}(tag_extract => 1, untagless => 2)
+function spec_gen(branches :: Vector{Pair{Function, Tuple{LineNumberNode, Int}}})
     cores = Branch[]
-    ln = LineNumberNode(1, "<unknown>")
-    for branch in branches
-        branch isa LineNumberNode && begin
-            ln = branch
-            continue
-        end
-        (branch, cont) = branch :: Pair{F, Symbol} where F <: Function
-        points_of_view = Dict{Function, Int}(tag_extract => 1, untagless => 2)
-        impls = (tag_extract(points_of_view), untagless(points_of_view))
-        type, pat = branch(impls)
-        push!(cores, PatternInfo(pat::TagfulPattern, type::TypeObject) => (ln, cont))
+    for (tf, ln_and_cont) in branches
+        impls = (tag_extract(_points_of_view), untagless(_points_of_view))
+        type, pat = tf(impls)
+        push!(cores, PatternInfo(pat::TagfulPattern, type::TypeObject) => ln_and_cont)
     end
     split_cores = Branch[]
     case_split!(split_cores, cores)

@@ -1,6 +1,6 @@
 module MatchImpl
 export is_enum, pattern_uncall, pattern_unref, @switch, @match, Where, gen_match, gen_switch
-export Q, unQ
+export Q
 import MLStyle
 using MLStyle.Err
 using MLStyle.MatchCore
@@ -21,13 +21,18 @@ struct Where
 end
 
 struct QuotePattern
-    value
+    value::Any
 end
 
 Base.@pure function qt2ex(ex::Any)
     if ex isa Expr
         Meta.isexpr(ex, :$) && return ex.args[1]
-        Expr(:call, Expr, QuoteNode(ex.head), (qt2ex(e) for e in ex.args if !(e isa LineNumberNode))...)
+        Expr(
+            :call,
+            Expr,
+            QuoteNode(ex.head),
+            (qt2ex(e) for e in ex.args if !(e isa LineNumberNode))...,
+        )
     elseif ex isa QuoteNode
         QuotePattern(qt2ex(ex.value))
     elseif ex isa Symbol
@@ -40,7 +45,7 @@ end
 function guess_type_from_expr(m::Module, ex::Any, tps::Set{Symbol})
     @sswitch ex begin
         @case :($t{$(targs...)})
-        t′ =  guess_type_from_expr(m, t, tps)[2]
+        t′ = guess_type_from_expr(m, t, tps)[2]
         t′ isa Type || error("$t should be a type!")
         t = t′
         rt_type_check = true
@@ -56,9 +61,10 @@ function guess_type_from_expr(m::Module, ex::Any, tps::Set{Symbol})
         @case t::Type
         return false, t
         @case ::Symbol
-        ex in tps || isdefined(m, ex) &&
+        ex in tps ||
+            isdefined(m, ex) &&
             #= TODO: check if it's a type =#
-            return (false, getfield(m, ex))
+                return (false, getfield(m, ex))
         return true, Any
         @case _
         # TODO: for better performance we should guess types smartly.
@@ -96,13 +102,14 @@ function ex2tf(m::Module, w::Where)
     rec(x) = ex2tf(m, x)
     @sswitch w begin
         @case Where(; value = val, type = t, type_parameters = tps)
+    
         tp_set = get_type_parameters(tps)::Set{Symbol}
         should_guess, ty_guess = guess_type_from_expr(m, t, tp_set)
         p_ty = P_type_of(ty_guess)
         tp_vec = collect(tp_set)
         sort!(tp_vec)
         p_guard = guard() do target, scope, _
-            
+
             if isempty(tp_vec)
                 return if should_guess
                     see_captured_vars(:($target isa $t), scope)
@@ -112,7 +119,7 @@ function ex2tf(m::Module, w::Where)
             end
 
             tp_ret = Expr(:tuple, tp_vec...)
-            
+
             targns = Symbol[]
             fn = gensym("extract type params")
             testn = gensym("test type params")
@@ -125,7 +132,8 @@ function ex2tf(m::Module, w::Where)
             end
             push!(
                 suite,
-                :($fn(::Type{$ty_accurate}) where {$(tps...), $ty_accurate <: $t} = $tp_ret),
+                :($fn(::Type{$ty_accurate}) where {$(tps...),$ty_accurate<:$t} =
+                        $tp_ret),
                 :($fn(_) = nothing),
                 :($testn = $fn(typeof($target))),
                 Expr(
@@ -227,10 +235,14 @@ function ex2tf(m::Module, ex::Expr)
 
         return ex2tf(m, Where(val, t, tps))
 
-        @case :($ty[$pat for $reconstruct in $seq if $cond])                  ||
-              :($ty[$pat for $reconstruct in $seq]) && let cond = true end ||
-              :[$pat for $reconstruct in $seq if $cond] && let ty = Any end   ||
-              :[$pat for $reconstruct in $seq] && let cond = true, ty = Any end && if seq isa Symbol end
+        @case :($ty[$pat for $reconstruct in $seq if $cond]) ||
+              :($ty[$pat for $reconstruct in $seq]) && let cond = true
+              end ||
+              :[$pat for $reconstruct in $seq if $cond] && let ty = Any
+              end ||
+              :[$pat for $reconstruct in $seq] && let cond = true, ty = Any
+              end && if seq isa Symbol
+              end
 
         return uncomprehension(rec, ty, pat, reconstruct, seq, cond)
 
@@ -239,10 +251,22 @@ function ex2tf(m::Module, ex::Expr)
     end
 end
 
-function uncomprehension(self::Function, ty::Any, pat::Any, reconstruct::Any, seq::Any, cond::Any)
+function uncomprehension(
+    self::Function,
+    ty::Any,
+    pat::Any,
+    reconstruct::Any,
+    seq::Any,
+    cond::Any,
+)
     eltype = guess_type_from_expr(self.m, ty, Set{Symbol}())[2]
-    p0 = P_type_of(AbstractArray{T, 1} where T <: eltype)
-    function extract(target::Any, ::Int, scope::ChainDict{Symbol, Symbol}, ln::LineNumberNode)
+    p0 = P_type_of(AbstractArray{T,1} where {T<:eltype})
+    function extract(
+        target::Any,
+        ::Int,
+        scope::ChainDict{Symbol,Symbol},
+        ln::LineNumberNode,
+    )
         token = gensym("uncompreh token")
         iter = gensym("uncompreh iter")
         vec = gensym("uncompreh seq")
@@ -252,26 +276,27 @@ function uncomprehension(self::Function, ty::Any, pat::Any, reconstruct::Any, se
         mk_case(x) = Expr(:macrocall, Symbol("@case"), ln, x)
         switch_body = quote
             $(mk_case(pat))
-                $reconstruct_tmp = $reconstruct
-                if $infer_flag isa $Val{true}
-                    return $reconstruct_tmp
-                else
-                    if $cond
-                        push!($vec.value, $reconstruct_tmp)
-                    end
-                    return true
+            $reconstruct_tmp = $reconstruct
+            if $infer_flag isa $Val{true}
+                return $reconstruct_tmp
+            else
+                if $cond
+                    push!($vec.value, $reconstruct_tmp)
                 end
+                return true
+            end
             $(mk_case(:_))
-                if $infer_flag isa $Val{true}
-                    error("impossible")
-                else
-                    return false
-                end
+            if $infer_flag isa $Val{true}
+                error("impossible")
+            else
+                return false
+            end
         end
-        switch_stmt = Expr(:macrocall, GlobalRef(MLStyle, Symbol("@switch")), ln, iter, switch_body)
+        switch_stmt =
+            Expr(:macrocall, GlobalRef(MLStyle, Symbol("@switch")), ln, iter, switch_body)
         final = quote
             $Base.@inline $fn($iter, $infer_flag::$Val) = $switch_stmt
-            $vec = $Base._return_type($fn, $Tuple{$Base.eltype($target), $Val{true}})[]
+            $vec = $Base._return_type($fn, $Tuple{$Base.eltype($target),$Val{true}})[]
             $vec = $Some($vec)
             for $iter in $target
                 $token = $fn($iter, $Val(false))
@@ -288,63 +313,40 @@ function uncomprehension(self::Function, ty::Any, pat::Any, reconstruct::Any, se
 end
 
 const case_sym = Symbol("@case")
-
 macro switch(val, ex)
     res = gen_switch(val, ex, __source__, __module__)
     res = init_cfg(res)
     esc(res)
 end
-
 function gen_switch(val, ex, __source__::LineNumberNode, __module__::Module)
     @assert Meta.isexpr(ex, :block)
-    clauses = Union{LineNumberNode,Pair{<:Function,Symbol}}[]
-    body = Expr(:block)
-    alphabeta = 'a':'z'
+    branches = Pair{Function,Tuple{LineNumberNode,Int}}[]
+    k = 0
     ln = __source__
-    variable_init_blocks = Dict{Symbol, Expr}()
+    terminal = Dict{Int,Any}()
+    body = nothing
     for i in eachindex(ex.args)
         stmt = ex.args[i]
         if Meta.isexpr(stmt, :macrocall) &&
            stmt.args[1] === case_sym &&
            length(stmt.args) == 3
-        
+
+            k += 1
             pattern = try
                 ex2tf(__module__, stmt.args[3])
             catch e
                 e isa ErrorException && throw(PatternCompilationError(ln, e.msg))
                 rethrow()
             end
-            
-            k = length(variable_init_blocks) + 1
-            br::Symbol = Symbol(string(alphabeta[k%26]), k)
-            push!(clauses, pattern => br)
-
-            variable_init_block = Expr(:block)
-            variable_init_blocks[br] = variable_init_block
-
-            push!(body.args, CFGLabel(br))
-            push!(body.args, variable_init_block)
+            push!(branches, (pattern => (ln, k)))
+            body = terminal[k] = Expr(:block)
         else
-            if stmt isa LineNumberNode
-                ln = stmt
-                push!(clauses, stmt)
-            end
-            push!(body.args, stmt)
+            stmt isa LineNumberNode && (ln = stmt)
+            k === 0 || push!(body.args, stmt)
         end
     end
-    
-    isempty(variable_init_blocks) && throw(
-        PatternCompilationError(__source__, "empty switch statements!")
-    )
-    
-    terminal_scope, match_logic = backend(val, clauses, __source__)
-    for (br, branches_terminal_scope) in terminal_scope
-        variable_init = variable_init_blocks[br].args
-        for (actual_sym, mangled_sym) in branches_terminal_scope
-            push!(variable_init, :($actual_sym = $mangled_sym))
-        end
-    end
-    CFGSpec(Expr(:block, match_logic, body))
+
+    backend(val, branches, terminal, __source__; hygienic = false)
 end
 
 Base.@pure function expr2tuple(expr)
@@ -366,7 +368,7 @@ function pattern_uncall(
     isempty(type_args) || error("An Expr pattern requires no type arguments.")
     @sswitch args begin
         @case [Expr(:..., [_]), _...]
-            return and([P_type_of(Expr), P_slow_view(packexpr, self(Expr(:vect, args...)))])
+        return and([P_type_of(Expr), P_slow_view(packexpr, self(Expr(:vect, args...)))])
         @case _
     end
 
@@ -413,11 +415,17 @@ function _some_guard1(expr::Any)
     :($expr !== nothing)
 end
 function _some_tcons(t)
-    Some{T} where T <: t
+    Some{T} where {T<:t}
 end
-const _some_comp = PComp("Some", _some_tcons; guard1=NoncachablePre(_some_guard1))
+const _some_comp = PComp("Some", _some_tcons; guard1 = NoncachablePre(_some_guard1))
 
-function pattern_uncall(::Type{Some}, self::Function, tparams::AbstractArray, targs::AbstractArray, args::AbstractArray)
+function pattern_uncall(
+    ::Type{Some},
+    self::Function,
+    tparams::AbstractArray,
+    targs::AbstractArray,
+    args::AbstractArray,
+)
     isempty(tparams) || error("A (:) pattern requires no type params.")
     isempty(targs) || error("A (:) pattern requires no type arguments.")
     @assert length(args) === 1
@@ -436,62 +444,30 @@ end
 
 function gen_match(val, tbl, __source__::LineNumberNode, __module__::Module)
     @assert Meta.isexpr(tbl, :block)
-    clauses = Union{LineNumberNode,Pair{<:Function,Symbol}}[]
-    body = Expr(:block)
-    alphabeta = 'a':'z'
-    final_label = Symbol("FINAL")
-    final_res = gensym("final")
+    branches = Pair{Function,Tuple{LineNumberNode,Int}}[]
+    k = 0
     ln = __source__
-    variable_init_blocks = Dict{Symbol, Expr}()
+    terminal = Dict{Int,Any}()
     for i in eachindex(tbl.args)
-        ex = tbl.args[i]
-        @switch ex begin
-            @case :($a => $b)
+        stmt = tbl.args[i]
+        @switch stmt begin
+            @case :($case => $body)
+            k += 1
             pattern = try
-                ex2tf(__module__, a)
+                ex2tf(__module__, case)
             catch e
                 e isa ErrorException && throw(PatternCompilationError(ln, e.msg))
                 rethrow()
             end
-            k = length(variable_init_blocks) + 1
-            br::Symbol = Symbol(string(alphabeta[k%26]), k)
-            push!(clauses, pattern => br)
-
-            variable_init_block = Expr(:block)
-            return_expr = Expr(:block)
-            let_expr = Expr(:let, variable_init_block, b)
-            variable_init_blocks[br] = variable_init_block
-
-            push!(body.args, CFGLabel(br))
-            push!(body.args, :($final_res = $let_expr))
-            push!(body.args, CFGJump(final_label))
-            continue
+            push!(branches, (pattern => (ln, k)))
+            terminal[k] = body
             @case ln::LineNumberNode
-            push!(clauses, ln)
-            push!(body.args, ln)
-            continue
-            # TODO: syntax error report
-        end
-    end
-    
-    isempty(variable_init_blocks) && throw(
-        PatternCompilationError(
-            __source__,
-            "empty match expression!"
-        )
-    )
-
-    terminal_scope, match_logic = backend(val, clauses, __source__)
-    for (br, branches_terminal_scope) in terminal_scope
-        variable_init = variable_init_blocks[br].args
-        for (actual_sym, mangled_sym) in branches_terminal_scope
-            push!(variable_init, :($actual_sym = $mangled_sym))
+            @case _
+            error("invalid match clause $stmt")
         end
     end
 
-    push!(body.args, CFGLabel(final_label))
-    push!(body.args, final_res)
-
-    CFGSpec(Expr(:let, Expr(:block), Expr(:block, match_logic, body)))
+    backend(val, branches, terminal, __source__; hygienic = true)
 end
+
 end
