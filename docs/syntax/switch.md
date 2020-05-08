@@ -21,19 +21,25 @@ Secondly, `@match` is an expression, and the right side of `=>` can be only an e
 
 To address these issues, we present the `@switch` macro:
 
-```julia
-var = 1
-x = (33, 44)
-@switch x begin
-@case (var, _)
-    println(var)
-end
-# print: 33
-var # => 33
+```julia-console
+julia> var = 1
+1
 
-@switch 1 begin
-@case (var, _)
-    println(var)
-end
-# ERROR: matching non-exhaustive, at #= REPL[n]:1 =#
+julia> x = (33, 44)
+(33, 44)
+
+julia> @switch x begin
+       @case (var, _)
+           println(var)
+       end
+33
+
+julia> var
+33
+
+julia> @switch 1 begin
+       @case (var, _)
+           println(var)
+       end
+ERROR: matching non-exhaustive, at #= REPL[25]:1 =#
 ```
