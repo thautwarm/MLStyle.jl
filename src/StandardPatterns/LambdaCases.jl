@@ -4,7 +4,7 @@ using MLStyle.Sugars
 using MLStyle.AbstractPatterns: init_cfg
 
 export gen_lambda, @λ
-
+@nospecialize
 """
 Code generation for `@λ`.
 The first argument must be something like
@@ -66,5 +66,6 @@ e.g.
 macro λ(cases)
     gen_lambda(cases, __source__, __module__) |> esc
 end
+@specialize
 
 end

@@ -4,6 +4,7 @@ using MLStyle.AbstractPatterns
 using MLStyle.Err
 export @matchast, @capture, Capture
 
+@nospecialize
 struct Capture end
 
 function MLStyle.pattern_uncall(
@@ -116,5 +117,5 @@ function gen_capture(template::Any, ex::Any, source::LineNumberNode, mod::Module
 
     gen_match(ex, tbl, source, mod)
 end
-
+@specialize
 end

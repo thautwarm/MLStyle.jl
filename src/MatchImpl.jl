@@ -72,7 +72,7 @@ function guess_type_from_expr(m::Module, ex::Any, tps::Set{Symbol})
     end
 end
 
-ex2tf(m::Module, a) = isprimitivetype(typeof(a)) ? literal(a) : error("invalid literal $a")
+ex2tf(m::Module, @nospecialize(a)) = isprimitivetype(typeof(a)) ? literal(a) : error("invalid literal $a")
 ex2tf(m::Module, l::LineNumberNode) = wildcard
 ex2tf(m::Module, q::QuoteNode) = literal(q.value)
 ex2tf(m::Module, s::String) = literal(s)
@@ -108,6 +108,7 @@ function ex2tf(m::Module, w::Where)
         p_ty = P_type_of(ty_guess)
         tp_vec = collect(tp_set)
         sort!(tp_vec)
+        @nospecialize
         p_guard = guard() do target, scope, _
 
             if isempty(tp_vec)
@@ -148,6 +149,7 @@ function ex2tf(m::Module, w::Where)
             end
             ret
         end
+        @specialize
         return and([p_ty, p_guard, rec(val)])
     end
 end
@@ -313,11 +315,13 @@ function uncomprehension(
 end
 
 const case_sym = Symbol("@case")
+@nospecialize
 macro switch(val, ex)
     res = gen_switch(val, ex, __source__, __module__)
     res = init_cfg(res)
     esc(res)
 end
+@specialize
 function gen_switch(val, ex, __source__::LineNumberNode, __module__::Module)
     @assert Meta.isexpr(ex, :block)
     branches = Pair{Function,Tuple{LineNumberNode,Int}}[]
@@ -349,6 +353,7 @@ function gen_switch(val, ex, __source__::LineNumberNode, __module__::Module)
     backend(val, branches, terminal, __source__; hygienic = false)
 end
 
+@nospecialize
 Base.@pure function expr2tuple(expr)
     :($expr.head, $expr.args)
 end
@@ -356,6 +361,7 @@ end
 Base.@pure function packexpr(expr)
     :([$expr.head, $expr.args...])
 end
+@specialize
 
 function pattern_uncall(
     ::Type{Expr},
@@ -411,12 +417,15 @@ function pattern_uncall(
     self(QuotePattern(args[1]))
 end
 
+@nospecialize
 function _some_guard1(expr::Any)
     :($expr !== nothing)
 end
 function _some_tcons(t)
     Some{T} where {T<:t}
 end
+@specialize
+
 const _some_comp = PComp("Some", _some_tcons; guard1 = NoncachablePre(_some_guard1))
 
 function pattern_uncall(
@@ -436,11 +445,13 @@ function pattern_uncall(
     decons(_some_comp, some_extract, [self(args[1])])
 end
 
+@nospecialize
 macro match(val, tbl)
     res = gen_match(val, tbl, __source__, __module__)
     res = init_cfg(res)
     esc(res)
 end
+@specialize
 
 function gen_match(val, tbl, __source__::LineNumberNode, __module__::Module)
     @assert Meta.isexpr(tbl, :block)

@@ -3,6 +3,7 @@ using MLStyle
 using MLStyle.AbstractPatterns
 
 export Q, And, Or
+@nospecialize
 
 struct Q end
 struct And end
@@ -34,5 +35,5 @@ function MLStyle.pattern_unref(
     length(args) === 1 || error("A Q pattern should take only 1 argument!")
     self(Expr(:quote, args[1]))
 end
-
+@specialize
 end

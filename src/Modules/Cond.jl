@@ -2,7 +2,7 @@ module Cond
 using MLStyle
 
 export @cond
-
+@nospecialize
 function cond(cases, source, mod::Module)
     @switch cases begin
     @case Expr(:block, cases...)
@@ -39,5 +39,5 @@ end
 macro cond(cases)
     cond(cases, __source__, __module__) |> esc
 end
-
+@specialize
 end

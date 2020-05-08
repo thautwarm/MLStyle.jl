@@ -1,6 +1,7 @@
 module Qualification
 export deprecate_qualifiers
 
+@nospecialize
 function deprecate_qualifiers(o)
     s = string(o)
     trunc = min(length(s), 20)
@@ -12,5 +13,6 @@ function deprecate_qualifiers(o)
         :qualifier
     )
 end
+@specialize
 
 end

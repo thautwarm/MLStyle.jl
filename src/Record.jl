@@ -8,7 +8,7 @@ using MLStyle.Qualification
 
 export @as_record, record_def
 
-
+@nospecialize
 function P_partial_struct_decons(t, partial_fields, ps, prepr::AbstractString="$t")
     function tcons(_...)
         t
@@ -23,7 +23,7 @@ function P_partial_struct_decons(t, partial_fields, ps, prepr::AbstractString="$
     decons(comp, extract, ps)
 end
 
-function record_def(Struct, line::LineNumberNode, ::Module)
+function record_def(@nospecialize(Struct), line::LineNumberNode, ::Module)
     quote
         $line
         function $MLStyle.pattern_uncall(t::Type{$Struct}, self::Function, type_params, type_args, args)
@@ -80,7 +80,7 @@ function record_def(Struct, line::LineNumberNode, ::Module)
     end
 end
 
-function as_record(n, line::LineNumberNode, __module__::Module)
+function as_record(@nospecialize(n), line::LineNumberNode, __module__::Module)
     @switch n begin
     @case ::Symbol
         return record_def(n, line, __module__)
@@ -107,7 +107,6 @@ function as_record(n, line::LineNumberNode, __module__::Module)
 end
 
 
-
 macro as_record(qualifier, n)
     deprecate_qualifiers(qualifier)
     esc(as_record(n, __source__, __module__))
@@ -116,6 +115,6 @@ end
 macro as_record(n)
     esc(as_record(n, __source__, __module__))
 end
-
+@specialize
 end
 

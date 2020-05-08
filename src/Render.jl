@@ -2,6 +2,7 @@ module Render
 using Base: get
 export render, @format, format
 
+@nospecialize
 struct Discard end
 const discard = Discard()
 
@@ -76,5 +77,6 @@ end
 for deprecated_sym in [:format, :render, Symbol("@format")]
    @eval Base.@deprecate_moved $deprecated_sym "ASTRender.jl"
 end
+@specialize
 
 end

@@ -2,6 +2,7 @@ module Extension
 using MLStyle.Err
 export use, @use, used
 
+@nospecialize
 function used(ext :: Symbol, mod :: Module) :: Bool
     Base.depwarn(
        "No need to use this function anymore since MLStyle v0.4",
@@ -20,5 +21,6 @@ end
 macro use(exts...)
     use(:_, @__MODULE__)    
 end
+@specialize
 
 end

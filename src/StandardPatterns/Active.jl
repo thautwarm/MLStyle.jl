@@ -5,7 +5,7 @@ using MLStyle.Qualification
 using MLStyle.AbstractPatterns
 
 export @active, active_def
-
+@nospecialize
 function active_def(P, body, mod::Module, line::LineNumberNode)
 
     @switch P begin
@@ -127,5 +127,6 @@ end
 macro active(case, active_body)
     active_def(case, active_body, __module__, __source__) |> esc
 end
+@specialize
 
 end

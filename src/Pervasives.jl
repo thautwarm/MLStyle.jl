@@ -7,6 +7,7 @@ struct Do end
 struct GuardBy end
 export Many, Do, GuardBy
 
+@nospecialize
 function MLStyle.pattern_uncall(::typeof(:), self::Function, tparams::AbstractArray, targs::AbstractArray, args::AbstractArray)
     isempty(tparams) || error("A (:) pattern requires no type params.")
     isempty(targs) || error("A (:) pattern requires no type arguments.")
@@ -15,6 +16,7 @@ function MLStyle.pattern_uncall(::typeof(:), self::Function, tparams::AbstractAr
         see_captured_vars(:($target in $rng), scope)
     end
 end
+@specialize
 
 function MLStyle.pattern_uncall(::Type{Dict}, self::Function, tparams::AbstractArray, targs::AbstractArray, args::AbstractArray)
     isempty(tparams) || error("A (:) pattern requires no type params.")
@@ -90,6 +92,7 @@ function MLStyle.pattern_unref(::Type{Do}, self::Function, args::AbstractArray)
     end
 end
 
+@nospecialize
 function MLStyle.pattern_uncall(::Type{Do}, self::Function, tparams::AbstractArray, targs::AbstractArray, args::AbstractArray)
     isempty(tparams) || error("A (:) pattern requires no type params.")
     isempty(targs) || error("A (:) pattern requires no type arguments.")
@@ -141,8 +144,6 @@ function MLStyle.pattern_uncall(::Type{Many}, self::Function, tparams::AbstractA
     isempty(targs) || error("A (:) pattern requires no type arguments.")
     MLStyle.pattern_unref(Many, self, args)
 end
-
-
-# QuoteNode, Do, Many
+@specialize
 
 end

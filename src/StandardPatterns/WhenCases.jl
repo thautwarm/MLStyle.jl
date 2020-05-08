@@ -4,7 +4,7 @@ using MLStyle.Sugars: Q
 using MLStyle.AbstractPatterns: init_cfg
 
 export @when, @otherwise, gen_when
-
+@nospecialize
 function split_case_and_block(stmts, first_bindings, first_source)
     blocks :: Vector{Any} = []
     binding_seqs :: Vector{Any} = [first_bindings]
@@ -195,5 +195,6 @@ macro when(assignment, ret)
         _ => throw(SyntaxError("Not match the form of `@when a = b expr`"))
     end
 end
+@specialize
 
 end

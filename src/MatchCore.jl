@@ -25,6 +25,7 @@ function ellipsis_split(args::AbstractArray{T,1}) where {T}
     end
 end
 
+@nospecialize
 function qt2ex(ex::Any)
     if ex isa Expr
         Meta.isexpr(ex, :$) && return ex.args[1]
@@ -207,5 +208,6 @@ macro sswitch(val, ex)
     block = backend(val, branches, terminal, __source__; hygienic = false)
     esc(init_cfg(block))
 end
+@specialize
 
 end # module end

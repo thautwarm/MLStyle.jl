@@ -7,6 +7,7 @@ using MLStyle.ExprTools
 
 UNREACHABLE = nothing
 export @data
+@nospecialize
 
 """
 Codegen for `@data`, e.g.,
@@ -75,8 +76,8 @@ function data(typ::Any, def_variants::Expr, line::LineNumberNode, mod::Module)
 end
 
 function impl!(
-    suite::AbstractArray,
-    abs_t,
+    suite::Vector{Any},
+    @nospecialize(abs_t),
     abs_tvars::Vector{Symbol},
     variants::Expr,
     ln::LineNumberNode,
@@ -225,4 +226,5 @@ function impl!(
         end
     end
 end
+@specialize
 end # module
