@@ -455,13 +455,12 @@ function compile_spec!(env::CompileEnv, suite::Vector{Any}, x::Leaf, target::Tar
     body = env.terminal[x.cont]
     ret = env.ret
     if env.hygienic
-        bind_body = Expr(:block)
-        bind = Expr(:let, Expr(:block), bind_body)
+        bound = Expr(:block)
+        let_expr = Expr(:let, bound, body)
         for_chaindict(env.scope) do k, v
-            push!(bind_body.args, :(local $k = $v))
+            push!(bound.args, Expr(:(=), k, v))
         end
-        push!(bind_body.args, body)
-        push!(suite, :($ret = $bind))
+        push!(suite, Expr(:(=), ret, let_expr))
     else
         for_chaindict(env.scope) do k, v
             push!(suite, :($k = $v))
@@ -537,6 +536,17 @@ function compile_spec(
     push!(suite, Expr(:call, error, msg))
     push!(suite, CFGLabel(env.final))
     push!(suite, env.ret)
+    if env.hygienic
+        # during match process can have functions that write variables.
+        # hence,
+        # 1. if the match expression is at global scope, write operations not allowed
+        # 2. those write operations might affect outside scope.
+        # to address this:
+        ret = Expr(:let, Expr(:block), ret)
+        # this applies to @match, but not to @switch
+        # when using @switch, take care about unexpected write operations and
+        # global variable issues.
+    end
     CFGSpec(ret)
 end
 

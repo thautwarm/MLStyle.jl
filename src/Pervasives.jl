@@ -74,7 +74,7 @@ function MLStyle.pattern_unref(::Type{Do}, self::Function, args::AbstractArray)
                 end
                 bound = true
                 if sym′ === nothing
-                    sym′ = gensym(sym)
+                    sym′ = sym
                     bound = false
                 end
                 assignment = Expr(:(=), sym′ , see_captured_vars(value, scope))
