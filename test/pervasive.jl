@@ -270,10 +270,9 @@ end
             ::Symbol && Do(count = count + 1)
         ] => count
     end
-    @test @test_logs (:warn, r"[d|D]eprecated") begin
-        @match 1 begin
-            let x = 1 end && Do[x = 2] => (x==2)
-            _ => false
-        end
+    
+    @test @match 1 begin
+        let x = 1 end && $Do[x = 2] => (x==2)
+        _ => false
     end
 end

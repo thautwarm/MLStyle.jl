@@ -7,7 +7,7 @@ function deprecate_qualifier_macro(o, ln::LineNumberNode)
     trunc = min(length(s), 20)
     s = SubString(s, 1:trunc)
     @warn (
-        "Deprecated use of qualifier $s at $(ln.file):$(ln.line):" *
+        "Deprecated use of qualifier $s at $(ln.file):$(ln.line):\n" *
         "Scoping specifiers such as 'internal', 'public' are deprecated. " *
         "Now the scope of a pattern is consistent with the visibility of the pattern object in current module."
     )
