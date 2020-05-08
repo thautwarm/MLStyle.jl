@@ -52,8 +52,8 @@ end
 include("DataStructure.jl")
 include("Target.jl")
 include("PatternSignature.jl")
-include("Print.jl")
-include("structures/Print.jl")
+# include("Print.jl")            # maybe use one day
+# include("structures/Print.jl") # maybe use one day
 include("structures/TypeTagExtraction.jl")
 include("ADT.jl")
 include("CaseMerge.jl")

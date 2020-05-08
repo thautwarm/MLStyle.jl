@@ -1,4 +1,4 @@
-@testcase "active pattern" begin
+@testcase "active patterns" begin
     @testset "regular case" begin
         @lift @active LessThan0(x) begin
             if x > 0
@@ -78,6 +78,17 @@
         end
         @test_throws Any @match 1 begin
             F(1) => 1
+        end
+    end
+
+    @lift using MLStyle.Sugars
+    @testset "eye-candy 'and' patterns" begin
+        @test @match (1, 2) begin
+            And[
+                (1, _),
+                (_, 2)
+            ] => true
+            _ => false
         end
     end
 end

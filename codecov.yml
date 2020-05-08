@@ -1,3 +1,4 @@
 ignore:
   - "**/*.Compat.jl"
   - "**/*.Deprecated.jl"
+  - "**/*.Unused.jl"

@@ -4,9 +4,9 @@ include("Err.jl")
 using .Err
 
 # ================deprecated===============
-include("Extension.jl")
+include("Extension.Deprecated.jl")
 include("Qualification.jl")
-include("Render.jl")
+include("Render.Deprecated.jl")
 # =========================================
 
 include("AbstractPatterns/AbstractPatterns.jl")

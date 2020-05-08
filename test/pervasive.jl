@@ -272,7 +272,7 @@ end
     end
     
     @test @match 1 begin
-        let x = 1 end && $Do[x = 2] => (x==2)
+        let x = 1 end && Do[x = 2] => (x==2)
         _ => false
     end
 end
