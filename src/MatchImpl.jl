@@ -2,6 +2,7 @@ module MatchImpl
 export is_enum, pattern_uncall, pattern_unref, @switch, @match, Where, gen_match, gen_switch
 export Q
 import MLStyle
+using MLStyle: mlstyle_report_deprecation_msg!
 using MLStyle.Err
 using MLStyle.MatchCore
 using MLStyle.ExprTools
@@ -342,6 +343,9 @@ function gen_switch(val, ex, __source__::LineNumberNode, __module__::Module)
                 e isa ErrorException && throw(PatternCompilationError(ln, e.msg))
                 rethrow()
             end
+            
+            mlstyle_report_deprecation_msg!(ln)
+
             push!(branches, (pattern => (ln, k)))
             body = terminal[k] = Expr(:block)
         else
@@ -470,6 +474,9 @@ function gen_match(val, tbl, __source__::LineNumberNode, __module__::Module)
                 e isa ErrorException && throw(PatternCompilationError(ln, e.msg))
                 rethrow()
             end
+            
+            mlstyle_report_deprecation_msg!(ln)
+            
             push!(branches, (pattern => (ln, k)))
             terminal[k] = body
             @case ln::LineNumberNode

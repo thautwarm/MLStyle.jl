@@ -1,4 +1,5 @@
 module MLStyle
+include("DeprecationUtils.jl")
 include("Err.jl")
 using .Err
 

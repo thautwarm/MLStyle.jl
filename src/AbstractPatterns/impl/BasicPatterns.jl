@@ -4,7 +4,7 @@ using MLStyle.AbstractPatterns.RedyFlavoured
 
 export P_bind, P_tuple, P_type_of, P_vector, P_capture, P_vector3, P_slow_view, P_fast_view
 export P_svec, P_svec3
-export SimpleCachablePre, see_captured_vars
+export SimpleCachablePre, see_captured_vars, see_captured_vars!
 
 const EQ = 0b001
 const GT = 0b100
@@ -17,6 +17,17 @@ function see_captured_vars(inner::Any, in_scope::ChainDict{Symbol, Symbol})
     bind = Expr(:block)
     for_chaindict(in_scope) do k, v
         push!(bind.args, :($k = $v))
+    end
+    isempty(bind.args) ? inner : Expr(:let, bind, inner)
+end
+
+function see_captured_vars!(inner::Any, in_scope::ChainDict{Symbol, Symbol})
+    bind = Expr(:block)
+    for_chaindict(in_scope) do k, v
+        if k !== v
+            assign = :($k = $v)
+            push!(bind.args, assign)
+        end
     end
     isempty(bind.args) ? inner : Expr(:let, bind, inner)
 end

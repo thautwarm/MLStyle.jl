@@ -3,23 +3,27 @@ using MLStyle.Err
 export use, @use, used
 
 @nospecialize
-function used(ext :: Symbol, mod :: Module) :: Bool
+function _depwarn(sym::Symbol)
     Base.depwarn(
-       "No need to use this function anymore since MLStyle v0.4",
-        :used
+        "No need to use this function anymore since MLStyle v0.4",
+        sym
     )
+end
+
+function used(ext :: Symbol, mod :: Module) :: Bool
+    _depwarn(:used)
     false
 end
 
 function use(ext :: Symbol, mod :: Module)
-    Base.depwarn(
-       "No need to use this function anymore since MLStyle v0.4",
-        :use
-    )
+    _depwarn(:use)
+    nothing
 end
 
 macro use(exts...)
-    use(:_, @__MODULE__)    
+    ln = __source__
+    @warn "No need to use this function anymore since MLStyle v0.4 at $(ln.file):$(ln.line)"
+    use(:_, @__MODULE__)
 end
 @specialize
 

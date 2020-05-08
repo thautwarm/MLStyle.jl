@@ -328,7 +328,7 @@ end # true
 end # 9
 ```
 
-They may be not used very often but quite convenient for some specific domain.
+`Do` and `Many` may be not used very often but quite convenient for some specific domain.
 
 **P.S 1**: when assigning variables with `Do`, don't do `Do((x, y) = expr)`, use this: `Do(x = expr[1], y = expr[2])`. Our pattern compile needs to aware the scope change!
 

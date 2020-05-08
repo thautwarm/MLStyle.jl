@@ -120,7 +120,7 @@ You can give a qualifier in the first argument of `@active` to customize its vis
 ```
 """
 macro active(qualifier, case, active_body)
-    deprecate_qualifiers(qualifier)
+    deprecate_qualifier_macro(qualifier, __source__)
     active_def(case, active_body, __module__, __source__) |> esc
 end
 

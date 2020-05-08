@@ -58,7 +58,7 @@ macro data(typ, def_variants)
 end
 
 macro data(qualifier, typ, def_variants)
-    deprecate_qualifiers(string(qualifier))
+    deprecate_qualifier_macro(qualifier, __source__)
     esc(data(typ, def_variants, __source__, __module__))
 end
 
@@ -90,7 +90,7 @@ function impl!(
             ln = each
             continue
 
-            @case let is_enum = false end && (
+            @case Do[is_enum = false] &&  (
                  :($case{$(generic_tvars...)}::($(params...),) =>
                           $(ret_ty) where {$(constraints...)}
                   )   ||

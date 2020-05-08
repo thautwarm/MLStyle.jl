@@ -108,7 +108,7 @@ end
 
 
 macro as_record(qualifier, n)
-    deprecate_qualifiers(qualifier)
+    deprecate_qualifier_macro(qualifier, __source__)
     esc(as_record(n, __source__, __module__))
 end
 
