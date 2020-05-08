@@ -215,20 +215,26 @@ things can sometimes becomes painful. To end this, we have <code class="docutils
 <p>Firstly, capturing in <code class="docutils literal notranslate"><span class="pre">&#64;match</span></code> just shadows outer variables, but sometimes you just want to change them.</p>
 <p>Secondly, <code class="docutils literal notranslate"><span class="pre">&#64;match</span></code> is an expression, and the right side of <code class="docutils literal notranslate"><span class="pre">=&gt;</span></code> can be only an expression, and writing a <code class="docutils literal notranslate"><span class="pre">begin</span> <span class="pre">end</span></code> there can bring bad code format.</p>
 <p>To address these issues, we present the <code class="docutils literal notranslate"><span class="pre">&#64;switch</span></code> macro:</p>
-<div class="highlight-julia notranslate"><div class="highlight"><pre><span></span><span class="nv">var</span> <span class="o">=</span> <span class="m">1</span>
-<span class="nv">x</span> <span class="o">=</span> <span class="p">(</span><span class="m">33</span><span class="p">,</span> <span class="m">44</span><span class="p">)</span>
-<span class="nd">@switch</span> <span class="nv">x</span> <span class="k">begin</span>
-<span class="nd">@case</span> <span class="p">(</span><span class="nv">var</span><span class="p">,</span> <span class="nv">_</span><span class="p">)</span>
-    <span class="nb">println</span><span class="p">(</span><span class="nv">var</span><span class="p">)</span>
-<span class="k">end</span>
-<span class="c"># print: 33</span>
-<span class="nv">var</span> <span class="c"># =&gt; 33</span>
+<div class="highlight-julia-console notranslate"><div class="highlight"><pre><span></span><span class="gp">julia&gt;</span> <span class="nv">var</span> <span class="o">=</span> <span class="m">1</span>
+<span class="m">1</span>
 
-<span class="nd">@switch</span> <span class="m">1</span> <span class="k">begin</span>
-<span class="nd">@case</span> <span class="p">(</span><span class="nv">var</span><span class="p">,</span> <span class="nv">_</span><span class="p">)</span>
-    <span class="nb">println</span><span class="p">(</span><span class="nv">var</span><span class="p">)</span>
-<span class="k">end</span>
-<span class="c"># ERROR: matching non-exhaustive, at #= REPL[n]:1 =#</span>
+<span class="gp">julia&gt;</span> <span class="nv">x</span> <span class="o">=</span> <span class="p">(</span><span class="m">33</span><span class="p">,</span> <span class="m">44</span><span class="p">)</span>
+<span class="p">(</span><span class="m">33</span><span class="p">,</span> <span class="m">44</span><span class="p">)</span>
+
+<span class="gp">julia&gt;</span> <span class="nd">@switch</span> <span class="nv">x</span> <span class="k">begin</span>
+       <span class="nd">@case</span> <span class="p">(</span><span class="nv">var</span><span class="p">,</span> <span class="nv">_</span><span class="p">)</span>
+           <span class="nb">println</span><span class="p">(</span><span class="nv">var</span><span class="p">)</span>
+       <span class="k">end</span>
+<span class="m">33</span>
+
+<span class="gp">julia&gt;</span> <span class="nv">var</span>
+<span class="m">33</span>
+
+<span class="gp">julia&gt;</span> <span class="nd">@switch</span> <span class="m">1</span> <span class="k">begin</span>
+       <span class="nd">@case</span> <span class="p">(</span><span class="nv">var</span><span class="p">,</span> <span class="nv">_</span><span class="p">)</span>
+           <span class="nb">println</span><span class="p">(</span><span class="nv">var</span><span class="p">)</span>
+       <span class="k">end</span>
+<span class="nv">ERROR</span><span class="o">:</span> <span class="nv">matching</span> <span class="nv">non</span><span class="o">-</span><span class="nv">exhaustive</span><span class="p">,</span> <span class="nv">at</span> <span class="cm">#= REPL[25]:1 =#</span>
 </pre></div>
 </div>
 </div>

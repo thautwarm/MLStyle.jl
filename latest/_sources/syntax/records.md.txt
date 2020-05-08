@@ -1,13 +1,14 @@
 Records
 ----------------------
 
-```julia
-struct A
-    a
-    b
-    c
-end
-@as_record A
+```julia-console
+julia> struct A
+           a
+           b
+           c
+       end
+
+julia> @as_record A
 
 # or just wrap the struct definition with @as_record
 # @as_record struct A
@@ -16,25 +17,30 @@ end
 #     c
 # end
 
-@match A(1, 2, 3) begin
-    A(1, 2, 3) => ...
-end
+julia> @match A(1, 2, 3) begin
+           A(a, b, c) => a + (b)c
+       end
+7
 
-@match A(1, 2, 3) begin
-    A(_) => true
-end # always true
+julia> @match A(1, 2, 3) begin
+           A(_) => true
+       end # always true
+true
 
-@match A(1, 2, 3) begin
-    A() => true
-end # always true
+julia> @match A(1, 2, 3) begin
+           A() => true
+       end # always true
+true
 
 # field punnings(superior than extracting fields)
-@match A(1, 2, 3) begin
-    A(;a, b=b) => a + b
-end # 3
+julia> @match A(1, 2, 3) begin
+           A(;a, b=b) => a + b
+       end # 3
+3
 
 # extract fields
-@match A(1, 2, 3) begin
-    A(a=a, b=b) => a + b
-end # 3
+julia> @match A(1, 2, 3) begin
+           A(a=a, b=b) => a + b
+       end # 3
+3
 ```
