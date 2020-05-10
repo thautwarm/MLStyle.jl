@@ -8,6 +8,9 @@ MLStyle.jl
 
    *If I have a chance to rename it, I'd change it to "FunctionalProgramming.jl"*.
 
+.. image:: https://raw.githubusercontent.com/thautwarm/MLStyle.jl/master/docs/favicon.ico
+    :alt: ICO
+
 MLStyle is a Julia library which provides pattern matching and other infrastructures for functional programming.
 
 It is also generally considered as a library that provides efficient, easy-to-use,
