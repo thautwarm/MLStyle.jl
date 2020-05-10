@@ -3,13 +3,13 @@
    You can adapt this file completely to your liking, but it should at least
    contain the root `toctree` directive.
 
-MLStyle.jl
+.. |ICO| image:: https://raw.githubusercontent.com/thautwarm/MLStyle.jl/master/docs/favicon.ico
+    :width: 80px
+
+|ICO| MLStyle.jl
 =========================
 
    *If I have a chance to rename it, I'd change it to "FunctionalProgramming.jl"*.
-
-.. image:: https://raw.githubusercontent.com/thautwarm/MLStyle.jl/master/docs/favicon.ico
-    :alt: ICO
 
 MLStyle is a Julia library which provides pattern matching and other infrastructures for functional programming.
 
