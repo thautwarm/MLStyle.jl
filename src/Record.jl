@@ -99,7 +99,7 @@ function as_record(@nospecialize(n), line::LineNumberNode, __module__::Module)
         return Expr(
             :block,
             n,
-            record_def(hd, line)
+            record_def(hd, line, __module__)
         )
     @case _
         error("malformed structure $n")
