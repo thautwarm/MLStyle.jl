@@ -6,6 +6,8 @@ Patterns provide convenient ways to manipulate data.
 Literal Patterns
 ------------------------
 
+Patterns with a literal (e.g. `1`, `false`, `nothing`, `[4.0, 1f-6]`, etc) on the left hand side will check if the the argument is equal to that literal:
+
 ```julia-console
 julia> @match 10 begin
            1  => "wrong!"
@@ -23,20 +25,22 @@ However, note that the equality is strict for primitive types(`Int8-64`, `UInt8-
 Capturing Patterns
 --------------------------
 
+A pattern where there is a symbol such as `x` on the left hand side will bind the input value to that symbol and let you use that captured value on the right hand side
+
 ```julia-console
 julia> @match 1 begin
            x => x + 1
        end
 2
 ```
+You can put `_` on the left hand side of a pattern if you don't care about what the captured value is.
 
-However, sometimes a symbol might not be used for capturing.
-
-If and only if some visible global variable `x` satisfying `MLStyle.is_enum(typeof(x)) == true`, `x` is used as a pattern. You can check [Active Patterns](#active-patterns) or [ADT Cheat Sheet](https://thautwarm.github.io/MLStyle.jl/latest/syntax/adt.html#cheat-sheet) for more details.
-
+However, sometimes a symbol might not be used for capturing. If and only if some visible global variable `x` satisfying `MLStyle.is_enum(typeof(x)) == true`, `x` is used as a pattern. You can check [Active Patterns](#active-patterns) or [ADT Cheat Sheet](https://thautwarm.github.io/MLStyle.jl/latest/syntax/adt.html#cheat-sheet) for more details.
 
 Type Patterns
 -----------------
+
+Writing `::Foo` on the left hand side of a pattern will match if the input is of type `Foo`. You can conbine this with a literal pattern by writing `x::Foo` which will match inputs of type `Foo` and bind them to a variable `x`.
 
 ```julia-console
 julia> @match 1 begin
@@ -47,28 +51,16 @@ julia> @match 1 begin
 1
 ```
 
-Sometimes, in practice, you might want to introduce type variables into the scope, in this case use `where` clause, and see [Advanced Type Patterns](#advanced-type-patterns) for more details.
-
-As-Patterns
-----------
-
-`As-Patterns` can be expressed with `And-Patterns`.
-
-```julia
-@match (1, 2) begin
-    (a, b) && c => c[1] == a && c[2] == b
-end
-```
-
-
 Guards
 --------------------
 
-```julia
-@match x begin
-    x && if x > 5 end => 5 - x # only succeed when x > 5
-    _        => 1
-end
+Writing `if cond end` as a pattern will match if `cond==true`
+
+```julia-console
+julia> @match 1.0 begin
+           if 1 < 5 end  => √(5 - 1)
+       end
+2.0
 ```
 
 Unlike most of ML languages or other libraries who only permit guards in the end of a case clause,
@@ -77,10 +69,126 @@ MLStyle allows you to put guards anywhere during matching.
 However, remember, due to some Julia optimization details, even if the guards can be put
 in the middle of a matching process, still you'd better postpone it to the end of matching, for better performance.
 
+Sometimes, in practice, you might want to introduce type variables into the scope, in this case use `where` clause, and see [Advanced Type Patterns](#advanced-type-patterns) for more details.
+
+
+And-Patterns
+--------------------
+
+`pat2 && pat2` on the left hand side of a pattern will match if and only if `pat1` and `pat2` match individually. This lets you combine two separate patterns together, 
+
+```julia-console
+julia> @match 2 begin
+           x::Int && if x < 5 end => √(5 - x) 
+       end
+1.7320508075688772
+```
+
+Writing `pat && x` on the left hand side of a pattern will bind the input to `x` if `pat` matches the input, allowing the input to be used on the right hand side. This is sometimes called an `As-Pattern` in ML derived languages, but in MLStyle, it is just a subset of the functionality in the And-Pattern
+
+```julia
+julia> @match (1, 2) begin
+           (a, b) && c => c[1] == a && c[2] == b
+       end
+true
+```
+
+Destructuring Tuple Array and Dict Patterns
+---------------------
+
+- Tuple Patterns
+
+```julia-console
+julia> @match (1, 2, (3, 4, (5, ))) begin
+           (a, b, (c, d, (5, ))) => (a, b, c, d)
+       end
+(1, 2, 3, 4)
+```
+
+- Array Patterns
+
+```julia-console
+julia> it = @match [1, 2, 3, 4] begin
+         [1, pack..., a] => (pack, a)
+       end
+([2, 3], 4)
+
+julia> first(it)
+2-element view(::Array{Int64,1}, 2:3) with eltype Int64:
+ 2
+ 3
+julia> it[2]
+4
+```
+
+- Dict pattern(like `Elixir`'s dictionary matching or ML record matching)
+
+```julia-console
+julia> dict = Dict(1 => 2, "3" => 4, 5 => Dict(6 => 7))
+Dict{Any,Any} with 3 entries:
+  1   => 2
+  5   => Dict(6=>7)
+  "3" => 4
+
+julia> @match dict begin
+           Dict("3" => four::Int,
+                 5  => Dict(6 => sev)) && if four < sev end => sev
+       end
+7
+```
+
+Note that, due to the lack of an operation for distinguishing `nothing` from "key not found" in Julia's standard library, the dictionary pattern has a little overhead. Things will get solved after [Julia#34821](https://github.com/JuliaLang/julia/pull/34821) gets done.
+
+**P.S**:  MLStyle will not refer an external package to solve this issue, as MLStyle is generating "runtime support free" code, which means that any code generated by MLStyle itself depends only on Stdlib. This feature allows MLStyle to be introduced as a dependency only in development, instead of being distributed together to downstream codes.
+
+Deconstruction of Custom Composite Data
+-------------------------------------------
+
+In order to deconstruct arbitrary data types in a similar way to `Tuple`, `Array` and `Dict`, simply declare them to be record types with the `@as_record` macro. 
+
+Here is an example, check more about ADTs(and GADTs) at [Algebraic Data Type Syntax in MLStyle](https://thautwarm.github.io/MLStyle.jl/latest/syntax/adt).
+
+```julia-console
+julia> @data Color begin
+         RGB(r::Int, g::Int, b::Int)
+         Gray(Int)
+       end
+
+julia> # treating those types as records for more flexible pattern matching
+
+julia> @as_record RGB
+
+julia> @as_record Gray
+
+julia> color_to_int(x) = @match x begin
+           RGB(;r, g, b) => 16 + b + 6g + 36r
+           Gray(i)       => 232 + i
+       end
+color_to_int (generic function with 1 method)
+
+julia> RGB(200, 0, 200) |> color_to_int
+7416
+
+julia> Gray(10)         |> color_to_int
+242
+```
+
+In above cases, after `@as_record T`, we can use something called [field punning](https://dev.realworldocaml.org/records.html#field-punning) to match structures very conveniently.
+
+```julia
+@match rbg_datum begin
+    RGB(;r) && if r < 20 end => ...
+    RGB(;r, g) && if 10r < g end => ...
+    ...
+end
+```
+
+As you can see, field punning can be partial.
+
 Predicates
 ---------------
 
-The following has the same semantics as the above snippet.
+Equivalent to guard patterns, writing `GuardBy(f)` in a pattern will match if and only if `f` applied to the pattern matching input gives true:
 
 ```julia
 function pred(x)
@@ -128,57 +236,11 @@ Custom Patterns
 
 TODO.
 
-Dicts, Tuples, Arrays
----------------------
-
-- Dict pattern(like `Elixir`'s dictionary matching or ML record matching)
-
-```julia-console
-julia> dict = Dict(1 => 2, "3" => 4, 5 => Dict(6 => 7))
-Dict{Any,Any} with 3 entries:
-  1   => 2
-  5   => Dict(6=>7)
-  "3" => 4
-
-julia> @match dict begin
-           Dict("3" => four::Int,
-                 5  => Dict(6 => sev)) && if four < sev end => sev
-       end
-7
-```
-
-Note that, due to the lack of an operation for distinguishing `nothing` from "key not found" in Julia's standard library, the dictionary pattern has a little overhead. Things will get solved after [Julia#34821](https://github.com/JuliaLang/julia/pull/34821) gets done.
-
-**P.S**:  MLStyle will not refer an external package to solve this issue, as MLStyle is generating "runtime support free" code, which means that any code generated by MLStyle itself depends only on Stdlib. This feature allows MLStyle to be introduced as a dependency only in development, instead of being distributed together to downstream codes.
-
-- Tuple Patterns
-
-```julia
-julia> @match (1, 2, (3, 4, (5, ))) begin
-           (a, b, (c, d, (5, ))) => (a, b, c, d)
-       end
-(1, 2, 3, 4)
-```
-
-- Array Patterns
-
-```julia-console
-julia> it = @match [1, 2, 3, 4] begin
-         [1, pack..., a] => (pack, a)
-       end
-([2, 3], 4)
-
-julia> first(it)
-2-element view(::Array{Int64,1}, 2:3) with eltype Int64:
- 2
- 3
-julia> it[2]
-4
-```
-
 
 Or Patterns
 -------------------
+
+Writing `pat1 || pat2` will match if either `pat1` *or* `pat2` match. If `pat1` matches, MLStyle will not attempt to match `pat2`.
 
 ```julia
 test(num) =
@@ -201,47 +263,6 @@ test("")  # false
 
 Tips: `Or Patterns`s could nested.
 
-Deconstructions of Composite Data
--------------------------------------------
-
-Here is an example, check more about ADTs(and GADTs) at [Algebraic Data Type Syntax in MLStyle](https://thautwarm.github.io/MLStyle.jl/latest/syntax/adt).
-
-```julia-console
-julia> @data Color begin
-         RGB(r::Int, g::Int, b::Int)
-         Gray(Int)
-       end
-
-julia> # treating those types as records for more flexible pattern matching
-
-julia> @as_record RGB
-
-julia> @as_record Gray
-
-julia> color_to_int(x) = @match x begin
-           RGB(;r, g, b) => 16 + b + 6g + 36r
-           Gray(i)       => 232 + i
-       end
-color_to_int (generic function with 1 method)
-
-julia> RGB(200, 0, 200) |> color_to_int
-7416
-
-julia> Gray(10)         |> color_to_int
-242
-```
-
-In above cases, after `@as_record T`, we can use something called [field punning](https://dev.realworldocaml.org/records.html#field-punning) to match structures very conveniently.
-
-```julia
-@match rbg_datum begin
-    RGB(;r) && if r < 20 end => ...
-    RGB(;r, g) && if 10r < g end => ...
-    ...
-end
-```
-
-As you can see, field punning can be partial.
 
 Advanced Type Patterns
 -------------------------
