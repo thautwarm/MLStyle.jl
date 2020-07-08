@@ -84,7 +84,9 @@ julia> @match 2 begin
 1.7320508075688772
 ```
 
-Writing `pat && x` on the left hand side of a pattern will bind the input to `x` if `pat` matches the input, allowing the input to be used on the right hand side. This is sometimes called an `As-Pattern` in ML derived languages, but in MLStyle, it is just a subset of the functionality in the And-Pattern
+- As Pattern
+
+Writing `pat && x` on the left hand side of a pattern will bind the input to `x` if `pat` matches the input, allowing the input to be used on the right hand side. This is sometimes called an As-Pattern in ML derived languages, but in MLStyle, it is just a subset of the functionality in the And-Pattern
 
 ```julia
 julia> @match (1, 2) begin
