@@ -1,7 +1,23 @@
 Patterns
 =======================
 
-Patterns provide convenient ways to manipulate data.
+Patterns provide convenient ways to manipulate data. The basic syntax for pattern matching with MLStyle is of the form
+```julia
+@match data begin
+    pattern1 => result1
+    pattern2 => result2
+    ...
+    patternn => resultn
+end
+```
+MLStyle will first test if `data` is matched by `pattern1` and if it does match, return `result1`. If `pattern1` does not match, then MLStyle moves on to the next pattern. If no pattern in the list matches `data`, an error is thrown.
+
+In version 0.4.1 and newer, if you only have a single pattern you may instead write
+```julia
+@match data pattern => result
+```
+without the block syntax.
+
 
 Literal Patterns
 ------------------------
