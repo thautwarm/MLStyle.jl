@@ -458,7 +458,7 @@ end
 @specialize
 
 function gen_match(val, tbl, __source__::LineNumberNode, __module__::Module)
-    Meta.isexpr(tbl, :block) || tbl = Expr(:block, tbl)
+    Meta.isexpr(tbl, :block) || (tbl = Expr(:block, tbl))
     branches = Pair{Function,Tuple{LineNumberNode,Int}}[]
     k = 0
     ln = __source__

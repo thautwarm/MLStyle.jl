@@ -123,4 +123,8 @@
         @test ast_match(:x)       === nothing
     end
 
+    @testset "one-liner match" begin
+        @test (@match 1 1 => 2) == 2
+        @test (@match [1, 2, 3] [hd, tl...] => (hd, tl)) == (1, [2,3])
+    end
 end
