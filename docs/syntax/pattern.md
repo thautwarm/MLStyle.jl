@@ -6,7 +6,7 @@ Patterns provide convenient ways to manipulate data.
 Literal Patterns
 ------------------------
 
-Patterns with a literal (e.g. `1`, `false`, `nothing`, `[4.0, 1f-6]`, etc) on the left hand side will check if the the argument is equal to that literal:
+Patterns with a literal (e.g. `1`, `false`, `nothing`, `4.0`, `1f-6`, etc) on the left hand side will check if the the argument is equal to that literal:
 
 ```julia-console
 julia> @match 10 begin
