@@ -279,7 +279,7 @@ test(3)   # false
 test("")  # false
 ```
 
-Tips: `Or Patterns`s could nested.
+Tips: `Or Patterns`s could be nested.
 
 
 Advanced Type Patterns
