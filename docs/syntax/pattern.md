@@ -53,26 +53,7 @@ You can put `_` on the left hand side of a pattern if you don't care about what 
 
 However, sometimes a symbol might not be used for capturing. If and only if some visible global variable `x` satisfying `MLStyle.is_enum(x) == true`, `x` is used as an enum pattern.
 
-```julia-console
-julia> using MLStyle.ActivePatterns: literal
-julia> @enum E E1 E2
-# mark E1, E2 as non-capturing patterns
-julia> MLStyle.is_enum(::E) = true
-# tell the compiler how to match E1, E2
-julia> MLStyle.pattern_uncall(e::E, _, _, _, _) = literal(e)
-julia> x = E2
-julia> @match x begin
-           E1 => "match E1!"
-           E2 => "match E2!"
-       end
-"match E2!"
-julia> @macroexpand @match x begin
-                  E1 => "match E1!"
-                  E2 => "match E2!"
-        end
-```
-
-You can check [Active Patterns](#active-patterns) or [ADT Cheat Sheet](https://thautwarm.github.io/MLStyle.jl/latest/syntax/adt.html#cheat-sheet) for more details.
+Check [Custom Patterns](#custom-patterns) for details.
 
 Type Patterns
 -----------------
@@ -273,8 +254,92 @@ end
 Custom Patterns
 --------------
 
-TODO.
+As we've suggested in [Capturing-Patterns](#capturing-patterns),
+you can always define your own patterns with MLStyle and easily leverge our compiler and optimizer.
 
+You can extend following APIs for your pattern objects, to implement custom patterns:
+
+- `MLStyle.pattern_uncall`
+  - args:
+    - `pat_obj`: your pattern object, should be a global variable in some module. The pattern is visible if and only if the global variable is visible in current scope.
+    -  `expr_to_pat::Function`: this is provided for you to transform an AST into patterns, for instance, `expr_to_pat(:([a, 1]))`, with which you create a pattern same as `[a, 1]`.
+    -  `type_params`
+    -  `type_args`
+    -  `args`
+  - usage
+    We compile the AST `pat_obj{c, d}(e, f) where {a, b}` into
+    patterns with `MLStyle.pattern_uncall(pat_obj, expr_to_pat, [:a, :b], [:c, :d], [:e, :f])`
+
+- `MLStyle.pattern_unref`
+  - args:
+    - `pat_obj`
+    - `expr_to_pat`
+    - `args`
+  - usage
+    We compile the AST `pat_obj[a, b]` into patterns with
+    `MLStyle.pattern_unref(pat_obj, expr_to_pat, [:a, :b]`.
+
+- `MLStyle.is_enum`
+  
+  In a pattern `[A, B]`, usually we think both `A` and `B` are capturing patterns. However, it is handy if we can have a pattern `A` whose match means comparing to the global variable `A`.
+
+  To achieve this, we provide `MLStyle.is_enum`.
+  For a visible global variable `A`, if `MLStyle.is_enum(A) == true`,
+  a symbol `A` will compiled into patterns with `MLStyle.pattern_uncall(A, expr_to_ast, [], [], [])`
+
+We present some examples for understandability:
+
+### Support Pattern Matching for Julia Enums
+
+```julia-console
+julia> using MLStyle.ActivePatterns: literal
+julia> @enum E E1 E2
+# mark E1, E2 as non-capturing patterns
+julia> MLStyle.is_enum(::E) = true
+# tell the compiler how to match E1, E2
+julia> MLStyle.pattern_uncall(e::E, _, _, _, _) = literal(e)
+julia> x = E2
+julia> @match x begin
+           E1 => "match E1!"
+           E2 => "match E2!"
+       end
+"match E2!"
+julia> @macroexpand @match x begin
+                  E1 => "match E1!"
+                  E2 => "match E2!"
+        end
+```
+
+### Pattern Synonyms
+
+[pattern synonyms](https://ghc.gitlab.haskell.org/ghc/doc/users_guide/exts/pattern_synonyms.html) is a tasty feature in Haskell programming language for defining patterns based on existing patterns.
+
+We can support it:
+
+suppose we want to regard `Triple` as a pattern `(_, _, _)`
+
+```julia-console
+julia> struct Triple end
+julia> MLStyle.pattern_uncall(::Type{Triple}, expr_to_ast, _, _, _) =
+            expr_to_ast(:(  (_, _, _)  ))
+julia> @match (1, 2) begin
+            Triple => "triple"
+            _ => "no a triple"
+        end
+
+"no a triple"
+
+julia> @match (1, 2, 3) begin
+            Triple => "triple"
+            _ => "no a triple"
+        end
+
+"triple"
+```
+
+[Active Patterns](#active-patterns) and [ADTs](https://thautwarm.github.io/MLStyle.jl/latest/syntax/adt.html#cheat-sheet) are implemented via custom patterns.
+
+The custom patterns gives us so-called **extensible pattern matching**.
 
 Or Patterns
 -------------------
