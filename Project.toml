@@ -3,6 +3,9 @@ uuid = "d8e11817-5142-5d16-987a-aa16d5891078"
 authors = ["thautwarm <twshere@outlook.com>"]
 version = "0.4.1"
 
+[compat]
+julia = "1"
+
 [extras]
 DataFrames = "a93c6f00-e57d-5684-b7b6-d8193f3e46c0"
 DataStructures = "864edb3b-99cc-5e75-8d2d-829cb0a9cfe8"
@@ -10,6 +13,3 @@ Test = "8dfed614-e22c-5e08-85e1-65c5234f0b40"
 
 [targets]
 test = ["Test", "DataStructures", "DataFrames"]
-
-[compat]
-julia = "1"

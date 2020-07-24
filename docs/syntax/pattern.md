@@ -36,7 +36,7 @@ All literal data introduced with Julia syntax could be matched by literal patter
 
 However, note that the equality is strict for primitive types(`Int8-64`, `UInt8-64`, `Bool`, etc.) and singleton types(`struct Data end; Data()`).
 
-**Substrings can match a literal string.**
+Specifically, **substrings can match a literal string.**
 
 Capturing Patterns
 --------------------------
@@ -51,7 +51,28 @@ julia> @match 1 begin
 ```
 You can put `_` on the left hand side of a pattern if you don't care about what the captured value is.
 
-However, sometimes a symbol might not be used for capturing. If and only if some visible global variable `x` satisfying `MLStyle.is_enum(typeof(x)) == true`, `x` is used as a pattern. You can check [Active Patterns](#active-patterns) or [ADT Cheat Sheet](https://thautwarm.github.io/MLStyle.jl/latest/syntax/adt.html#cheat-sheet) for more details.
+However, sometimes a symbol might not be used for capturing. If and only if some visible global variable `x` satisfying `MLStyle.is_enum(x) == true`, `x` is used as an enum pattern.
+
+```julia-console
+julia> using MLStyle.ActivePatterns: literal
+julia> @enum E E1 E2
+# mark E1, E2 as non-capturing patterns
+julia> MLStyle.is_enum(::E) = true
+# tell the compiler how to match E1, E2
+julia> MLStyle.pattern_uncall(e::E, _, _, _, _) = literal(e)
+julia> x = E2
+julia> @match x begin
+           E1 => "match E1!"
+           E2 => "match E2!"
+       end
+"match E2!"
+julia> @macroexpand @match x begin
+                  E1 => "match E1!"
+                  E2 => "match E2!"
+        end
+```
+
+You can check [Active Patterns](#active-patterns) or [ADT Cheat Sheet](https://thautwarm.github.io/MLStyle.jl/latest/syntax/adt.html#cheat-sheet) for more details.
 
 Type Patterns
 -----------------
@@ -91,11 +112,11 @@ Sometimes, in practice, you might want to introduce type variables into the scop
 And-Patterns
 --------------------
 
-`pat2 && pat2` on the left hand side of a pattern will match if and only if `pat1` and `pat2` match individually. This lets you combine two separate patterns together, 
+`pat2 && pat2` on the left hand side of a pattern will match if and only if `pat1` and `pat2` match individually. This lets you combine two separate patterns together,
 
 ```julia-console
 julia> @match 2 begin
-           x::Int && if x < 5 end => √(5 - x) 
+           x::Int && if x < 5 end => √(5 - x)
        end
 1.7320508075688772
 ```
@@ -162,7 +183,7 @@ Note that, due to the lack of an operation for distinguishing `nothing` from "ke
 Deconstruction of Custom Composite Data
 -------------------------------------------
 
-In order to deconstruct arbitrary data types in a similar way to `Tuple`, `Array` and `Dict`, simply declare them to be record types with the `@as_record` macro. 
+In order to deconstruct arbitrary data types in a similar way to `Tuple`, `Array` and `Dict`, simply declare them to be record types with the `@as_record` macro.
 
 Here is an example, check more about ADTs(and GADTs) at [Algebraic Data Type Syntax in MLStyle](https://thautwarm.github.io/MLStyle.jl/latest/syntax/adt).
 
@@ -585,7 +606,7 @@ end
 
             $(block2...)
         end
-    end && if isempty(block1 && isempty(block2) end =>
+    end && if isempty(block1) && isempty(block2) end =>
 
          Dict(:funcname => funcname,
               :firstarg => firstarg,
