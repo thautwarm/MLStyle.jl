@@ -21,7 +21,12 @@ function tag_extract(points_of_view::Dict{Function,Int})
     end
 
     function literal(val)
-        typeof(val)
+        t = typeof(val)
+        if t === String
+            AbstractString
+        else
+            t
+        end
     end
 
     wildcard = Any
