@@ -275,7 +275,7 @@ You can extend following APIs for your pattern objects, to implement custom patt
   - usage
   
     We compile the AST `pat_obj{c, d}(e, f) where {a, b}` into
-    patterns with `MLStyle.pattern_uncall(pat_obj, expr_to_pat, [:a, :b], [:c, :d], [:e, :f])`
+    the pattern with `MLStyle.pattern_uncall(pat_obj, expr_to_pat, [:a, :b], [:c, :d], [:e, :f])`.
 
 - `MLStyle.pattern_unref`
   - args:
@@ -292,7 +292,7 @@ You can extend following APIs for your pattern objects, to implement custom patt
    In a pattern `[A, B]`, usually we think both `A` and `B` are capturing patterns. However, it is handy if we can have a pattern `A` whose match means comparing to the global variable `A`.
 
    To achieve this, we provide `MLStyle.is_enum`.
-   For a visible global variable `A`, if `MLStyle.is_enum(A) == true`, a symbol `A` will compiled into patterns with `MLStyle.pattern_uncall(A, expr_to_ast, [], [], [])`
+   For a visible global variable `A`, if `MLStyle.is_enum(A) == true`, a symbol `A` will compile into a pattern with `MLStyle.pattern_uncall(A, expr_to_ast, [], [], [])`.
 
 We present some examples for understandability:
 
