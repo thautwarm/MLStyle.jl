@@ -261,12 +261,19 @@ You can extend following APIs for your pattern objects, to implement custom patt
 
 - `MLStyle.pattern_uncall`
   - args:
-    - `pat_obj`: your pattern object, should be a global variable in some module. The pattern is visible if and only if the global variable is visible in current scope.
-    -  `expr_to_pat::Function`: this is provided for you to transform an AST into patterns, for instance, `expr_to_pat(:([a, 1]))`, with which you create a pattern same as `[a, 1]`.
+    - `pat_obj`
+
+       your pattern object, should be a global variable in some module. The pattern is visible if and only if the global variable is visible in current scope.
+    -  `expr_to_pat::Function`
+
+       this is provided for you to transform an AST into patterns, for instance, `expr_to_pat(:([a, 1]))`, with which you create a pattern same as `[a, 1]`.
+
     -  `type_params`
     -  `type_args`
     -  `args`
+  
   - usage
+  
     We compile the AST `pat_obj{c, d}(e, f) where {a, b}` into
     patterns with `MLStyle.pattern_uncall(pat_obj, expr_to_pat, [:a, :b], [:c, :d], [:e, :f])`
 
@@ -276,16 +283,16 @@ You can extend following APIs for your pattern objects, to implement custom patt
     - `expr_to_pat`
     - `args`
   - usage
+
     We compile the AST `pat_obj[a, b]` into patterns with
     `MLStyle.pattern_unref(pat_obj, expr_to_pat, [:a, :b]`.
 
 - `MLStyle.is_enum`
   
-  In a pattern `[A, B]`, usually we think both `A` and `B` are capturing patterns. However, it is handy if we can have a pattern `A` whose match means comparing to the global variable `A`.
+   In a pattern `[A, B]`, usually we think both `A` and `B` are capturing patterns. However, it is handy if we can have a pattern `A` whose match means comparing to the global variable `A`.
 
-  To achieve this, we provide `MLStyle.is_enum`.
-  For a visible global variable `A`, if `MLStyle.is_enum(A) == true`,
-  a symbol `A` will compiled into patterns with `MLStyle.pattern_uncall(A, expr_to_ast, [], [], [])`
+   To achieve this, we provide `MLStyle.is_enum`.
+   For a visible global variable `A`, if `MLStyle.is_enum(A) == true`, a symbol `A` will compiled into patterns with `MLStyle.pattern_uncall(A, expr_to_ast, [], [], [])`
 
 We present some examples for understandability:
 
