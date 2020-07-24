@@ -311,10 +311,12 @@ julia> @match x begin
            E2 => "match E2!"
        end
 "match E2!"
+x = E1
 julia> @macroexpand @match x begin
                   E1 => "match E1!"
                   E2 => "match E2!"
         end
+"match E1!"
 ```
 
 ### Pattern Synonyms

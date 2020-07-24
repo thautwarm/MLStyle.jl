@@ -509,10 +509,12 @@ For a visible global variable <code class="docutils literal notranslate"><span c
            <span class="nv">E2</span> <span class="o">=&gt;</span> <span class="s">&quot;match E2!&quot;</span>
        <span class="k">end</span>
 <span class="s">&quot;match E2!&quot;</span>
+<span class="nv">x</span> <span class="o">=</span> <span class="nv">E1</span>
 <span class="gp">julia&gt;</span> <span class="nd">@macroexpand</span> <span class="nd">@match</span> <span class="nv">x</span> <span class="k">begin</span>
                   <span class="nv">E1</span> <span class="o">=&gt;</span> <span class="s">&quot;match E1!&quot;</span>
                   <span class="nv">E2</span> <span class="o">=&gt;</span> <span class="s">&quot;match E2!&quot;</span>
         <span class="k">end</span>
+<span class="s">&quot;match E1!&quot;</span>
 </pre></div>
 </div>
 </div>
