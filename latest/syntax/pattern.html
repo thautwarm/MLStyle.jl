@@ -108,7 +108,11 @@
 <li class="toctree-l2"><a class="reference internal" href="#predicates">Predicates</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#range-patterns">Range Patterns</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#reference-patterns">Reference Patterns</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#custom-patterns">Custom Patterns</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#custom-patterns">Custom Patterns</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#support-pattern-matching-for-julia-enums">Support Pattern Matching for Julia Enums</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#pattern-synonyms">Pattern Synonyms</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="#or-patterns">Or Patterns</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#advanced-type-patterns">Advanced Type Patterns</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#do-patterns-many-patterns">Do-Patterns &amp; Many-Patterns</a></li>
@@ -170,7 +174,11 @@
 <li><a class="reference internal" href="#predicates">Predicates</a></li>
 <li><a class="reference internal" href="#range-patterns">Range Patterns</a></li>
 <li><a class="reference internal" href="#reference-patterns">Reference Patterns</a></li>
-<li><a class="reference internal" href="#custom-patterns">Custom Patterns</a></li>
+<li><a class="reference internal" href="#custom-patterns">Custom Patterns</a><ul>
+<li><a class="reference internal" href="#support-pattern-matching-for-julia-enums">Support Pattern Matching for Julia Enums</a></li>
+<li><a class="reference internal" href="#pattern-synonyms">Pattern Synonyms</a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#or-patterns">Or Patterns</a></li>
 <li><a class="reference internal" href="#advanced-type-patterns">Advanced Type Patterns</a></li>
 <li><a class="reference internal" href="#do-patterns-many-patterns">Do-Patterns &amp; Many-Patterns</a></li>
@@ -251,7 +259,7 @@
 </div>
 <p>All literal data introduced with Julia syntax could be matched by literal patterns.</p>
 <p>However, note that the equality is strict for primitive types(<code class="docutils literal notranslate"><span class="pre">Int8-64</span></code>, <code class="docutils literal notranslate"><span class="pre">UInt8-64</span></code>, <code class="docutils literal notranslate"><span class="pre">Bool</span></code>, etc.) and singleton types(<code class="docutils literal notranslate"><span class="pre">struct</span> <span class="pre">Data</span> <span class="pre">end;</span> <span class="pre">Data()</span></code>).</p>
-<p><strong>Substrings can match a literal string.</strong></p>
+<p>Specifically, <strong>substrings can match a literal string.</strong></p>
 </div>
 <div class="section" id="capturing-patterns">
 <h2>Capturing Patterns<a class="headerlink" href="#capturing-patterns" title="Permalink to this headline">¶</a></h2>
@@ -263,7 +271,8 @@
 </pre></div>
 </div>
 <p>You can put <code class="docutils literal notranslate"><span class="pre">_</span></code> on the left hand side of a pattern if you don’t care about what the captured value is.</p>
-<p>However, sometimes a symbol might not be used for capturing. If and only if some visible global variable <code class="docutils literal notranslate"><span class="pre">x</span></code> satisfying <code class="docutils literal notranslate"><span class="pre">MLStyle.is_enum(typeof(x))</span> <span class="pre">==</span> <span class="pre">true</span></code>, <code class="docutils literal notranslate"><span class="pre">x</span></code> is used as a pattern. You can check <a class="reference external" href="#active-patterns">Active Patterns</a> or <a class="reference external" href="https://thautwarm.github.io/MLStyle.jl/latest/syntax/adt.html#cheat-sheet">ADT Cheat Sheet</a> for more details.</p>
+<p>However, sometimes a symbol might not be used for capturing. If and only if some visible global variable <code class="docutils literal notranslate"><span class="pre">x</span></code> satisfying <code class="docutils literal notranslate"><span class="pre">MLStyle.is_enum(x)</span> <span class="pre">==</span> <span class="pre">true</span></code>, <code class="docutils literal notranslate"><span class="pre">x</span></code> is used as an enum pattern.</p>
+<p>Check <a class="reference external" href="#custom-patterns">Custom Patterns</a> for details.</p>
 </div>
 <div class="section" id="type-patterns">
 <h2>Type Patterns<a class="headerlink" href="#type-patterns" title="Permalink to this headline">¶</a></h2>
@@ -296,7 +305,7 @@ in the middle of a matching process, still you’d better postpone it to the end
 <h2>And-Patterns<a class="headerlink" href="#and-patterns" title="Permalink to this headline">¶</a></h2>
 <p><code class="docutils literal notranslate"><span class="pre">pat2</span> <span class="pre">&amp;&amp;</span> <span class="pre">pat2</span></code> on the left hand side of a pattern will match if and only if <code class="docutils literal notranslate"><span class="pre">pat1</span></code> and <code class="docutils literal notranslate"><span class="pre">pat2</span></code> match individually. This lets you combine two separate patterns together,</p>
 <div class="highlight-julia-console notranslate"><div class="highlight"><pre><span></span><span class="gp">julia&gt;</span> <span class="nd">@match</span> <span class="m">2</span> <span class="k">begin</span>
-           <span class="nv">x</span><span class="o">::</span><span class="nb">Int</span> <span class="o">&amp;&amp;</span> <span class="k">if</span> <span class="nv">x</span> <span class="o">&lt;</span> <span class="m">5</span> <span class="k">end</span> <span class="o">=&gt;</span> <span class="nv">√</span><span class="p">(</span><span class="m">5</span> <span class="o">-</span> <span class="nv">x</span><span class="p">)</span> 
+           <span class="nv">x</span><span class="o">::</span><span class="nb">Int</span> <span class="o">&amp;&amp;</span> <span class="k">if</span> <span class="nv">x</span> <span class="o">&lt;</span> <span class="m">5</span> <span class="k">end</span> <span class="o">=&gt;</span> <span class="nv">√</span><span class="p">(</span><span class="m">5</span> <span class="o">-</span> <span class="nv">x</span><span class="p">)</span>
        <span class="k">end</span>
 <span class="m">1</span><span class="p">.</span><span class="m">7320508075688772</span>
 </pre></div>
@@ -439,7 +448,100 @@ in the middle of a matching process, still you’d better postpone it to the end
 </div>
 <div class="section" id="custom-patterns">
 <h2>Custom Patterns<a class="headerlink" href="#custom-patterns" title="Permalink to this headline">¶</a></h2>
-<p>TODO.</p>
+<p>As we’ve suggested in <a class="reference external" href="#capturing-patterns">Capturing-Patterns</a>,
+you can always define your own patterns with MLStyle and easily leverge our compiler and optimizer.</p>
+<p>You can extend following APIs for your pattern objects, to implement custom patterns:</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">MLStyle.pattern_uncall</span></code></p>
+<ul>
+<li><p>args:</p>
+<ul>
+<li><p><code class="docutils literal notranslate"><span class="pre">pat_obj</span></code></p>
+<p>your pattern object, should be a global variable in some module. The pattern is visible if and only if the global variable is visible in current scope.</p>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">expr_to_pat::Function</span></code></p>
+<p>this is provided for you to transform an AST into patterns, for instance, <code class="docutils literal notranslate"><span class="pre">expr_to_pat(:([a,</span> <span class="pre">1]))</span></code>, with which you create a pattern same as <code class="docutils literal notranslate"><span class="pre">[a,</span> <span class="pre">1]</span></code>.</p>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">type_params</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">type_args</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">args</span></code></p></li>
+</ul>
+</li>
+<li><p>usage</p>
+<p>We compile the AST <code class="docutils literal notranslate"><span class="pre">pat_obj{c,</span> <span class="pre">d}(e,</span> <span class="pre">f)</span> <span class="pre">where</span> <span class="pre">{a,</span> <span class="pre">b}</span></code> into
+patterns with <code class="docutils literal notranslate"><span class="pre">MLStyle.pattern_uncall(pat_obj,</span> <span class="pre">expr_to_pat,</span> <span class="pre">[:a,</span> <span class="pre">:b],</span> <span class="pre">[:c,</span> <span class="pre">:d],</span> <span class="pre">[:e,</span> <span class="pre">:f])</span></code></p>
+</li>
+</ul>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">MLStyle.pattern_unref</span></code></p>
+<ul>
+<li><p>args:</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">pat_obj</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">expr_to_pat</span></code></p></li>
+<li><p><code class="docutils literal notranslate"><span class="pre">args</span></code></p></li>
+</ul>
+</li>
+<li><p>usage</p>
+<p>We compile the AST <code class="docutils literal notranslate"><span class="pre">pat_obj[a,</span> <span class="pre">b]</span></code> into patterns with
+<code class="docutils literal notranslate"><span class="pre">MLStyle.pattern_unref(pat_obj,</span> <span class="pre">expr_to_pat,</span> <span class="pre">[:a,</span> <span class="pre">:b]</span></code>.</p>
+</li>
+</ul>
+</li>
+<li><p><code class="docutils literal notranslate"><span class="pre">MLStyle.is_enum</span></code></p>
+<p>In a pattern <code class="docutils literal notranslate"><span class="pre">[A,</span> <span class="pre">B]</span></code>, usually we think both <code class="docutils literal notranslate"><span class="pre">A</span></code> and <code class="docutils literal notranslate"><span class="pre">B</span></code> are capturing patterns. However, it is handy if we can have a pattern <code class="docutils literal notranslate"><span class="pre">A</span></code> whose match means comparing to the global variable <code class="docutils literal notranslate"><span class="pre">A</span></code>.</p>
+<p>To achieve this, we provide <code class="docutils literal notranslate"><span class="pre">MLStyle.is_enum</span></code>.
+For a visible global variable <code class="docutils literal notranslate"><span class="pre">A</span></code>, if <code class="docutils literal notranslate"><span class="pre">MLStyle.is_enum(A)</span> <span class="pre">==</span> <span class="pre">true</span></code>, a symbol <code class="docutils literal notranslate"><span class="pre">A</span></code> will compiled into patterns with <code class="docutils literal notranslate"><span class="pre">MLStyle.pattern_uncall(A,</span> <span class="pre">expr_to_ast,</span> <span class="pre">[],</span> <span class="pre">[],</span> <span class="pre">[])</span></code></p>
+</li>
+</ul>
+<p>We present some examples for understandability:</p>
+<div class="section" id="support-pattern-matching-for-julia-enums">
+<h3>Support Pattern Matching for Julia Enums<a class="headerlink" href="#support-pattern-matching-for-julia-enums" title="Permalink to this headline">¶</a></h3>
+<div class="highlight-julia-console notranslate"><div class="highlight"><pre><span></span><span class="gp">julia&gt;</span> <span class="k">using</span> <span class="nv">MLStyle</span><span class="p">.</span><span class="nv">ActivePatterns</span><span class="o">:</span> <span class="nv">literal</span>
+<span class="gp">julia&gt;</span> <span class="nd">@enum</span> <span class="nv">E</span> <span class="nv">E1</span> <span class="nv">E2</span>
+<span class="c"># mark E1, E2 as non-capturing patterns</span>
+<span class="gp">julia&gt;</span> <span class="nv">MLStyle</span><span class="p">.</span><span class="nf">is_enum</span><span class="p">(</span><span class="o">::</span><span class="nv">E</span><span class="p">)</span> <span class="o">=</span> <span class="k">true</span>
+<span class="c"># tell the compiler how to match E1, E2</span>
+<span class="gp">julia&gt;</span> <span class="nv">MLStyle</span><span class="p">.</span><span class="nf">pattern_uncall</span><span class="p">(</span><span class="nv">e</span><span class="o">::</span><span class="nv">E</span><span class="p">,</span> <span class="nv">_</span><span class="p">,</span> <span class="nv">_</span><span class="p">,</span> <span class="nv">_</span><span class="p">,</span> <span class="nv">_</span><span class="p">)</span> <span class="o">=</span> <span class="nf">literal</span><span class="p">(</span><span class="nv">e</span><span class="p">)</span>
+<span class="gp">julia&gt;</span> <span class="nv">x</span> <span class="o">=</span> <span class="nv">E2</span>
+<span class="gp">julia&gt;</span> <span class="nd">@match</span> <span class="nv">x</span> <span class="k">begin</span>
+           <span class="nv">E1</span> <span class="o">=&gt;</span> <span class="s">&quot;match E1!&quot;</span>
+           <span class="nv">E2</span> <span class="o">=&gt;</span> <span class="s">&quot;match E2!&quot;</span>
+       <span class="k">end</span>
+<span class="s">&quot;match E2!&quot;</span>
+<span class="gp">julia&gt;</span> <span class="nd">@macroexpand</span> <span class="nd">@match</span> <span class="nv">x</span> <span class="k">begin</span>
+                  <span class="nv">E1</span> <span class="o">=&gt;</span> <span class="s">&quot;match E1!&quot;</span>
+                  <span class="nv">E2</span> <span class="o">=&gt;</span> <span class="s">&quot;match E2!&quot;</span>
+        <span class="k">end</span>
+</pre></div>
+</div>
+</div>
+<div class="section" id="pattern-synonyms">
+<h3>Pattern Synonyms<a class="headerlink" href="#pattern-synonyms" title="Permalink to this headline">¶</a></h3>
+<p><a class="reference external" href="https://ghc.gitlab.haskell.org/ghc/doc/users_guide/exts/pattern_synonyms.html">pattern synonyms</a> is a tasty feature in Haskell programming language for defining patterns based on existing patterns.</p>
+<p>We can support it:</p>
+<p>suppose we want to regard <code class="docutils literal notranslate"><span class="pre">Triple</span></code> as a pattern <code class="docutils literal notranslate"><span class="pre">(_,</span> <span class="pre">_,</span> <span class="pre">_)</span></code></p>
+<div class="highlight-julia-console notranslate"><div class="highlight"><pre><span></span><span class="gp">julia&gt;</span> <span class="k">struct</span> <span class="nv">Triple</span> <span class="k">end</span>
+<span class="gp">julia&gt;</span> <span class="nv">MLStyle</span><span class="p">.</span><span class="nf">pattern_uncall</span><span class="p">(</span><span class="o">::</span><span class="nb">Type</span><span class="p">{</span><span class="nv">Triple</span><span class="p">},</span> <span class="nv">expr_to_ast</span><span class="p">,</span> <span class="nv">_</span><span class="p">,</span> <span class="nv">_</span><span class="p">,</span> <span class="nv">_</span><span class="p">)</span> <span class="o">=</span>
+            <span class="nf">expr_to_ast</span><span class="p">(</span><span class="o">:</span><span class="p">(</span>  <span class="p">(</span><span class="nv">_</span><span class="p">,</span> <span class="nv">_</span><span class="p">,</span> <span class="nv">_</span><span class="p">)</span>  <span class="p">))</span>
+<span class="gp">julia&gt;</span> <span class="nd">@match</span> <span class="p">(</span><span class="m">1</span><span class="p">,</span> <span class="m">2</span><span class="p">)</span> <span class="k">begin</span>
+            <span class="nv">Triple</span> <span class="o">=&gt;</span> <span class="s">&quot;triple&quot;</span>
+            <span class="nv">_</span> <span class="o">=&gt;</span> <span class="s">&quot;no a triple&quot;</span>
+        <span class="k">end</span>
+
+<span class="s">&quot;no a triple&quot;</span>
+
+<span class="gp">julia&gt;</span> <span class="nd">@match</span> <span class="p">(</span><span class="m">1</span><span class="p">,</span> <span class="m">2</span><span class="p">,</span> <span class="m">3</span><span class="p">)</span> <span class="k">begin</span>
+            <span class="nv">Triple</span> <span class="o">=&gt;</span> <span class="s">&quot;triple&quot;</span>
+            <span class="nv">_</span> <span class="o">=&gt;</span> <span class="s">&quot;no a triple&quot;</span>
+        <span class="k">end</span>
+
+<span class="s">&quot;triple&quot;</span>
+</pre></div>
+</div>
+<p><a class="reference external" href="#active-patterns">Active Patterns</a> and <a class="reference external" href="https://thautwarm.github.io/MLStyle.jl/latest/syntax/adt.html#cheat-sheet">ADTs</a> are implemented via custom patterns.</p>
+<p>The custom patterns gives us so-called <strong>extensible pattern matching</strong>.</p>
+</div>
 </div>
 <div class="section" id="or-patterns">
 <h2>Or Patterns<a class="headerlink" href="#or-patterns" title="Permalink to this headline">¶</a></h2>
@@ -462,7 +564,7 @@ in the middle of a matching process, still you’d better postpone it to the end
 <span class="nf">test</span><span class="p">(</span><span class="s">&quot;&quot;</span><span class="p">)</span>  <span class="c"># false</span>
 </pre></div>
 </div>
-<p>Tips: <code class="docutils literal notranslate"><span class="pre">Or</span> <span class="pre">Patterns</span></code>s could nested.</p>
+<p>Tips: <code class="docutils literal notranslate"><span class="pre">Or</span> <span class="pre">Pattern</span></code>s could be nested.</p>
 </div>
 <div class="section" id="advanced-type-patterns">
 <h2>Advanced Type Patterns<a class="headerlink" href="#advanced-type-patterns" title="Permalink to this headline">¶</a></h2>
@@ -724,7 +826,7 @@ in the middle of a matching process, still you’d better postpone it to the end
 
             <span class="o">$</span><span class="p">(</span><span class="nv">block2</span><span class="p">...)</span>
         <span class="k">end</span>
-    <span class="k">end</span> <span class="o">&amp;&amp;</span> <span class="k">if</span> <span class="nb">isempty</span><span class="p">(</span><span class="nv">block1</span> <span class="o">&amp;&amp;</span> <span class="nb">isempty</span><span class="p">(</span><span class="nv">block2</span><span class="p">)</span> <span class="k">end</span> <span class="o">=&gt;</span>
+    <span class="k">end</span> <span class="o">&amp;&amp;</span> <span class="k">if</span> <span class="nb">isempty</span><span class="p">(</span><span class="nv">block1</span><span class="p">)</span> <span class="o">&amp;&amp;</span> <span class="nb">isempty</span><span class="p">(</span><span class="nv">block2</span><span class="p">)</span> <span class="k">end</span> <span class="o">=&gt;</span>
 
          <span class="nb">Dict</span><span class="p">(</span><span class="o">:</span><span class="nv">funcname</span> <span class="o">=&gt;</span> <span class="nv">funcname</span><span class="p">,</span>
               <span class="o">:</span><span class="nv">firstarg</span> <span class="o">=&gt;</span> <span class="nv">firstarg</span><span class="p">,</span>
@@ -773,7 +875,7 @@ in the middle of a matching process, still you’d better postpone it to the end
     </p>
     <p>
         &copy; Copyright 2020, thautwarm.<br/>
-      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.1.1.<br/>
+      Created using <a href="http://sphinx-doc.org/">Sphinx</a> 3.1.2.<br/>
     </p>
   </div>
 </footer>
