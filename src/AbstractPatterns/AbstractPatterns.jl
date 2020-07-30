@@ -31,7 +31,10 @@ function init_cfg(cfg::CFGSpec)
     exp
 end
 
-const _const_lineno = LineNumberNode(32, "<codegen>")
+# this is a dummy line number and will not get used.
+# macroexpand for @goto and @label eliminate it.
+const _const_lineno = LineNumberNode(1, :unused)
+
 function init_cfg!(ex::Expr, cf_info::Dict{Symbol, Symbol})
     args = ex.args
     for i in eachindex(args)
