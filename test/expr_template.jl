@@ -26,6 +26,8 @@ ast = :(f(a, b))
 end
 end
 
+# https://github.com/JuliaLang/julia/pull/35138
+const LN_OFF = VERSION >= v"1.5.0" ? 1 : 0
 
 @testset "Ast Pattern" begin
 instance = :(function f(a, b, c)
@@ -35,8 +37,8 @@ instance = :(function f(a, b, c)
     Expr(:function, Expr(:call, funcname, args...), block) => begin
         (funcname, collect(args)) == (:f, [:a, :b, :c]) &&
         block.head == :block                            &&
-        block.args[1] isa LineNumberNode                &&
-        block.args[2] ==  :(a + b + c)
+        block.args[1 + LN_OFF] isa LineNumberNode                &&
+        block.args[2 + LN_OFF] ==  :(a + b + c)
     end
 end
 
@@ -47,8 +49,8 @@ end
 @test @match instance begin
         :(function $funcname($(args...)) $(block...) end) => begin
         (funcname, collect(args)) == (:f, [:a, :b, :c]) &&
-        block[1] isa LineNumberNode                     &&
-        block[2] ==  :(a + b + c)
+        block[1 + LN_OFF] isa LineNumberNode                     &&
+        block[2 + LN_OFF] ==  :(a + b + c)
     end
 end
 end
