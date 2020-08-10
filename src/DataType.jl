@@ -206,7 +206,6 @@ function impl!(
                             ) || error($err_msg)),
                         :($MLStyle.is_enum(::$ctor_name) = true),
                         :(const $case = $ctor_name.instance),
-                        :($ctor_name() = $case),
                         :($Base.show(io::$IO, ::$ctor_name) = $Base.print(io, $(string(case))))
                     )
                 else
