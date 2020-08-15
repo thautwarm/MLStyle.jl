@@ -5,6 +5,7 @@ docs/build/
 *.jl.*.cov
 *.jl.mem
 deps/deps.jl
+.history/
 
 # Swap
 [._]*.s[a-v][a-z]
