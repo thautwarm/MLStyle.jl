@@ -349,8 +349,12 @@ function gen_switch(val, ex, __source__::LineNumberNode, __module__::Module)
             push!(branches, (pattern => (ln, k)))
             body = terminal[k] = Expr(:block)
         else
-            stmt isa LineNumberNode && (ln = stmt)
-            k === 0 || push!(body.args, stmt)
+            is_ln = stmt isa LineNumberNode
+            if k !== 0 && !is_ln
+                push!(body.args, ln)
+                push!(body.args, stmt)
+            end
+            is_ln && (ln = stmt)
         end
     end
 
