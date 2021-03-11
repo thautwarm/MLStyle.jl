@@ -36,6 +36,10 @@ play(a::Shape, b::Shape) = @match (a, b) begin
 end
 ```
 
+P.S: When preferring `Base.@enum` than `MLStyle.@data`, [you need this to pattern match on Julia `Base.@enum`](https://thautwarm.github.io/MLStyle.jl/latest/syntax/pattern.html#support-pattern-matching-for-julia-enums).
+
+
+
 ## Benchmarks
 
 ### Arrays
