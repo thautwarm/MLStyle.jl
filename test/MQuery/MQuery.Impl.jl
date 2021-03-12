@@ -130,8 +130,8 @@ function generate_select(args :: AbstractArray)
     # process selectors
     predicate_process(arg) =
         @match arg begin
-        :(!$pred($ (args...) )) && Do(ab=true) ||
-        :($pred($ (args...) )) && Do(ab=false) ||
+        :(!$pred($(args...) )) && Do(ab=true) ||
+        :($pred($(args...) )) && Do(ab=false) ||
         :(!$pred) && Do(ab=true, args=[])      ||
         :($pred) && Do(ab=false, args=[])      =>
             let idx_sym = gen_sym()
