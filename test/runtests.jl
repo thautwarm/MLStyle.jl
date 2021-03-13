@@ -52,6 +52,7 @@ MODULE = TestModule
 
 @use GADT
 
+include("issues/109.jl")
 include("when.jl")
 include("untyped_lam.jl")
 include("active_patterns.jl")
@@ -78,6 +79,5 @@ include("MQuery/test.jl")
 
 include("issues/87.jl")
 include("issues/62.jl")
-include("issues/109.jl")
 
 end

@@ -31,13 +31,13 @@ function MLStyle.pattern_uncall(
     targs::AbstractArray,
     args::AbstractArray,
 )
-    isempty(tparams) || error("A (:) pattern requires no type params.")
-    isempty(targs) || error("A (:) pattern requires no type arguments.")
+
     isempty(tparams) || return begin
-        call = Expr(:call, t, args...)
-        ann = Expr(:curly, t, targs...)
+        call = Expr(:call, Dict, args...)
+        ann = Expr(:curly, Dict, targs...)
         self(Where(call, ann, tparams))
     end
+
     pairs = Pair[]
     for arg in args
         @switch arg begin

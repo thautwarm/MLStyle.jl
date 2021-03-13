@@ -18,7 +18,7 @@ function pattern_unref end
 function pattern_unmacrocall(macro_func, self::Function, args::AbstractArray)
     @sswitch args begin
     @case [ln, m::Module, args...]
-    return self(macro_func(ln, m, args...))
+    return self(macroexpand(m, Expr(:macrocall, macro_func, ln, args...)))
     end
 end
 
