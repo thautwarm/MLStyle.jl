@@ -1,7 +1,7 @@
 name = "MLStyle"
 uuid = "d8e11817-5142-5d16-987a-aa16d5891078"
 authors = ["thautwarm <twshere@outlook.com>"]
-version = "0.4.8"
+version = "0.4.9"
 
 [compat]
 julia = "1"
