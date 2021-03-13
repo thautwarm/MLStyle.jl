@@ -6,13 +6,13 @@ Print = (
             p(io, prefix)
         end
     end,
-    line =  function Print_line(io::IO, prefix :: AbstractString)
+    line = function Print_line(io::IO, prefix::AbstractString)
         println(io)
         print(io, prefix)
     end,
     w = function Print_word(s::AbstractString)
         function write(io::IO, ::AbstractString)
-            print(io, s)    
+            print(io, s)
         end
     end,
     seq = function Print_seq(ps...)
@@ -25,6 +25,6 @@ Print = (
     end,
     run = function Print_run(io::IO, builder)
         builder(io, "")
-    end
+    end,
 )
 @specialize

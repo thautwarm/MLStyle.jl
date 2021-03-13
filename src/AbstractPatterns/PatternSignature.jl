@@ -1,52 +1,49 @@
 using MLStyle.Err: PatternCompilationError
 
-PatternImpl = NamedTuple{
-    (:and, :or, :literal, :wildcard, :decons, :guard, :effect),
-}
-
+PatternImpl = NamedTuple{(:and, :or, :literal, :wildcard, :decons, :guard, :effect),}
 
 PatternImpls{N} = NTuple{N, PatternImpl}
 
 @nospecialize
-and(args :: Any...) = and(collect(args))
-and(ps::Vector) = function apply(impls::PatternImpls{N}) where N
+and(args::Any...) = and(collect(args))
+and(ps::Vector) = function apply(impls::PatternImpls{N}) where {N}
     xs = [p(impls) for p in ps]
     me = Vector{Any}(undef, N)
-    for i in 1:N
+    for i = 1:N
         @inbounds me[i] = impls[i].and(xs)
     end
     me
 end
 
-or(args :: Any...) = or(collect(args))
-or(ps::Vector) = function apply(impls::PatternImpls{N}) where N
+or(args::Any...) = or(collect(args))
+or(ps::Vector) = function apply(impls::PatternImpls{N}) where {N}
     xs = [p(impls) for p in ps]
     me = Vector{Any}(undef, N)
-    for i in 1:N
+    for i = 1:N
         me[i] = impls[i].or(xs)
     end
     me
 end
 
-literal(val) = function apply(impls::PatternImpls{N}) where N
+literal(val) = function apply(impls::PatternImpls{N}) where {N}
     me = Vector{Any}(undef, length(impls))
-    for i in 1:N
+    for i = 1:N
         me[i] = impls[i].literal(val)
     end
     me
 end
 
-function wildcard(impls::PatternImpls{N}) where N
+function wildcard(impls::PatternImpls{N}) where {N}
     me = Vector{Any}(undef, length(impls))
-    for i in 1:N
+    for i = 1:N
         me[i] = impls[i].wildcard
     end
     me
 end
 
-guard(pred) = function apply(impls::PatternImpls{N}) where N
+guard(pred) = function apply(impls::PatternImpls{N}) where {N}
     me = Vector{Any}(undef, N)
-    for i in 1:N
+    for i = 1:N
         me[i] = impls[i].guard(pred)
     end
     me
@@ -58,7 +55,7 @@ abstract pure process
 abstract type APP end
 
 struct NoncachablePre <: APP
-    callable :: Any
+    callable::Any
 end
 (f::NoncachablePre)(target::Any) = f.callable(target)
 struct NoPre <: APP end
@@ -66,21 +63,21 @@ struct NoPre <: APP end
 """composite pattern
 """
 struct PComp
-    repr :: AbstractString
-    tcons :: Function
-    guard1 :: APP
-    view :: APP
-    guard2 :: APP
+    repr::AbstractString
+    tcons::Function
+    guard1::APP
+    view::APP
+    guard2::APP
 end
 
 invalid_extract(_, _) = error("impossible")
 
 function PComp(
-    repr :: AbstractString,
+    repr::AbstractString,
     tcons::Function;
-    guard1::APP=NoPre(),
-    view::APP=NoPre(),
-    guard2::APP=NoPre()
+    guard1::APP = NoPre(),
+    view::APP = NoPre(),
+    guard2::APP = NoPre(),
 )
     PComp(repr, tcons, guard1, view, guard2)
 end
@@ -88,21 +85,21 @@ end
 const any_type(_...) = Any
 const as_is_comp = PComp("identity", any_type)
 
-
 decons(extract, ps) = decons(as_is_comp, extract, ps)
-decons(comp::PComp, ps; extract=invalid_extract) = decons(comp, extract, ps)
-decons(comp::PComp, extract::Function, ps) = function apply(impls::PatternImpls{N}) where N
-    xs = [p(impls) for p in ps]
-    me = Vector{Any}(undef, N)
-    for i in 1:N
-        me[i] = impls[i].decons(comp, extract, xs)
+decons(comp::PComp, ps; extract = invalid_extract) = decons(comp, extract, ps)
+decons(comp::PComp, extract::Function, ps) =
+    function apply(impls::PatternImpls{N}) where {N}
+        xs = [p(impls) for p in ps]
+        me = Vector{Any}(undef, N)
+        for i = 1:N
+            me[i] = impls[i].decons(comp, extract, xs)
+        end
+        me
     end
-    me
-end
 
-effect(ctx_perf) = function apply(impls::PatternImpls{N}) where N
+effect(ctx_perf) = function apply(impls::PatternImpls{N}) where {N}
     me = Vector{Any}(undef, N)
-    for i in 1:N
+    for i = 1:N
         me[i] = impls[i].effect(ctx_perf)
     end
     me
@@ -117,5 +114,5 @@ const self = (
     wildcard = wildcard,
     decons = decons,
     guard = guard,
-    effect = effect
+    effect = effect,
 )

@@ -12,7 +12,7 @@ function MLStyle.pattern_uncall(
     self::Function,
     type_params::AbstractArray,
     type_args::AbstractArray,
-    args::AbstractArray
+    args::AbstractArray,
 )
     isempty(type_params) || error("A Capture requires no type params.")
     isempty(type_args) || error("A Capture pattern requires no type arguments.")
@@ -30,27 +30,27 @@ end
 
 function matchast(target, actions, source::LineNumberNode, mod::Module)
     @switch actions begin
-    @case Expr(:quote, Expr(:block, stmts...))
+        @case Expr(:quote, Expr(:block, stmts...))
         last_lnode = source
         cbl = Expr(:block)
         for stmt in stmts
             @switch stmt begin
-                @case ::LineNumberNode 
-                    last_lnode = stmt
-                    continue
+                @case ::LineNumberNode
+                last_lnode = stmt
+                continue
                 @case :($a => $b)
-                    push!(
-                        cbl.args,
-                        last_lnode,
-                        :($(Expr(:quote, a)) => $b)
-                    )
-                    continue 
+                push!(cbl.args, last_lnode, :($(Expr(:quote, a)) => $b))
+                continue
                 @case _
-                    throw(SyntaxError("Malformed ast template, should be formed as `a => b`, at $(string(last_lnode))."))
+                throw(
+                    SyntaxError(
+                        "Malformed ast template, should be formed as `a => b`, at $(string(last_lnode)).",
+                    ),
+                )
             end
         end
         return gen_match(target, cbl, source, mod)
-    @case _
+        @case _
         msg = "Malformed ast template, the second arg should be a block with a series of pairs(`a => b`), at $(string(source))."
         throw(SyntaxError(msg))
     end
@@ -96,8 +96,7 @@ If the template doesn't match input AST, return `nothing`.
 
 macro capture(template)
     farg = gensym("expression")
-    fbody = 
-       gen_capture(template, farg, __source__, __module__) |> init_cfg
+    fbody = gen_capture(template, farg, __source__, __module__) |> init_cfg
     fhead = Expr(:call, farg, farg)
     esc(Expr(:function, fhead, fbody))
 end

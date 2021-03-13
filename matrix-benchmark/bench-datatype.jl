@@ -11,12 +11,12 @@ using ..ArbitrarySampler
 using ..Utils
 
 @data NormalData begin
-    Normal1(a :: Int, b :: Int, c :: Any)
-    Normal2(a :: Int)
+    Normal1(a::Int, b::Int, c::Any)
+    Normal2(a::Int)
 end
 
 @data GenericData{A} begin
-    Generic1(a :: A, b :: Int)
+    Generic1(a::A, b::Int)
     Generic2(A)
 end
 
@@ -27,9 +27,11 @@ specs = [
     :s2 => @spec(Normal1(::Int, ::Int, Normal2(1 || ::Int))),
     :s3 => @spec(Generic1(3 || _, 4 || ::Int)),
     :s4 => @spec(Generic2((1 || _, 2 || _))),
-    :s5 => @spec(Generic1(::String || _, 0)  || Generic2(::String || _)),
-    :s6 => @spec(Generic1(_, ::Int) || Generic2(_) || Normal2(::Int) || Normal1(::Int, ::Int, _)),
-    :_ => @spec(_)
+    :s5 => @spec(Generic1(::String || _, 0) || Generic2(::String || _)),
+    :s6 => @spec(
+        Generic1(_, ::Int) || Generic2(_) || Normal2(::Int) || Normal1(::Int, ::Int, _)
+    ),
+    :_ => @spec(_),
 ]
 
 implementations = [
@@ -43,24 +45,24 @@ implementations = [
     end),
     :Rematch => function (x)
         Rematch.@match x begin
-            Normal1(_, _, _ :: Number) => 1
+            Normal1(_, _, _::Number) => 1
             Normal1(_, _, Normal2(1)) => 2
             Generic1(3, 3) => 3
             Generic2((1, 2)) => 4
-            _:: GenericData{String} => 5
+            _::GenericData{String} => 5
             _ => 0
         end
     end,
     Symbol("Match.jl") => function (x)
         Match.@match x begin
-            Normal1(_, _, _ :: Number) => 1
+            Normal1(_, _, _::Number) => 1
             Normal1(_, _, Normal2(1)) => 2
             Generic1(3, 3) => 3
             Generic2((1, 2)) => 4
-            _ :: GenericData{String} => 5
+            _::GenericData{String} => 5
             _ => 0
         end
-    end
+    end,
 ]
 
 records = NamedTuple{(:time_mean, :implementation, :case)}[]
@@ -80,11 +82,7 @@ df = DataFrame(records)
 
 @info df
 
-report_meantime, df_time = report(
-    df, Guide.title("Data Types");
-    benchfield = :time_mean
-)
-
+report_meantime, df_time = report(df, Guide.title("Data Types"); benchfield = :time_mean)
 
 open("stats/bench-datatype.txt", "w") do f
     write(f, string(df))

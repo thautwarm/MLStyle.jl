@@ -11,7 +11,7 @@ The first argument must be something like
 - `a -> b`
 - `begin a -> b; (c -> d)... end`
 """
-function gen_lambda(cases, source :: LineNumberNode, mod :: Module)
+function gen_lambda(cases, source::LineNumberNode, mod::Module)
     TARGET = gensym("λ")
     function make_pair_expr(case, stmts)
         let block = Expr(:block, stmts...)
@@ -20,28 +20,34 @@ function gen_lambda(cases, source :: LineNumberNode, mod :: Module)
     end
 
     @switch cases begin
-        @case :($a -> $(bs...))     ||
-              :($a => $b) && let bs = [b] end
-        
-            pair = make_pair_expr(a, bs)
-            cbl = Expr(:block, source, pair)
-            match_expr = gen_match(TARGET, cbl, source, mod)
-            
-        @case let stmts=[] end && Expr(:block,        
-            Many[
-                a :: LineNumberNode && Do[push!(stmts, a)] ||
-                Or[:($a => $b) && let bs=[b] end, :($a -> $(bs...))] &&
-                Do[push!(stmts, make_pair_expr(a, bs))]
-            ]...
+        @case :($a -> $(bs...)) || :($a => $b) && let bs = [b]
+        end
+
+        pair = make_pair_expr(a, bs)
+        cbl = Expr(:block, source, pair)
+        match_expr = gen_match(TARGET, cbl, source, mod)
+
+        @case let stmts = []
+        end && Expr(
+            :block,
+            Many[a::LineNumberNode&&Do[push!(
+                stmts,
+                a,
+            )]||Or[
+                :($a => $b)&&let bs = [b]
+                end,
+                :($a -> $(bs...)),
+            ]&&Do[push!(stmts, make_pair_expr(a, bs))]]...,
         )
-        
-            cbl = Expr(:block, source, stmts...)
-            match_expr = gen_match(TARGET, cbl, source, mod)
+
+        cbl = Expr(:block, source, stmts...)
+        match_expr = gen_match(TARGET, cbl, source, mod)
     end
 
-    Expr(:function,
-        Expr(:call, TARGET, TARGET), 
-        Expr(:block, source, init_cfg(match_expr))
+    Expr(
+        :function,
+        Expr(:call, TARGET, TARGET),
+        Expr(:block, source, init_cfg(match_expr)),
     )
 end
 

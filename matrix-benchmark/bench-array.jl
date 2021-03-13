@@ -22,21 +22,21 @@ end
 @as_record UserTy
 
 specs = [
-    :s1 => (@spec [1, _, _, $integer20{2,5}..., 10, 7, ::String, [1, 2, 3]]),
-    :s2 => (@spec [10, 20, [27, ::UInt8], ::String, ::Symbol, _{2,10}...]),
+    :s1 => (@spec [1, _, _, $integer20{2, 5}..., 10, 7, ::String, [1, 2, 3]]),
+    :s2 => (@spec [10, 20, [27, ::UInt8], ::String, ::Symbol, _{2, 10}...]),
     :s3 => (@spec [
         (1, 2, ::String),
         (::Int, ::Int isa (x -> x % 4 + 8)),
         12,
         9,
         9,
-        _{2,10}...,
+        _{2, 10}...,
         3,
     ]),
     :s4 => (@spec [_, _, _, _, 8, _, ::Integer, UserTy(::String, :bb)]),
     :s5 => (@spec [$integer20, _, UserTy(1, :a), _, UserTy(2, :b)]),
     :s6 => (@spec [_, 125, _]),
-    :s7 => (@spec [2, (), (), _{2,3}..., 1, 2, 3, 10]),
+    :s7 => (@spec [2, (), (), _{2, 3}..., 1, 2, 3, 10]),
     :_ => @spec(_),
 ]
 
@@ -54,7 +54,7 @@ implementations = [
     end,
     :Rematch => function (x)
         Rematch.@match x begin
-            [1, _, _, x..., 10, 7, _::String, [1, 2, 3]] where {sum(x)<37} => 1
+            [1, _, _, x..., 10, 7, _::String, [1, 2, 3]] where {sum(x) < 37} => 1
             [10, 20, [27, _::UInt8], _::String, _::Symbol, _...] => 2
             [(1, 2, _::String), (_::Int, v::Int), 12, 9, 9, _..., 3] where {v in 7:11} => 3
             [_, _, _, _, 8, _, _::Integer, UserTy(_::String, :bb)] => 4
@@ -101,10 +101,7 @@ theme = Theme(
     point_size = 5px,
 )
 
-report_meantime, df_time = report(
-    df, Guide.title("Arrays");
-    benchfield = :time_mean
-)
+report_meantime, df_time = report(df, Guide.title("Arrays"); benchfield = :time_mean)
 
 open("stats/bench-array.txt", "w") do f
     write(f, string(df))

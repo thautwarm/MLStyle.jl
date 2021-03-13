@@ -33,7 +33,12 @@ function pretty(points_of_view::Dict{Function, Int})
     wildcard = Print.w("_")
 
     function decons(comp::PComp, _, ps)
-        Print.seq(Print.w(comp.repr), Print.w("("), getindex.(ps, viewpoint)..., Print.w(")"))
+        Print.seq(
+            Print.w(comp.repr),
+            Print.w("("),
+            getindex.(ps, viewpoint)...,
+            Print.w(")"),
+        )
     end
 
     function guard(pred)
@@ -51,7 +56,7 @@ function pretty(points_of_view::Dict{Function, Int})
         wildcard = wildcard,
         decons = decons,
         guard = guard,
-        effect = effect
+        effect = effect,
     )
 end
 @specialize

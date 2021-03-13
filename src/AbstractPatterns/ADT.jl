@@ -1,45 +1,49 @@
 @nospecialize
-export TagfulPattern, And, Or,
-       Literal, Wildcard,
-       Deconstrucution, Guard, Effect,
-       untagless, TagfulPattern,
-       PatternInfo
+export TagfulPattern,
+    And,
+    Or,
+    Literal,
+    Wildcard,
+    Deconstrucution,
+    Guard,
+    Effect,
+    untagless,
+    TagfulPattern,
+    PatternInfo
 
 abstract type TagfulPattern end
 
-
 struct PatternInfo
-    pattern ::TagfulPattern
-    typetag :: TypeObject
+    pattern::TagfulPattern
+    typetag::TypeObject
 end
 
 struct And <: TagfulPattern
-    ps :: Vector{PatternInfo}
+    ps::Vector{PatternInfo}
 end
 
 struct Or <: TagfulPattern
-    ps :: Vector{PatternInfo}
+    ps::Vector{PatternInfo}
 end
 
 struct Literal{T} <: TagfulPattern
-    val :: T
+    val::T
 end
 
-struct Wildcard <: TagfulPattern
-end
+struct Wildcard <: TagfulPattern end
 
 struct Deconstrucution <: TagfulPattern
-    comp :: PComp
-    extract :: Function
-    params :: Vector{PatternInfo}
+    comp::PComp
+    extract::Function
+    params::Vector{PatternInfo}
 end
 
 struct Guard <: TagfulPattern
-    predicate :: Any
+    predicate::Any
 end
 
 struct Effect <: TagfulPattern
-    perform :: Any
+    perform::Any
 end
 
 @specialize
@@ -53,9 +57,8 @@ end
 function untagless(points_of_view::Dict{Function, Int})
     myviewpoint = points_of_view[untagless]
     typetag_viewpoint::Int = points_of_view[tag_extract]
-    mk_info(all_info)::PatternInfo = PatternInfo(
-        all_info[myviewpoint], all_info[typetag_viewpoint]
-    )
+    mk_info(all_info)::PatternInfo =
+        PatternInfo(all_info[myviewpoint], all_info[typetag_viewpoint])
     ! = mk_info
     function decons(comp::PComp, extract::Function, ps)
         Deconstrucution(comp, extract, PatternInfo[!p for p in ps])
@@ -70,7 +73,7 @@ function untagless(points_of_view::Dict{Function, Int})
         wildcard = Wildcard(),
         decons = decons,
         guard = Guard,
-        effect = Effect
+        effect = Effect,
     )
 end
-@specialize    
+@specialize

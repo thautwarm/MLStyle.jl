@@ -1,5 +1,6 @@
 module MatchImpl
-export is_enum, pattern_uncall, pattern_unref, @switch, @match, Where, gen_match, gen_switch
+export is_enum,
+    pattern_uncall, pattern_unref, @switch, @match, Where, gen_match, gen_switch
 export Q
 import MLStyle
 using MLStyle: mlstyle_report_deprecation_msg!
@@ -9,7 +10,7 @@ using MLStyle.ExprTools
 
 using MLStyle.AbstractPatterns
 using MLStyle.AbstractPatterns.BasicPatterns
-OptionalLn = Union{LineNumberNode,Nothing}
+OptionalLn = Union{LineNumberNode, Nothing}
 
 is_enum(_)::Bool = false
 function pattern_uncall end
@@ -18,7 +19,7 @@ function pattern_unref end
 struct Where
     value::Any
     type::Any
-    type_parameters::AbstractArray{T,1} where {T}
+    type_parameters::AbstractArray{T, 1} where {T}
 end
 
 struct QuotePattern
@@ -73,7 +74,8 @@ function guess_type_from_expr(m::Module, ex::Any, tps::Set{Symbol})
     end
 end
 
-ex2tf(m::Module, @nospecialize(a)) = isprimitivetype(typeof(a)) ? literal(a) : error("invalid literal $a")
+ex2tf(m::Module, @nospecialize(a)) =
+    isprimitivetype(typeof(a)) ? literal(a) : error("invalid literal $a")
 ex2tf(m::Module, l::LineNumberNode) = wildcard
 ex2tf(m::Module, q::QuoteNode) = literal(q.value)
 ex2tf(m::Module, s::String) = literal(s)
@@ -103,7 +105,7 @@ function ex2tf(m::Module, w::Where)
     rec(x) = ex2tf(m, x)
     @sswitch w begin
         @case Where(; value = val, type = t, type_parameters = tps)
-    
+
         tp_set = get_type_parameters(tps)::Set{Symbol}
         should_guess, ty_guess = guess_type_from_expr(m, t, tp_set)
         p_ty = P_type_of(ty_guess)
@@ -111,7 +113,6 @@ function ex2tf(m::Module, w::Where)
         sort!(tp_vec)
         @nospecialize
         p_guard = guard() do target, scope, _
-
             if isempty(tp_vec)
                 return if should_guess
                     see_captured_vars(:($target isa $t), scope)
@@ -134,8 +135,10 @@ function ex2tf(m::Module, w::Where)
             end
             push!(
                 suite,
-                :($fn(::Type{$ty_accurate}) where {$(tps...),$ty_accurate<:$t} =
-                        $tp_ret),
+                :(
+                    $fn(::Type{$ty_accurate}) where {$(tps...), $ty_accurate <: $t} =
+                        $tp_ret
+                ),
                 :($fn(_) = nothing),
                 :($testn = $fn(typeof($target))),
                 Expr(
@@ -263,11 +266,11 @@ function uncomprehension(
     cond::Any,
 )
     eltype = guess_type_from_expr(self.m, ty, Set{Symbol}())[2]
-    p0 = P_type_of(AbstractArray{T,1} where {T<:eltype})
+    p0 = P_type_of(AbstractArray{T, 1} where {T <: eltype})
     function extract(
         target::Any,
         ::Int,
-        scope::ChainDict{Symbol,Symbol},
+        scope::ChainDict{Symbol, Symbol},
         ln::LineNumberNode,
     )
         token = gensym("uncompreh token")
@@ -299,7 +302,8 @@ function uncomprehension(
             Expr(:macrocall, GlobalRef(MLStyle, Symbol("@switch")), ln, iter, switch_body)
         final = quote
             $Base.@inline $fn($iter, $infer_flag::$Val) = $switch_stmt
-            $vec = $Base._return_type($fn, $Tuple{$Base.eltype($target),$Val{true}})[]
+            $vec =
+                $Base._return_type($fn, $Tuple{$Base.eltype($target), $Val{true}})[]
             $vec = $Some($vec)
             for $iter in $target
                 $token = $fn($iter, $Val(false))
@@ -374,17 +378,16 @@ end
 @specialize
 function gen_switch(val, ex, __source__::LineNumberNode, __module__::Module)
     @assert Meta.isexpr(ex, :block)
-    branches = Pair{Function,Tuple{LineNumberNode,Int}}[]
+    branches = Pair{Function, Tuple{LineNumberNode, Int}}[]
     k = 0
     ln = __source__
-    terminal = Dict{Int,Any}()
+    terminal = Dict{Int, Any}()
     body = nothing
     for i in eachindex(ex.args)
         stmt = ex.args[i]
         if Meta.isexpr(stmt, :macrocall) &&
            stmt.args[1] === case_sym &&
            length(stmt.args) == 3
-
             k += 1
             pattern = try
                 ex2tf(__module__, stmt.args[3])
@@ -392,7 +395,7 @@ function gen_switch(val, ex, __source__::LineNumberNode, __module__::Module)
                 e isa ErrorException && throw(PatternCompilationError(ln, e.msg))
                 rethrow()
             end
-            
+
             mlstyle_report_deprecation_msg!(ln)
 
             push!(branches, (pattern => (ln, k)))
@@ -479,7 +482,7 @@ function _some_guard1(expr::Any)
     :($expr !== nothing)
 end
 function _some_tcons(t)
-    Some{T} where {T<:t}
+    Some{T} where {T <: t}
 end
 @specialize
 
@@ -541,10 +544,10 @@ end
 
 function gen_match(val, tbl, __source__::LineNumberNode, __module__::Module)
     Meta.isexpr(tbl, :block) || (tbl = Expr(:block, tbl))
-    branches = Pair{Function,Tuple{LineNumberNode,Int}}[]
+    branches = Pair{Function, Tuple{LineNumberNode, Int}}[]
     k = 0
     ln = __source__
-    terminal = Dict{Int,Any}()
+    terminal = Dict{Int, Any}()
     for i in eachindex(tbl.args)
         stmt = tbl.args[i]
         @switch stmt begin
@@ -556,9 +559,9 @@ function gen_match(val, tbl, __source__::LineNumberNode, __module__::Module)
                 e isa ErrorException && throw(PatternCompilationError(ln, e.msg))
                 rethrow()
             end
-            
+
             mlstyle_report_deprecation_msg!(ln)
-            
+
             push!(branches, (pattern => (ln, k)))
             terminal[k] = body
             @case ln::LineNumberNode
