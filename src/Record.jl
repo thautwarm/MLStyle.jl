@@ -89,7 +89,7 @@ function record_def(@nospecialize(Struct), line::LineNumberNode, ::Module)
     quote
         $line
         function $MLStyle.pattern_uncall(
-            t::Type{$Struct},
+            t::Type{<:$Struct},
             self::Function,
             type_params::Any,
             type_args::Any,
@@ -103,8 +103,6 @@ end
 
 function as_record(@nospecialize(n), line::LineNumberNode, __module__::Module)
     @switch n begin
-        @case ::Symbol
-        return record_def(n, line, __module__)
         @case :(struct $hd{$(_...)}
                   $(_...)
               end) ||
@@ -119,7 +117,7 @@ function as_record(@nospecialize(n), line::LineNumberNode, __module__::Module)
               end)
         return Expr(:block, n, record_def(hd, line, __module__))
         @case _
-        error("malformed structure $n")
+        return record_def(n, line, __module__)
     end
 end
 

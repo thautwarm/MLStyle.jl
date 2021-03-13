@@ -1,8 +1,10 @@
 Thanks to the following individuals for contributing:
 
-Jun Tian  : https://github.com/findmyway
-Roger-luo : https://github.com/Roger-luo
-Tian Tian : https://github.com/passindro
-woclass   : https://github.com/inkydragon
-Mason Protter    : https://github.com/MasonProtter
-Páll Haraldsson  : https://github.com/PallHaraldsson
+Jun Tian: https://github.com/findmyway
+Roger-luo: https://github.com/Roger-luo
+Tian Tian: https://github.com/passindro
+woclass: https://github.com/inkydragon
+Mason Protter: https://github.com/MasonProtter
+Páll Haraldsson: https://github.com/PallHaraldsson
+maxd13: https://github.com/maxd13
+Lyndon White: https://github.com/oxinabox
