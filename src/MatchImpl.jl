@@ -80,8 +80,7 @@ function guess_type_from_expr(m::Module, ex::Any, tps::Set{Symbol})
     end
 end
 
-ex2tf(m::Module, @nospecialize(a)) =
-    isprimitivetype(typeof(a)) ? literal(a) : error("invalid literal $a")
+ex2tf(m::Module, @nospecialize(a)) = literal(a)
 ex2tf(m::Module, l::LineNumberNode) = wildcard
 ex2tf(m::Module, q::QuoteNode) = literal(q.value)
 ex2tf(m::Module, s::String) = literal(s)

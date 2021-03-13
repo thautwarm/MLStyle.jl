@@ -276,3 +276,10 @@ end
         _ => false
     end
 end
+
+@testcase "typed vector" begin
+    @test @match Int[1, 2, 3] begin
+        Any[1, 2, 3] => false
+        Int[_, _, _] => true
+    end
+end

@@ -139,6 +139,12 @@ julia> first(it)
  3
 julia> it[2]
 4
+
+julia> @match Int[1, 2] begin
+         Any[1, 2] => :a
+         Int[_, _] => :b
+       end
+:b
 ```
 
 - Dict pattern(like `Elixir`'s dictionary matching or ML record matching)
@@ -248,6 +254,46 @@ c = ...
     (&c, _)  => "x equals to c!"
     (_,  &c) => "y equals to c!"
     _        => "none of x and y equal to c"
+end
+```
+
+
+Macro Call Patterns
+------------------------
+
+By default, macro calls occur in patterns will be no different than its expanded expression, hence the following bidirectional relationship **sometimes** holds:
+
+```julia-console
+julia> macro mymacro(a)
+         esc(:([$a]))
+       end
+@mymacro (macro with 1 method)
+
+julia> a = 2
+2
+
+julia> a == @match @mymacro(a) begin
+                @mymacro(a) => a
+            end
+true
+
+# expanded form:
+# julia> a == @match [a] begin
+#                [a] => a
+#            end
+```
+
+However, you can also change the pattern compilation behavior by overloading `MLStyle.pattern_unmacrocall`, whose usage can be found at the implementation of the pattern support for [`@r_str`](https://github.com/thautwarm/MLStyle.jl/blob/master/src/Pervasives.jl#L191).
+
+Some examples about string macro patterns:
+
+```julia
+@match  raw"$$$" begin
+    raw"$$$" => ...
+end
+
+@match "123" begin
+    r"\G\d+$" => ...
 end
 ```
 

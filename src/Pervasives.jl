@@ -75,6 +75,10 @@ function _allow_assignment!(expr::Expr)
     end
 end
 
+function MLStyle.pattern_unref(::Type{E}, self::Function, args::AbstractArray) where E
+    self(:([$(args...)] :: $AbstractVector{$E}))
+end
+
 function MLStyle.pattern_unref(::Type{Do}, self::Function, args::AbstractArray)
     foreach(_allow_assignment!, args)
 
