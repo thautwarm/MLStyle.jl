@@ -1,6 +1,6 @@
 module MatchImpl
 export is_enum,
-    pattern_uncall, pattern_unref, @switch, @match, Where, gen_match, gen_switch
+    pattern_uncall, pattern_unref, pattern_unmacrocall, @switch, @match, Where, gen_match, gen_switch
 export Q
 import MLStyle
 using MLStyle: mlstyle_report_deprecation_msg!
@@ -15,6 +15,12 @@ OptionalLn = Union{LineNumberNode, Nothing}
 is_enum(_)::Bool = false
 function pattern_uncall end
 function pattern_unref end
+function pattern_unmacrocall(macro_func, self::Function, args::AbstractArray)
+    @sswitch args begin
+    @case [ln, m::Module, args...]
+    return self(macro_func(ln, m, args...))
+    end
+end
 
 struct Where
     value::Any
@@ -254,7 +260,7 @@ function ex2tf(m::Module, ex::Expr)
 
         @case Expr(:macrocall, [macro_expr, ln::LineNumberNode, args...])
         macro_func = m.eval(macro_expr)
-        return pattern_uncall(macro_func, rec, [], [], Any[ln, m, args...])
+        return pattern_unmacrocall(macro_func, rec, Any[ln, m, args...])
 
         @case a
         error("unknown pattern syntax $(repr(a))")

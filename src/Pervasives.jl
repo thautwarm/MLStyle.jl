@@ -188,24 +188,9 @@ function MLStyle.pattern_uncall(
     MLStyle.pattern_unref(Many, self, args)
 end
 
-function MLStyle.pattern_uncall(
-    ::typeof(@eval $(Symbol("@", "raw_str"))),
-    self::Function,
-    _::AbstractArray,
-    _::AbstractArray,
-    args::AbstractArray,
-)
-    @switch args begin
-        @case [ln, m, s::String]
-    end
-    self(s)
-end
-
-function MLStyle.pattern_uncall(
+function MLStyle.pattern_unmacrocall(
     r_str::typeof(@eval $(Symbol("@", "r_str"))),
     self::Function,
-    _::AbstractArray,
-    _::AbstractArray,
     args::AbstractArray,
 )
     @switch args begin
