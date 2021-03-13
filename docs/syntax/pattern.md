@@ -1,4 +1,4 @@
-Pattern Mathing
+Pattern Matching
 =======================
 
 Pattern mathing provide convenient ways to manipulate data. The basic syntax for pattern matching with MLStyle is of the form
