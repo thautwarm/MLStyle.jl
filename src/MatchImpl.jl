@@ -392,8 +392,7 @@ function gen_switch(val, ex, __source__::LineNumberNode, __module__::Module)
             pattern = try
                 ex2tf(__module__, stmt.args[3])
             catch e
-                e isa ErrorException && throw(PatternCompilationError(ln, e.msg))
-                rethrow()
+                throw(PatternCompilationError(ln, e))
             end
 
             mlstyle_report_deprecation_msg!(ln)
@@ -556,7 +555,7 @@ function gen_match(val, tbl, __source__::LineNumberNode, __module__::Module)
             pattern = try
                 ex2tf(__module__, case)
             catch e
-                e isa ErrorException && throw(PatternCompilationError(ln, e.msg))
+                throw(PatternCompilationError(ln, e))
                 rethrow()
             end
 

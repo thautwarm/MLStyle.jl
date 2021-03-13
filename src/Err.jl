@@ -6,7 +6,7 @@ PatternUnsolvedException = ErrorException
 
 struct PatternCompilationError <: Exception
     line::Union{LineNumberNode, Nothing}
-    msg::AbstractString
+    ex::Exception
 end
 
 struct InternalException <: Exception

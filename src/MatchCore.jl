@@ -194,8 +194,7 @@ macro sswitch(val, ex)
             pattern = try
                 basic_ex2tf(__module__.eval, stmt.args[3])
             catch e
-                e isa ErrorException && throw(PatternCompilationError(ln, e.msg))
-                rethrow()
+                throw(PatternCompilationError(ln, e))
             end
             push!(branches, (pattern => (ln, k)))
             body = terminal[k] = Expr(:block)
