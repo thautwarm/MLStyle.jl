@@ -188,7 +188,6 @@ function MLStyle.pattern_uncall(
     MLStyle.pattern_unref(Many, self, args)
 end
 
-
 function MLStyle.pattern_uncall(
     ::typeof(@eval $(Symbol("@", "raw_str"))),
     self::Function,
@@ -218,7 +217,6 @@ function MLStyle.pattern_uncall(
         :($match($regex, $target) !== nothing)
     end
 end
-
 
 @specialize
 

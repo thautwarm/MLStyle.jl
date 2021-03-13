@@ -7,6 +7,13 @@ using MLStyle.AbstractPatterns
 export @active, active_def
 @nospecialize
 function active_def(P, body, mod::Module, line::LineNumberNode)
+    inferred_type = @switch P begin
+        @case :($P::$t_expr)
+        mod.eval(t_expr)
+        @case _
+        Any
+    end
+
     @switch P begin
         @case Expr(
             :call,
@@ -81,7 +88,7 @@ function active_def(P, body, mod::Module, line::LineNumberNode)
                 end
             end
 
-            type_infer(_...) = Any
+            type_infer(_...) = $inferred_type
 
             comp = $PComp(
                 $prepr,
