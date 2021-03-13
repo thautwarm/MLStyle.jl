@@ -187,6 +187,39 @@ function MLStyle.pattern_uncall(
     isempty(targs) || error("A (:) pattern requires no type arguments.")
     MLStyle.pattern_unref(Many, self, args)
 end
+
+
+function MLStyle.pattern_uncall(
+    ::typeof(@eval $(Symbol("@", "raw_str"))),
+    self::Function,
+    _::AbstractArray,
+    _::AbstractArray,
+    args::AbstractArray,
+)
+    @switch args begin
+        @case [ln, m, s::String]
+    end
+    self(s)
+end
+
+function MLStyle.pattern_uncall(
+    r_str::typeof(@eval $(Symbol("@", "r_str"))),
+    self::Function,
+    _::AbstractArray,
+    _::AbstractArray,
+    args::AbstractArray,
+)
+    @switch args begin
+        @case [ln, m, s::String]
+    end
+
+    regex = r_str(ln, m, s)
+    guard() do target, _, _
+        :($match($regex, $target) !== nothing)
+    end
+end
+
+
 @specialize
 
 end

@@ -252,6 +252,10 @@ function ex2tf(m::Module, ex::Expr)
 
         return uncomprehension(rec, ty, pat, reconstruct, seq, cond)
 
+        @case Expr(:macrocall, [macro_expr, ln::LineNumberNode, args...])
+        macro_func = m.eval(macro_expr)
+        return pattern_uncall(macro_func, rec, [], [], Any[ln, m, args...])
+
         @case a
         error("unknown pattern syntax $(repr(a))")
     end
