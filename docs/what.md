@@ -17,7 +17,7 @@ Think of MLStyle.jl as a package bringing advanced functional programming idioms
 
 ## Motivations
 
-Those used to functional programming may feel limited when they don't have access to pattern matching and ADTs. Of course I'm one of those people.
+Those used to functional programming may feel limited when they don't have pattern matching and ADTs, and of course I'm one of them.
 
 When making this package I didn't want to make a trade-off by using some alternatives that don't have enough features or are not well-optimized. Just like [why those greedy people created Julia](https://julialang.org/blog/2012/02/why-we-created-julia), I'm also greedy. **I want to integrate all those useful functional programming features into one language, and make all of them convenient, efficient and extensible**.
 
