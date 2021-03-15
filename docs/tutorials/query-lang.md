@@ -348,7 +348,7 @@ DataFrame(collect(res), collect(IN_FIELDS))
 
 I can promise you that, each column of your data frames is a `Vector{Any}`, yes, not its actual type.
 You may prefer to calculate the type of a column using the common super type of all elements, but there are
-2 problems if you try this:
+two problems if you try this:
 
 - If the column is empty, emmmm...
 - Calculating the super type of all elements is very slow!
