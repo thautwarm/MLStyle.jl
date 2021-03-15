@@ -7,7 +7,7 @@ You may have heard of embedded query languages like LINQ or extension methods be
 
 In terms of Julia ecosystem, there is already Query.jl, LightQuery.jl, DataFramesMeta.jl, etc. These packages accomplish the partial or full features of a query language.
 
-This tutorial primarily shows the creation a concise and efficient query language implementation using MLStyle.jl. This demonstration illustrates the power of MLStyle.jl's ability to perform AST manipulations. Additionally, I think this tutorial can be also extremely helpful to those who're developing query languages for Julia.
+This tutorial primarily shows the creation a concise and efficient query language implemented  with MLStyle.jl. This demonstration illustrates the power of MLStyle.jl's ability to perform AST manipulations. Additionally, I think this tutorial can be also extremely helpful to those who're developing query languages for Julia.
 
 Definition of Syntaxes
 ------------------------------
