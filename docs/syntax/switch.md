@@ -3,7 +3,7 @@ The Switch Statements
 
 Not all real-world code is most conveniently expressed using `@match`. To help with some common pain-points, we have included `@when`, and **`@switch`**.
 
-The following example demonstrates a common pattern that could be improved:
+The following example demonstrates a common pattern that is unnecessarily verbose:
 
 ```julia
 var = 1
