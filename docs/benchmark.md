@@ -16,7 +16,7 @@ The benchmarks presented here are made by Julia **v1.4** on **Windows 10(64 bit)
 
 *Benchmark results for other platforms and Julia versions are welcome to get accepted as a pull request, if you figure out a better way to organize the files and their presentations in this README.*
 
-(*We rule out the benchmarks of the space used. That should be considered unnecessary as the costs are always zero. *)
+(*We leave out the benchmarks of the space used. That should be considered unnecessary as the costs are always zero. *)
 
 On the x-axis, after the name of test-case is the least time-consuming run's index in units of `ns`.
 
