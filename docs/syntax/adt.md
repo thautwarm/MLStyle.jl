@@ -105,7 +105,7 @@ using MLStyle
 end
 ```
 
-The above code makes a clear description about Arithmetic operations and provide a corresponding implementation.
+The above code makes a clear description about Arithmetic operations and provides a corresponding implementation.
 
 If you want to transpile above ADTs to some specific language, there is a clear step:
 
