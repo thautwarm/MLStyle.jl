@@ -2,7 +2,7 @@
 
 In terms of data shape validation, MLStyle can be strictly faster than carefully optimized handwritten code.
 
-All of the scripts for the benchmark are provided in the directory: [Matrix-Benchmark](https://github.com/thautwarm/MLStyle.jl/blob/master/matrix-benchmark).
+All of the scripts for the benchmarks are provided in the directory: [Matrix-Benchmark](https://github.com/thautwarm/MLStyle.jl/blob/master/matrix-benchmark).
 
 To run these cross-implementation benchmarks, some extra Julia packages should be installed:
 
