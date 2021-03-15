@@ -243,7 +243,7 @@ An implementation could be,
 IN_FIELDS, values(GROUPS)
 ```
 
-But if so, we will lose the information of group keys, which is not good.
+But if so, we will lose the information of group keys, which is undesirable.
 
 So, if we want to persist the group keys, we can do this:
 
