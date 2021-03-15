@@ -85,7 +85,7 @@ Unlike most of ML languages or other libraries who only permit guards in the end
 MLStyle.jl allows you to put guards anywhere during matching.
 
 However, remember, due to some Julia optimization details, even if the guards can be put
-in the middle of a matching process, it is still better postpone it until the end of matching. This allows for better performance.
+in the middle of a matching process, it is still better to postpone it until the end of matching sequence. This allows for better performance.
 
 Sometimes, in practice, you might want to introduce type variables into the scope, in this case use `where` clause, and see [Advanced Type Patterns](#advanced-type-patterns) for more details.
 
