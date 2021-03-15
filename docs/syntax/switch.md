@@ -1,7 +1,7 @@
 The Switch Statements
 ===============================
 
-In realworld use of pattern matching provided by MLStyle, things can sometimes become painful. To help with common issues, we have included `@when`, and **`@switch`**.
+Not all real-world code is most conveniently expressed using `@match`. To help with some common pain-points, we have included `@when`, and **`@switch`**.
 
 The following example demonstrates a common pattern that could be improved:
 
