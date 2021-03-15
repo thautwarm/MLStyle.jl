@@ -113,7 +113,7 @@ julia> @match (1, 2) begin
 true
 ```
 
-Destructuring Tuples, Arrays, and Dictionarys with Pattern Matching
+Destructuring Tuples, Arrays, and Dictionaries with Pattern Matching
 ---------------------
 
 - Tuple Patterns
