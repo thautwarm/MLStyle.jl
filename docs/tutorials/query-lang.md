@@ -351,7 +351,7 @@ You may prefer to calculate the type of a column using the common super type of 
 2 problems if you try this:
 
 - If the column is empty, emmmm...
-- Calculating the super type of all elements incurs an unaffordable cost!
+- Calculating the super type of all elements is very slow!
 
 Yet, I'll introduce a new requirement `IN_TYPES` of the query's code generation, which perfectly solves problems of column types.
 
