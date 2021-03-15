@@ -602,7 +602,7 @@ function mk_visit(fields :: Dict{Any, Field}, assigns :: OrderedDict{Symbol, Any
 end
 ```
 
-You might not be able to understand what the meaning of `fields` and `assigns` are - don't worry - I will explain it for you.
+The meaning of `fields` and `assign`s might not be obvious, so we'll dig closer into these terms now.
 
 - `fields : Dict{Any, Field}`
 
