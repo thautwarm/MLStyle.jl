@@ -1,7 +1,7 @@
 Pattern Matching
 =======================
 
-Pattern mathing provide convenient ways to manipulate data. The basic syntax for pattern matching with MLStyle is of the form
+Pattern matching provides convenient ways to manipulate data. The basic syntax for pattern matching with MLStyle is of the form
 ```julia
 @match data begin
     pattern1 => result1
