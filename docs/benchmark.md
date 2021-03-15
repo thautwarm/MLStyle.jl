@@ -1,6 +1,6 @@
 # Benchmark
 
-In terms of data shape validation, MLStyle can be strictly faster than carefully optimized handwritten code.
+In terms of data shape validation, MLStyle can often be faster than carefully optimized handwritten code.
 
 All of the scripts for the benchmarks are provided in the directory: [Matrix-Benchmark](https://github.com/thautwarm/MLStyle.jl/blob/master/matrix-benchmark).
 
