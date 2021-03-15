@@ -233,7 +233,7 @@ let IN_FIELDS, IN_SOURCE = process(df),
 end
 ```
 
-I think it perfect, so let's go ahead. The reason why we make an inline function will be given later. I will disclose that it's used for type inference.
+I think it perfect, so let's go ahead. We'll explain more about why we use `@inline` later, but the short answer is that it was needed for type inference.
 
 So, what should the output field names and the source be?
 
