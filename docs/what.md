@@ -7,7 +7,7 @@
 [![Join the chat at https://gitter.im/MLStyle-jl/community](https://badges.gitter.im/MLStyle-jl/community.svg)](https://gitter.im/MLStyle-jl/community?utm_source=badge&utm_medium=badge&utm_campaign=pr-badge&utm_content=badge)
 
 
-***This is the documentation for unreleased v0.4, which has a lot of improvements, i.e. "changes".***
+***This is the documentation for the unreleased v0.4, which has a lot of improvements, i.e. "changes".***
 
 ***You may now check docs of v0.3.1.***: [MLStyle v0.3.1](https://thautwarm.github.io/MLStyle.jl/stable/)
 
@@ -19,8 +19,8 @@ Think of MLStyle.jl as a package bringing advanced functional programming idioms
 
 Those used to functional programming may feel limited when they don't have pattern matching and ADTs, and of course I'm one of them.
 
-However, I don't want to make a trade-off here by using some available alternatives that miss features or are not well-optimized. Just like [why those greedy people created Julia](https://julialang.org/blog/2012/02/why-we-created-julia), I'm also so greedy that **I want to integrate all those useful features into one language, and make all of them convenient, efficient and extensible**.
+When making this package I didn't want to make a trade-off by using some alternatives that don't have enough features or are not well-optimized. Just like [why those greedy people created Julia](https://julialang.org/blog/2012/02/why-we-created-julia), I'm also greedy. **I want to integrate all those useful functional programming features into one language, and make all of them convenient, efficient and extensible**.
 
-On the other side, in recent years I was addicted to extending Python with metaprogramming and even internal mechanisms. Although I made something interesting like [pattern-matching](https://github.com/Xython/pattern-matching), [goto](https://github.com/thautwarm/Redy/blob/master/Redy/Opt/builtin_features/_goto.py), [ADTs](https://github.com/thautwarm/Redy/tree/master/Redy/ADT), [constexpr](https://github.com/thautwarm/Redy/blob/master/Redy/Opt/builtin_features/_constexpr.py), [macros](https://github.com/thautwarm/Redy/blob/master/Redy/Opt/builtin_features/_macro.py), etc., most of these implementations are also disgustingly evil. Fortunately, in Julia, all of them could be achieved straightforwardly without any black magic, at last, some of these ideas come into existence with MLStyle.jl.
+In recent years I was addicted to extending Python with metaprogramming and even internal mechanisms. Although I made some interesting packages like [pattern-matching](https://github.com/Xython/pattern-matching), [goto](https://github.com/thautwarm/Redy/blob/master/Redy/Opt/builtin_features/_goto.py), [ADTs](https://github.com/thautwarm/Redy/tree/master/Redy/ADT), [constexpr](https://github.com/thautwarm/Redy/blob/master/Redy/Opt/builtin_features/_constexpr.py), [macros](https://github.com/thautwarm/Redy/blob/master/Redy/Opt/builtin_features/_macro.py), etc., most of these implementations are also disgustingly evil. Fortunately, in Julia, these features could be achieved straightforwardly without using any black magic. At last, some of these ideas come into existence with MLStyle.jl.
 
-Finally, we have such a library that provides **extensible pattern matching** for such an efficient language.
+Finally, we have such a library that provides **extensible pattern matching** for julia.

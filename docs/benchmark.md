@@ -1,10 +1,10 @@
 # Benchmark
 
-In terms of data shape validation, MLStyle can be strictly faster than even a carefully optimized handwritten code.
+In terms of data shape validation, MLStyle can often be faster than carefully optimized handwritten code.
 
-All benchmark scripts are provided in the directory [Matrix-Benchmark](https://github.com/thautwarm/MLStyle.jl/blob/master/matrix-benchmark).
+All of the scripts for the benchmarks are provided in the directory: [Matrix-Benchmark](https://github.com/thautwarm/MLStyle.jl/blob/master/matrix-benchmark).
 
-To run these cross-implementation benchmarks, some extra dependencies should be installed:
+To run these cross-implementation benchmarks, some extra Julia packages should be installed:
 
 - `(v1.4) pkg> add Gadfly MacroTools Rematch Match BenchmarkTools StatsBase Statistics ArgParse DataFrames`.
 
@@ -16,11 +16,11 @@ The benchmarks presented here are made by Julia **v1.4** on **Windows 10(64 bit)
 
 *Benchmark results for other platforms and Julia versions are welcome to get accepted as a pull request, if you figure out a better way to organize the files and their presentations in this README.*
 
-(*We rule out the benchmarks of the space use, it's considered unnecessary as the cost are always zero which is not only for MLStyle*)
+(*We leave out the benchmarks of the space used. That should be considered unnecessary as the costs are always zero. *)
 
 On the x-axis, after the name of test-case is the least time-consuming run's index in units of `ns`.
 
-The y-label is the ratio of the implementation's time cost to that of the least time-consuming.
+The y-axis is the ratio of the implementation's time cost, made relative to that of the least time-consuming.
 
 The benchmark results in dataframe format are available at [this directory](https://github.com/thautwarm/MLStyle.jl/tree/master/stats).
 
