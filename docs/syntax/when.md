@@ -1,12 +1,12 @@
 When Destructuring
 ===========================
 
-The `@when` macro was introduced to work with the scenarios where `@match` leads to heavy syntax.
+The `@when` is introduced to work with the scenarios where `@match` is a bit heavy.
 
 It's similar to [if-let](https://doc.rust-lang.org/rust-by-example/flow_control/if_let.html) construct in Rust language.
 
 
-There are three distinct syntaxes for `@when`.
+There're three distinct syntaxes for `@when`.
 
 Allow Destructuring in Let-Binding
 -----------------------------------------------------------------
@@ -45,7 +45,7 @@ s = S1(5)
     end
 ```
 
-In the above snippet, `@inline fn(x) = 100x` is not regarded as destructuring.
+In above snippet, `@inline fn(x) = 100x` is not regarded as destructuring.
 
 
 Sole Destructuring
@@ -74,9 +74,10 @@ Sometimes we might have this kind of logic:
 - otherwise do `Cc`
 
 
-As there is currently no pattern matching support for `if-else`, we cannot represent above logic literally in vallina Julia.
+As there is now no pattern matching support for `if-else`,
+we cannot represent above logic literally in vallina Julia.
 
-MLStyle provides this, with the following syntax:
+MLStyle provides this, in such a syntax:
 
 ```julia
 @when let A = a
@@ -88,7 +89,7 @@ MLStyle provides this, with the following syntax:
 end
 ```
 
-Also, predicates can be used here, thus it can be seen as superior to
+Also, predicates can be used here, thus it's superior than
 `if-else`:
 
 ```julia
@@ -104,7 +105,7 @@ Also, predicates can be used here, thus it can be seen as superior to
 end
 ```
 
-A concrete example is presented below:
+A concrete example is presented here:
 
 ```julia
 a = 1
