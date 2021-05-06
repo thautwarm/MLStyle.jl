@@ -345,7 +345,8 @@ We present some examples for understandability:
 ### Support Pattern Matching for Julia Enums
 
 ```julia-console
-julia> using MLStyle.ActivePatterns: literal
+julia> using MLStyle
+julia> using MLStyle.AbstractPatterns: literal
 julia> @enum E E1 E2
 # mark E1, E2 as non-capturing patterns
 julia> MLStyle.is_enum(::E) = true
@@ -362,7 +363,26 @@ julia> @macroexpand @match x begin
                   E1 => "match E1!"
                   E2 => "match E2!"
         end
-"match E1!"
+
+:(let
+      var"##return#261" = nothing
+      var"##263" = x
+      if var"##263" === E1
+          var"##return#261" = let
+                  "match E1!"
+              end
+          $(Expr(:symbolicgoto, Symbol("####final#262#264")))
+      end
+      if var"##263" === E2
+          var"##return#261" = let
+                  "match E2!"
+              end
+          $(Expr(:symbolicgoto, Symbol("####final#262#264")))
+      end
+      (error)("matching non-exhaustive, at #= ... =#")
+      $(Expr(:symboliclabel, Symbol("####final#262#264")))
+      var"##return#261"
+end)
 ```
 
 ### Pattern Synonyms
