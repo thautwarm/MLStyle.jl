@@ -246,7 +246,7 @@ julia> @match 1 begin
 Reference Patterns
 -----------------
 
-This feature is from `Elixir` which could slightly extends ML based pattern matching.
+This feature is known as the `pin operator` from `Elixir` which could slightly extend ML based pattern matching.
 
 ```julia
 c = ...
@@ -256,6 +256,22 @@ c = ...
     _        => "none of x and y equal to c"
 end
 ```
+Reference Patterns are useful, for example, when it's necessary to match on the values of numeric variables, but not the type:
+
+```julia
+c = Int16(10) # c is of type Int16
+
+@match c begin
+    10.0 => "there is a match" #pattern is a Float
+    _    => "there is not a match"
+end # => "there is not a match"
+
+@match c begin
+    &10.0 => "there is a match"
+    _    => "there is not a match"
+end # => "there is a match"
+```
+Internally, literal pattern matching behaves with strict equality, similar to the [`===`](https://docs.julialang.org/en/v1/base/base/#Core.:===) operator in base Julia. Reference patterns behave more like the [`==`](https://docs.julialang.org/en/v1/base/math/#Base.:==) operator in base Julia, where the type of the numeric variable is ignored, and only abstract values are compared.   
 
 
 Macro Call Patterns
