@@ -271,7 +271,7 @@ end # => "there is not a match"
     _    => "there is not a match"
 end # => "there is a match"
 ```
-Internally, literal pattern matching behaves with strict equality, similar to the [`===`](https://docs.julialang.org/en/v1/base/base/#Core.:===) operator in base Julia. Reference patterns behave more like the [`==`](https://docs.julialang.org/en/v1/base/math/#Base.:==) operator in base Julia, where the type of the numeric variable is ignored, and only abstract values are compared.   
+When matching a primitive type or an immutable, size-zero type literal pattern matching behaves with strict equality, similar to the [`===`](https://docs.julialang.org/en/v1/base/base/#Core.:===) operator in base Julia. Reference patterns behave more like the [`==`](https://docs.julialang.org/en/v1/base/math/#Base.:==) operator in base Julia, where the type of the numeric variable is ignored, and only abstract values are compared.
 
 
 Macro Call Patterns
