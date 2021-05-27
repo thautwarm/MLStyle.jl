@@ -4,7 +4,7 @@ MLStyle.Modules.AST
 @matchast
 ---------------------
 
-- Description: Similar to `@match`, but focus on AST matching. No need to quote patterns with `quote ... end` or `:(...)`.
+- Description: Similar to `@match`, but the focus is on AST matching. There is no need to quote patterns with `quote ... end` or `:(...)`.
 - Usage: `@matchast ast_to_match (begin cases... end)`
 - Examples:
 
@@ -44,7 +44,7 @@ Dict{Symbol,Dict}(:s1 => Dict{Any,Any}(),:s2 => Dict{Symbol,Dict{Any,Any}}(:s1 =
 @capture
 -------------------
 
-- Description: Similar to `MacroTools.@capture`, but provided with a more regex-flavored matching.
+- Description: Similar to `MacroTools.@capture`, but provides a more regex-flavored matching.
 
 - Usage: `@capture template input_ast`,  note that `template` is purely static and cannot be a variable from current context.
 
