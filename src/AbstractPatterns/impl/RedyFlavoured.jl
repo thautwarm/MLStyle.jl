@@ -212,7 +212,7 @@ function myimpl()
         if v isa Symbol
             v = QuoteNode(v)
         end
-        (isprimitivetype(ty) || ty.size == 0 && !ty.mutable) ?
+        (isprimitivetype(ty) || ty.size == 0 && (@static hasfield(Core.TypeName, :mutable) ? !ty.name.mutable : !ty.mutable)) ?
         CheckCond(:($(target.repr) === $v)) : CheckCond(:($(target.repr) == $v))
     end
 
