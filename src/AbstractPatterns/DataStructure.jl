@@ -1,6 +1,6 @@
 struct ChainDict{K, V}
-    cur :: Dict{K, V}
-    init :: Ref{ChainDict{K, V}}
+    cur::Dict{K, V}
+    init::Ref{ChainDict{K, V}}
 end
 
 ChainDict(cur::Dict{K, V}, init::ChainDict{K, V}) where {K, V} = ChainDict(cur, Ref(init))
@@ -15,18 +15,14 @@ end
 
 function Base.get(c::ChainDict{K, V}, k::K)::V where {K, V}
     get(c.cur, k) do
-         isassigned(c.init) ?
-            get(c.init[], k) :
-            throw(KeyError(k))
-         end
+        isassigned(c.init) ? get(c.init[], k) : throw(KeyError(k))
+    end
 end
 
 function Base.get(f::Function, c::ChainDict{K, V}, k::K) where {K, V}
     get(c.cur, k) do
-         isassigned(c.init) ?
-            get(f, c.init[], k) :
-            f()
-         end
+        isassigned(c.init) ? get(f, c.init[], k) : f()
+    end
 end
 
 function for_chaindict(f::Function, d::ChainDict{K, V}) where {K, V}
@@ -66,7 +62,7 @@ Base.getindex(c::ChainDict, k) = Base.get(c, k)
 function Base.setindex!(c::ChainDict{K, V}, value::V, k::K) where {K, V}
     c.cur[k] = value
 end
-        
+
 function child(c::ChainDict{K, V}) where {K, V}
     ChainDict(Dict{K, V}(), c)
 end

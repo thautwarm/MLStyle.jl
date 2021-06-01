@@ -1,23 +1,23 @@
 module AbstractPatterns
 export spec_gen, RedyFlavoured, TypeObject
-export and, or, literal, and, wildcard, decons,
-       guard, effect
+export and, or, literal, and, wildcard, decons, guard, effect
 export PatternCompilationError, Target, PatternImpl, PComp
 export APP, NoncachablePre, NoPre
 export ChainDict, for_chaindict, child, for_chaindict_dup
 export BasicPatterns
-export P_bind, P_tuple, P_type_of, P_vector, P_capture, P_vector3, P_slow_view, P_fast_view
+export P_bind,
+    P_tuple, P_type_of, P_vector, P_capture, P_vector3, P_slow_view, P_fast_view
 export P_svec, P_svec3
 export SimpleCachablePre, see_captured_vars, see_captured_vars!
 export CFGSpec, CFGJump, CFGLabel, CFGItem, init_cfg
 
 mutable struct CFGSpec
-    exp :: Expr
+    exp::Expr
 end
 
 struct CFGItem
-    kind :: Symbol
-    name :: Symbol
+    kind::Symbol
+    name::Symbol
 end
 
 CFGJump(x::Symbol) = CFGItem(Symbol("@goto"), x)
@@ -67,7 +67,7 @@ include("impl/BasicPatterns.jl")
 using .BasicPatterns
 
 const _points_of_view = Dict{Function, Int}(tag_extract => 1, untagless => 2)
-function spec_gen(branches :: Vector{Pair{Function, Tuple{LineNumberNode, Int}}})
+function spec_gen(branches::Vector{Pair{Function, Tuple{LineNumberNode, Int}}})
     cores = Branch[]
     for (tf, ln_and_cont) in branches
         impls = (tag_extract(_points_of_view), untagless(_points_of_view))

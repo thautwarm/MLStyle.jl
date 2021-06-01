@@ -3,8 +3,8 @@ using MLStyle.AbstractPatterns
 using MLStyle.Err: PatternCompilationError
 
 Config = NamedTuple{(:type, :ln)}
-Scope = ChainDict{Symbol,Symbol}
-ViewCache = ChainDict{Pair{TypeObject,Any},Tuple{Symbol,Bool}}
+Scope = ChainDict{Symbol, Symbol}
+ViewCache = ChainDict{Pair{TypeObject, Any}, Tuple{Symbol, Bool}}
 Terminal = Dict{Int, Any}
 function update_parent!(view_cache::ViewCache)
     parent = view_cache.init[]
@@ -18,10 +18,10 @@ struct CompileEnv
     scope::Scope
     # Dict(view => (viewed_cache_symbol => guarantee_of_defined?))
     view_cache::ViewCache
-    terminal :: Dict{Int, Any}
-    hygienic :: Bool
-    ret      :: Symbol
-    final    :: Symbol
+    terminal::Dict{Int, Any}
+    hygienic::Bool
+    ret::Symbol
+    final::Symbol
 end
 
 function CompileEnv(terminal::Terminal, hygienic::Bool, ret::Symbol, final::Symbol)
@@ -29,8 +29,8 @@ function CompileEnv(terminal::Terminal, hygienic::Bool, ret::Symbol, final::Symb
 end
 
 function (env::CompileEnv)(;
-    scope::Union{Nothing, Scope}=nothing,
-    view_cache::Union{Nothing, ViewCache}=nothing
+    scope::Union{Nothing, Scope} = nothing,
+    view_cache::Union{Nothing, ViewCache} = nothing,
 )
     scope === nothing && (scope = env.scope)
     view_cache === nothing && (view_cache = env.view_cache)
@@ -39,23 +39,23 @@ end
 
 abstract type Cond end
 struct AndCond <: Cond
-    left :: Cond
-    right :: Cond
+    left::Cond
+    right::Cond
 end
 
 struct OrCond <: Cond
-    left :: Cond
-    right :: Cond
+    left::Cond
+    right::Cond
 end
 
 struct TrueCond <: Cond
-    stmt :: Any
+    stmt::Any
 end
 
 TrueCond() = TrueCond(true)
 
 struct CheckCond <: Cond
-    expr :: Any
+    expr::Any
 end
 
 """
@@ -79,7 +79,7 @@ function build_readable_expression!(
     following_stmts::Vector{Any},
     cond::TrueCond,
 )
-    cond.stmt isa Union{Bool,Int,Float64,Nothing} && return #= shall contain more literal typs =#
+    cond.stmt isa Union{Bool, Int, Float64, Nothing} && return #= shall contain more literal typs =#
     push!(following_stmts, cond.stmt)
     nothing
 end
@@ -141,18 +141,16 @@ end
 
 allsame(xs::Vector) = any(e -> e == xs[1], xs)
 
-
 const CACHE_NO_CACHE = 0
 const CACHE_MAY_CACHE = 1
 const CACHE_CACHED = 2
-
 
 function static_memo(
     f::Function,
     view_cache::ViewCache,
     op::APP;
     ty::TypeObject,
-    depend::Union{Nothing,APP} = nothing,
+    depend::Union{Nothing, APP} = nothing,
 )
     if op isa NoPre
         nothing
@@ -161,12 +159,11 @@ function static_memo(
         f(cached_sym, CACHE_NO_CACHE)
     else
         cache_key = depend === nothing ? op : (depend => op)
-        cache_key = Pair{TypeObject,Any}(ty, cache_key)
+        cache_key = Pair{TypeObject, Any}(ty, cache_key)
         cached = get(view_cache, cache_key) do
             nothing
-        end::Union{Tuple{Symbol,Bool},Nothing}
+        end::Union{Tuple{Symbol, Bool}, Nothing}
         if cached === nothing
-
             cached_sym = gensym("cache")
             computed_guarantee = false
         else
@@ -201,7 +198,6 @@ end
 end
 
 function myimpl()
-
     function cache(f)
         function apply(env::CompileEnv, target::Target{true})::Cond
             target′ = target.with_repr(gensym(), Val(false))
@@ -221,8 +217,7 @@ function myimpl()
             v = QuoteNode(v)
         end
         (isprimitivetype(ty) || ty.size == 0 && !ismutabletype(ty)) ?
-            CheckCond(:($(target.repr) === $v)) :
-            CheckCond(:($(target.repr) == $v))
+        CheckCond(:($(target.repr) === $v)) : CheckCond(:($(target.repr) == $v))
     end
 
     function and(ps::Vector{<:Function}, config::Config)
@@ -237,27 +232,27 @@ function myimpl()
             #   match val with
             #   | View1 && View2 ->
             # and we know `View1` must be cached.
-            (computed_guarantee′, env′, ret) =
-                foldl(tl, init = (true, env, init)) do (computed_guarantee, env, last), p
-                    # `TrueCond` means the return expression must be evaluated to `true`
-                    computed_guarantee′ = computed_guarantee && last isa TrueCond
-                    if !computed_guarantee′ && computed_guarantee
-                        view_cache = env.view_cache
-                        view_cache′ = child(view_cache)
-                        view_cache_change = view_cache′.cur
-                        env = env(view_cache = view_cache′)
-                    end
-                    computed_guarantee′, env, AndCond(last, p(env, target))
+            (computed_guarantee′, env′, ret) = foldl(
+                tl,
+                init = (true, env, init),
+            ) do (computed_guarantee, env, last), p
+                # `TrueCond` means the return expression must be evaluated to `true`
+                computed_guarantee′ = computed_guarantee && last isa TrueCond
+                if !computed_guarantee′ && computed_guarantee
+                    view_cache = env.view_cache
+                    view_cache′ = child(view_cache)
+                    view_cache_change = view_cache′.cur
+                    env = env(view_cache = view_cache′)
                 end
+                computed_guarantee′, env, AndCond(last, p(env, target))
+            end
 
             if !computed_guarantee′
                 update_parent!(env′.view_cache)
             end
             ret
-
         end |> cache
     end
-
 
     function or(ps::Vector{<:Function}, config::Config)
         @assert !isempty(ps)
@@ -265,18 +260,21 @@ function myimpl()
             or_checks = Cond[]
             scope = env.scope
             view_cache = env.view_cache
-            scopes = Dict{Symbol,Symbol}[]
+            scopes = Dict{Symbol, Symbol}[]
             n_ps = length(ps)
             for p in ps
                 scope′ = child(scope)
-                env′ = env(;scope=scope′, view_cache=view_cache)
+                env′ = env(; scope = scope′, view_cache = view_cache)
                 push!(or_checks, p(env′, target.clone))
                 push!(scopes, scope′.cur)
             end
 
             # check the change of scope discrepancies for all branches
-            intersected_new_names =
-                reduce(intersect!, (keys(scope) for scope in scopes[2:n_ps]), init=Set(keys(scopes[1])))
+            intersected_new_names = reduce(
+                intersect!,
+                (keys(scope) for scope in scopes[2:n_ps]),
+                init = Set(keys(scopes[1])),
+            )
 
             for key in intersected_new_names
                 refresh = gensym(key)
@@ -394,10 +392,12 @@ function myimpl()
 
             for i in eachindex(ps)
                 p = ps[i]::Function
-                field_target =
-                    Target{true}(extract(viewed_sym, i, scope, ln), Ref{TypeObject}(Any))
+                field_target = Target{true}(
+                    extract(viewed_sym, i, scope, ln),
+                    Ref{TypeObject}(Any),
+                )
                 view_cache′ = ViewCache()
-                env′ = env(;view_cache=view_cache′)
+                env′ = env(; view_cache = view_cache′)
                 elt_chk = p(env′, field_target)
                 chk = AndCond(chk, AndCond(TrueCond(init_cache(view_cache′)), elt_chk))
             end
@@ -451,7 +451,8 @@ function compile_spec!(
     compile_spec!(env, true_clause.args, x.case, target)
     push!(
         suite,
-        conditional_expr === true ? true_clause : Expr(:if, conditional_expr, true_clause),
+        conditional_expr === true ? true_clause :
+        Expr(:if, conditional_expr, true_clause),
     )
 end
 
@@ -492,7 +493,7 @@ function compile_spec!(
         true_clause = Expr(:block)
         # create new `view_cache` as only one case will be executed
         view_cache′ = child(env.view_cache)
-        env′ = env(;scope=child(env.scope), view_cache=view_cache′)
+        env′ = env(; scope = child(env.scope), view_cache = view_cache′)
         compile_spec!(env′, true_clause.args, case, target.with_type(ty))
         update_parent!(view_cache′)
         push!(suite, Expr(:if, :($sym isa $ty), true_clause))
@@ -514,7 +515,7 @@ function compile_spec!(
         # use old view_cache:
         # cases are tried in order,
         # hence `view_cache` can inherit from the previous case
-        env′ = env(;scope=child(env.scope))
+        env′ = env(; scope = child(env.scope))
         compile_spec!(env′, suite, case, target.clone)
     end
 end
@@ -523,7 +524,7 @@ function compile_spec(
     env::CompileEnv,
     target::Any,
     case::AbstractCase,
-    ln::LineNumberNode
+    ln::LineNumberNode,
 )
     target = Target{true}(target, Ref{TypeObject}(Any))
     ret = Expr(:block)
@@ -532,7 +533,7 @@ function compile_spec(
         push!(suite, :($(env.ret) = nothing))
     end
     view_cache = env.view_cache
-    
+
     compile_spec!(env, suite, case, target)
     pushfirst!(suite, init_cache(view_cache))
 
@@ -561,9 +562,8 @@ function backend(
     clauses::Vector{Pair{Function, Tuple{LineNumberNode, Int}}},
     terminal::Terminal,
     ln::LineNumberNode;
-    hygienic::Bool=true
+    hygienic::Bool = true,
 )
-    
     spec = spec_gen(clauses)
     env = CompileEnv(terminal, hygienic, gensym(:return), gensym(:final))
     compile_spec(env, expr_to_match, spec, ln)

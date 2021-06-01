@@ -7,12 +7,12 @@ macro _depwarn(sym)
     :($Base.depwarn("No need to use this function anymore since MLStyle v0.4", $sym))
 end
 
-function used(ext :: Symbol, mod :: Module) :: Bool
+function used(ext::Symbol, mod::Module)::Bool
     @_depwarn :used
     false
 end
 
-function use(ext :: Symbol, mod :: Module)
+function use(ext::Symbol, mod::Module)
     @_depwarn :use
     nothing
 end

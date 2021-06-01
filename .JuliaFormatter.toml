@@ -1,0 +1,14 @@
+margin = 90
+whitespace_typedefs = true
+whitespace_ops_in_indices = false
+remove_extra_newlines = true
+import_to_using = false
+pipe_to_function_call = false
+short_to_long_function_def = false
+always_use_return = false
+whitespace_in_kwargs = true
+annotate_untyped_fields_with_any = false
+format_docstrings = false
+align_struct_field = false
+align_pair_arrow = false
+conditional_to_if = false

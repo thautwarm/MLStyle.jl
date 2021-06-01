@@ -1,7 +1,7 @@
 @nospecialize
 """the view point of the type tag for each term
 """
-function tag_extract(points_of_view::Dict{Function,Int})
+function tag_extract(points_of_view::Dict{Function, Int})
     viewpoint = points_of_view[tag_extract]
 
     function and(many)
@@ -54,7 +54,7 @@ function tag_extract(points_of_view::Dict{Function,Int})
         wildcard = wildcard,
         decons = decons,
         guard = guard,
-        effect = effect
+        effect = effect,
     )
 end
 @specialize

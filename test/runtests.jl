@@ -52,6 +52,7 @@ MODULE = TestModule
 
 @use GADT
 
+include("issues/109.jl")
 include("when.jl")
 include("untyped_lam.jl")
 include("active_patterns.jl")

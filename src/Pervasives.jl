@@ -31,13 +31,13 @@ function MLStyle.pattern_uncall(
     targs::AbstractArray,
     args::AbstractArray,
 )
-    isempty(tparams) || error("A (:) pattern requires no type params.")
-    isempty(targs) || error("A (:) pattern requires no type arguments.")
+
     isempty(tparams) || return begin
-        call = Expr(:call, t, args...)
-        ann = Expr(:curly, t, targs...)
+        call = Expr(:call, Dict, args...)
+        ann = Expr(:curly, Dict, targs...)
         self(Where(call, ann, tparams))
     end
+
     pairs = Pair[]
     for arg in args
         @switch arg begin
@@ -45,14 +45,16 @@ function MLStyle.pattern_uncall(
             push!(pairs, a => b)
             continue
             @case _
-            error("A Dict pattern's sub-pattern should be the form of `(a::Symbol) => b`.")
+            error(
+                "A Dict pattern's sub-pattern should be the form of `(a::Symbol) => b`.",
+            )
         end
     end
-    function dict_extract(expr::Any, i::Int, scope::ChainDict{Symbol,Symbol}, ::Any)
+    function dict_extract(expr::Any, i::Int, scope::ChainDict{Symbol, Symbol}, ::Any)
         # cannot avoid performance overhead due to
         # https://discourse.julialang.org/t/distinguish-dictionary-lookup-from-nothing-and-not-found/38654
         k, v = pairs[i]
-        if k isa Union{Expr,Symbol}
+        if k isa Union{Expr, Symbol}
             # how to reduce the generate code size?
             # most of the cases, see_captured_vars is unnecessary.
             k = see_captured_vars(k, scope)
@@ -61,16 +63,20 @@ function MLStyle.pattern_uncall(
     end
 
     tchk = isempty(targs) ? P_type_of(Dict) : self(:(::$Dict{$(targs...)}))
-    decomp = decons(dict_extract, [self(Expr(:call, Some, pair.second)) for pair in pairs])
+    decomp =
+        decons(dict_extract, [self(Expr(:call, Some, pair.second)) for pair in pairs])
     and([tchk, decomp])
 end
-
 
 function _allow_assignment!(expr::Expr)
     if expr.head === :kw || expr.head === :(=)
         expr.head = :(=)
         @assert expr.args[1] isa Symbol
     end
+end
+
+function MLStyle.pattern_unref(::Type{E}, self::Function, args::AbstractArray) where E
+    self(:([$(args...)] :: $AbstractVector{$E}))
 end
 
 function MLStyle.pattern_unref(::Type{Do}, self::Function, args::AbstractArray)
@@ -185,6 +191,22 @@ function MLStyle.pattern_uncall(
     isempty(targs) || error("A (:) pattern requires no type arguments.")
     MLStyle.pattern_unref(Many, self, args)
 end
+
+function MLStyle.pattern_unmacrocall(
+    r_str::typeof(@eval $(Symbol("@", "r_str"))),
+    self::Function,
+    args::AbstractArray,
+)
+    @switch args begin
+        @case [ln, m, s::String]
+    end
+
+    regex = r_str(ln, m, s)
+    guard() do target, _, _
+        :($match($regex, $target) !== nothing)
+    end
+end
+
 @specialize
 
 end

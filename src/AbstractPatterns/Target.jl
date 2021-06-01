@@ -29,32 +29,31 @@ function target_method(target::Target, ::Val{:type})
     getfield(target, :type)[]
 end
 
-
 function target_method(target::Target, ::Val{:repr})
     getfield(target, :repr)
 end
 
-function target_method(target::Target{IsC}, ::Val{:with_repr}) where IsC
+function target_method(target::Target{IsC}, ::Val{:with_repr}) where {IsC}
     function ap(repr::Any)
-        Target{IsC}(repr,  getfield(target, :type))
+        Target{IsC}(repr, getfield(target, :type))
     end
-    function ap(repr::Any, ::Val{IsC′}) where IsC′
+    function ap(repr::Any, ::Val{IsC′}) where {IsC′}
         Target{IsC′}(repr, getfield(target, :type))
     end
     ap
 end
 
-function target_method(target::Target{IsC}, ::Val{:with_type}) where IsC
+function target_method(target::Target{IsC}, ::Val{:with_type}) where {IsC}
     function ap(ty::TypeObject)
         Target{IsC}(target.repr, Ref{TypeObject}(ty))
     end
-    function ap(ty::TypeObject, ::Val{IsC′}) where IsC′
+    function ap(ty::TypeObject, ::Val{IsC′}) where {IsC′}
         Target{IsC′}(target.repr, Ref{TypeObject}(ty))
     end
     ap
 end
 
-function target_method(target::Target{IsC}, ::Val{:clone}) where IsC
+function target_method(target::Target{IsC}, ::Val{:clone}) where {IsC}
     Target{IsC}(target.repr, Ref{TypeObject}(target.type))
 end
 
