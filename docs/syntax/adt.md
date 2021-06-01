@@ -105,7 +105,7 @@ using MLStyle
 end
 ```
 
-Above codes makes a clarified description about Arithmetic operations and provides a corresponding implementation.
+The above code makes a clear description about Arithmetic operations and provides a corresponding implementation.
 
 If you want to transpile above ADTs to some specific language, there is a clear step:
 
@@ -137,7 +137,7 @@ About Type Parameters
 
 `where` is used for type parameter introduction.
 
-Following 2 patterns are equivalent:
+The following 2 patterns are equivalent:
 ```julia
 A{T1...}(T2...) where {T3...}
 A{T1...}(T2...) :: A{T1...} where {T3...}

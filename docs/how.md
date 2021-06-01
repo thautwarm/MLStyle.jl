@@ -2,4 +2,4 @@
 
 For installation, open the package manager mode in the Julia REPL and `add MLStyle`.
 
-For more examples or tutorials, see [this project](https://github.com/thautwarm/MLStyle-Playground) which will be frequently updated to present some interesting uses of MLStyle.jl.
+For more examples or tutorials, see [the MLStyle-Playground project](https://github.com/thautwarm/MLStyle-Playground). This project will be frequently updated to demonstrate some interesting uses of MLStyle.jl.

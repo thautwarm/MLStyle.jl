@@ -1,23 +1,24 @@
 module Err
-export PatternCompilationError, InternalException, SyntaxError, UnknownExtension, PatternUnsolvedException
+export PatternCompilationError,
+    InternalException, SyntaxError, UnknownExtension, PatternUnsolvedException
 
 PatternUnsolvedException = ErrorException
 
 struct PatternCompilationError <: Exception
-    line::Union{LineNumberNode,Nothing}
-    msg::AbstractString
+    line::Union{LineNumberNode, Nothing}
+    ex::Exception
 end
 
 struct InternalException <: Exception
-    msg :: String
+    msg::String
 end
 
 struct SyntaxError <: Exception
-    msg :: String
+    msg::String
 end
 
 struct UnknownExtension <: Exception
-    ext :: Union{String, Symbol}
+    ext::Union{String, Symbol}
 end
 
 end

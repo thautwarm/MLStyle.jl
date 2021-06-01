@@ -10,7 +10,7 @@ using MLStyle.AbstractPatterns.BasicPatterns
 [a, b..., c] -> :vec3 => [a], b, [c]
 [a, b, c]    -> :vec => [a, b, c]
 """
-function ellipsis_split(args::AbstractArray{T,1}) where {T}
+function ellipsis_split(args::AbstractArray{T, 1}) where {T}
     ellipsis_index = findfirst(args) do arg
         Meta.isexpr(arg, :...)
     end
@@ -41,7 +41,6 @@ function qt2ex(ex::Any)
         ex
     end
 end
-
 
 const backend = RedyFlavoured.backend
 
@@ -147,7 +146,9 @@ function basic_ex2tf(eval::Function, ex::Expr)
                 append!(patterns, [!e for e in args′])
                 append!(partial_ns, all_field_ns)
             elseif length(partial_ns) !== 0
-                error("count of positional fields should be 0 or the same as the fields($all_field_ns)")
+                error(
+                    "count of positional fields should be 0 or the same as the fields($all_field_ns)",
+                )
             end
             for e in kwargs
                 if e isa Symbol
@@ -179,23 +180,21 @@ this is incomplete and only for bootstrapping, do not use it.
 """
 macro sswitch(val, ex)
     @assert Meta.isexpr(ex, :block)
-    branches = Pair{Function,Tuple{LineNumberNode,Int}}[]
+    branches = Pair{Function, Tuple{LineNumberNode, Int}}[]
     k = 0
     ln = __source__
-    terminal = Dict{Int,Any}()
+    terminal = Dict{Int, Any}()
     body = nothing
     for i in eachindex(ex.args)
         stmt = ex.args[i]
         if Meta.isexpr(stmt, :macrocall) &&
            stmt.args[1] === case_sym &&
            length(stmt.args) == 3
-
             k += 1
             pattern = try
                 basic_ex2tf(__module__.eval, stmt.args[3])
             catch e
-                e isa ErrorException && throw(PatternCompilationError(ln, e.msg))
-                rethrow()
+                throw(PatternCompilationError(ln, e))
             end
             push!(branches, (pattern => (ln, k)))
             body = terminal[k] = Expr(:block)

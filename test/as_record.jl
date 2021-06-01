@@ -138,5 +138,16 @@ end
     end
 
     # programmer is happy!
+end
 
+@testcase "#113: qualified names in @as_record" begin
+    @lift module A
+        struct AA
+            a
+        end
+    end
+    @lift @as_record A.AA
+    @test 1 == @match A.AA(1) begin
+        A.AA(a) => a
+    end
 end

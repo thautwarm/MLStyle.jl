@@ -11,10 +11,10 @@ function parse_cmd()
     s = ArgParseSettings()
     @add_arg_table s begin
         "versus"
-            help = join(", ", versus_items)
-            required = true
-            action => :store_arg
-            nargs = '+'
+        help = join(", ", versus_items)
+        required = true
+        action => :store_arg
+        nargs = '+'
     end
     parse_args(ARGS, s)
 end
@@ -24,22 +24,20 @@ check_versus(x) = x in versus_items
 function benchmark(x)
     filename = "matrix-benchmark/bench-$x.jl"
     open(filename) do f
-        include_string(Main, read(f, String), filename);
+        include_string(Main, read(f, String), filename)
     end
 end
 
 action = @λ begin
     [] -> nothing
-    [GuardBy(check_versus) && hd, tl...] ->
-        begin
-            benchmark(hd)
-            action(tl)
-        end
-    [hd, tl...] ->
-        begin
-            @warn "Unknown versus item: $hd"
-            action(hd)
-        end
+    [GuardBy(check_versus) && hd, tl...] -> begin
+        benchmark(hd)
+        action(tl)
+    end
+    [hd, tl...] -> begin
+        @warn "Unknown versus item: $hd"
+        action(hd)
+    end
 end
 
 function main()

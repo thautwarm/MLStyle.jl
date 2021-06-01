@@ -2,7 +2,7 @@ abstract type AbstractCase end
 export AbstractCase, EnumCase, SwitchCase, Leaf, Shaped
 
 Continuation = Int
-Branch = Pair{PatternInfo,Tuple{LineNumberNode,Continuation}}
+Branch = Pair{PatternInfo, Tuple{LineNumberNode, Continuation}}
 
 """for generating patterns with one-by-one checks
 """
@@ -13,7 +13,7 @@ end
 """for generating patterns with a optimized switch
 """
 struct SwitchCase <: AbstractCase
-    cases::Dict{TypeObject,AbstractCase}
+    cases::Dict{TypeObject, AbstractCase}
 end
 
 """specifying the code body of a case
@@ -72,7 +72,7 @@ function build_dyn(top::TypeObject, branches::Vector{Branch})::AbstractCase
         last_group_start = groups[end]
         non_orthogonal_types = TypeObject[]
         non_orthogonal_indices = Int[]
-        for j in last_group_start:i-1
+        for j = last_group_start:i-1
             if typeintersect(current_type, labels[j]) !== Base.Bottom
                 # Merging branches
                 # e.g:
@@ -98,11 +98,11 @@ function build_dyn(top::TypeObject, branches::Vector{Branch})::AbstractCase
     n_groups = length(groups)
     # fix-point check
     if n_groups === 2 && all(labels .=== top)
-        return EnumCase(AbstractCase[
-            Shaped(pat, ln, Leaf(cont)) for (pat, (ln, cont)) in branches
-        ])
+        return EnumCase(
+            AbstractCase[Shaped(pat, ln, Leaf(cont)) for (pat, (ln, cont)) in branches],
+        )
     end
-    for i_group in 1:n_groups-1
+    for i_group = 1:n_groups-1
         start = groups[i_group]
         final = groups[i_group+1] - 1
 
@@ -114,14 +114,14 @@ function build_dyn(top::TypeObject, branches::Vector{Branch})::AbstractCase
             continue
         end
 
-        switch_map = Dict{TypeObject,Vector{Branch}}()
-        for i in start:final
+        switch_map = Dict{TypeObject, Vector{Branch}}()
+        for i = start:final
             vec = get!(switch_map, labels[i]) do
                 Branch[]
             end
             push!(vec, branches[i])
         end
-        switch = Pair{TypeObject,AbstractCase}[
+        switch = Pair{TypeObject, AbstractCase}[
             top′ => build_dyn(top′, branches′) for (top′, branches′) in switch_map
         ]
         push!(enum_cases, SwitchCase(Dict(switch)))

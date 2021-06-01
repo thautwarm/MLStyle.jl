@@ -18,6 +18,6 @@ end
 function run_one(item)
     filename = "matrix-benchmark/bench-$item.jl"
     open(filename) do f
-        include_string(Main, read(f, String), filename);
+        include_string(Main, read(f, String), filename)
     end
 end

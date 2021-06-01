@@ -1,13 +1,13 @@
 Write You A Query Language
 ===============================================
 
-**P.S**: *this document hasn't got up-to-date*.
+**P.S**: *this document is not up-to-date*.
 
-You may have heard of LINQ or extension methods before, and they're all embedded query languages.
+You may have heard of embedded query languages like LINQ or extension methods before.
 
-In terms of Julia ecosystem, there're already Query.jl, LightQuery.jl, DataFramesMeta.jl, etc., each of which reaches the partial or full features of a query language.
+In terms of Julia ecosystem, there is already Query.jl, LightQuery.jl, DataFramesMeta.jl, etc. These packages accomplish the partial or full features of a query language.
 
-This document is provided for you to create a concise and efficient implementation of query language, which is a way for me to exhibit the power of MLStyle.jl on AST manipulations. Additionally, I think this tutorial can be also extremely helpful to those who're developing query languages for Julia.
+This tutorial primarily shows the creation a concise and efficient query language implemented  with MLStyle.jl. This demonstration illustrates the power of MLStyle.jl's ability to perform AST manipulations. Additionally, I think this tutorial can be also extremely helpful to those who're developing query languages for Julia.
 
 Definition of Syntaxes
 ------------------------------
@@ -86,16 +86,16 @@ Before implementing code generation, we should have a sketch about the target. T
 
 I'll take you to the travel within the inference about the final shape of code generation.
 
-Firstly, for we want this:
+First, we want to do this:
 
 ```julia
 df |>
 @select _.foo + x, _.bar
 ```
 
-We can infer out that the generated code is an anonymous function which takes only one argument.
+We can infer that the generated code is an anonymous function which takes only one argument.
 
-Okay, cool. We've known that the final shape of generated code should be:
+Okay, cool. We now know that the final shape of generated code should have the following form:
 
 ```julia
 function (ARG)
@@ -103,10 +103,10 @@ function (ARG)
 end
 ```
 
-Then, let's think about the `select` clause. You might find it's a `map`(if we don't take aggregate function into consideration). However, for we don't want to
+Then, let's think about the `select` clause. You might find it's a `map`(if we don't take aggregate function into consideration). However, we don't want to
 make redundant allocations when executing the queries, so we should use `Base.Generator` as the data representation.
 
-For `@select _.foo + x, _.bar`, it should be generated to something like
+For `@select _.foo + x, _.bar`, it should be generated to something like the following:
 
 ```julia
 ((RECORD[:foo] + x, RECORD[:bar])   for RECORD in IN_SOURCE)
@@ -145,7 +145,7 @@ df |>
 @select _.foo1 + 2 => foo2
 ```
 
-I don't know how to explain the iteration in my mind, but I've figured out such a way.
+I don't know how to explain the iteration in my mind, but I've figured out the following way to do it.
 
 ```julia
 let (IN_FIELDS, IN_SOURCE) =
@@ -233,18 +233,17 @@ let IN_FIELDS, IN_SOURCE = process(df),
 end
 ```
 
-I think it perfect, so let's go ahead. The reason why we make an inline function would be given
-later, I'd disclosed that it's for type inference.
+I think it perfect, so let's go ahead. We'll explain more about why we use `@inline` later, but the short answer is that it was needed for type inference.
 
 So, what should the output field names and the source be?
 
-An implementation is,
+An implementation could be,
 
 ```julia
 IN_FIELDS, values(GROUPS)
 ```
 
-But if so, we will lose the information of group keys, which is not that good.
+But if so, we will lose the information of group keys, which is undesirable.
 
 So, if we want to persist the group keys, we can do this:
 
@@ -277,7 +276,7 @@ end
 
 ```
 
-However, subsequently, we comes to the `having` clause, in fact, I'd regard it as a sub-clause of
+However, subsequently, we come to the `having` clause, in fact, I'd regard it as a sub-clause of
 `groupby`, which means it cannot take place independently, but co-appear with a `groupby` clause.
 
 Given such a case:
@@ -313,10 +312,10 @@ end
 
 The conditional code generation of `groupby` could be achieved very concisely via AST patterns of MLStyle, we'll refer to this later.
 
-After introducing the generation for above 4 clauses, `orderby` and `limit` then become quite trivial, and I don't want to repeat myself if not necessary.
+After introducing the generation for above 4 clauses, `orderby` and `limit` then become trivial, and I don't want to repeat myself if it is not necessary.
 
-Now we know that multiple  clauses could be generated to produce a `Tuple` result, first of which is the field names, the
-second is the lazy computation of the query. We can resume this tuple to the corresponding types, for instance,
+Now we know that multiple clauses could be generated to produce a `Tuple` result, first of which is the field names, the
+second is the lazy computation of the query. We can associate this tuple to the corresponding types, for instance,
 
 ```julia
 function (ARG :: DataFrame)
@@ -335,9 +334,9 @@ end
 Refinement of Codegen: Typed Columns
 ---------------------------------------------
 
-Last section introduce a framework of code generation for implementing query languages, but in Julia, there's still a fatal problem.
+This last section introduces a framework of code generation for implementing query languages, but there's still a fatal problem.
 
-Look at the value to be return(when input is a `DataFrame`):
+Look at the value to be returned (when input is a `DataFrame`):
 
 ```julia
 res = Tuple([] for _ in IN_FIELDS)
@@ -348,11 +347,11 @@ DataFrame(collect(res), collect(IN_FIELDS))
 ```
 
 I can promise you that, each column of your data frames is a `Vector{Any}`, yes, not its actual type.
-You may prefer to calculate the type of a column using the common super type of all elements, but there're
-2 problems if you try this:
+You may prefer to calculate the type of a column using the common super type of all elements, but there are
+two problems if you try this:
 
 - If the column is empty, emmmm...
-- Calculating the super type of all elements causes unaffordable cost!
+- Calculating the super type of all elements is very slow!
 
 Yet, I'll introduce a new requirement `IN_TYPES` of the query's code generation, which perfectly solves problems of column types.
 
@@ -408,7 +407,7 @@ Given following codes,
 @where args2,
 @select args3
 ```
-, we transform them into
+we transform them into
 
 ```julia
 [(generate_select, args), (generate_where, args2), (generate_select, args3)]
@@ -558,7 +557,7 @@ function codegen(node)
 end
 ```
 
-Then, we need a visitor to transform the patterns shaped as `_.foo` inside an expression to a mangled symbol whose value is `RECORD[idx_of_foo]`.
+Then, we need a visitor pattern to transform the patterns shaped as `_.foo` inside an expression to a mangled symbol whose value is `RECORD[idx_of_foo]`.
 
 ```julia
 # visitor to process the pattern `_.x, _,"x", _.(1)` inside an expression
@@ -603,12 +602,12 @@ function mk_visit(fields :: Dict{Any, Field}, assigns :: OrderedDict{Symbol, Any
 end
 ```
 
-You might not be able to understand what the meanings of `fields` and `assigns` are, don't worry too much, and I'm to explain it for you.
+The meaning of `fields` and `assign`s might not be obvious, so we'll dig closer into these terms now.
 
 - `fields : Dict{Any, Field}`
 
-    Think about you want such a query `@select _.foo * 2, _.foo + 2`, you can see that field `foo` is referred twice, but you shouldn't make 2 symbols to represent the index of `foo` field. So I introduce a dictionary `fields` here to
-    avoid re-calculation.
+    Think about if you wanted such a query `@select _.foo * 2, _.foo + 2`, you can see that field `foo` is referred twice, but you shouldn't make 2 symbols to represent the index of `foo` field. So I introduce a dictionary `fields` here to
+    avoid the cost of that re-calculation.
 
 - `assigns : OrderedDict{Any, Expr}`
 
@@ -764,9 +763,9 @@ Above case is for handling with field filters, like
 end
 ```
 
-Above case is for handling with regular expressions which might contain something like `_.x`, `_.(1)` or `_."is ruby"`.
+The above case is for handling with regular expressions which might contain something like `_.x`, `_.(1)` or `_."is ruby"`.
 
-Meanwhile, `=>` allows you to alias the expression with the name you prefer. Note that, in terms of `@select (_.foo => :a) => a`, the first `=>` is a normal infix operator, which denotes the built-in object `Pair`, but the second is *alias*.
+Meanwhile, `=>` allows you to alias the expression with the name you prefer. Note that, in terms of `@select (_.foo => :a) => a`, the first `=>` is a normal infix operator, which denotes the built-in object `Pair`, but the second is an *alias*.
 
 If you have problems with `$` in AST patterns, just remember that, inside a `quote ... end` or `:(...)`, ASTs/Expressions are compared by literal, except for `$(...)` things are matched via normal patterns, for instance, `:($(a :: Symbol) = 1)` can match `:($a = 1)` if the available variable `a` has type `Symbol`.
 
