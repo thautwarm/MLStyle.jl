@@ -196,6 +196,10 @@ function init_cache(view_cache::ViewCache)
     end
 end
 
+@static if isdefined(Base, :ismutabletype)
+    ismutabletype(x::Type) = x.mutable
+end
+
 function myimpl()
 
     function cache(f)
@@ -216,7 +220,7 @@ function myimpl()
         if v isa Symbol
             v = QuoteNode(v)
         end
-        (isprimitivetype(ty) || ty.size == 0 && !ty.mutable) ?
+        (isprimitivetype(ty) || ty.size == 0 && !ismutabletype(ty)) ?
             CheckCond(:($(target.repr) === $v)) :
             CheckCond(:($(target.repr) == $v))
     end
