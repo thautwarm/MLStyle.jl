@@ -196,7 +196,7 @@ function init_cache(view_cache::ViewCache)
     end
 end
 
-@static if isdefined(Base, :ismutabletype)
+@static if !isdefined(Base, :ismutabletype)
     ismutabletype(x::Type) = x.mutable
 end
 
