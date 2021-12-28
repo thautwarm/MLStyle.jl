@@ -412,9 +412,7 @@ macro tryswitch(val, ex)
             case.args[3] == :_
     end
     insert_case && push!(ex.args, Expr(:macrocall, Symbol("@case"), __source__, :_), :nothing)
-    res = gen_switch(val, ex, __source__, __module__)
-    res = init_cfg(res)
-    esc(res)
+    :($(esc(:(@switch $val $ex))))
 end
 @specialize
 function gen_switch(val, ex, __source__::LineNumberNode, __module__::Module)
