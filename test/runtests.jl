@@ -54,6 +54,7 @@ MODULE = TestModule
 
 include("issues/109.jl")
 include("when.jl")
+include("switch.jl")
 include("untyped_lam.jl")
 include("active_patterns.jl")
 include("uncomp.jl")
