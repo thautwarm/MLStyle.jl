@@ -132,6 +132,6 @@
         val = @trymatch true begin
             ::Int => 1
         end
-        @test isnothing(val)
+        @test val === nothing
     end
 end
