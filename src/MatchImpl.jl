@@ -1,6 +1,6 @@
 module MatchImpl
 export is_enum,
-    pattern_uncall, pattern_unref, pattern_unmacrocall, @switch, @tryswitch, @match, Where, gen_match, gen_switch
+    pattern_uncall, pattern_unref, pattern_unmacrocall, @switch, @tryswitch, @match, @trymatch, Where, gen_match, gen_switch
 export Q
 import MLStyle
 using MLStyle: mlstyle_report_deprecation_msg!
@@ -405,14 +405,10 @@ It is equivalent to
 """
 macro tryswitch(val, ex)
     @assert Meta.isexpr(ex, :block)
-    insert_case = length(ex.args) >= 2 || begin
-        case, line = ex.args[end-2:end]
-        Meta.isexpr(case, [:macrocall], 3)  &&
-            case.args[1] == Symbol("@case") &&
-            case.args[3] == :_
-    end
-    insert_case && push!(ex.args, Expr(:macrocall, Symbol("@case"), __source__, :_), :nothing)
-    :($(esc(:($(@__MODULE__).@switch $val $ex))))
+    push!(ex.args, Expr(:macrocall, case_sym, __source__, :_), :nothing)
+    res = gen_switch(val, ex, __source__, __module__)
+    res = init_cfg(res)
+    esc(res)
 end
 @specialize
 function gen_switch(val, ex, __source__::LineNumberNode, __module__::Module)
@@ -574,6 +570,31 @@ end
 ```
 """
 macro match(val, tbl)
+    res = gen_match(val, tbl, __source__, __module__)
+    res = init_cfg(res)
+    esc(res)
+end
+"""
+    @trymatch <item> begin
+        <pattern> => <result>
+        <pattern> => <result>
+    end
+
+Very similar to [`@match`](@ref), except that a failure to match does nothing instead of throwing a "match non-exhaustive" error.
+
+It is equivalent to
+
+```julia
+@match <item> begin
+    <pattern> => <result>
+    <pattern> => <result>
+    _ => nothing
+    end
+```
+"""
+macro trymatch(val, tbl)
+    Meta.isexpr(tbl, :block) || (tbl = Expr(:block, tbl))
+    push!(tbl.args, :(_ => nothing))
     res = gen_match(val, tbl, __source__, __module__)
     res = init_cfg(res)
     esc(res)

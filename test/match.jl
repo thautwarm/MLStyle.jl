@@ -127,4 +127,11 @@
         @test (@match 1 1 => 2) == 2
         @test (@match [1, 2, 3] [hd, tl...] => (hd, tl)) == (1, [2,3])
     end
+
+    @testset "trymatch" begin
+        val = @trymatch true begin
+            ::Int => 1
+        end
+        @test val === nothing
+    end
 end
