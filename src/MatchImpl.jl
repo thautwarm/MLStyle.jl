@@ -1,4 +1,9 @@
 module MatchImpl
+
+if isdefined(Base, :Experimental)
+    Base.Experimental.@compiler_options optimize=0 compile=min infer=no
+end
+
 export is_enum,
     pattern_uncall, pattern_unref, pattern_unmacrocall, @switch, @tryswitch, @match, @trymatch, Where, gen_match, gen_switch
 export Q

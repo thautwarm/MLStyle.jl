@@ -1,4 +1,8 @@
 module Sugars
+if isdefined(Base, :Experimental)
+    Base.Experimental.@compiler_options optimize=0 compile=min infer=no
+end
+
 using MLStyle
 using MLStyle.AbstractPatterns
 
