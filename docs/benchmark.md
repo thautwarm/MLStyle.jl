@@ -12,7 +12,7 @@ To run these cross-implementation benchmarks, some extra Julia packages should b
 
 After installing dependencies, you can directly benchmark them with `julia matrix_benchmark.jl tuple array datatype misc structfields vs-match` in the root directory.
 
-The benchmarks presented here are made by Julia **v1.4** on **Windows 10(64 bit)**.
+The benchmarks presented here are made by Julia **v1.7** on **Windows 11(64 bit)**.
 
 *Benchmark results for other platforms and Julia versions are welcome to get accepted as a pull request, if you figure out a better way to organize the files and their presentations in this README.*
 

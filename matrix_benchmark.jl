@@ -4,6 +4,7 @@
 using MLStyle
 using ArgParse
 include("matrix-benchmark/sampler.jl")
+include("matrix-benchmark/utils.jl")
 export ArbitrarySampler
 versus_items = ("misc", "tuple", "array", "structfields", "vs-match", "datatype")
 

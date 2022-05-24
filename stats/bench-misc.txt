@@ -1,31 +1,31 @@
-27×3 DataFrames.DataFrame
-│ Row │ time_mean │ implementation │ case   │
-│     │ Float64   │ Symbol         │ Symbol │
-├─────┼───────────┼────────────────┼────────┤
-│ 1   │ 19.0658   │ MLStyle        │ s1     │
-│ 2   │ 18.3908   │ Rematch        │ s1     │
-│ 3   │ 19.1439   │ Match.jl       │ s1     │
-│ 4   │ 78.9508   │ MLStyle        │ s2     │
-│ 5   │ 26.6807   │ Rematch        │ s2     │
-│ 6   │ 55.8119   │ Match.jl       │ s2     │
-│ 7   │ 16.9916   │ MLStyle        │ s3     │
-│ 8   │ 16.8301   │ Rematch        │ s3     │
-│ 9   │ 3130.84   │ Match.jl       │ s3     │
-│ 10  │ 22.6477   │ MLStyle        │ s4     │
-│ 11  │ 44.6397   │ Rematch        │ s4     │
-│ 12  │ 23.4967   │ Match.jl       │ s4     │
-│ 13  │ 18.8952   │ MLStyle        │ s5     │
-│ 14  │ 19.1326   │ Rematch        │ s5     │
-│ 15  │ 3841.01   │ Match.jl       │ s5     │
-│ 16  │ 143.195   │ MLStyle        │ s6     │
-│ 17  │ 110.933   │ Rematch        │ s6     │
-│ 18  │ 389.55    │ Match.jl       │ s6     │
-│ 19  │ 7.43317   │ MLStyle        │ s7     │
-│ 20  │ 5.83862   │ Rematch        │ s7     │
-│ 21  │ 5.03992   │ Match.jl       │ s7     │
-│ 22  │ 191.006   │ MLStyle        │ s8     │
-│ 23  │ 1135.96   │ Rematch        │ s8     │
-│ 24  │ 1002.55   │ Match.jl       │ s8     │
-│ 25  │ 26.4112   │ MLStyle        │ _      │
-│ 26  │ 29.9332   │ Rematch        │ _      │
-│ 27  │ 28.3468   │ Match.jl       │ _      │
+27×3 DataFrame
+ Row │ time_mean   implementation  case
+     │ Float64     Symbol          Symbol
+─────┼────────────────────────────────────
+   1 │   14.975    MLStyle         s1
+   2 │   21.9824   Rematch         s1
+   3 │   17.2126   Match.jl        s1
+   4 │   56.591    MLStyle         s2
+   5 │   39.4531   Rematch         s2
+   6 │   34.1342   Match.jl        s2
+   7 │   13.0621   MLStyle         s3
+   8 │   13.1668   Rematch         s3
+   9 │ 1986.98     Match.jl        s3
+  10 │   16.8287   MLStyle         s4
+  11 │   17.8801   Rematch         s4
+  12 │   16.0145   Match.jl        s4
+  13 │   15.3349   MLStyle         s5
+  14 │   16.3961   Rematch         s5
+  15 │ 2085.59     Match.jl        s5
+  16 │   54.4561   MLStyle         s6
+  17 │   52.3151   Rematch         s6
+  18 │  235.499    Match.jl        s6
+  19 │    3.3685   MLStyle         s7
+  20 │    3.20665  Rematch         s7
+  21 │    3.55345  Match.jl        s7
+  22 │   71.7315   MLStyle         s8
+  23 │  337.502    Rematch         s8
+  24 │  163.66     Match.jl        s8
+  25 │   26.7236   MLStyle         _
+  26 │   27.8337   Rematch         _
+  27 │   30.1363   Match.jl        _

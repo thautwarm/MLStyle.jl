@@ -27,7 +27,7 @@ function report(result::DataFrame, layouts...; benchfield::Symbol)
     end
 
     casemean = DataFrame(case = case_names, geomean = means)
-    benchmarks = join(result, casemean, on = :case)
+    benchmarks = innerjoin(result, casemean, on = :case)
 
     benchmarks[:, :case] = map(x -> case_names_with_unit[x], benchmarks[:, :case])
     casemean[:, :case] = map(x -> case_names_with_unit[x], casemean[:, :case])
@@ -50,7 +50,7 @@ function report(result::DataFrame, layouts...; benchfield::Symbol)
         # Stat.dodge(axis=:y),
         Geom.subplot_grid(Geom.label(position=:above), Geom.bar(position=:dodge)),
         # Scale.x_discrete,
-        Scale.color_discrete(levels=unique(benchmarks[:Implementation])),
+        Scale.color_discrete(levels=unique(benchmarks[:, :Implementation])),
         layouts...,
     ), casemean[:, 1:2]
 

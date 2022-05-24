@@ -1,22 +1,22 @@
-18×3 DataFrames.DataFrame
-│ Row │ time_mean │ implementation       │ case   │
-│     │ Float64   │ Symbol               │ Symbol │
-├─────┼───────────┼──────────────────────┼────────┤
-│ 1   │ 71.7258   │ MLStyle Expr-pattern │ s1     │
-│ 2   │ 52.8577   │ MLStyle AST-pattern  │ s1     │
-│ 3   │ 2877.59   │ Match.jl             │ s1     │
-│ 4   │ 72.0564   │ MLStyle Expr-pattern │ s2     │
-│ 5   │ 53.635    │ MLStyle AST-pattern  │ s2     │
-│ 6   │ 3169.19   │ Match.jl             │ s2     │
-│ 7   │ 89.4884   │ MLStyle Expr-pattern │ s3     │
-│ 8   │ 92.9921   │ MLStyle AST-pattern  │ s3     │
-│ 9   │ 3004.05   │ Match.jl             │ s3     │
-│ 10  │ 56.3209   │ MLStyle Expr-pattern │ s4     │
-│ 11  │ 12.1403   │ MLStyle AST-pattern  │ s4     │
-│ 12  │ 780.834   │ Match.jl             │ s4     │
-│ 13  │ 46.9207   │ MLStyle Expr-pattern │ s5     │
-│ 14  │ 25.7371   │ MLStyle AST-pattern  │ s5     │
-│ 15  │ 3144.15   │ Match.jl             │ s5     │
-│ 16  │ 52.6253   │ MLStyle Expr-pattern │ s6     │
-│ 17  │ 49.5699   │ MLStyle AST-pattern  │ s6     │
-│ 18  │ 2616.24   │ Match.jl             │ s6     │
+18×3 DataFrame
+ Row │ time_mean  implementation        case
+     │ Float64    Symbol                Symbol
+─────┼─────────────────────────────────────────
+   1 │   49.2341  MLStyle Expr-pattern  s1
+   2 │   37.9193  MLStyle AST-pattern   s1
+   3 │   53.5103  Match.jl              s1
+   4 │   51.1928  MLStyle Expr-pattern  s2
+   5 │   35.7297  MLStyle AST-pattern   s2
+   6 │   53.7347  Match.jl              s2
+   7 │   50.504   MLStyle Expr-pattern  s3
+   8 │   49.1989  MLStyle AST-pattern   s3
+   9 │   53.1803  Match.jl              s3
+  10 │   30.1107  MLStyle Expr-pattern  s4
+  11 │    5.9283  MLStyle AST-pattern   s4
+  12 │   30.2508  Match.jl              s4
+  13 │   30.6134  MLStyle Expr-pattern  s5
+  14 │   14.9725  MLStyle AST-pattern   s5
+  15 │   32.9388  Match.jl              s5
+  16 │   34.0904  MLStyle Expr-pattern  s6
+  17 │   33.0146  MLStyle AST-pattern   s6
+  18 │   37.7301  Match.jl              s6

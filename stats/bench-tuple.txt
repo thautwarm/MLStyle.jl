@@ -1,28 +1,28 @@
-24×3 DataFrames.DataFrame
-│ Row │ time_mean │ implementation │ case   │
-│     │ Float64   │ Symbol         │ Symbol │
-├─────┼───────────┼────────────────┼────────┤
-│ 1   │ 234.664   │ MLStyle        │ spec1  │
-│ 2   │ 319.853   │ Rematch        │ spec1  │
-│ 3   │ 313.065   │ Match.jl       │ spec1  │
-│ 4   │ 228.713   │ HandWritten    │ spec1  │
-│ 5   │ 4004.98   │ MLStyle        │ spec2  │
-│ 6   │ 5736.73   │ Rematch        │ spec2  │
-│ 7   │ 5340.85   │ Match.jl       │ spec2  │
-│ 8   │ 3981.75   │ HandWritten    │ spec2  │
-│ 9   │ 4625.68   │ MLStyle        │ spec3  │
-│ 10  │ 6667.44   │ Rematch        │ spec3  │
-│ 11  │ 6460.42   │ Match.jl       │ spec3  │
-│ 12  │ 4832.62   │ HandWritten    │ spec3  │
-│ 13  │ 4124.07   │ MLStyle        │ spec4  │
-│ 14  │ 5057.49   │ Rematch        │ spec4  │
-│ 15  │ 6010.74   │ Match.jl       │ spec4  │
-│ 16  │ 18560.5   │ HandWritten    │ spec4  │
-│ 17  │ 16.3741   │ MLStyle        │ spec5  │
-│ 18  │ 17.1582   │ Rematch        │ spec5  │
-│ 19  │ 18.3073   │ Match.jl       │ spec5  │
-│ 20  │ 17.5083   │ HandWritten    │ spec5  │
-│ 21  │ 25.5109   │ MLStyle        │ _      │
-│ 22  │ 25.5321   │ Rematch        │ _      │
-│ 23  │ 24.5314   │ Match.jl       │ _      │
-│ 24  │ 25.7364   │ HandWritten    │ _      │
+24×3 DataFrame
+ Row │ time_mean   implementation  case
+     │ Float64     Symbol          Symbol
+─────┼────────────────────────────────────
+   1 │   165.953   MLStyle         spec1
+   2 │   286.78    Rematch         spec1
+   3 │   190.29    Match.jl        spec1
+   4 │   179.69    HandWritten     spec1
+   5 │  2713.54    MLStyle         spec2
+   6 │  3523.3     Rematch         spec2
+   7 │  2868.37    Match.jl        spec2
+   8 │  2641.46    HandWritten     spec2
+   9 │  3328.09    MLStyle         spec3
+  10 │  4159.84    Rematch         spec3
+  11 │  4094.66    Match.jl        spec3
+  12 │  3514.94    HandWritten     spec3
+  13 │  1366.72    MLStyle         spec4
+  14 │  1851.44    Rematch         spec4
+  15 │  1783.84    Match.jl        spec4
+  16 │ 13473.0     HandWritten     spec4
+  17 │    10.6664  MLStyle         spec5
+  18 │    10.9764  Rematch         spec5
+  19 │    11.3479  Match.jl        spec5
+  20 │    11.1488  HandWritten     spec5
+  21 │    26.6849  MLStyle         _
+  22 │    25.4721  Rematch         _
+  23 │    26.4363  Match.jl        _
+  24 │    24.2934  HandWritten     _

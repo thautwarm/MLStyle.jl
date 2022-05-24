@@ -1,25 +1,25 @@
-21×3 DataFrames.DataFrame
-│ Row │ time_mean │ implementation │ case   │
-│     │ Float64   │ Symbol         │ Symbol │
-├─────┼───────────┼────────────────┼────────┤
-│ 1   │ 14.8634   │ MLStyle        │ s1     │
-│ 2   │ 15.151    │ Rematch        │ s1     │
-│ 3   │ 312.387   │ Match.jl       │ s1     │
-│ 4   │ 13.6618   │ MLStyle        │ s2     │
-│ 5   │ 13.6515   │ Rematch        │ s2     │
-│ 6   │ 757.652   │ Match.jl       │ s2     │
-│ 7   │ 19.216    │ MLStyle        │ s3     │
-│ 8   │ 24.6308   │ Rematch        │ s3     │
-│ 9   │ 29.2011   │ Match.jl       │ s3     │
-│ 10  │ 46.2147   │ MLStyle        │ s4     │
-│ 11  │ 208.681   │ Rematch        │ s4     │
-│ 12  │ 283.291   │ Match.jl       │ s4     │
-│ 13  │ 17.3263   │ MLStyle        │ s5     │
-│ 14  │ 26.6764   │ Rematch        │ s5     │
-│ 15  │ 42.3337   │ Match.jl       │ s5     │
-│ 16  │ 18.1052   │ MLStyle        │ s6     │
-│ 17  │ 24.2708   │ Rematch        │ s6     │
-│ 18  │ 80.7097   │ Match.jl       │ s6     │
-│ 19  │ 24.2997   │ MLStyle        │ _      │
-│ 20  │ 25.0934   │ Rematch        │ _      │
-│ 21  │ 27.8996   │ Match.jl       │ _      │
+21×3 DataFrame
+ Row │ time_mean  implementation  case
+     │ Float64    Symbol          Symbol
+─────┼───────────────────────────────────
+   1 │  10.877    MLStyle         s1
+   2 │  11.0804   Rematch         s1
+   3 │  14.1355   Match.jl        s1
+   4 │   9.5591   MLStyle         s2
+   5 │   9.93765  Rematch         s2
+   6 │  38.9031   Match.jl        s2
+   7 │  14.1924   MLStyle         s3
+   8 │  16.6543   Rematch         s3
+   9 │  13.4356   Match.jl        s3
+  10 │  25.8738   MLStyle         s4
+  11 │ 206.839    Rematch         s4
+  12 │  55.9708   Match.jl        s4
+  13 │  11.1525   MLStyle         s5
+  14 │  19.3045   Rematch         s5
+  15 │  12.3666   Match.jl        s5
+  16 │  15.0801   MLStyle         s6
+  17 │  14.8673   Rematch         s6
+  18 │  13.5743   Match.jl        s6
+  19 │  25.8602   MLStyle         _
+  20 │  28.4733   Rematch         _
+  21 │  24.6885   Match.jl        _
