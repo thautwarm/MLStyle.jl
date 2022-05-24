@@ -1,6 +1,6 @@
 module Record
 if isdefined(Base, :Experimental)
-    Base.Experimental.@compiler_options optimize=0 compile=min infer=no
+    @eval Base.Experimental.@compiler_options optimize=0 compile=min infer=no
 end
 
 using MLStyle
