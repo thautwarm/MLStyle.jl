@@ -1,7 +1,4 @@
 module Record
-if isdefined(Base, :Experimental)
-    @eval Base.Experimental.@compiler_options optimize=0 compile=min infer=no
-end
 
 using MLStyle
 using MLStyle.MatchCore
@@ -9,6 +6,10 @@ using MLStyle.MatchImpl
 using MLStyle.AbstractPatterns
 using MLStyle.AbstractPatterns.BasicPatterns
 using MLStyle.Qualification
+
+if isdefined(Base, :Experimental) && isdefined(Base.Experimental, Symbol("@compiler_options"))
+    @eval Base.Experimental.@compiler_options compile=min infer=no optimize=0
+end
 
 export @as_record, record_def
 

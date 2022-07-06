@@ -1,12 +1,12 @@
 module LambdaCases
 
-if isdefined(Base, :Experimental)
-    @eval Base.Experimental.@compiler_options optimize=0 compile=min infer=no
-end
-
 using MLStyle
 using MLStyle.Sugars
 using MLStyle.AbstractPatterns: init_cfg
+
+if isdefined(Base, :Experimental) && isdefined(Base.Experimental, Symbol("@compiler_options"))
+    @eval Base.Experimental.@compiler_options compile=min infer=no optimize=0
+end
 
 export gen_lambda, @λ
 @nospecialize

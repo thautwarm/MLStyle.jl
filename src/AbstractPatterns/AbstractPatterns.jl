@@ -1,9 +1,5 @@
 module AbstractPatterns
 
-if isdefined(Base, :Experimental)
-    @eval Base.Experimental.@compiler_options optimize=0 compile=min infer=no
-end
-
 export spec_gen, RedyFlavoured, TypeObject
 export and, or, literal, and, wildcard, decons, guard, effect
 export PatternCompilationError, Target, PatternImpl, PComp
@@ -15,6 +11,10 @@ export P_bind,
 export P_svec, P_svec3
 export SimpleCachablePre, see_captured_vars, see_captured_vars!
 export CFGSpec, CFGJump, CFGLabel, CFGItem, init_cfg
+
+if isdefined(Base, :Experimental) && isdefined(Base.Experimental, Symbol("@compiler_options"))
+    @eval Base.Experimental.@compiler_options compile=min infer=no optimize=0
+end
 
 mutable struct CFGSpec
     exp::Expr

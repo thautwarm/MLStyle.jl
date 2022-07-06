@@ -1,15 +1,14 @@
 module DataType
 
-if isdefined(Base, :Experimental)
-    @eval Base.Experimental.@compiler_options optimize=0 compile=min infer=no
-end
-
-
 using MLStyle
 using MLStyle.MatchImpl
 using MLStyle.Qualification
 using MLStyle.Record: as_record
 using MLStyle.ExprTools
+
+if isdefined(Base, :Experimental) && isdefined(Base.Experimental, Symbol("@compiler_options"))
+    @eval Base.Experimental.@compiler_options compile=min infer=no optimize=0
+end
 
 UNREACHABLE = nothing
 export @data

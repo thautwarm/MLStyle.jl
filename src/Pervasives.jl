@@ -1,9 +1,5 @@
 module Pervasives
 
-if isdefined(Base, :Experimental)
-    @eval Base.Experimental.@compiler_options optimize=0 compile=min infer=no
-end
-
 using MLStyle
 using MLStyle.AbstractPatterns
 using MLStyle.AbstractPatterns
@@ -11,6 +7,10 @@ struct Many end
 struct Do end
 struct GuardBy end
 export Many, Do, GuardBy
+
+if isdefined(Base, :Experimental) && isdefined(Base.Experimental, Symbol("@compiler_options"))
+    @eval Base.Experimental.@compiler_options compile=min infer=no optimize=0
+end
 
 @nospecialize
 function MLStyle.pattern_uncall(

@@ -1,13 +1,12 @@
 module ExprTools
 
-if isdefined(Base, :Experimental)
-    @eval Base.Experimental.@compiler_options optimize=0 compile=min infer=no
-end
-
-
 using MLStyle.MatchCore
 export take_type_parameters!, get_type_parameters, get_type_parameters_ordered
 export @reexport
+
+if isdefined(Base, :Experimental) && isdefined(Base.Experimental, Symbol("@compiler_options"))
+    @eval Base.Experimental.@compiler_options compile=min infer=no optimize=0
+end
 
 @nospecialize
 function take_type_parameters!(syms, ex)::Nothing

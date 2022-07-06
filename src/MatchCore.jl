@@ -1,12 +1,11 @@
 module MatchCore
 
-if isdefined(Base, :Experimental)
-    @eval Base.Experimental.@compiler_options optimize=0 compile=min infer=no
-end
-
-
 using MLStyle
 using MLStyle.Err
+
+if isdefined(Base, :Experimental) && isdefined(Base.Experimental, Symbol("@compiler_options"))
+    @eval Base.Experimental.@compiler_options compile=min infer=no optimize=0
+end
 
 export @sswitch, ellipsis_split, backend, P_partial_struct_decons
 using MLStyle.AbstractPatterns
