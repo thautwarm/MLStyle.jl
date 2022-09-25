@@ -5,7 +5,7 @@ if isdefined(Base, :Experimental) && isdefined(Base.Experimental, Symbol("@compi
 end
 
 export is_enum,
-    pattern_uncall, pattern_unref, pattern_unmacrocall, @switch, @tryswitch, @match, @trymatch, Where, gen_match, gen_switch
+    pattern_uncall, pattern_unref, pattern_unmacrocall, @switch, @case, @tryswitch, @match, @trymatch, Where, gen_match, gen_switch
 export Q
 import MLStyle
 using MLStyle: mlstyle_report_deprecation_msg!
@@ -389,6 +389,11 @@ macro switch(val, ex)
     res = init_cfg(res)
     esc(res)
 end
+
+macro case(pattern)
+    throw(ArgumentError("@case can only be used inside @switch or @tryswitch"))
+end
+
 """
     @tryswitch <item> begin
         @case <pattern>
