@@ -221,7 +221,7 @@ function myimpl()
         if v isa Symbol
             v = QuoteNode(v)
         end
-        (isprimitivetype(ty) || ty.size == 0 && !ismutabletype(ty)) ?
+        (isprimitivetype(ty) || !ismutabletype(ty) && Core.sizeof(ty) == 0) ?
         CheckCond(:($(target.repr) === $v)) : CheckCond(:($(target.repr) == $v))
     end
 
