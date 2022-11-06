@@ -453,7 +453,10 @@ function gen_switch(val, ex, __source__::LineNumberNode, __module__::Module)
             is_ln && (ln = stmt)
         end
     end
-
+    isempty(branches) && return Expr(:block,
+        __source__,
+        :(throw(ArgumentError("empty match expression")))
+    )
     backend(val, branches, terminal, __source__; hygienic = false)
 end
 
@@ -639,6 +642,10 @@ function gen_match(val, tbl, __source__::LineNumberNode, __module__::Module)
         end
     end
 
+    isempty(branches) && return Expr(:block,
+        __source__,
+        :(throw(ArgumentError("empty match expression")))
+    )
     backend(val, branches, terminal, __source__; hygienic = true)
 end
 

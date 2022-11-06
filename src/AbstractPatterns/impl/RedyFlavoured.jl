@@ -221,6 +221,7 @@ function myimpl()
         if v isa Symbol
             v = QuoteNode(v)
         end
+
         Base.isbitstype(ty) ?
         CheckCond(:($(target.repr) === $v)) : CheckCond(:($(target.repr) == $v))
     end
