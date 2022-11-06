@@ -135,3 +135,6 @@
         @test val === nothing
     end
 end
+
+@test_macro_throws ArgumentError @match 1 begin
+end

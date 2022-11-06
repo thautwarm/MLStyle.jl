@@ -47,3 +47,6 @@
     # Non-exhaustive matches fail silently.
     try_setflag_2("")
 end
+
+@test_macro_throws ArgumentError @switch 1 begin
+end
