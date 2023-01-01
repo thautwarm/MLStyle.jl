@@ -48,7 +48,7 @@ f == @match ex begin
 end # => true
 ```
 
-Note, MLStyle.jl is not a superset of MacroToos.jl, though it provides something useful for AST manipulations. Besides, in terms of extracting sub-structures from a given AST, you get an orders of magnitude speed up against using MacroTools.jl.
+Note, MLStyle.jl is not a superset of MacroTools.jl, though it provides something useful for AST manipulations. Besides, in terms of extracting sub-structures from a given AST, you get an orders of magnitude speed up against using MacroTools.jl.
 
 
 (TODO)
