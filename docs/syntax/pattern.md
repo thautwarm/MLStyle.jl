@@ -350,11 +350,15 @@ You can extend following APIs for your pattern objects, to implement custom patt
     `MLStyle.pattern_unref(pat_obj, expr_to_pat, [:a, :b]`.
 
 - `MLStyle.is_enum`
-  
+
    In a pattern `[A, B]`, usually we think both `A` and `B` are capturing patterns. However, it is handy if we can have a pattern `A` whose match means comparing to the global variable `A`.
 
    To achieve this, we provide `MLStyle.is_enum`.
    For a visible global variable `A`, if `MLStyle.is_enum(A) == true`, a symbol `A` will compile into a pattern with `MLStyle.pattern_uncall(A, expr_to_ast, [], [], [])`.
+
+- `MLStyle.enum_matcher(E, value_to_match)`:
+
+    If `MLStyle.is_enum(E) == true`, we will call `MLStyle.enum_matcher(E, value_to_match)` to compile `E` into a pattern.
 
 We present some examples for understandability:
 
@@ -362,12 +366,12 @@ We present some examples for understandability:
 
 ```julia-console
 julia> using MLStyle
-julia> using MLStyle.AbstractPatterns: literal
 julia> @enum E E1 E2
 # mark E1, E2 as non-capturing patterns
 julia> MLStyle.is_enum(::E) = true
-# tell the compiler how to match E1, E2
-julia> MLStyle.pattern_uncall(e::E, _, _, _, _) = literal(e)
+# tell the compiler how to match E1 and E2
+# NOTE: make sure it evaluates to a boolean value!
+julia> MLStyle.enum_matcher(e::E, expr) = :($e === $expr)
 julia> x = E2
 julia> @match x begin
            E1 => "match E1!"
@@ -383,13 +387,13 @@ julia> @macroexpand @match x begin
 :(let
       var"##return#261" = nothing
       var"##263" = x
-      if var"##263" === E1
+      if E1 === var"##263"
           var"##return#261" = let
                   "match E1!"
               end
           $(Expr(:symbolicgoto, Symbol("####final#262#264")))
       end
-      if var"##263" === E2
+      if E1 === var"##263"
           var"##return#261" = let
                   "match E2!"
               end

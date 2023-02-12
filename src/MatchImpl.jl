@@ -5,7 +5,19 @@ if isdefined(Base, :Experimental) && isdefined(Base.Experimental, Symbol("@compi
 end
 
 export is_enum,
-    pattern_uncall, pattern_unref, pattern_unmacrocall, @switch, @case, @tryswitch, @match, @trymatch, Where, gen_match, gen_switch
+       enum_matcher,
+       pattern_uncall,
+       pattern_unref,
+       pattern_unmacrocall,
+       @switch,
+       @case,
+       @tryswitch,
+       @match,
+       @trymatch,
+       Where,
+       gen_match,
+       gen_switch
+
 export Q
 import MLStyle
 using MLStyle: mlstyle_report_deprecation_msg!
@@ -17,8 +29,70 @@ using MLStyle.AbstractPatterns
 using MLStyle.AbstractPatterns.BasicPatterns
 OptionalLn = Union{LineNumberNode, Nothing}
 
+"""
+    is_enum(EnumPattern)::Bool
+
+Convert the pattern `EnumPattern` to `EnumPattern()`.
+
+e.g.,
+    ```
+    abstract type AbsS end
+    struct S1 <: AbsS end
+    struct S2 <: AbsS end
+    MLStyle.pattern_uncall(::Type{S}, self, _, _, _) where {S<:AbsS} = literal(S())
+    MLStyle.is_enum(::Type{<:AbsS}) = true
+
+    x = S1()
+    @match x begin
+        S2 => 1
+        S1 => 2
+    end
+    ```
+
+"""
 is_enum(_)::Bool = false
-function pattern_uncall end
+
+"""
+    enum_matcher(Enum, value)::Expr
+
+Generates the expression used to test if `value` is the case `Enum`.
+
+NOTE that this only works when `is_enum(Enum)` is `true`!!!
+
+    @match V begin
+        Enum => ...
+    @end
+
+Above single case matches when
+
+1. `enum_matcher(Enum, ::Any)` is not defined and `V == Enum`.
+2. The expression generated from `enum_matcher(Enum, :V)`
+   evaluates to `true` under the current module.
+
+"""
+function enum_matcher end
+
+struct _EnumCase{E}
+    pattern::E
+end
+
+function pattern_uncall(enumCase::_EnumCase{E}, self, type_params, type_args, args) where E
+    isempty(type_params) || error("Enum type should not have type parameters!")
+    isempty(type_args) || error("Enum type should not have type arguments!")
+    isempty(args) || error("Enum type should not have arguments!")
+
+    let enumPattern = enumCase.pattern
+        if hasmethod(MLStyle.enum_matcher, Tuple{E, Any})
+            function via_enum_matcher(target, _, _)
+                return MLStyle.enum_matcher(enumPattern, target)
+            end
+            guard(via_enum_matcher)
+        else
+            pattern_uncall(enumPattern, self, type_params, type_args, args)
+        end
+    end
+end
+
 function pattern_unref end
 function pattern_unmacrocall(macro_func, self::Function, args::AbstractArray)
     @sswitch args begin
@@ -85,6 +159,12 @@ function guess_type_from_expr(m::Module, ex::Any, tps::Set{Symbol})
     end
 end
 
+struct ModuleBoundedEx2tf <: Function
+    m::Module
+end
+
+@inline (self::ModuleBoundedEx2tf)(arg) = ex2tf(self.m, arg)
+
 ex2tf(m::Module, @nospecialize(a)) = literal(a)
 ex2tf(m::Module, l::LineNumberNode) = wildcard
 ex2tf(m::Module, q::QuoteNode) = literal(q.value)
@@ -97,8 +177,8 @@ ex2tf(m::Module, n::Symbol) =
     else
         if isdefined(m, n)
             p = getfield(m, n)
-            rec(x) = ex2tf(m, x)
-            is_enum(p) && return pattern_uncall(p, rec, [], [], [])
+            rec = ModuleBoundedEx2tf(m)
+            is_enum(p) && return pattern_uncall(_EnumCase(p), rec, [], [], [])
         end
         P_capture(n)
     end
@@ -112,7 +192,8 @@ function ex2tf(m::Module, s::QuotePattern)
 end
 
 function ex2tf(m::Module, w::Where)
-    rec(x) = ex2tf(m, x)
+    rec = ModuleBoundedEx2tf(m)
+
     @sswitch w begin
         @case Where(; value = val, type = t, type_parameters = tps)
 
@@ -170,7 +251,7 @@ end
 
 function ex2tf(m::Module, ex::Expr)
     eval = m.eval
-    rec(x) = ex2tf(m, x)
+    rec = ModuleBoundedEx2tf(m)
 
     @sswitch ex begin
         @case Expr(:||, args)
