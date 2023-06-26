@@ -222,12 +222,12 @@ function pred(x)
 end
 
 @match x begin
-    x && GuardBy(pred) => 5 - x # only succeed when x > 5
+    GuardBy(pred) => 5 - x # only succeed when x > 5
     _        => 1
 end
 
 @match x begin
-    x && GuardBy(x -> x > 5) => 5 - x # only succeed when x > 5
+    GuardBy(x -> x > 5) => 5 - x # only succeed when x > 5
     _        => 1
 end
 ```
