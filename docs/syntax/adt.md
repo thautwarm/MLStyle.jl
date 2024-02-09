@@ -117,7 +117,7 @@ Less familiar
 
 ### Singleton instances
 
-A type with no fields has only one instance. 
+A type with no fields has only one instance. You can make two such singletons `a` and `b`
 
 ```jl
 @data T begin
@@ -138,10 +138,9 @@ struct _B <: T end
 const b = _B()
 ```
 
-and again defines [`MLStyle.pattern_uncall`](@ref), as well as custom `show` methods for the values.
+where `a` is the sole instance of its type (which is a subtype of `T`). Likewise `b` is the only instance of its type (which is also a subtype of `T`). 
 
-
-### TODO: GADT
+Again this defines [`MLStyle.pattern_uncall`](@ref), as well as custom `show` methods for the values.
 
 
 
@@ -152,7 +151,7 @@ Cheat sheet for regular ADT definitions:
 
 ```julia
 @data A <: B begin
-    C1 # is an enum
+    C1 # is a singleton instance
     
     # C1 is a value but C2 is a constructor
     C2()
