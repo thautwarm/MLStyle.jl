@@ -1,6 +1,8 @@
 Records
 ----------------------
 
+To add support pattern-matching deconstruction for a regular struct `A`, invoke `@as_record A`. Then `@match` can deconstruct `A(a,b,c)` using the same `A(a,b,c)` syntax as the constructor.
+
 ```julia-console
 julia> struct A
            a
