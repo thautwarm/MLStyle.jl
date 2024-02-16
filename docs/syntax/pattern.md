@@ -578,7 +578,28 @@ Active Patterns
 
 This implementation is a subset of [F# Active Patterns](https://docs.microsoft.com/en-us/dotnet/fsharp/language-reference/active-patterns).
 
-There're 3 distinct active patterns, first of which is the normal form:
+There are three distinct forms for active patterns, depending on how many names are defined on the left-hand side of the pattern. The simplest doesn't define any names; to match, return `true` from the `@active` expression; otherwise return `false`.
+
+
+```julia
+# 0-ary deconstruction: return Bool
+@active IsLessThan0(x) begin
+    x < 0
+end
+
+@match 10 begin
+    IsLessThan0() => :a
+    _ => :b
+end # b
+
+@match -10 begin
+    IsLessThan0() => :a
+    _ => :b
+end # :a
+```
+
+To define one name in a match, return `Some(_)` for a match; otherwise return `nothing`. 
+
 
 ```julia
 # 1-ary deconstruction: return Union{Some{T}, Nothing}
@@ -599,17 +620,11 @@ end # 0
     LessThan0(a) => a
     _ => 0
 end # -15
+```
 
-# 0-ary deconstruction: return Bool
-@active IsLessThan0(x) begin
-    x < 0
-end
+To define more than one name, return a tuple.
 
-@match 10 begin
-    IsLessThan0() => :a
-    _ => :b
-end # b
-
+```julia
 # (n+2)-ary deconstruction: return Tuple{E1, E2, ...}
 @active SplitVecAt2(x) begin
     (x[1:2], x[2+1:end])
