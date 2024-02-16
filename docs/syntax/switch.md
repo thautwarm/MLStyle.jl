@@ -28,17 +28,12 @@ julia> x = (33, 44)
 (33, 44)
 
 julia> @switch x begin
-       @case (var, _)
-           println(var)
-       end
-33
-
-julia> var
-33
-
-julia> @switch 1 begin
-       @case (var, _)
-           println(var)
-       end
-ERROR: matching non-exhaustive, at #= REPL[25]:1 =#
+           @case (a::Float64, _)
+               print(a)
+               println(" float")
+           @case (a::Int64, _)
+               print(a)
+               println(" int")
+        end
+33 int
 ```
