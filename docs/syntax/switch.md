@@ -28,12 +28,16 @@ julia> x = (33, 44)
 (33, 44)
 
 julia> @switch x begin
-           @case (a::Float64, _)
-               print(a)
+           @case (var::Float64, _)
+               print(var)
                println(" float")
-           @case (a::Int64, _)
-               print(a)
+           @case (var::Int64, _)
+               print(var)
                println(" int")
         end
 33 int
+
+julia> var
+33
 ```
+
