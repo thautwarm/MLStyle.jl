@@ -33,12 +33,27 @@ julia> @match 10 begin
 "right!"
 ```
 
-All literal data introduced with Julia syntax can be matched by literal patterns. However, exact `===` equality is required only for primitive types(`Int8-64`, `UInt8-64`, `Bool`, etc.) and singleton types(`struct Data end; Data()`); other types may match more flexibly. For example, substrings can match a literal string pattern, and a single integer value can match a range pattern like `1:5` that contains it.
+You can think of this match expression like
+
+```julia
+VALUE = 10
+if VALUE === 1
+    "wrong!"
+elseif VALUE === 2
+    "wrong!"
+elseif VALUE === 10
+    "right!"
+else
+    error("matching non-exhaustive")
+end
+```
+
+All literal data introduced with Julia syntax can be matched by literal patterns. However, matching with exact `===` equality is required only for primitive types (`Int8-64`, `UInt8-64`, `Bool`, etc.) and singleton types (e.g. `struct Data end; Data()`). Other types may match more flexibly: for example, a `SubString` can match a literal string pattern; a single integer value like `3` can match a range pattern like `1:5` that contains it.
 
 Capturing Patterns
 --------------------------
 
-A pattern where there is a symbol such as `x` on the left hand side will bind the input value to that symbol and let you use that captured value on the right hand side
+A pattern where there is a symbol such as `x` on the left hand side will bind the input value to that symbol and let you use that captured value on the right hand side:
 
 ```julia-console
 julia> @match 1 begin
@@ -46,6 +61,17 @@ julia> @match 1 begin
        end
 2
 ```
+
+This match expression is like
+
+```julia
+VALUE = 1
+let x = VALUE
+    x + 1
+end
+```
+
+
 You can put `_` on the left hand side of a pattern if you don't care about what the captured value is.
 
 However, sometimes a symbol might not be used for capturing. If and only if some visible global variable `x` satisfying `MLStyle.is_enum(x) == true`, `x` is used as an enum pattern.
@@ -66,7 +92,7 @@ julia> @match 1 begin
 1
 ```
 
-Guards
+`if` patterns
 --------------------
 
 Writing `if cond end` as a pattern will match if `cond==true`
@@ -84,8 +110,8 @@ MLStyle.jl allows you to put guards anywhere during matching.
 
 Sometimes, in practice, you might want to introduce type variables into the scope, in this case use `where` clause. See [Advanced Type Patterns](#advanced-type-patterns) for more details.
 
-Predicates
----------------
+`GuardBy` patterns
+-------------------
 
 Equivalent to guard patterns, writing `GuardBy(f)` in a pattern will match if and only if `f` applied to the pattern matching input gives true:
 
@@ -95,18 +121,18 @@ function pred(x)
 end
 
 @match x begin
-    GuardBy(pred) => 5 - x # only succeed when x > 5
+    GuardBy(pred) => 5 - x # only succeeds when x > 5
     _        => 1
 end
 
 @match x begin
-    GuardBy(x -> x > 5) => 5 - x # only succeed when x > 5
+    GuardBy(x -> x > 5) => 5 - x # only succeeds when x > 5
     _        => 1
 end
 ```
 
 
-And-Patterns
+And-Patterns 
 --------------------
 
 `pat2 && pat2` on the left hand side of a pattern will match if and only if `pat1` and `pat2` match individually. This lets you combine two separate patterns together,
