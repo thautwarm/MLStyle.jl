@@ -91,6 +91,16 @@
 </ul>
 <ul class="current">
 <li class="toctree-l1"><a class="reference internal" href="adt.html">Algebraic Data Types</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="adt.html#basic-constructors">Basic constructors</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="adt.html#specifying-field-names">Specifying field names</a></li>
+<li class="toctree-l3"><a class="reference internal" href="adt.html#specifying-field-names-and-types">Specifying field names and types</a></li>
+<li class="toctree-l3"><a class="reference internal" href="adt.html#subtyping">Subtyping</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="adt.html#less-familiar">Less familiar</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="adt.html#singleton-instances">Singleton instances</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="adt.html#cheat-sheet">Cheat Sheet</a></li>
 <li class="toctree-l2"><a class="reference internal" href="adt.html#examples">Examples</a></li>
 <li class="toctree-l2"><a class="reference internal" href="adt.html#example-modeling-arithmetic-operations">Example: Modeling Arithmetic Operations</a></li>
@@ -101,11 +111,11 @@
 <li class="toctree-l2"><a class="reference internal" href="#literal-patterns">Literal Patterns</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#capturing-patterns">Capturing Patterns</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#type-patterns">Type Patterns</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#guards">Guards</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#if-patterns"><code class="docutils literal notranslate"><span class="pre">if</span></code> patterns</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#guardby-patterns"><code class="docutils literal notranslate"><span class="pre">GuardBy</span></code> patterns</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#and-patterns">And-Patterns</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#destructuring-tuples-arrays-and-dictionaries-with-pattern-matching">Destructuring Tuples, Arrays, and Dictionaries with Pattern Matching</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#deconstruction-of-custom-composite-data">Deconstruction of Custom Composite Data</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#predicates">Predicates</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#range-patterns">Range Patterns</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#reference-patterns">Reference Patterns</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#macro-call-patterns">Macro Call Patterns</a></li>
@@ -116,11 +126,11 @@
 </li>
 <li class="toctree-l2"><a class="reference internal" href="#or-patterns">Or Patterns</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#advanced-type-patterns">Advanced Type Patterns</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#do-patterns-many-patterns">Do-Patterns &amp; Many-Patterns</a></li>
-<li class="toctree-l2"><a class="reference internal" href="#let-patterns">Let Patterns</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#active-patterns">Active Patterns</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#expr-patterns">Expr Patterns</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#julia-code-as-expr-patterns">Julia Code as Expr Patterns</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#advanced-do-patterns-many-patterns">Advanced: Do-Patterns &amp; Many-Patterns</a></li>
+<li class="toctree-l2"><a class="reference internal" href="#advanced-let-patterns">Advanced: Let Patterns</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="switch.html">The Switch Statements</a></li>
@@ -168,11 +178,11 @@
 <li><a class="reference internal" href="#literal-patterns">Literal Patterns</a></li>
 <li><a class="reference internal" href="#capturing-patterns">Capturing Patterns</a></li>
 <li><a class="reference internal" href="#type-patterns">Type Patterns</a></li>
-<li><a class="reference internal" href="#guards">Guards</a></li>
+<li><a class="reference internal" href="#if-patterns"><code class="docutils literal notranslate"><span class="pre">if</span></code> patterns</a></li>
+<li><a class="reference internal" href="#guardby-patterns"><code class="docutils literal notranslate"><span class="pre">GuardBy</span></code> patterns</a></li>
 <li><a class="reference internal" href="#and-patterns">And-Patterns</a></li>
 <li><a class="reference internal" href="#destructuring-tuples-arrays-and-dictionaries-with-pattern-matching">Destructuring Tuples, Arrays, and Dictionaries with Pattern Matching</a></li>
 <li><a class="reference internal" href="#deconstruction-of-custom-composite-data">Deconstruction of Custom Composite Data</a></li>
-<li><a class="reference internal" href="#predicates">Predicates</a></li>
 <li><a class="reference internal" href="#range-patterns">Range Patterns</a></li>
 <li><a class="reference internal" href="#reference-patterns">Reference Patterns</a></li>
 <li><a class="reference internal" href="#macro-call-patterns">Macro Call Patterns</a></li>
@@ -183,11 +193,11 @@
 </li>
 <li><a class="reference internal" href="#or-patterns">Or Patterns</a></li>
 <li><a class="reference internal" href="#advanced-type-patterns">Advanced Type Patterns</a></li>
-<li><a class="reference internal" href="#do-patterns-many-patterns">Do-Patterns &amp; Many-Patterns</a></li>
-<li><a class="reference internal" href="#let-patterns">Let Patterns</a></li>
 <li><a class="reference internal" href="#active-patterns">Active Patterns</a></li>
 <li><a class="reference internal" href="#expr-patterns">Expr Patterns</a></li>
 <li><a class="reference internal" href="#julia-code-as-expr-patterns">Julia Code as Expr Patterns</a></li>
+<li><a class="reference internal" href="#advanced-do-patterns-many-patterns">Advanced: Do-Patterns &amp; Many-Patterns</a></li>
+<li><a class="reference internal" href="#advanced-let-patterns">Advanced: Let Patterns</a></li>
 </ul>
 </li>
 </ul>
@@ -259,17 +269,35 @@
 <span class="s">&quot;right!&quot;</span>
 </pre></div>
 </div>
-<p>All literal data introduced with Julia syntax can be matched by literal patterns.</p>
-<p>However, note that the equality is strict for primitive types(<code class="docutils literal notranslate"><span class="pre">Int8-64</span></code>, <code class="docutils literal notranslate"><span class="pre">UInt8-64</span></code>, <code class="docutils literal notranslate"><span class="pre">Bool</span></code>, etc.) and singleton types(<code class="docutils literal notranslate"><span class="pre">struct</span> <span class="pre">Data</span> <span class="pre">end;</span> <span class="pre">Data()</span></code>).</p>
-<p>Specifically, <strong>substrings can match a literal string.</strong></p>
+<p>You can think of this match expression like</p>
+<div class="highlight-julia notranslate"><div class="highlight"><pre><span></span><span class="nv">VALUE</span> <span class="o">=</span> <span class="m">10</span>
+<span class="k">if</span> <span class="nv">VALUE</span> <span class="o">===</span> <span class="m">1</span>
+    <span class="s">&quot;wrong!&quot;</span>
+<span class="k">elseif</span> <span class="nv">VALUE</span> <span class="o">===</span> <span class="m">2</span>
+    <span class="s">&quot;wrong!&quot;</span>
+<span class="k">elseif</span> <span class="nv">VALUE</span> <span class="o">===</span> <span class="m">10</span>
+    <span class="s">&quot;right!&quot;</span>
+<span class="k">else</span>
+    <span class="nb">error</span><span class="p">(</span><span class="s">&quot;matching non-exhaustive&quot;</span><span class="p">)</span>
+<span class="k">end</span>
+</pre></div>
+</div>
+<p>All literal data introduced with Julia syntax can be matched by literal patterns. However, matching with exact <code class="docutils literal notranslate"><span class="pre">===</span></code> equality is required only for primitive types (<code class="docutils literal notranslate"><span class="pre">Int8-64</span></code>, <code class="docutils literal notranslate"><span class="pre">UInt8-64</span></code>, <code class="docutils literal notranslate"><span class="pre">Bool</span></code>, etc.) and singleton types (e.g. <code class="docutils literal notranslate"><span class="pre">struct</span> <span class="pre">Data</span> <span class="pre">end;</span> <span class="pre">Data()</span></code>). Other types may match more flexibly: for example, a <code class="docutils literal notranslate"><span class="pre">SubString</span></code> can match a literal string pattern; a single integer value like <code class="docutils literal notranslate"><span class="pre">3</span></code> can match a range pattern like <code class="docutils literal notranslate"><span class="pre">1:5</span></code> that contains it.</p>
 </section>
 <section id="capturing-patterns">
 <h2>Capturing Patterns<a class="headerlink" href="#capturing-patterns" title="Permalink to this headline">¶</a></h2>
-<p>A pattern where there is a symbol such as <code class="docutils literal notranslate"><span class="pre">x</span></code> on the left hand side will bind the input value to that symbol and let you use that captured value on the right hand side</p>
+<p>A pattern where there is a symbol such as <code class="docutils literal notranslate"><span class="pre">x</span></code> on the left hand side will bind the input value to that symbol and let you use that captured value on the right hand side:</p>
 <div class="highlight-julia-console notranslate"><div class="highlight"><pre><span></span><span class="gp">julia&gt;</span> <span class="nd">@match</span> <span class="m">1</span> <span class="k">begin</span>
            <span class="nv">x</span> <span class="o">=&gt;</span> <span class="nv">x</span> <span class="o">+</span> <span class="m">1</span>
        <span class="k">end</span>
 <span class="m">2</span>
+</pre></div>
+</div>
+<p>This match expression is like</p>
+<div class="highlight-julia notranslate"><div class="highlight"><pre><span></span><span class="nv">VALUE</span> <span class="o">=</span> <span class="m">1</span>
+<span class="k">let</span> <span class="nv">x</span> <span class="o">=</span> <span class="nv">VALUE</span>
+    <span class="nv">x</span> <span class="o">+</span> <span class="m">1</span>
+<span class="k">end</span>
 </pre></div>
 </div>
 <p>You can put <code class="docutils literal notranslate"><span class="pre">_</span></code> on the left hand side of a pattern if you don’t care about what the captured value is.</p>
@@ -288,8 +316,8 @@
 </pre></div>
 </div>
 </section>
-<section id="guards">
-<h2>Guards<a class="headerlink" href="#guards" title="Permalink to this headline">¶</a></h2>
+<section id="if-patterns">
+<h2><code class="docutils literal notranslate"><span class="pre">if</span></code> patterns<a class="headerlink" href="#if-patterns" title="Permalink to this headline">¶</a></h2>
 <p>Writing <code class="docutils literal notranslate"><span class="pre">if</span> <span class="pre">cond</span> <span class="pre">end</span></code> as a pattern will match if <code class="docutils literal notranslate"><span class="pre">cond==true</span></code></p>
 <div class="highlight-julia-console notranslate"><div class="highlight"><pre><span></span><span class="gp">julia&gt;</span> <span class="nd">@match</span> <span class="m">1</span><span class="p">.</span><span class="m">0</span> <span class="k">begin</span>
            <span class="k">if</span> <span class="m">1</span> <span class="o">&lt;</span> <span class="m">5</span> <span class="k">end</span>  <span class="o">=&gt;</span> <span class="nv">√</span><span class="p">(</span><span class="m">5</span> <span class="o">-</span> <span class="m">1</span><span class="p">)</span>
@@ -297,11 +325,28 @@
 <span class="m">2</span><span class="p">.</span><span class="m">0</span>
 </pre></div>
 </div>
-<p>Unlike most of ML languages or other libraries who only permit guards in the end of a case clause,
+<p>Unlike most ML languages or other libraries which only permit guards at the end of a case clause,
 MLStyle.jl allows you to put guards anywhere during matching.</p>
-<p>However, remember, due to some Julia optimization details, even if the guards can be put
-in the middle of a matching process, it is still better to postpone it until the end of matching sequence. This allows for better performance.</p>
-<p>Sometimes, in practice, you might want to introduce type variables into the scope, in this case use <code class="docutils literal notranslate"><span class="pre">where</span></code> clause, and see <a class="reference external" href="#advanced-type-patterns">Advanced Type Patterns</a> for more details.</p>
+<p>Sometimes, in practice, you might want to introduce type variables into the scope, in this case use <code class="docutils literal notranslate"><span class="pre">where</span></code> clause. See <a class="reference external" href="#advanced-type-patterns">Advanced Type Patterns</a> for more details.</p>
+</section>
+<section id="guardby-patterns">
+<h2><code class="docutils literal notranslate"><span class="pre">GuardBy</span></code> patterns<a class="headerlink" href="#guardby-patterns" title="Permalink to this headline">¶</a></h2>
+<p>Equivalent to guard patterns, writing <code class="docutils literal notranslate"><span class="pre">GuardBy(f)</span></code> in a pattern will match if and only if <code class="docutils literal notranslate"><span class="pre">f</span></code> applied to the pattern matching input gives true:</p>
+<div class="highlight-julia notranslate"><div class="highlight"><pre><span></span><span class="k">function</span> <span class="nf">pred</span><span class="p">(</span><span class="nv">x</span><span class="p">)</span>
+    <span class="nv">x</span> <span class="o">&gt;</span> <span class="m">5</span>
+<span class="k">end</span>
+
+<span class="nd">@match</span> <span class="nv">x</span> <span class="k">begin</span>
+    <span class="nf">GuardBy</span><span class="p">(</span><span class="nv">pred</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="m">5</span> <span class="o">-</span> <span class="nv">x</span> <span class="c"># only succeeds when x &gt; 5</span>
+    <span class="nv">_</span>        <span class="o">=&gt;</span> <span class="m">1</span>
+<span class="k">end</span>
+
+<span class="nd">@match</span> <span class="nv">x</span> <span class="k">begin</span>
+    <span class="nf">GuardBy</span><span class="p">(</span><span class="nv">x</span> <span class="o">-&gt;</span> <span class="nv">x</span> <span class="o">&gt;</span> <span class="m">5</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="m">5</span> <span class="o">-</span> <span class="nv">x</span> <span class="c"># only succeeds when x &gt; 5</span>
+    <span class="nv">_</span>        <span class="o">=&gt;</span> <span class="m">1</span>
+<span class="k">end</span>
+</pre></div>
+</div>
 </section>
 <section id="and-patterns">
 <h2>And-Patterns<a class="headerlink" href="#and-patterns" title="Permalink to this headline">¶</a></h2>
@@ -373,7 +418,7 @@ in the middle of a matching process, it is still better to postpone it until the
 </pre></div>
 </div>
 <p>Note that, due to the lack of an operation for distinguishing <code class="docutils literal notranslate"><span class="pre">nothing</span></code> from “key not found” in Julia’s standard library, the dictionary pattern has a little overhead. This will be resolved after <a class="reference external" href="https://github.com/JuliaLang/julia/pull/34821">Julia#34821</a> is completed.</p>
-<p><strong>P.S</strong>:  MLStyle will not refer an external package to solve this issue, as MLStyle is generating “runtime support free” code, which means that any code generated by MLStyle itself depends only on Stdlib. This feature allows MLStyle to be introduced as a dependency only in development, instead of being distributed together to downstream codes.</p>
+<p><strong>P.S</strong>:  MLStyle will not refer an external package to solve this issue, as MLStyle is generating “runtime-support free” code, which means that any code generated by MLStyle itself depends only on Stdlib. This feature allows MLStyle to be introduced as a dependency only in development, instead of being distributed together to downstream users.</p>
 </section>
 <section id="deconstruction-of-custom-composite-data">
 <h2>Deconstruction of Custom Composite Data<a class="headerlink" href="#deconstruction-of-custom-composite-data" title="Permalink to this headline">¶</a></h2>
@@ -403,7 +448,7 @@ in the middle of a matching process, it is still better to postpone it until the
 <span class="m">242</span>
 </pre></div>
 </div>
-<p>In above cases, after <code class="docutils literal notranslate"><span class="pre">&#64;as_record</span> <span class="pre">T</span></code>, we can use something called <a class="reference external" href="https://dev.realworldocaml.org/records.html#field-punning">field punning</a> to match structures very conveniently.</p>
+<p>In the above cases, after <code class="docutils literal notranslate"><span class="pre">&#64;as_record</span> <span class="pre">T</span></code>, we can use something called <a class="reference external" href="https://dev.realworldocaml.org/records.html#field-punning">field punning</a> to match structures very conveniently.</p>
 <div class="highlight-julia notranslate"><div class="highlight"><pre><span></span><span class="nd">@match</span> <span class="nv">rbg_datum</span> <span class="k">begin</span>
     <span class="nf">RGB</span><span class="p">(;</span><span class="nv">r</span><span class="p">)</span> <span class="o">&amp;&amp;</span> <span class="k">if</span> <span class="nv">r</span> <span class="o">&lt;</span> <span class="m">20</span> <span class="k">end</span> <span class="o">=&gt;</span> <span class="p">...</span>
     <span class="nf">RGB</span><span class="p">(;</span><span class="nv">r</span><span class="p">,</span> <span class="nv">g</span><span class="p">)</span> <span class="o">&amp;&amp;</span> <span class="k">if</span> <span class="m">10</span><span class="nv">r</span> <span class="o">&lt;</span> <span class="nv">g</span> <span class="k">end</span> <span class="o">=&gt;</span> <span class="p">...</span>
@@ -412,25 +457,6 @@ in the middle of a matching process, it is still better to postpone it until the
 </pre></div>
 </div>
 <p>As you can see, field punning can be partial.</p>
-</section>
-<section id="predicates">
-<h2>Predicates<a class="headerlink" href="#predicates" title="Permalink to this headline">¶</a></h2>
-<p>Equivalent to guard patterns, writing <code class="docutils literal notranslate"><span class="pre">GuardBy(f)</span></code> in a pattern will match if and only if <code class="docutils literal notranslate"><span class="pre">f</span></code> applied to the pattern matching input gives true:</p>
-<div class="highlight-julia notranslate"><div class="highlight"><pre><span></span><span class="k">function</span> <span class="nf">pred</span><span class="p">(</span><span class="nv">x</span><span class="p">)</span>
-    <span class="nv">x</span> <span class="o">&gt;</span> <span class="m">5</span>
-<span class="k">end</span>
-
-<span class="nd">@match</span> <span class="nv">x</span> <span class="k">begin</span>
-    <span class="nf">GuardBy</span><span class="p">(</span><span class="nv">pred</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="m">5</span> <span class="o">-</span> <span class="nv">x</span> <span class="c"># only succeed when x &gt; 5</span>
-    <span class="nv">_</span>        <span class="o">=&gt;</span> <span class="m">1</span>
-<span class="k">end</span>
-
-<span class="nd">@match</span> <span class="nv">x</span> <span class="k">begin</span>
-    <span class="nf">GuardBy</span><span class="p">(</span><span class="nv">x</span> <span class="o">-&gt;</span> <span class="nv">x</span> <span class="o">&gt;</span> <span class="m">5</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="m">5</span> <span class="o">-</span> <span class="nv">x</span> <span class="c"># only succeed when x &gt; 5</span>
-    <span class="nv">_</span>        <span class="o">=&gt;</span> <span class="m">1</span>
-<span class="k">end</span>
-</pre></div>
-</div>
 </section>
 <section id="range-patterns">
 <h2>Range Patterns<a class="headerlink" href="#range-patterns" title="Permalink to this headline">¶</a></h2>
@@ -444,7 +470,7 @@ in the middle of a matching process, it is still better to postpone it until the
 </section>
 <section id="reference-patterns">
 <h2>Reference Patterns<a class="headerlink" href="#reference-patterns" title="Permalink to this headline">¶</a></h2>
-<p>This feature is known as the <code class="docutils literal notranslate"><span class="pre">pin</span> <span class="pre">operator</span></code> from <code class="docutils literal notranslate"><span class="pre">Elixir</span></code> which could slightly extend ML based pattern matching.</p>
+<p>This feature is known as the <code class="docutils literal notranslate"><span class="pre">pin</span> <span class="pre">operator</span></code> from <code class="docutils literal notranslate"><span class="pre">Elixir</span></code> which can slightly extend ML based pattern matching.</p>
 <div class="highlight-julia notranslate"><div class="highlight"><pre><span></span><span class="nv">c</span> <span class="o">=</span> <span class="p">...</span>
 <span class="nd">@match</span> <span class="p">(</span><span class="nv">x</span><span class="p">,</span> <span class="nv">y</span><span class="p">)</span> <span class="k">begin</span>
     <span class="p">(</span><span class="o">&amp;</span><span class="nv">c</span><span class="p">,</span> <span class="nv">_</span><span class="p">)</span>  <span class="o">=&gt;</span> <span class="s">&quot;x equals to c!&quot;</span>
@@ -457,7 +483,7 @@ in the middle of a matching process, it is still better to postpone it until the
 <div class="highlight-julia notranslate"><div class="highlight"><pre><span></span><span class="nv">c</span> <span class="o">=</span> <span class="nb">Int16</span><span class="p">(</span><span class="m">10</span><span class="p">)</span> <span class="c"># c is of type Int16</span>
 
 <span class="nd">@match</span> <span class="nv">c</span> <span class="k">begin</span>
-    <span class="m">10</span><span class="p">.</span><span class="m">0</span> <span class="o">=&gt;</span> <span class="s">&quot;there is a match&quot;</span> <span class="c">#pattern is a Float</span>
+    <span class="m">10</span><span class="p">.</span><span class="m">0</span> <span class="o">=&gt;</span> <span class="s">&quot;there is a match&quot;</span> <span class="c"># pattern is a Float</span>
     <span class="nv">_</span>    <span class="o">=&gt;</span> <span class="s">&quot;there is not a match&quot;</span>
 <span class="k">end</span> <span class="c"># =&gt; &quot;there is not a match&quot;</span>
 
@@ -471,7 +497,7 @@ in the middle of a matching process, it is still better to postpone it until the
 </section>
 <section id="macro-call-patterns">
 <h2>Macro Call Patterns<a class="headerlink" href="#macro-call-patterns" title="Permalink to this headline">¶</a></h2>
-<p>By default, macro calls occur in patterns will be no different than its expanded expression, hence the following bidirectional relationship <strong>sometimes</strong> holds:</p>
+<p>By default, a macro call appearing in a pattern will be no different from its expanded expression. Hence the following bidirectional relationship <strong>sometimes</strong> holds:</p>
 <div class="highlight-julia-console notranslate"><div class="highlight"><pre><span></span><span class="gp">julia&gt;</span> <span class="k">macro</span> <span class="nf">mymacro</span><span class="p">(</span><span class="nv">a</span><span class="p">)</span>
          <span class="nb">esc</span><span class="p">(</span><span class="o">:</span><span class="p">([</span><span class="o">$</span><span class="nv">a</span><span class="p">]))</span>
        <span class="k">end</span>
@@ -493,13 +519,15 @@ in the middle of a matching process, it is still better to postpone it until the
 </div>
 <p>However, you can also change the pattern compilation behavior by overloading <code class="docutils literal notranslate"><span class="pre">MLStyle.pattern_unmacrocall</span></code>, whose usage can be found at the implementation of the pattern support for <a class="reference external" href="https://github.com/thautwarm/MLStyle.jl/blob/master/src/Pervasives.jl#L191"><code class="docutils literal notranslate"><span class="pre">&#64;r_str</span></code></a>.</p>
 <p>Some examples about string macro patterns:</p>
-<div class="highlight-julia notranslate"><div class="highlight"><pre><span></span><span class="nd">@match</span>  <span class="nv">raw</span><span class="s">&quot;$$$&quot;</span> <span class="k">begin</span>
-    <span class="nv">raw</span><span class="s">&quot;$$$&quot;</span> <span class="o">=&gt;</span> <span class="p">...</span>
-<span class="k">end</span>
+<div class="highlight-julia-console notranslate"><div class="highlight"><pre><span></span><span class="gp">julia&gt;</span> <span class="nd">@match</span>  <span class="nv">raw</span><span class="s">&quot;$$$&quot;</span> <span class="k">begin</span>
+           <span class="nv">raw</span><span class="s">&quot;$$$&quot;</span> <span class="o">=&gt;</span> <span class="m">1</span>
+       <span class="k">end</span>
+<span class="m">1</span>
 
-<span class="nd">@match</span> <span class="s">&quot;123&quot;</span> <span class="k">begin</span>
-    <span class="sr">r&quot;\G\d+$&quot;</span> <span class="o">=&gt;</span> <span class="p">...</span>
-<span class="k">end</span>
+<span class="gp">julia&gt;</span> <span class="nd">@match</span> <span class="s">&quot;123&quot;</span> <span class="k">begin</span>
+           <span class="sr">r&quot;^\d+$&quot;</span> <span class="o">=&gt;</span> <span class="m">1</span>
+       <span class="k">end</span>
+<span class="m">1</span>
 </pre></div>
 </div>
 </section>
@@ -600,18 +628,17 @@ For a visible global variable <code class="docutils literal notranslate"><span c
 </section>
 <section id="pattern-synonyms">
 <h3>Pattern Synonyms<a class="headerlink" href="#pattern-synonyms" title="Permalink to this headline">¶</a></h3>
-<p><a class="reference external" href="https://ghc.gitlab.haskell.org/ghc/doc/users_guide/exts/pattern_synonyms.html">pattern synonyms</a> is a tasty feature in Haskell programming language for defining patterns based on existing patterns.</p>
-<p>We can support it:</p>
-<p>suppose we want to regard <code class="docutils literal notranslate"><span class="pre">Triple</span></code> as a pattern <code class="docutils literal notranslate"><span class="pre">(_,</span> <span class="pre">_,</span> <span class="pre">_)</span></code></p>
+<p><a class="reference external" href="https://ghc.gitlab.haskell.org/ghc/doc/users_guide/exts/pattern_synonyms.html">pattern synonyms</a> is a tasty feature in the Haskell programming language for defining patterns based on existing patterns.</p>
+<p>Suppose we want to regard <code class="docutils literal notranslate"><span class="pre">Triple</span></code> as a pattern that matches expressions of the form <code class="docutils literal notranslate"><span class="pre">(_,</span> <span class="pre">_,</span> <span class="pre">_)</span></code></p>
 <div class="highlight-julia-console notranslate"><div class="highlight"><pre><span></span><span class="gp">julia&gt;</span> <span class="k">struct</span> <span class="nv">Triple</span> <span class="k">end</span>
 <span class="gp">julia&gt;</span> <span class="nv">MLStyle</span><span class="p">.</span><span class="nf">pattern_uncall</span><span class="p">(</span><span class="o">::</span><span class="nb">Type</span><span class="p">{</span><span class="nv">Triple</span><span class="p">},</span> <span class="nv">expr_to_ast</span><span class="p">,</span> <span class="nv">_</span><span class="p">,</span> <span class="nv">_</span><span class="p">,</span> <span class="nv">_</span><span class="p">)</span> <span class="o">=</span>
             <span class="nf">expr_to_ast</span><span class="p">(</span><span class="o">:</span><span class="p">(</span>  <span class="p">(</span><span class="nv">_</span><span class="p">,</span> <span class="nv">_</span><span class="p">,</span> <span class="nv">_</span><span class="p">)</span>  <span class="p">))</span>
 <span class="gp">julia&gt;</span> <span class="nd">@match</span> <span class="p">(</span><span class="m">1</span><span class="p">,</span> <span class="m">2</span><span class="p">)</span> <span class="k">begin</span>
             <span class="nv">Triple</span> <span class="o">=&gt;</span> <span class="s">&quot;triple&quot;</span>
-            <span class="nv">_</span> <span class="o">=&gt;</span> <span class="s">&quot;no a triple&quot;</span>
+            <span class="nv">_</span> <span class="o">=&gt;</span> <span class="s">&quot;not a triple&quot;</span>
         <span class="k">end</span>
 
-<span class="s">&quot;no a triple&quot;</span>
+<span class="s">&quot;not a triple&quot;</span>
 
 <span class="gp">julia&gt;</span> <span class="nd">@match</span> <span class="p">(</span><span class="m">1</span><span class="p">,</span> <span class="m">2</span><span class="p">,</span> <span class="m">3</span><span class="p">)</span> <span class="k">begin</span>
             <span class="nv">Triple</span> <span class="o">=&gt;</span> <span class="s">&quot;triple&quot;</span>
@@ -622,7 +649,7 @@ For a visible global variable <code class="docutils literal notranslate"><span c
 </pre></div>
 </div>
 <p><a class="reference external" href="#active-patterns">Active Patterns</a> and <a class="reference external" href="https://thautwarm.github.io/MLStyle.jl/latest/syntax/adt.html#cheat-sheet">ADTs</a> are implemented via custom patterns.</p>
-<p>The custom patterns gives us so-called <strong>extensible pattern matching</strong>.</p>
+<p>The custom patterns give us so-called <strong>extensible pattern matching</strong>.</p>
 </section>
 </section>
 <section id="or-patterns">
@@ -646,7 +673,7 @@ For a visible global variable <code class="docutils literal notranslate"><span c
 <span class="nf">test</span><span class="p">(</span><span class="s">&quot;&quot;</span><span class="p">)</span>  <span class="c"># false</span>
 </pre></div>
 </div>
-<p>Tips: <code class="docutils literal notranslate"><span class="pre">Or</span> <span class="pre">Pattern</span></code>s could be nested.</p>
+<p>Tips: <code class="docutils literal notranslate"><span class="pre">Or</span> <span class="pre">Pattern</span></code>s can be nested.</p>
 </section>
 <section id="advanced-type-patterns">
 <h2>Advanced Type Patterns<a class="headerlink" href="#advanced-type-patterns" title="Permalink to this headline">¶</a></h2>
@@ -698,48 +725,10 @@ For a visible global variable <code class="docutils literal notranslate"><span c
 </pre></div>
 </div>
 </section>
-<section id="do-patterns-many-patterns">
-<h2>Do-Patterns &amp; Many-Patterns<a class="headerlink" href="#do-patterns-many-patterns" title="Permalink to this headline">¶</a></h2>
-<p>To introduce side-effects into pattern matching, we provide a built-in pattern called <code class="docutils literal notranslate"><span class="pre">Do</span></code> pattern to achieve this.</p>
-<p>Also, a pattern called <code class="docutils literal notranslate"><span class="pre">Many</span></code> can work with <code class="docutils literal notranslate"><span class="pre">Do</span></code> pattern in a perfect way.</p>
-<div class="highlight-julia notranslate"><div class="highlight"><pre><span></span><span class="nd">@match</span> <span class="p">[</span><span class="m">1</span><span class="p">,</span> <span class="m">2</span><span class="p">,</span> <span class="m">3</span><span class="p">]</span> <span class="k">begin</span>
-    <span class="nf">Many</span><span class="p">(</span><span class="o">::</span><span class="nb">Int</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="k">true</span>
-    <span class="nv">_</span> <span class="o">=&gt;</span> <span class="k">false</span>
-<span class="k">end</span> <span class="c"># true</span>
-
-<span class="nd">@match</span> <span class="p">[</span><span class="m">1</span><span class="p">,</span> <span class="m">2</span><span class="p">,</span> <span class="m">3</span><span class="p">,</span>  <span class="s">&quot;a&quot;</span><span class="p">,</span> <span class="s">&quot;b&quot;</span><span class="p">,</span> <span class="s">&quot;c&quot;</span><span class="p">,</span> <span class="p">:</span><span class="nv">a</span><span class="p">,</span> <span class="p">:</span><span class="nv">b</span><span class="p">,</span> <span class="p">:</span><span class="nv">c</span><span class="p">]</span> <span class="k">begin</span>
-    <span class="nf">Do</span><span class="p">(</span><span class="nv">count</span> <span class="o">=</span> <span class="m">0</span><span class="p">)</span> <span class="o">&amp;&amp;</span>
-    <span class="nv">Many</span><span class="p">[</span>
-        <span class="nv">a</span><span class="o">::</span><span class="nb">Int</span> <span class="o">&amp;&amp;</span> <span class="nf">Do</span><span class="p">(</span><span class="nv">count</span> <span class="o">=</span> <span class="nv">count</span> <span class="o">+</span> <span class="nv">a</span><span class="p">)</span> <span class="o">||</span>
-        <span class="o">::</span><span class="nb">String</span>                        <span class="o">||</span>
-        <span class="o">::</span><span class="nb">Symbol</span> <span class="o">&amp;&amp;</span> <span class="nf">Do</span><span class="p">(</span><span class="nv">count</span> <span class="o">=</span> <span class="nv">count</span> <span class="o">+</span> <span class="m">1</span><span class="p">)</span>
-    <span class="p">]</span> <span class="o">=&gt;</span> <span class="nv">count</span>
-<span class="k">end</span> <span class="c"># 9</span>
-</pre></div>
-</div>
-<p><code class="docutils literal notranslate"><span class="pre">Do</span></code> and <code class="docutils literal notranslate"><span class="pre">Many</span></code> may be not used very often but quite convenient for some specific domain.</p>
-<p><strong>P.S 1</strong>: when assigning variables with <code class="docutils literal notranslate"><span class="pre">Do</span></code>, don’t do <code class="docutils literal notranslate"><span class="pre">Do((x,</span> <span class="pre">y)</span> <span class="pre">=</span> <span class="pre">expr)</span></code>, use this: <code class="docutils literal notranslate"><span class="pre">Do(x</span> <span class="pre">=</span> <span class="pre">expr[1],</span> <span class="pre">y</span> <span class="pre">=</span> <span class="pre">expr[2])</span></code>. Our pattern compile needs to aware the scope change!</p>
-<p><strong>P.S 2</strong>: <code class="docutils literal notranslate"><span class="pre">Do[x...]</span></code> is an eye candy for <code class="docutils literal notranslate"><span class="pre">Do(x)</span></code>, and so does <code class="docutils literal notranslate"><span class="pre">Many[x]</span></code> for <code class="docutils literal notranslate"><span class="pre">Many(x)</span></code>. <strong>HOWEVER</strong>, do not use <code class="docutils literal notranslate"><span class="pre">begin</span> <span class="pre">end</span></code> syntax in <code class="docutils literal notranslate"><span class="pre">Do[...]</span></code> or <code class="docutils literal notranslate"><span class="pre">Many[...]</span></code>. Julia restricts the parser and it’ll not get treated as a <code class="docutils literal notranslate"><span class="pre">begin</span> <span class="pre">end</span></code> block.</p>
-<p><strong>P.S 3</strong>: The <a class="reference external" href="#let-patterns"><code class="docutils literal notranslate"><span class="pre">let</span></code> pattern</a> is different from the <code class="docutils literal notranslate"><span class="pre">Do</span></code> pattern.</p>
-<ul class="simple">
-<li><p><code class="docutils literal notranslate"><span class="pre">Do[x=y]</span></code> changes <code class="docutils literal notranslate"><span class="pre">x</span></code>, but <code class="docutils literal notranslate"><span class="pre">let</span> <span class="pre">x</span> <span class="pre">=</span> <span class="pre">y</span> <span class="pre">end</span></code> shadows <code class="docutils literal notranslate"><span class="pre">x</span></code>. <code class="docutils literal notranslate"><span class="pre">let</span></code> may also change a variable’s value. Check the documents of <code class="docutils literal notranslate"><span class="pre">&#64;switch</span></code> macro.</p></li>
-<li><p>You can write non-binding in <code class="docutils literal notranslate"><span class="pre">Do</span></code>: <code class="docutils literal notranslate"><span class="pre">Do[println(1)]</span></code>, but you cannot do this in <code class="docutils literal notranslate"><span class="pre">let</span></code> patterns.</p></li>
-</ul>
-</section>
-<section id="let-patterns">
-<h2>Let Patterns<a class="headerlink" href="#let-patterns" title="Permalink to this headline">¶</a></h2>
-<div class="highlight-julia notranslate"><div class="highlight"><pre><span></span><span class="nd">@match</span> <span class="m">1</span> <span class="k">begin</span>
-    <span class="k">let</span> <span class="nv">x</span> <span class="o">=</span> <span class="m">1</span> <span class="k">end</span> <span class="o">=&gt;</span> <span class="nv">x</span>
-<span class="k">end</span>
-</pre></div>
-</div>
-<p>Bind a variable without changing the value of existing variables, i.e., <code class="docutils literal notranslate"><span class="pre">let</span></code> patterns shadow symbols.</p>
-<p><code class="docutils literal notranslate"><span class="pre">let</span></code> may also change a variable’s value. Check the documents of <code class="docutils literal notranslate"><span class="pre">&#64;switch</span></code> macro.</p>
-</section>
 <section id="active-patterns">
 <h2>Active Patterns<a class="headerlink" href="#active-patterns" title="Permalink to this headline">¶</a></h2>
-<p>This implementation is a subset of <a class="reference external" href="https://docs.microsoft.com/en-us/dotnet/fsharp/language-reference/active-patterns">F# Active Patterns</a>.</p>
-<p>There’re 3 distinct active patterns, first of which is the normal form:</p>
+<p>This implementation is a subset of <a class="reference external" href="https://docs.microsoft.com/en-us/dotnet/fsharp/language-reference/active-patterns">F# Active Patterns</a>. Active patterns let you decompose the input value in a customized way.</p>
+<p>There are 3 distinct active patterns, the first of which is the normal form:</p>
 <div class="highlight-julia notranslate"><div class="highlight"><pre><span></span><span class="c"># 1-ary deconstruction: return Union{Some{T}, Nothing}</span>
 <span class="nd">@active</span> <span class="nf">LessThan0</span><span class="p">(</span><span class="nv">x</span><span class="p">)</span> <span class="k">begin</span>
     <span class="k">if</span> <span class="nv">x</span> <span class="o">&gt;=</span> <span class="m">0</span>
@@ -934,6 +923,45 @@ For a visible global variable <code class="docutils literal notranslate"><span c
 <li><p><a class="reference external" href="https://www.reddit.com/r/Julia/comments/ap4xwr/mlstylejl_a_modern_way_to_manipulate_asts/">A Modern Way to Manipulate ASTs</a>.</p></li>
 <li><p><a class="reference external" href="https://discourse.julialang.org/t/an-elegant-and-efficient-way-to-extract-something-from-asts/19123">An Elegant and Efficient Way to Extract Something from ASTs</a>.</p></li>
 </ul>
+</section>
+<section id="advanced-do-patterns-many-patterns">
+<h2>Advanced: Do-Patterns &amp; Many-Patterns<a class="headerlink" href="#advanced-do-patterns-many-patterns" title="Permalink to this headline">¶</a></h2>
+<p>To introduce side-effects into pattern matching, we provide a built-in pattern called the <code class="docutils literal notranslate"><span class="pre">Do</span></code> pattern.</p>
+<p>Also, a pattern called <code class="docutils literal notranslate"><span class="pre">Many</span></code> can work with <code class="docutils literal notranslate"><span class="pre">Do</span></code> pattern in a perfect way.</p>
+<div class="highlight-julia notranslate"><div class="highlight"><pre><span></span><span class="nd">@match</span> <span class="p">[</span><span class="m">1</span><span class="p">,</span> <span class="m">2</span><span class="p">,</span> <span class="m">3</span><span class="p">]</span> <span class="k">begin</span>
+    <span class="nf">Many</span><span class="p">(</span><span class="o">::</span><span class="nb">Int</span><span class="p">)</span> <span class="o">=&gt;</span> <span class="k">true</span>
+    <span class="nv">_</span> <span class="o">=&gt;</span> <span class="k">false</span>
+<span class="k">end</span> <span class="c"># true</span>
+
+<span class="nd">@match</span> <span class="p">[</span><span class="m">1</span><span class="p">,</span> <span class="m">2</span><span class="p">,</span> <span class="m">3</span><span class="p">,</span>  <span class="s">&quot;a&quot;</span><span class="p">,</span> <span class="s">&quot;b&quot;</span><span class="p">,</span> <span class="s">&quot;c&quot;</span><span class="p">,</span> <span class="p">:</span><span class="nv">a</span><span class="p">,</span> <span class="p">:</span><span class="nv">b</span><span class="p">,</span> <span class="p">:</span><span class="nv">c</span><span class="p">]</span> <span class="k">begin</span>
+    <span class="nf">Do</span><span class="p">(</span><span class="nv">count</span> <span class="o">=</span> <span class="m">0</span><span class="p">)</span> <span class="o">&amp;&amp;</span>
+    <span class="nv">Many</span><span class="p">[</span>
+        <span class="nv">a</span><span class="o">::</span><span class="nb">Int</span> <span class="o">&amp;&amp;</span> <span class="nf">Do</span><span class="p">(</span><span class="nv">count</span> <span class="o">=</span> <span class="nv">count</span> <span class="o">+</span> <span class="nv">a</span><span class="p">)</span> <span class="o">||</span>
+        <span class="o">::</span><span class="nb">String</span>                        <span class="o">||</span>
+        <span class="o">::</span><span class="nb">Symbol</span> <span class="o">&amp;&amp;</span> <span class="nf">Do</span><span class="p">(</span><span class="nv">count</span> <span class="o">=</span> <span class="nv">count</span> <span class="o">+</span> <span class="m">1</span><span class="p">)</span>
+    <span class="p">]</span> <span class="o">=&gt;</span> <span class="nv">count</span>
+<span class="k">end</span> <span class="c"># 9</span>
+</pre></div>
+</div>
+<p><code class="docutils literal notranslate"><span class="pre">Do</span></code> and <code class="docutils literal notranslate"><span class="pre">Many</span></code> may be not used very often but quite convenient for some specific domain.</p>
+<p><strong>P.S 1</strong>: when assigning variables with <code class="docutils literal notranslate"><span class="pre">Do</span></code>, don’t do <code class="docutils literal notranslate"><span class="pre">Do((x,</span> <span class="pre">y)</span> <span class="pre">=</span> <span class="pre">expr)</span></code>, use this: <code class="docutils literal notranslate"><span class="pre">Do(x</span> <span class="pre">=</span> <span class="pre">expr[1],</span> <span class="pre">y</span> <span class="pre">=</span> <span class="pre">expr[2])</span></code>. Our pattern compile needs to aware the scope change!</p>
+<p><strong>P.S 2</strong>: <code class="docutils literal notranslate"><span class="pre">Do[x...]</span></code> is an eye candy for <code class="docutils literal notranslate"><span class="pre">Do(x)</span></code>, and so does <code class="docutils literal notranslate"><span class="pre">Many[x]</span></code> for <code class="docutils literal notranslate"><span class="pre">Many(x)</span></code>. <strong>HOWEVER</strong>, do not use <code class="docutils literal notranslate"><span class="pre">begin</span> <span class="pre">end</span></code> syntax in <code class="docutils literal notranslate"><span class="pre">Do[...]</span></code> or <code class="docutils literal notranslate"><span class="pre">Many[...]</span></code>. Julia restricts the parser and it’ll not get treated as a <code class="docutils literal notranslate"><span class="pre">begin</span> <span class="pre">end</span></code> block.</p>
+<p><strong>P.S 3</strong>: The <a class="reference external" href="#let-patterns"><code class="docutils literal notranslate"><span class="pre">let</span></code> pattern</a> is different from the <code class="docutils literal notranslate"><span class="pre">Do</span></code> pattern.</p>
+<ul class="simple">
+<li><p><code class="docutils literal notranslate"><span class="pre">Do[x=y]</span></code> changes <code class="docutils literal notranslate"><span class="pre">x</span></code>, but <code class="docutils literal notranslate"><span class="pre">let</span> <span class="pre">x</span> <span class="pre">=</span> <span class="pre">y</span> <span class="pre">end</span></code> shadows <code class="docutils literal notranslate"><span class="pre">x</span></code>. <code class="docutils literal notranslate"><span class="pre">let</span></code> may also change a variable’s value. Check the documents of <code class="docutils literal notranslate"><span class="pre">&#64;switch</span></code> macro.</p></li>
+<li><p>You can write non-binding in <code class="docutils literal notranslate"><span class="pre">Do</span></code>: <code class="docutils literal notranslate"><span class="pre">Do[println(1)]</span></code>, but you cannot do this in <code class="docutils literal notranslate"><span class="pre">let</span></code> patterns.</p></li>
+</ul>
+</section>
+<section id="advanced-let-patterns">
+<h2>Advanced: Let Patterns<a class="headerlink" href="#advanced-let-patterns" title="Permalink to this headline">¶</a></h2>
+<div class="highlight-julia-console notranslate"><div class="highlight"><pre><span></span><span class="gp">julia&gt;</span> <span class="nd">@match</span> <span class="m">1</span> <span class="k">begin</span>
+           <span class="k">let</span> <span class="nv">x</span> <span class="o">=</span> <span class="m">2</span> <span class="k">end</span> <span class="o">=&gt;</span> <span class="nv">x</span>
+       <span class="k">end</span>
+<span class="m">2</span>
+</pre></div>
+</div>
+<p>Bind a variable without changing the value of existing variables, i.e., <code class="docutils literal notranslate"><span class="pre">let</span></code> patterns shadow symbols.</p>
+<p><code class="docutils literal notranslate"><span class="pre">let</span></code> may also change a variable’s value. Check the documents of <code class="docutils literal notranslate"><span class="pre">&#64;switch</span></code> macro.</p>
 </section>
 </section>
 

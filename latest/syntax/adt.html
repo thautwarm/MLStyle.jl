@@ -91,6 +91,16 @@
 </ul>
 <ul class="current">
 <li class="toctree-l1 current"><a class="current reference internal" href="#">Algebraic Data Types</a><ul>
+<li class="toctree-l2"><a class="reference internal" href="#basic-constructors">Basic constructors</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#specifying-field-names">Specifying field names</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#specifying-field-names-and-types">Specifying field names and types</a></li>
+<li class="toctree-l3"><a class="reference internal" href="#subtyping">Subtyping</a></li>
+</ul>
+</li>
+<li class="toctree-l2"><a class="reference internal" href="#less-familiar">Less familiar</a><ul>
+<li class="toctree-l3"><a class="reference internal" href="#singleton-instances">Singleton instances</a></li>
+</ul>
+</li>
 <li class="toctree-l2"><a class="reference internal" href="#cheat-sheet">Cheat Sheet</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#examples">Examples</a></li>
 <li class="toctree-l2"><a class="reference internal" href="#example-modeling-arithmetic-operations">Example: Modeling Arithmetic Operations</a></li>
@@ -101,11 +111,11 @@
 <li class="toctree-l2"><a class="reference internal" href="pattern.html#literal-patterns">Literal Patterns</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pattern.html#capturing-patterns">Capturing Patterns</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pattern.html#type-patterns">Type Patterns</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pattern.html#guards">Guards</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pattern.html#if-patterns"><code class="docutils literal notranslate"><span class="pre">if</span></code> patterns</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pattern.html#guardby-patterns"><code class="docutils literal notranslate"><span class="pre">GuardBy</span></code> patterns</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pattern.html#and-patterns">And-Patterns</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pattern.html#destructuring-tuples-arrays-and-dictionaries-with-pattern-matching">Destructuring Tuples, Arrays, and Dictionaries with Pattern Matching</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pattern.html#deconstruction-of-custom-composite-data">Deconstruction of Custom Composite Data</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pattern.html#predicates">Predicates</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pattern.html#range-patterns">Range Patterns</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pattern.html#reference-patterns">Reference Patterns</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pattern.html#macro-call-patterns">Macro Call Patterns</a></li>
@@ -116,11 +126,11 @@
 </li>
 <li class="toctree-l2"><a class="reference internal" href="pattern.html#or-patterns">Or Patterns</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pattern.html#advanced-type-patterns">Advanced Type Patterns</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pattern.html#do-patterns-many-patterns">Do-Patterns &amp; Many-Patterns</a></li>
-<li class="toctree-l2"><a class="reference internal" href="pattern.html#let-patterns">Let Patterns</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pattern.html#active-patterns">Active Patterns</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pattern.html#expr-patterns">Expr Patterns</a></li>
 <li class="toctree-l2"><a class="reference internal" href="pattern.html#julia-code-as-expr-patterns">Julia Code as Expr Patterns</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pattern.html#advanced-do-patterns-many-patterns">Advanced: Do-Patterns &amp; Many-Patterns</a></li>
+<li class="toctree-l2"><a class="reference internal" href="pattern.html#advanced-let-patterns">Advanced: Let Patterns</a></li>
 </ul>
 </li>
 <li class="toctree-l1"><a class="reference internal" href="switch.html">The Switch Statements</a></li>
@@ -165,6 +175,16 @@
       role="menu"
       aria-labelledby="dLabelLocalToc"><ul>
 <li><a class="reference internal" href="#">Algebraic Data Types</a><ul>
+<li><a class="reference internal" href="#basic-constructors">Basic constructors</a><ul>
+<li><a class="reference internal" href="#specifying-field-names">Specifying field names</a></li>
+<li><a class="reference internal" href="#specifying-field-names-and-types">Specifying field names and types</a></li>
+<li><a class="reference internal" href="#subtyping">Subtyping</a></li>
+</ul>
+</li>
+<li><a class="reference internal" href="#less-familiar">Less familiar</a><ul>
+<li><a class="reference internal" href="#singleton-instances">Singleton instances</a></li>
+</ul>
+</li>
 <li><a class="reference internal" href="#cheat-sheet">Cheat Sheet</a></li>
 <li><a class="reference internal" href="#examples">Examples</a></li>
 <li><a class="reference internal" href="#example-modeling-arithmetic-operations">Example: Modeling Arithmetic Operations</a></li>
@@ -214,11 +234,129 @@
       
   <section id="algebraic-data-types">
 <h1>Algebraic Data Types<a class="headerlink" href="#algebraic-data-types" title="Permalink to this headline">¶</a></h1>
+<p>MLStyle’s algebraic data types (ADTs) are just a shorter syntax for writing the types
+you already know from Base Julia.</p>
+<section id="basic-constructors">
+<h2>Basic constructors<a class="headerlink" href="#basic-constructors" title="Permalink to this headline">¶</a></h2>
+<p>The <code class="docutils literal notranslate"><span class="pre">&#64;data</span></code> macro creates an abstract type and any number of subtypes. For example, suppose we want to create a type representing expressions for a calculator program.</p>
+<div class="highlight-jl notranslate"><div class="highlight"><pre><span></span><span class="nd">@data</span> <span class="n">Expression</span> <span class="k">begin</span>
+    <span class="n">Value</span><span class="p">(</span><span class="o">::</span><span class="kt">Int</span><span class="p">)</span>
+    <span class="n">Operation</span><span class="p">(</span><span class="o">::</span><span class="kt">Symbol</span><span class="p">,</span> <span class="o">::</span><span class="n">Value</span><span class="p">,</span> <span class="o">::</span><span class="n">Value</span><span class="p">)</span>
+<span class="k">end</span>
+</pre></div>
+</div>
+<p>This <code class="docutils literal notranslate"><span class="pre">&#64;data</span></code> macro creates</p>
+<div class="highlight-jl notranslate"><div class="highlight"><pre><span></span><span class="k">abstract</span> <span class="k">type</span> <span class="n">Expression</span> <span class="k">end</span>
+
+<span class="k">struct</span> <span class="n">Value</span> <span class="o">&lt;:</span> <span class="n">Expression</span>
+    <span class="n">_1</span><span class="o">::</span><span class="kt">Int</span>
+<span class="k">end</span>
+
+<span class="k">struct</span> <span class="n">Operation</span> <span class="o">&lt;:</span> <span class="n">Expression</span>
+    <span class="n">_1</span><span class="o">::</span><span class="kt">Symbol</span>
+    <span class="n">_2</span><span class="o">::</span><span class="n">Value</span>
+    <span class="n">_3</span><span class="o">::</span><span class="n">Value</span>
+<span class="k">end</span>
+</pre></div>
+</div>
+<p>and defines <a class="reference external" href="&#64;ref"><code class="docutils literal notranslate"><span class="pre">MLStyle.pattern_uncall</span></code></a> for each of those subtypes so they can be used in pattern matching. That’s it.</p>
+<section id="specifying-field-names">
+<h3>Specifying field names<a class="headerlink" href="#specifying-field-names" title="Permalink to this headline">¶</a></h3>
+<p>Each of the subtypes can have field names specified like this:</p>
+<div class="highlight-jl notranslate"><div class="highlight"><pre><span></span><span class="nd">@data</span> <span class="n">T</span> <span class="k">begin</span>
+    <span class="n">C1</span><span class="p">(</span><span class="n">a</span><span class="p">,</span><span class="n">b</span><span class="p">,</span><span class="n">c</span><span class="p">)</span>
+    <span class="n">C2</span><span class="p">(</span><span class="n">x</span><span class="p">,</span><span class="n">y</span><span class="p">)</span>
+<span class="k">end</span>
+</pre></div>
+</div>
+<p>which creates</p>
+<div class="highlight-jl notranslate"><div class="highlight"><pre><span></span><span class="k">abstract</span> <span class="k">type</span> <span class="n">T</span> <span class="k">end</span>
+
+<span class="k">struct</span> <span class="n">C1</span> <span class="o">&lt;:</span> <span class="n">T</span>
+    <span class="n">a</span>
+    <span class="n">b</span>
+    <span class="n">c</span>
+<span class="k">end</span>
+
+<span class="k">struct</span> <span class="n">C2</span> <span class="o">&lt;:</span> <span class="n">T</span>
+     <span class="n">x</span>
+     <span class="n">y</span>
+<span class="k">end</span>
+</pre></div>
+</div>
+<p>and again defines <a class="reference external" href="&#64;ref"><code class="docutils literal notranslate"><span class="pre">MLStyle.pattern_uncall</span></code></a> for each of those subtypes so they can be used in pattern matching.</p>
+</section>
+<section id="specifying-field-names-and-types">
+<h3>Specifying field names and types<a class="headerlink" href="#specifying-field-names-and-types" title="Permalink to this headline">¶</a></h3>
+<p>Field names and types can be specified together:</p>
+<div class="highlight-jl notranslate"><div class="highlight"><pre><span></span><span class="nd">@data</span> <span class="n">T</span> <span class="k">begin</span>
+    <span class="n">C1</span><span class="p">(</span><span class="n">a</span><span class="o">::</span><span class="kt">Int</span><span class="p">,</span><span class="n">b</span><span class="o">::</span><span class="kt">Int</span><span class="p">,</span><span class="n">c</span><span class="o">::</span><span class="kt">Int</span><span class="p">)</span>
+    <span class="n">C2</span><span class="p">(</span><span class="n">x</span><span class="o">::</span><span class="kt">Float64</span><span class="p">,</span><span class="n">y</span><span class="o">::</span><span class="kt">Float64</span><span class="p">)</span>
+<span class="k">end</span>
+</pre></div>
+</div>
+<p>which creates</p>
+<div class="highlight-jl notranslate"><div class="highlight"><pre><span></span><span class="k">abstract</span> <span class="k">type</span> <span class="n">T</span> <span class="k">end</span>
+
+<span class="k">struct</span> <span class="n">C1</span> <span class="o">&lt;:</span> <span class="n">T</span>
+    <span class="n">a</span><span class="o">::</span><span class="kt">Int</span>
+    <span class="n">b</span><span class="o">::</span><span class="kt">Int</span>
+    <span class="n">c</span><span class="o">::</span><span class="kt">Int</span>
+<span class="k">end</span>
+
+<span class="k">struct</span> <span class="n">C2</span> <span class="o">&lt;:</span> <span class="n">T</span>
+     <span class="n">x</span><span class="o">::</span><span class="kt">Float64</span>
+     <span class="n">y</span><span class="o">::</span><span class="kt">Float64</span>
+<span class="k">end</span>
+</pre></div>
+</div>
+<p>and once again defines <a class="reference external" href="&#64;ref"><code class="docutils literal notranslate"><span class="pre">MLStyle.pattern_uncall</span></code></a> for each of those subtypes so they can be used in pattern matching.</p>
+</section>
+<section id="subtyping">
+<h3>Subtyping<a class="headerlink" href="#subtyping" title="Permalink to this headline">¶</a></h3>
+<p>You can subtype existing abstract types with the standard <code class="docutils literal notranslate"><span class="pre">&lt;:</span></code> syntax:</p>
+<div class="highlight-jldoctest notranslate"><div class="highlight"><pre><span></span>julia&gt; @data ShortVec{T} &lt;: AbstractVector{T} begin
+           V0()
+           V1(::T)
+           V2(::T, ::T)
+       end
+
+julia&gt; supertypes(V0{Int})
+(V0{Int64}, ShortVec{Int64}, AbstractVector{Int64}, Any)
+</pre></div>
+</div>
+</section>
+</section>
+<section id="less-familiar">
+<h2>Less familiar<a class="headerlink" href="#less-familiar" title="Permalink to this headline">¶</a></h2>
+<section id="singleton-instances">
+<h3>Singleton instances<a class="headerlink" href="#singleton-instances" title="Permalink to this headline">¶</a></h3>
+<p>A type with no fields has only one instance. You can make two such singletons <code class="docutils literal notranslate"><span class="pre">a</span></code> and <code class="docutils literal notranslate"><span class="pre">b</span></code></p>
+<div class="highlight-jl notranslate"><div class="highlight"><pre><span></span><span class="nd">@data</span> <span class="n">T</span> <span class="k">begin</span>
+  <span class="n">a</span>
+  <span class="n">b</span>
+<span class="k">end</span>
+</pre></div>
+</div>
+<p>does essentially</p>
+<div class="highlight-jl notranslate"><div class="highlight"><pre><span></span><span class="k">abstract</span> <span class="k">type</span> <span class="n">T</span> <span class="k">end</span>
+
+<span class="k">struct</span> <span class="n">_A</span> <span class="o">&lt;:</span> <span class="n">T</span> <span class="k">end</span>
+<span class="kd">const</span> <span class="n">a</span> <span class="o">=</span> <span class="n">_A</span><span class="p">()</span>
+
+<span class="k">struct</span> <span class="n">_B</span> <span class="o">&lt;:</span> <span class="n">T</span> <span class="k">end</span>
+<span class="kd">const</span> <span class="n">b</span> <span class="o">=</span> <span class="n">_B</span><span class="p">()</span>
+</pre></div>
+</div>
+<p>where <code class="docutils literal notranslate"><span class="pre">a</span></code> is the sole instance of its type (which is a subtype of <code class="docutils literal notranslate"><span class="pre">T</span></code>). Likewise <code class="docutils literal notranslate"><span class="pre">b</span></code> is the only instance of its type (which is also a subtype of <code class="docutils literal notranslate"><span class="pre">T</span></code>).</p>
+<p>Again this defines <a class="reference external" href="&#64;ref"><code class="docutils literal notranslate"><span class="pre">MLStyle.pattern_uncall</span></code></a>, as well as custom <code class="docutils literal notranslate"><span class="pre">show</span></code> methods for the values.</p>
+</section>
+</section>
 <section id="cheat-sheet">
 <h2>Cheat Sheet<a class="headerlink" href="#cheat-sheet" title="Permalink to this headline">¶</a></h2>
 <p>Cheat sheet for regular ADT definitions:</p>
 <div class="highlight-julia notranslate"><div class="highlight"><pre><span></span><span class="nd">@data</span> <span class="nv">A</span> <span class="o">&lt;:</span> <span class="nv">B</span> <span class="k">begin</span>
-    <span class="nv">C1</span> <span class="c"># is an enum</span>
+    <span class="nv">C1</span> <span class="c"># is a singleton instance</span>
     
     <span class="c"># C1 is a value but C2 is a constructor</span>
     <span class="nf">C2</span><span class="p">()</span>

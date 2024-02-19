@@ -2,6 +2,148 @@ Algebraic Data Types
 ==============================
 
 
+MLStyle's algebraic data types (ADTs) are just a shorter syntax for writing the types
+you already know from Base Julia.
+
+
+Basic constructors
+---------------------
+
+The `@data` macro creates an abstract type and any number of subtypes. For example, suppose we want to create a type representing expressions for a calculator program.
+
+```jl
+@data Expression begin
+    Value(::Int)
+    Operation(::Symbol, ::Value, ::Value)
+end
+```
+
+This `@data` macro creates
+
+```jl
+abstract type Expression end
+
+struct Value <: Expression
+    _1::Int
+end
+
+struct Operation <: Expression
+    _1::Symbol
+    _2::Value
+    _3::Value
+end
+```
+
+and defines [`MLStyle.pattern_uncall`](@ref) for each of those subtypes so they can be used in pattern matching. That's it.
+
+### Specifying field names
+
+Each of the subtypes can have field names specified like this:
+
+```jl
+@data T begin
+    C1(a,b,c)
+    C2(x,y)
+end
+```
+
+which creates
+
+```jl
+abstract type T end
+
+struct C1 <: T
+    a
+    b
+    c
+end
+
+struct C2 <: T
+     x
+     y
+end
+```
+
+and again defines [`MLStyle.pattern_uncall`](@ref) for each of those subtypes so they can be used in pattern matching.
+
+### Specifying field names and types
+
+Field names and types can be specified together:
+
+```jl
+@data T begin
+    C1(a::Int,b::Int,c::Int)
+    C2(x::Float64,y::Float64)
+end
+```
+
+which creates
+
+```jl
+abstract type T end
+
+struct C1 <: T
+    a::Int
+    b::Int
+    c::Int
+end
+
+struct C2 <: T
+     x::Float64
+     y::Float64
+end
+```
+
+and once again defines [`MLStyle.pattern_uncall`](@ref) for each of those subtypes so they can be used in pattern matching.
+
+### Subtyping
+
+You can subtype existing abstract types with the standard `<:` syntax:
+
+```jldoctest
+julia> @data ShortVec{T} <: AbstractVector{T} begin
+           V0()
+           V1(::T)
+           V2(::T, ::T)
+       end
+
+julia> supertypes(V0{Int})
+(V0{Int64}, ShortVec{Int64}, AbstractVector{Int64}, Any)
+```
+
+Less familiar
+---------------
+
+
+### Singleton instances
+
+A type with no fields has only one instance. You can make two such singletons `a` and `b`
+
+```jl
+@data T begin
+  a
+  b
+end
+```
+
+does essentially
+
+```jl
+abstract type T end
+
+struct _A <: T end
+const a = _A()
+
+struct _B <: T end
+const b = _B()
+```
+
+where `a` is the sole instance of its type (which is a subtype of `T`). Likewise `b` is the only instance of its type (which is also a subtype of `T`). 
+
+Again this defines [`MLStyle.pattern_uncall`](@ref), as well as custom `show` methods for the values.
+
+
+
 Cheat Sheet 
 -----------------
 
@@ -9,7 +151,7 @@ Cheat sheet for regular ADT definitions:
 
 ```julia
 @data A <: B begin
-    C1 # is an enum
+    C1 # is a singleton instance
     
     # C1 is a value but C2 is a constructor
     C2()
