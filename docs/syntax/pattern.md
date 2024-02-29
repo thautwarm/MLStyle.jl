@@ -273,26 +273,29 @@ Note that, due to the lack of an operation for distinguishing `nothing` from "ke
 Deconstruction of Custom Composite Data
 -------------------------------------------
 
-In order to deconstruct arbitrary data types in a similar way to `Tuple`, `Array` and `Dict`, simply declare them to be record types with the `@as_record` macro.
-
-Here is an example, check more about ADTs(and GADTs) at [Algebraic Data Type Syntax in MLStyle](https://thautwarm.github.io/MLStyle.jl/latest/syntax/adt).
+Enable pattern matching on the internals of a struct `S` with `@as_record S`.
 
 ```julia-console
-julia> @data Color begin
-         RGB(r::Int, g::Int, b::Int)
-         Gray(Int)
+julia> abstract type Color end
+
+julia> struct RGB <: Color
+           r::Int
+           g::Int
+           b::Int
        end
 
-julia> # treating those types as records for more flexible pattern matching
+julia> struct Gray <: Color
+           _1::Int
+       end
 
-julia> @as_record RGB
+julia> @as_record RGB;
 
-julia> @as_record Gray
+julia> @as_record Gray;
 
 julia> color_to_int(x) = @match x begin
-           RGB(;r, g, b) => 16 + b + 6g + 36r
-           Gray(i)       => 232 + i
-       end
+                  RGB(;r, g, b) => 16 + b + 6g + 36r
+                  Gray(i)       => 232 + i
+              end
 color_to_int (generic function with 1 method)
 
 julia> RGB(200, 0, 200) |> color_to_int
