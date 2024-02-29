@@ -92,28 +92,11 @@ julia> @match 1 begin
 1
 ```
 
-`if` patterns
---------------------
-
-Writing `if cond end` as a pattern will match if `cond==true`
-
-```julia-console
-julia> @match 1.0 begin
-           if 1 < 5 end  => √(5 - 1)
-       end
-2.0
-```
-
-Unlike most ML languages or other libraries which only permit guards at the end of a case clause, 
-MLStyle.jl allows you to put guards anywhere during matching.
-
-
-Sometimes, in practice, you might want to introduce type variables into the scope, in this case use `where` clause. See [Advanced Type Patterns](#advanced-type-patterns) for more details.
 
 `GuardBy` patterns
 -------------------
 
-Equivalent to guard patterns, writing `GuardBy(f)` in a pattern will match if and only if `f` applied to the pattern matching input gives true:
+Writing `GuardBy(f)` in a pattern will match if and only if `f` applied to the pattern matching input gives true:
 
 ```julia
 function pred(x)
@@ -130,6 +113,34 @@ end
     _        => 1
 end
 ```
+
+
+`if` patterns
+--------------------
+
+Writing `if cond end` as a pattern will match if `cond==true`. 
+
+This example does not use the input value `1.0` at all:
+
+
+
+```julia-console
+julia> @match 1.0 begin
+           if 1 < 5 end  => 4
+       end
+4
+
+x = 3
+julia> @match 1.0 begin
+            if x < 5 end  => 4
+        end
+4
+```
+
+
+`if` patterns can match on the input value when used in combination with And-patterns.
+
+
 
 
 And-Patterns 
@@ -198,6 +209,10 @@ test(1.0) # true
 test(3)   # false
 test("")  # false
 ```
+
+
+
+
 
 
 
