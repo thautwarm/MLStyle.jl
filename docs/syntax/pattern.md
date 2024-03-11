@@ -440,15 +440,6 @@ end # 0
 end # -15
 ```
 
-# 0-ary deconstruction: return Bool
-@active IsLessThan0(x) begin
-    x < 0
-end
-
-@match 10 begin
-    IsLessThan0() => :a
-    _ => :b
-end # b
 To define more than one name, return a tuple.
 
 ```julia
