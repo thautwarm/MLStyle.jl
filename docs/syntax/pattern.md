@@ -32,16 +32,28 @@ julia> @match 10 begin
        end
 "right!"
 ```
-All literal data introduced with Julia syntax can be matched by literal patterns.
 
-However, note that the equality is strict for primitive types(`Int8-64`, `UInt8-64`, `Bool`, etc.) and singleton types(`struct Data end; Data()`).
+You can think of this match expression like
 
-Specifically, **substrings can match a literal string.**
+```julia
+VALUE = 10
+if VALUE === 1
+    "wrong!"
+elseif VALUE === 2
+    "wrong!"
+elseif VALUE === 10
+    "right!"
+else
+    error("matching non-exhaustive")
+end
+```
+
+All literal data introduced with Julia syntax can be matched by literal patterns. However, matching with exact `===` equality is required only for primitive types (`Int8-64`, `UInt8-64`, `Bool`, etc.) and singleton types (e.g. `struct Data end; Data()`). Other types may match more flexibly: for example, a `SubString` can match a literal string pattern; a single integer value like `3` can match a range pattern like `1:5` that contains it.
 
 Capturing Patterns
 --------------------------
 
-A pattern where there is a symbol such as `x` on the left hand side will bind the input value to that symbol and let you use that captured value on the right hand side
+A pattern where there is a symbol such as `x` on the left hand side will bind the input value to that symbol and let you use that captured value on the right hand side:
 
 ```julia-console
 julia> @match 1 begin
@@ -49,6 +61,17 @@ julia> @match 1 begin
        end
 2
 ```
+
+This match expression is like
+
+```julia
+VALUE = 1
+let x = VALUE
+    x + 1
+end
+```
+
+
 You can put `_` on the left hand side of a pattern if you don't care about what the captured value is.
 
 However, sometimes a symbol might not be used for capturing. If and only if some visible global variable `x` satisfying `MLStyle.is_enum(x) == true`, `x` is used as an enum pattern.
@@ -69,28 +92,58 @@ julia> @match 1 begin
 1
 ```
 
-Guards
+
+`GuardBy` patterns
+-------------------
+
+Writing `GuardBy(f)` in a pattern will match if and only if `f` applied to the pattern matching input gives true:
+
+```julia
+function pred(x)
+    x > 5
+end
+
+@match x begin
+    GuardBy(pred) => 5 - x # only succeeds when x > 5
+    _        => 1
+end
+
+@match x begin
+    GuardBy(x -> x > 5) => 5 - x # only succeeds when x > 5
+    _        => 1
+end
+```
+
+
+`if` patterns
 --------------------
 
-Writing `if cond end` as a pattern will match if `cond==true`
+Writing `if cond end` as a pattern will match if `cond==true`. 
+
+This example does not use the input value `1.0` at all:
+
+
 
 ```julia-console
 julia> @match 1.0 begin
-           if 1 < 5 end  => √(5 - 1)
+           if 1 < 5 end  => 4
        end
-2.0
+4
+
+x = 3
+julia> @match 1.0 begin
+            if x < 5 end  => 4
+        end
+4
 ```
 
-Unlike most of ML languages or other libraries who only permit guards in the end of a case clause,
-MLStyle.jl allows you to put guards anywhere during matching.
 
-However, remember, due to some Julia optimization details, even if the guards can be put
-in the middle of a matching process, it is still better to postpone it until the end of matching sequence. This allows for better performance.
-
-Sometimes, in practice, you might want to introduce type variables into the scope, in this case use `where` clause, and see [Advanced Type Patterns](#advanced-type-patterns) for more details.
+`if` patterns can match on the input value when used in combination with And-patterns.
 
 
-And-Patterns
+
+
+And-Patterns 
 --------------------
 
 `pat2 && pat2` on the left hand side of a pattern will match if and only if `pat1` and `pat2` match individually. This lets you combine two separate patterns together,
@@ -112,6 +165,56 @@ julia> @match (1, 2) begin
        end
 true
 ```
+
+
+Or Patterns
+-------------------
+
+Writing `pat1 || pat2` will match if either `pat1` *or* `pat2` match. If `pat1` matches, MLStyle will not attempt to match `pat2`.
+
+```julia
+julia> @match 2 begin
+           0 || 1 => "01"
+           2 || 3 => "23"
+       end
+"23"
+```
+
+`Or Pattern`s can be nested.
+
+```julia
+julia> @match 3 begin
+           (0 || 1) || (2 || 3) => "0123"    
+       end
+"0123"
+```
+
+Patterns separated by `||` can be spread across multiple lines.
+
+```julia
+test(num) =
+    @match num begin
+       ::Float64 ||
+        0        ||
+        1        ||
+        2        => true
+
+        _        => false
+    end
+
+test(0)   # true
+test(1)   # true
+test(2)   # true
+test(1.0) # true
+test(3)   # false
+test("")  # false
+```
+
+
+
+
+
+
 
 Destructuring Tuples, Arrays, and Dictionaries with Pattern Matching
 ---------------------
@@ -165,31 +268,34 @@ julia> @match dict begin
 
 Note that, due to the lack of an operation for distinguishing `nothing` from "key not found" in Julia's standard library, the dictionary pattern has a little overhead. This will be resolved after [Julia#34821](https://github.com/JuliaLang/julia/pull/34821) is completed.
 
-**P.S**:  MLStyle will not refer an external package to solve this issue, as MLStyle is generating "runtime support free" code, which means that any code generated by MLStyle itself depends only on Stdlib. This feature allows MLStyle to be introduced as a dependency only in development, instead of being distributed together to downstream codes.
+**P.S.**:  MLStyle will not refer an external package to solve this issue, as MLStyle is generating "runtime-support free" code, which means that any code generated by MLStyle itself depends only on Stdlib. This feature allows MLStyle to be introduced as a dependency only in development, instead of being distributed together to downstream users.
 
 Deconstruction of Custom Composite Data
 -------------------------------------------
 
-In order to deconstruct arbitrary data types in a similar way to `Tuple`, `Array` and `Dict`, simply declare them to be record types with the `@as_record` macro.
-
-Here is an example, check more about ADTs(and GADTs) at [Algebraic Data Type Syntax in MLStyle](https://thautwarm.github.io/MLStyle.jl/latest/syntax/adt).
+Enable pattern matching on the internals of a struct `S` with `@as_record S`.
 
 ```julia-console
-julia> @data Color begin
-         RGB(r::Int, g::Int, b::Int)
-         Gray(Int)
+julia> abstract type Color end
+
+julia> struct RGB <: Color
+           r::Int
+           g::Int
+           b::Int
        end
 
-julia> # treating those types as records for more flexible pattern matching
+julia> struct Gray <: Color
+           _1::Int
+       end
 
-julia> @as_record RGB
+julia> @as_record RGB;
 
-julia> @as_record Gray
+julia> @as_record Gray;
 
 julia> color_to_int(x) = @match x begin
-           RGB(;r, g, b) => 16 + b + 6g + 36r
-           Gray(i)       => 232 + i
-       end
+                  RGB(;r, g, b) => 16 + b + 6g + 36r
+                  Gray(i)       => 232 + i
+              end
 color_to_int (generic function with 1 method)
 
 julia> RGB(200, 0, 200) |> color_to_int
@@ -199,7 +305,7 @@ julia> Gray(10)         |> color_to_int
 242
 ```
 
-In above cases, after `@as_record T`, we can use something called [field punning](https://dev.realworldocaml.org/records.html#field-punning) to match structures very conveniently.
+In the above cases, after `@as_record T`, we can use something called [field punning](https://dev.realworldocaml.org/records.html#field-punning) to match structures very conveniently.
 
 ```julia
 @match rbg_datum begin
@@ -211,26 +317,7 @@ end
 
 As you can see, field punning can be partial.
 
-Predicates
----------------
 
-Equivalent to guard patterns, writing `GuardBy(f)` in a pattern will match if and only if `f` applied to the pattern matching input gives true:
-
-```julia
-function pred(x)
-    x > 5
-end
-
-@match x begin
-    GuardBy(pred) => 5 - x # only succeed when x > 5
-    _        => 1
-end
-
-@match x begin
-    GuardBy(x -> x > 5) => 5 - x # only succeed when x > 5
-    _        => 1
-end
-```
 
 Range Patterns
 --------------------
@@ -246,7 +333,7 @@ julia> @match 1 begin
 Reference Patterns
 -----------------
 
-This feature is known as the `pin operator` from `Elixir` which could slightly extend ML based pattern matching.
+This feature is known as the `pin operator` from `Elixir` which can slightly extend ML based pattern matching.
 
 ```julia
 c = ...
@@ -262,7 +349,7 @@ Reference Patterns are useful, for example, when it's necessary to match on the 
 c = Int16(10) # c is of type Int16
 
 @match c begin
-    10.0 => "there is a match" #pattern is a Float
+    10.0 => "there is a match" # pattern is a Float
     _    => "there is not a match"
 end # => "there is not a match"
 
@@ -274,44 +361,130 @@ end # => "there is a match"
 When matching a primitive type or an immutable, size-zero type literal pattern matching behaves with strict equality. This behavior is similar to the [`===`](https://docs.julialang.org/en/v1/base/base/#Core.:===) operator in base Julia. Reference patterns behave more like the [`==`](https://docs.julialang.org/en/v1/base/math/#Base.:==) operator in base Julia, where the type of the numeric variable is ignored, and only abstract values are compared.
 
 
-Macro Call Patterns
-------------------------
+### Pattern Synonyms
 
-By default, macro calls occur in patterns will be no different than its expanded expression, hence the following bidirectional relationship **sometimes** holds:
+[pattern synonyms](https://ghc.gitlab.haskell.org/ghc/doc/users_guide/exts/pattern_synonyms.html) is a tasty feature in the Haskell programming language for defining patterns based on existing patterns.
+
+Suppose we want to regard `Triple` as a pattern that matches expressions of the form `(_, _, _)`
 
 ```julia-console
-julia> macro mymacro(a)
-         esc(:([$a]))
-       end
-@mymacro (macro with 1 method)
+julia> struct Triple end
+julia> MLStyle.pattern_uncall(::Type{Triple}, expr_to_ast, _, _, _) =
+            expr_to_ast(:(  (_, _, _)  ))
+julia> @match (1, 2) begin
+            Triple => "triple"
+            _ => "not a triple"
+        end
 
-julia> a = 2
-2
+"not a triple"
 
-julia> a == @match @mymacro(a) begin
-                @mymacro(a) => a
-            end
-true
+julia> @match (1, 2, 3) begin
+            Triple => "triple"
+            _ => "no a triple"
+        end
 
-# expanded form:
-# julia> a == @match [a] begin
-#                [a] => a
-#            end
+"triple"
 ```
 
-However, you can also change the pattern compilation behavior by overloading `MLStyle.pattern_unmacrocall`, whose usage can be found at the implementation of the pattern support for [`@r_str`](https://github.com/thautwarm/MLStyle.jl/blob/master/src/Pervasives.jl#L191).
+[Active Patterns](#active-patterns) and [ADTs](https://thautwarm.github.io/MLStyle.jl/latest/syntax/adt.html#cheat-sheet) are implemented via custom patterns.
 
-Some examples about string macro patterns:
+The custom patterns give us so-called **extensible pattern matching**.
+
+Active Patterns
+------------------
+
+This implementation is a subset of [F# Active Patterns](https://docs.microsoft.com/en-us/dotnet/fsharp/language-reference/active-patterns). Active patterns let you decompose the input value in a customized way.
+
+There are 3 distinct active patterns, the first of which is the normal form:
 
 ```julia
-@match  raw"$$$" begin
-    raw"$$$" => ...
+# 1-ary deconstruction: return Union{Some{T}, Nothing}
+@active LessThan0(x) begin
+    if x >= 0
+        nothing
+    else
+        Some(x)
+    end
+end
+
+@match 15 begin
+    LessThan0(a) => a
+    _ => 0
+end # 0
+
+@match -15 begin
+    LessThan0(a) => a
+    _ => 0
+end # -15
+
+# 0-ary deconstruction: return Bool
+@active IsLessThan0(x) begin
+    x < 0
+end
+
+@match 10 begin
+    IsLessThan0() => :a
+    _ => :b
+end # b
+
+# (n+2)-ary deconstruction: return Tuple{E1, E2, ...}
+@active SplitVecAt2(x) begin
+    (x[1:2], x[2+1:end])
+end
+
+@match [1, 2, 3, 4, 7] begin
+    SplitVecAt2(a, b) => (a, b)
+end
+# ([1, 2], [3, 4, 7])
+
+```
+
+Above 3 cases can be enhanced by becoming **parametric**:
+
+```julia
+@active SplitVecAt{N::Int}(x) begin
+    (x[1:N], x[N+1:end])
+end
+
+@match [1, 2, 3, 4, 7] begin
+    SplitVecAt{2}(a, b) => (a, b)
+end
+# ([1, 2], [3, 4, 7])
+
+@active Re{r :: Regex}(x) begin
+    res = match(r, x)
+    if res !== nothing
+        # use explicit `if-else` to emphasize the return should be Union{T, Nothing}.
+        Some(res)
+    else
+        nothing
+    end
 end
 
 @match "123" begin
-    r"\G\d+$" => ...
-end
+    Re{r"\d+"}(x) => x
+    _ => @error ""
+end # RegexMatch("123")
+
 ```
+
+Sometimes the enum syntax is useful and convenient:
+
+```julia
+@active IsEven(x) begin
+    x % 2 === 0
+end
+
+MLStyle.is_enum(::Type{IsEven}) = true
+
+@match 6 begin
+    IsEven => :even
+    _ => :odd
+end # :even
+```
+
+
+
 
 Custom Patterns
 --------------
@@ -405,63 +578,6 @@ julia> @macroexpand @match x begin
 end)
 ```
 
-### Pattern Synonyms
-
-[pattern synonyms](https://ghc.gitlab.haskell.org/ghc/doc/users_guide/exts/pattern_synonyms.html) is a tasty feature in Haskell programming language for defining patterns based on existing patterns.
-
-We can support it:
-
-suppose we want to regard `Triple` as a pattern `(_, _, _)`
-
-```julia-console
-julia> struct Triple end
-julia> MLStyle.pattern_uncall(::Type{Triple}, expr_to_ast, _, _, _) =
-            expr_to_ast(:(  (_, _, _)  ))
-julia> @match (1, 2) begin
-            Triple => "triple"
-            _ => "no a triple"
-        end
-
-"no a triple"
-
-julia> @match (1, 2, 3) begin
-            Triple => "triple"
-            _ => "no a triple"
-        end
-
-"triple"
-```
-
-[Active Patterns](#active-patterns) and [ADTs](https://thautwarm.github.io/MLStyle.jl/latest/syntax/adt.html#cheat-sheet) are implemented via custom patterns.
-
-The custom patterns gives us so-called **extensible pattern matching**.
-
-Or Patterns
--------------------
-
-Writing `pat1 || pat2` will match if either `pat1` *or* `pat2` match. If `pat1` matches, MLStyle will not attempt to match `pat2`.
-
-```julia
-test(num) =
-    @match num begin
-       ::Float64 ||
-        0        ||
-        1        ||
-        2        => true
-
-        _        => false
-    end
-
-test(0)   # true
-test(1)   # true
-test(2)   # true
-test(1.0) # true
-test(3)   # false
-test("")  # false
-```
-
-Tips: `Or Pattern`s could be nested.
-
 
 Advanced Type Patterns
 -------------------------
@@ -525,161 +641,7 @@ julia> @match 1 begin
 ERROR: matching non-exhaustive, at #= REPL[n]:1 =#
 ```
 
-Do-Patterns & Many-Patterns
------------------------
 
-To introduce side-effects into pattern matching, we provide a built-in pattern called `Do` pattern to achieve this.
-
-Also, a pattern called `Many` can work with `Do` pattern in a perfect way.
-
-```julia
-@match [1, 2, 3] begin
-    Many(::Int) => true
-    _ => false
-end # true
-
-@match [1, 2, 3,  "a", "b", "c", :a, :b, :c] begin
-    Do(count = 0) &&
-    Many[
-        a::Int && Do(count = count + a) ||
-        ::String                        ||
-        ::Symbol && Do(count = count + 1)
-    ] => count
-end # 9
-```
-
-`Do` and `Many` may be not used very often but quite convenient for some specific domain.
-
-**P.S 1**: when assigning variables with `Do`, don't do `Do((x, y) = expr)`, use this: `Do(x = expr[1], y = expr[2])`. Our pattern compile needs to aware the scope change!
-
-**P.S 2**: `Do[x...]` is an eye candy for `Do(x)`, and so does `Many[x]` for `Many(x)`. **HOWEVER**, do not use `begin end` syntax in `Do[...]` or `Many[...]`. Julia restricts the parser and it'll not get treated as a `begin end` block.
-
-**P.S 3**: The [`let` pattern](#let-patterns) is different from the `Do` pattern.
-
-- `Do[x=y]` changes `x`, but `let x = y end` shadows `x`. `let` may also change a variable's value. Check the documents of `@switch` macro.
-
-- You can write non-binding in `Do`: `Do[println(1)]`, but you cannot do this in `let` patterns.
-
-Let Patterns
--------------------
-
-```julia
-@match 1 begin
-    let x = 1 end => x
-end
-```
-
-Bind a variable without changing the value of existing variables, i.e., `let` patterns shadow symbols.
-
-`let` may also change a variable's value. Check the documents of `@switch` macro.
-
-Active Patterns
-------------------
-
-This implementation is a subset of [F# Active Patterns](https://docs.microsoft.com/en-us/dotnet/fsharp/language-reference/active-patterns).
-
-There are three distinct forms for active patterns, depending on how many names are defined on the left-hand side of the pattern. The simplest doesn't define any names; to match, return `true` from the `@active` expression; otherwise return `false`.
-
-
-```julia
-# 0-ary deconstruction: return Bool
-@active IsLessThan0(x) begin
-    x < 0
-end
-
-@match 10 begin
-    IsLessThan0() => :a
-    _ => :b
-end # b
-
-@match -10 begin
-    IsLessThan0() => :a
-    _ => :b
-end # :a
-```
-
-To define one name in a match, return `Some(_)` for a match; otherwise return `nothing`. 
-
-
-```julia
-# 1-ary deconstruction: return Union{Some{T}, Nothing}
-@active LessThan0(x) begin
-    if x >= 0
-        nothing
-    else
-        Some(x)
-    end
-end
-
-@match 15 begin
-    LessThan0(a) => a
-    _ => 0
-end # 0
-
-@match -15 begin
-    LessThan0(a) => a
-    _ => 0
-end # -15
-```
-
-To define more than one name, return a tuple.
-
-```julia
-# (n+2)-ary deconstruction: return Tuple{E1, E2, ...}
-@active SplitVecAt2(x) begin
-    (x[1:2], x[2+1:end])
-end
-
-@match [1, 2, 3, 4, 7] begin
-    SplitVecAt2(a, b) => (a, b)
-end
-# ([1, 2], [3, 4, 7])
-
-```
-
-Above 3 cases can be enhanced by becoming **parametric**:
-
-```julia
-@active SplitVecAt{N::Int}(x) begin
-    (x[1:N], x[N+1:end])
-end
-
-@match [1, 2, 3, 4, 7] begin
-    SplitVecAt{2}(a, b) => (a, b)
-end
-# ([1, 2], [3, 4, 7])
-
-@active Re{r :: Regex}(x) begin
-    res = match(r, x)
-    if res !== nothing
-        # use explicit `if-else` to emphasize the return should be Union{T, Nothing}.
-        Some(res)
-    else
-        nothing
-    end
-end
-
-@match "123" begin
-    Re{r"\d+"}(x) => x
-    _ => @error ""
-end # RegexMatch("123")
-
-```
-
-Sometimes the enum syntax is useful and convenient:
-
-```julia
-@active IsEven(x) begin
-    x % 2 === 0
-end
-
-MLStyle.is_enum(::Type{IsEven}) = true
-
-@match 6 begin
-    IsEven => :even
-    _ => :odd
-end # :even
-```
 
 Expr Patterns
 -------------------
@@ -807,3 +769,94 @@ If you are interested, here are several useful articles about AST Patterns:
 - [A Modern Way to Manipulate ASTs](https://www.reddit.com/r/Julia/comments/ap4xwr/mlstylejl_a_modern_way_to_manipulate_asts/).
 
 - [An Elegant and Efficient Way to Extract Something from ASTs](https://discourse.julialang.org/t/an-elegant-and-efficient-way-to-extract-something-from-asts/19123).
+
+
+Macro Call Patterns
+------------------------
+
+By default, a macro call appearing in a pattern will be no different from its expanded expression. Hence the following bidirectional relationship **sometimes** holds:
+
+```julia-console
+julia> macro mymacro(a)
+         esc(:([$a]))
+       end
+@mymacro (macro with 1 method)
+
+julia> a = 2
+2
+
+julia> a == @match @mymacro(a) begin
+                @mymacro(a) => a
+            end
+true
+
+# expanded form:
+# julia> a == @match [a] begin
+#                [a] => a
+#            end
+```
+
+However, you can also change the pattern compilation behavior by overloading `MLStyle.pattern_unmacrocall`, whose usage can be found at the implementation of the pattern support for [`@r_str`](https://github.com/thautwarm/MLStyle.jl/blob/master/src/Pervasives.jl#L191).
+
+Some examples about string macro patterns:
+
+```julia-console
+julia> @match  raw"$$$" begin
+           raw"$$$" => 1
+       end
+1
+
+julia> @match "123" begin
+           r"^\d+$" => 1
+       end
+1
+```
+
+Advanced: Do-Patterns & Many-Patterns
+----------------------------------------
+
+To introduce side-effects into pattern matching, we provide a built-in pattern called the `Do` pattern.
+
+Also, a pattern called `Many` can work with `Do` pattern in a perfect way.
+
+```julia
+@match [1, 2, 3] begin
+    Many(::Int) => true
+    _ => false
+end # true
+
+@match [1, 2, 3,  "a", "b", "c", :a, :b, :c] begin
+    Do(count = 0) &&
+    Many[
+        a::Int && Do(count = count + a) ||
+        ::String                        ||
+        ::Symbol && Do(count = count + 1)
+    ] => count
+end # 9
+```
+
+`Do` and `Many` may be not used very often but quite convenient for some specific domain.
+
+**P.S 1**: when assigning variables with `Do`, don't do `Do((x, y) = expr)`, use this: `Do(x = expr[1], y = expr[2])`. Our pattern compile needs to aware the scope change!
+
+**P.S 2**: `Do[x...]` is an eye candy for `Do(x)`, and so does `Many[x]` for `Many(x)`. **HOWEVER**, do not use `begin end` syntax in `Do[...]` or `Many[...]`. Julia restricts the parser and it'll not get treated as a `begin end` block.
+
+**P.S 3**: The [`let` pattern](#let-patterns) is different from the `Do` pattern.
+
+- `Do[x=y]` changes `x`, but `let x = y end` shadows `x`. `let` may also change a variable's value. Check the documents of `@switch` macro.
+
+- You can write non-binding in `Do`: `Do[println(1)]`, but you cannot do this in `let` patterns.
+
+Advanced: Let Patterns
+------------------------
+
+```julia-console
+julia> @match 1 begin
+           let x = 2 end => x
+       end
+2
+```
+
+Bind a variable without changing the value of existing variables, i.e., `let` patterns shadow symbols.
+
+`let` may also change a variable's value. Check the documents of `@switch` macro.
