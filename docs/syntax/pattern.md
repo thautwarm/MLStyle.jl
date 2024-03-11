@@ -428,10 +428,12 @@ To define one name in a match, return `Some(_)` for a match; otherwise return `n
         Some(x)
     end
 end
+
 @match 15 begin
     LessThan0(a) => a
     _ => 0
 end # 0
+
 @match -15 begin
     LessThan0(a) => a
     _ => 0
@@ -454,20 +456,24 @@ To define more than one name, return a tuple.
 @active SplitVecAt2(x) begin
     (x[1:2], x[2+1:end])
 end
+
 @match [1, 2, 3, 4, 7] begin
     SplitVecAt2(a, b) => (a, b)
 end
 # ([1, 2], [3, 4, 7])
 ```
-Above 3 cases can be enhanced by becoming **parametric**:
+
+The above 3 cases can be enhanced by becoming **parametric**:
 ```julia
 @active SplitVecAt{N::Int}(x) begin
     (x[1:N], x[N+1:end])
 end
+
 @match [1, 2, 3, 4, 7] begin
     SplitVecAt{2}(a, b) => (a, b)
 end
 # ([1, 2], [3, 4, 7])
+
 @active Re{r :: Regex}(x) begin
     res = match(r, x)
     if res !== nothing
@@ -477,17 +483,22 @@ end
         nothing
     end
 end
+
 @match "123" begin
     Re{r"\d+"}(x) => x
     _ => @error ""
 end # RegexMatch("123")
 ```
+
 Sometimes the enum syntax is useful and convenient:
+
 ```julia
 @active IsEven(x) begin
     x % 2 === 0
 end
+
 MLStyle.is_enum(::Type{IsEven}) = true
+
 @match 6 begin
     IsEven => :even
     _ => :odd
