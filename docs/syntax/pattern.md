@@ -393,30 +393,13 @@ The custom patterns give us so-called **extensible pattern matching**.
 Active Patterns
 ------------------
 
-This implementation is a subset of [F# Active Patterns](https://docs.microsoft.com/en-us/dotnet/fsharp/language-reference/active-patterns). Active patterns let you decompose the input value in a customized way.
 
-There are 3 distinct active patterns, the first of which is the normal form:
+This implementation is a subset of [F# Active Patterns](https://docs.microsoft.com/en-us/dotnet/fsharp/language-reference/active-patterns).
+
+There are three distinct forms for active patterns, depending on how many names are defined on the left-hand side of the pattern. The simplest doesn't define any names; to match, return `true` from the `@active` expression; otherwise return `false`.
+
 
 ```julia
-# 1-ary deconstruction: return Union{Some{T}, Nothing}
-@active LessThan0(x) begin
-    if x >= 0
-        nothing
-    else
-        Some(x)
-    end
-end
-
-@match 15 begin
-    LessThan0(a) => a
-    _ => 0
-end # 0
-
-@match -15 begin
-    LessThan0(a) => a
-    _ => 0
-end # -15
-
 # 0-ary deconstruction: return Bool
 @active IsLessThan0(x) begin
     x < 0
@@ -427,30 +410,64 @@ end
     _ => :b
 end # b
 
+@match -10 begin
+    IsLessThan0() => :a
+    _ => :b
+end # :a
+```
+
+To define one name in a match, return `Some(_)` for a match; otherwise return `nothing`. 
+
+
+```julia
+# 1-ary deconstruction: return Union{Some{T}, Nothing}
+@active LessThan0(x) begin
+    if x >= 0
+        nothing
+    else
+        Some(x)
+    end
+end
+@match 15 begin
+    LessThan0(a) => a
+    _ => 0
+end # 0
+@match -15 begin
+    LessThan0(a) => a
+    _ => 0
+end # -15
+```
+
+# 0-ary deconstruction: return Bool
+@active IsLessThan0(x) begin
+    x < 0
+end
+
+@match 10 begin
+    IsLessThan0() => :a
+    _ => :b
+end # b
+To define more than one name, return a tuple.
+
+```julia
 # (n+2)-ary deconstruction: return Tuple{E1, E2, ...}
 @active SplitVecAt2(x) begin
     (x[1:2], x[2+1:end])
 end
-
 @match [1, 2, 3, 4, 7] begin
     SplitVecAt2(a, b) => (a, b)
 end
 # ([1, 2], [3, 4, 7])
-
 ```
-
 Above 3 cases can be enhanced by becoming **parametric**:
-
 ```julia
 @active SplitVecAt{N::Int}(x) begin
     (x[1:N], x[N+1:end])
 end
-
 @match [1, 2, 3, 4, 7] begin
     SplitVecAt{2}(a, b) => (a, b)
 end
 # ([1, 2], [3, 4, 7])
-
 @active Re{r :: Regex}(x) begin
     res = match(r, x)
     if res !== nothing
@@ -460,30 +477,22 @@ end
         nothing
     end
 end
-
 @match "123" begin
     Re{r"\d+"}(x) => x
     _ => @error ""
 end # RegexMatch("123")
-
 ```
-
 Sometimes the enum syntax is useful and convenient:
-
 ```julia
 @active IsEven(x) begin
     x % 2 === 0
 end
-
 MLStyle.is_enum(::Type{IsEven}) = true
-
 @match 6 begin
     IsEven => :even
     _ => :odd
 end # :even
 ```
-
-
 
 
 Custom Patterns
