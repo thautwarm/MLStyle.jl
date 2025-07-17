@@ -5,9 +5,9 @@ Write You A Query Language
 
 You may have heard of embedded query languages like LINQ or extension methods before.
 
-In terms of Julia ecosystem, there is already Query.jl, LightQuery.jl, DataFramesMeta.jl, etc. These packages accomplish the partial or full features of a query language.
+In terms of Julia ecosystem, there is already Query.jl, LightQuery.jl, DataFramesMeta.jl, etc. These packages provide partial or full features of a query language.
 
-This tutorial primarily shows the creation a concise and efficient query language implemented  with MLStyle.jl. This demonstration illustrates the power of MLStyle.jl's ability to perform AST manipulations. Additionally, I think this tutorial can be also extremely helpful to those who're developing query languages for Julia.
+This tutorial primarily shows the creation a concise and efficient query language implemented  with MLStyle.jl. This demonstration illustrates the power of MLStyle.jl's ability to perform AST manipulations. Additionally, I think this tutorial can also be extremely helpful to those who are developing query languages for Julia.
 
 Definition of Syntaxes
 ------------------------------
@@ -27,16 +27,16 @@ df |>
 
 A `selector` could be one of the following cases.
 
-1. select the field `x` / select the 1-fst field
+1. select the field `x` / select the `n`-th field for some integer literal `n`
 
-    `_.x / _.(1)`
+    `_.x / _.(n)`
 
 
-2. select the field `x`(to support field name that're not an identifier)
+2. select a field with name given by a string (to support field names that are not identifiers)
 
     `_."x"`
 
-3.  select an expression binded as `x + _.x`, where `x` is from current scope
+3.  select an expression bound as `x + _.x`, where `x` is from current scope
 
     `x + _.x`
 
@@ -44,7 +44,7 @@ A `selector` could be one of the following cases.
 
     `<selector 1-3> => a / <selector 1-3> => "a"`
 
-5. select any field `col` that `predicate1(col, args1...) && !predicate2(col, args2...) && ...` is true
+5. select any field `col` for which `predicate1(col, args1...) && !predicate2(col, args2...) && ...` is true
 
     `_.(predicate1(args...), !predicate2(args2..., ),   ...)`
 
@@ -69,7 +69,7 @@ A `predicate` is a `QueryExpr`, but should be evaluated to a boolean.
 
 A `mapping`  is a `QueryExpr`, but shouldn't be evaluated to a nothing.
 
-FYI, here're some valid instances about `selector`.
+FYI, here are some valid instances about `selector`.
 
 ```
 _.foo,
@@ -399,7 +399,7 @@ FYI, some constants and interfaces are defined at [MQuery.ConstantNames.jl](http
 and [MQuery.Interfaces.jl](https://github.com/thautwarm/MLStyle-Playground/blob/master/MQuery/MQuery.Interfaces.jl),
 you might want to refer to them if any unknown symbol prevents you from understanding this sketch.
 
-Then we should extract all clauses from a piece of given julia codes.
+Then we should extract all clauses from a given piece of julia code.
 
 Given following codes,
 ```julia
