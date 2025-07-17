@@ -74,7 +74,7 @@ Sometimes we might have this kind of logic:
 - otherwise do `Cc`
 
 
-As there is currently no pattern matching support for `if-else`, we cannot represent above logic literally in vallina Julia.
+As there is currently no pattern matching support for `if-else`, we cannot represent above logic literally in vanilla Julia.
 
 MLStyle provides this, with the following syntax:
 

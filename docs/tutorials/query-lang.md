@@ -12,7 +12,7 @@ This tutorial primarily shows the creation a concise and efficient query languag
 Definition of Syntaxes
 ------------------------------
 
-Firstly, we can refer to the the T-SQL syntax and, introduce it into Julia.
+Firstly, we can refer to the T-SQL syntax and introduce it into Julia.
 
 ```Julia
 df |>
@@ -103,7 +103,7 @@ function (ARG)
 end
 ```
 
-Then, let's think about the `select` clause. You might find it's a `map`(if we don't take aggregate function into consideration). However, we don't want to
+Then, let's think about the `select` clause. You might find it's a `map` (if we don't take aggregate function into consideration). However, we don't want to
 make redundant allocations when executing the queries, so we should use `Base.Generator` as the data representation.
 
 For `@select _.foo + x, _.bar`, it should be generated to something like the following:
@@ -114,7 +114,7 @@ For `@select _.foo + x, _.bar`, it should be generated to something like the fol
 
 Where `IN_SOURCE` is the data representation, `RECORD` is the record(row) of `IN_SOURCE`, and `x` is the variable captured by the closure.
 
-Now, a smart reader might observe that there's a trick for optimization! If we can have the actual indices of the fields `foo` and `bar` in the record(each row of `IN_SOURCE`), then they can be indexed via integers, which could avoid reflections in some degree.
+Now, a smart reader might observe that there's a trick for optimization! If we can have the actual indices of the fields `foo` and `bar` in the record (each row of `IN_SOURCE`), then they can be indexed via integers, which could avoid reflections in some degree.
 
 I don't have much knowledge about NamedTuple's implementation, but indexing via names on unknown datatypes cannot be faster than simply indexing via integers.
 
@@ -211,7 +211,7 @@ df |>
 @groupby startswith(_.name, "Ruby")  => is_ruby
 ```
 
-Yep, we want to group data frames(of course, any other datatypes that can be processed via this pipeline) by whether its field `name` starts with a string "Ruby" like, "Ruby Rose".
+Yep, we want to group data frames (of course, any other datatypes that can be processed via this pipeline) by whether its field `name` starts with a string "Ruby" like, "Ruby Rose".
 
 Ha, I'd like to use a dictionary here to store the groups.
 
