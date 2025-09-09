@@ -81,7 +81,7 @@ Check [Custom Patterns](#custom-patterns) for details.
 Type Patterns
 -----------------
 
-Writing `::Foo` on the left hand side of a pattern will match if the input is of type `Foo`. You can conbine this with a literal pattern by writing `x::Foo` which will match inputs of type `Foo` and bind them to a variable `x`.
+Writing `::Foo` on the left hand side of a pattern will match if the input is of type `Foo`. You can combine this with a literal pattern by writing `x::Foo` which will match inputs of type `Foo` and bind them to a variable `x`.
 
 ```julia-console
 julia> @match 1 begin
@@ -501,7 +501,7 @@ Custom Patterns
 --------------
 
 As we've suggested in [Capturing-Patterns](#capturing-patterns),
-you can always define your own patterns with MLStyle and easily leverge our compiler and optimizer.
+you can always define your own patterns with MLStyle and easily leverage our compiler and optimizer.
 
 You can extend following APIs for your pattern objects, to implement custom patterns:
 
