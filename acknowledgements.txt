@@ -10,3 +10,4 @@ maxd13: https://github.com/maxd13
 Lyndon White: https://github.com/oxinabox
 Chad Scherrer: https://github.com/cscherrer
 Casey Kneale: https://github.com/caseykneale
+Max Horn: https://github.com/fingolfin
