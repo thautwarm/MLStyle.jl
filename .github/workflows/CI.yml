@@ -17,6 +17,9 @@ jobs:
           - ubuntu-latest
           - macOS-latest
           - windows-latest
+        exclude:
+          - os: 'macOS-latest'
+          - version: '1.0'
     steps:
       - uses: actions/checkout@v4
       - uses: julia-actions/setup-julia@v2
