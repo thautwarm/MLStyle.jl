@@ -347,6 +347,9 @@ function ex2tf(m::Module, ex::Expr)
         macro_func = m.eval(macro_expr)
         return pattern_unmacrocall(macro_func, rec, Any[ln, m, args...])
 
+        @case Expr(:., _, _)
+        return ex2tf(m, :(&($ex)))
+
         @case a
         error("unknown pattern syntax $(repr(a))")
     end
